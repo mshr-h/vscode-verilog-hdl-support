@@ -14,7 +14,8 @@
 		"vscode": "^0.10.1"
 	},
 	"categories": [
-		"Languages"
+		"Languages",
+		"Snippets"
 	],
 	"contributes": {
 		"languages": [{
