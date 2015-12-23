@@ -1,0 +1,8 @@
+sudo: false
+    
+install:
+  - npm install -g vsce
+    
+script:
+  - vsce package
+  
