@@ -1,4 +1,4 @@
-# Verilog HDL support for VSCode
+# Verilog HDL support for VSCode [![Build Status](https://travis-ci.org/mshr-h/vscode-verilog-hdl-support.svg?branch=master)](https://travis-ci.org/mshr-h/vscode-verilog-hdl-support)
 Verilog HDL support based on [https://github.com/textmate/verilog.tmbundle](https://github.com/textmate/verilog.tmbundle) TextMate package.
 
 ## Features
