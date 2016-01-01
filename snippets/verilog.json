@@ -19,7 +19,7 @@
 		],
 		"description": "always @()"
 	},
-    "alwaysposclk": {
+	"alwaysposclk": {
 		"prefix": "alclk",
 		"body": [
 			"always @(posedge clk $1) begin",
@@ -75,12 +75,12 @@
 		],
 		"description": "a ? b : c"
 	},
-    "if": {
+	"if": {
 		"prefix": "if",
 		"body": [
 			"if ($1) begin",
-            "  $2",
-            "end"
+			"  $2",
+			"end"
 		],
 		"description": "if (...)"
 	},
@@ -88,8 +88,8 @@
 		"prefix": "for",
 		"body": [
 			"for ($1 = $2; $3; $4) begin",
-            "  $5",
-            "end"
+			"  $5",
+			"end"
 		],
 		"description": "for (...)"
 	},
@@ -97,8 +97,8 @@
 		"prefix": "while",
 		"body": [
 			"while ($1) $2",
-            "  $3",
-            "end"
+			"  $3",
+			"end"
 		],
 		"description": "while (...)"
 	},
