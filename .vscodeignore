@@ -2,3 +2,5 @@
 test/**
 .gitignore
 tsconfig.json
+*.vsix
+build.bat
