@@ -17,6 +17,13 @@
 		],
 		"description": "always @()"
 	},
+    "alwaysposclk": {
+		"prefix": "alclk",
+		"body": [
+			"always @(posedge clk $1) $2"
+		],
+		"description": "always @(posedge clk)"
+	},
 	"beginend": {
 		"prefix": "beginend",
 		"body": [
