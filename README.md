@@ -11,6 +11,8 @@ Verilog HDL support based on [https://github.com/textmate/verilog.tmbundle](http
    * `for`
    * `while`
    * `function`
+   * `reg`
+   * `wire`
    * testbench template
    * etc...
 
