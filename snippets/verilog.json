@@ -47,6 +47,27 @@
 		],
 		"description": "case () ... endcase"
 	},
+	"reg": {
+		"prefix": "reg",
+		"body": [
+			"reg $1;"
+		],
+		"description": "reg reg_name;"
+	},
+	"regarray": {
+		"prefix": "rega",
+		"body": [
+			"reg [$1:$2] $3;"
+		],
+		"description": "reg [N:0] reg_name;"
+	},
+	"regmemory": {
+		"prefix": "regm",
+		"body": [
+			"reg [$1:$2] $3 [$4:$5];"
+		],
+		"description": "reg [N:0] reg_name [0:M];"
+	},
 	"include": {
 		"prefix": "inc",
 		"body": [
