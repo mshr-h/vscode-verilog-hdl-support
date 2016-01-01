@@ -68,7 +68,14 @@
 		],
 		"description": "paramter var = val"
 	},
-	"if": {
+	"ternary": {
+		"prefix": "ter",
+		"body": [
+			"$1 ? $2 : $3"
+		],
+		"description": "a ? b : c"
+	},
+    "if": {
 		"prefix": "if",
 		"body": [
 			"if ($1) begin",
