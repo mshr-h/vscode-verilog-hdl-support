@@ -3,6 +3,7 @@
 	"description": "Verilog HDL support for VS Code",
 	"version": "0.0.8",
 	"publisher": "mshr-h",
+    "homepage": "https://github.com/mshr-h/vscode-verilog-hdl-support",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/mshr-h/vscode-verilog-hdl-support.git"
