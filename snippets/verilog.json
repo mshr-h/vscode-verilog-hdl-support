@@ -68,6 +68,20 @@
 		],
 		"description": "reg [N:0] reg_name [0:M];"
 	},
+	"wire": {
+		"prefix": "wire",
+		"body": [
+			"wire $1;"
+		],
+		"description": "wire wire_name;"
+	},
+	"wirearray": {
+		"prefix": "wirea",
+		"body": [
+			"wire [$1:$2] $3;"
+		],
+		"description": "wire [N:0] wire_name;"
+	},
 	"include": {
 		"prefix": "inc",
 		"body": [
