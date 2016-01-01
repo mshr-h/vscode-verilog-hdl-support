@@ -6,7 +6,7 @@
 			"  $2",
 			");",
 			"$3",
-			"endmodule"
+			"endmodule // $1"
 		],
 		"description": "module ... endmodule"
 	},
