@@ -13,14 +13,18 @@
 	"always": {
 		"prefix": "al",
 		"body": [
-			"always @($1) $2"
+			"always @($1) begin",
+			"  $2",
+			"end"
 		],
 		"description": "always @()"
 	},
     "alwaysposclk": {
 		"prefix": "alclk",
 		"body": [
-			"always @(posedge clk $1) $2"
+			"always @(posedge clk $1) begin",
+			"  $2",
+			"end"
 		],
 		"description": "always @(posedge clk)"
 	},
@@ -67,21 +71,27 @@
 	"if": {
 		"prefix": "if",
 		"body": [
-			"if ($1)"
+			"if ($1) begin",
+            "  $2",
+            "end"
 		],
 		"description": "if (...)"
 	},
 	"for loop": {
 		"prefix": "for",
 		"body": [
-			"for ($1 = $2; $3; $4) $5"
+			"for ($1 = $2; $3; $4) begin",
+            "  $5",
+            "end"
 		],
 		"description": "for (...)"
 	},
 	"while loop": {
 		"prefix": "while",
 		"body": [
-			"while ($1) $2"
+			"while ($1) $2",
+            "  $3",
+            "end"
 		],
 		"description": "while (...)"
 	},
