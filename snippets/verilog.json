@@ -93,7 +93,7 @@
 			"  $3",
 			"endfunction"
 		],
-		"description": "while (...)"
+		"description": "function (...)"
 	},
 	"testbench template": {
 		"prefix": "tb",
