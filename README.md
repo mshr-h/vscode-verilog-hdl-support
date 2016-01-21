@@ -24,5 +24,12 @@ Verilog HDL support based on [https://github.com/textmate/verilog.tmbundle](http
 ## GitHub repos
 [mshr-h/vscode-verilog-hdl-support](https://github.com/mshr-h/vscode-verilog-hdl-support)
 
+## Contributing
+1. Fork it ( [https://github.com/mshr-h/vscode-verilog-hdl-support](https://github.com/mshr-h/vscode-verilog-hdl-support) )
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create a new Pull Request
+
 ## See also
 [https://marketplace.visualstudio.com/items/mshr-h.VerilogHDL](https://marketplace.visualstudio.com/items/mshr-h.VerilogHDL)
