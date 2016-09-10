@@ -93,7 +93,7 @@
 			<array>
 				<dict>
 					<key>match</key>
-					<string>\b[0-9]+'[bBoOdDhH][a-fA-F0-9_xXzZ]+\b</string>
+					<string>[0-9]*'[bBoOdDhH][a-fA-F0-9_xXzZ]+\b</string>
 					<key>name</key>
 					<string>constant.numeric.sized_integer.verilog</string>
 				</dict>
