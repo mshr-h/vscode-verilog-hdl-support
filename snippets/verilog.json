@@ -40,7 +40,7 @@
 	"case": {
 		"prefix": "case",
 		"body": [
-			"case ($1) begin",
+			"case ($1)",
 			"  $2: $3",
 			"  default: $4",
 			"endcase"
