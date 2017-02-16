@@ -93,6 +93,12 @@
 			<array>
 				<dict>
 					<key>match</key>
+					<string>`(?!(celldefine|endcelldefine|default_nettype|define|undef|ifdef|else|endif|include|resetall|timescale|unconnected_drive|nounconnected_drive))[a-z_A-Z][a-zA-Z0-9_$]*</string>
+					<key>name</key>
+					<string>support.constant.verilog</string>
+				</dict>
+				<dict>
+					<key>match</key>
 					<string>[0-9]*'[bBoOdDhH][a-fA-F0-9_xXzZ]+\b</string>
 					<key>name</key>
 					<string>constant.numeric.sized_integer.verilog</string>
