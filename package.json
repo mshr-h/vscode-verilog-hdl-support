@@ -1,9 +1,9 @@
 {
 	"name": "VerilogHDL",
-	"description": "Verilog HDL support for VS Code",
-	"version": "0.0.13",
+	"description": "Verilog HDL/UCF support for VS Code",
+	"version": "0.0.14",
 	"publisher": "mshr-h",
-    "homepage": "https://github.com/mshr-h/vscode-verilog-hdl-support",
+	"homepage": "https://github.com/mshr-h/vscode-verilog-hdl-support",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/mshr-h/vscode-verilog-hdl-support.git"
@@ -19,20 +19,53 @@
 		"Snippets"
 	],
 	"contributes": {
-		"languages": [{
-			"id": "verilog",
-			"aliases": ["Verilog", "verilog"],
-			"extensions": [".v",".vh"],
-			"configuration": "./verilog.configuration.json"
-		}],
-		"grammars": [{
-			"language": "verilog",
-			"scopeName": "source.verilog",
-			"path": "./syntaxes/verilog.tmLanguage"
-		}],
-		"snippets": [{
-			"language": "verilog",
-			"path": "./snippets/verilog.json"
-		}]
+		"languages": [
+			{
+				"id": "verilog",
+				"aliases": [
+					"Verilog",
+					"verilog"
+				],
+				"extensions": [
+					".v",
+					".vh"
+				],
+				"configuration": "./verilog.configuration.json"
+			},
+			{
+				"id": "ucf",
+				"aliases": [
+					"UCF",
+					"Ucf"
+				],
+				"extensions": [
+					".ucf"
+				],
+				"configuration": "./ucf.configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "verilog",
+				"scopeName": "source.verilog",
+				"path": "./syntaxes/verilog.tmLanguage"
+			},
+			{
+				"language": "ucf",
+				"scopeName": "source.ucf",
+				"path": "./syntaxes/ucf.tmLanguage"
+			}
+		],
+		"snippets": [
+			{
+				"language": "verilog",
+				"path": "./snippets/verilog.json"
+			}
+		]
+	},
+	"__metadata": {
+		"id": "feb7e3b5-7d35-4f95-a3d2-61eeaa12efa5",
+		"publisherId": "fcf32c99-a624-437b-9f47-9333ea128623",
+		"publisherDisplayName": "mshr-h"
 	}
 }
