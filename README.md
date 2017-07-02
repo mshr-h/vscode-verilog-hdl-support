@@ -15,7 +15,10 @@ Verilog HDL support based on [https://github.com/textmate/verilog.tmbundle](http
    * `wire`
    * testbench template
    * etc...
+- simple syntax highlighting for `.ucf` files
 
+
+   
 ### In progress
 
 ### In the future
