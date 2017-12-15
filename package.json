@@ -50,12 +50,6 @@
 				"language": "verilog",
 				"path": "./snippets/verilog.json"
 			}
-		],
-		"commands":[
-			{
-				"command": "extension.sayHello",
-				"title": "Hello World"
-			}
 		]
 	},
 	"scripts": {
