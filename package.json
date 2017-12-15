@@ -3,7 +3,7 @@
 	"description": "Verilog HDL support for VS Code",
 	"version": "0.0.13",
 	"publisher": "mshr-h",
-    "homepage": "https://github.com/mshr-h/vscode-verilog-hdl-support",
+	"homepage": "https://github.com/mshr-h/vscode-verilog-hdl-support",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/mshr-h/vscode-verilog-hdl-support.git"
@@ -16,23 +16,62 @@
 	},
 	"categories": [
 		"Languages",
-		"Snippets"
+		"Snippets",
+		"Linters"
 	],
+	"activationEvents": [
+		"onLanguage:verilog"
+	],
+	"main": "./out/src/extension",
 	"contributes": {
-		"languages": [{
-			"id": "verilog",
-			"aliases": ["Verilog", "verilog"],
-			"extensions": [".v",".vh"],
-			"configuration": "./verilog.configuration.json"
-		}],
-		"grammars": [{
-			"language": "verilog",
-			"scopeName": "source.verilog",
-			"path": "./syntaxes/verilog.tmLanguage"
-		}],
-		"snippets": [{
-			"language": "verilog",
-			"path": "./snippets/verilog.json"
-		}]
+		"languages": [
+			{
+				"id": "verilog",
+				"aliases": [
+					"Verilog",
+					"verilog"
+				],
+				"extensions": [
+					".v",
+					".vh"
+				],
+				"configuration": "./verilog.configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "verilog",
+				"scopeName": "source.verilog",
+				"path": "./syntaxes/verilog.tmLanguage"
+			}
+		],
+		"snippets": [
+			{
+				"language": "verilog",
+				"path": "./snippets/verilog.json"
+			}
+		],
+		"commands":[
+			{
+				"command": "extension.sayHello",
+				"title": "Hello World"
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "tsc -p ./",
+		"compile": "tsc -p ./",
+		"watch": "tsc -w -p ./",
+		"update-vscode": "node ./node_modules/vscode/bin/install",
+		"postinstall": "node ./node_modules/vscode/bin/install"
+	},
+	"dependencies": {
+		"vscode": "^1.1.10"
+	},
+	"devDependencies": {
+		"typescript": "^2.6.1",
+		"vscode": "^1.1.6",
+		"@types/node": "^7.0.43",
+		"@types/mocha": "^2.2.42"
 	}
 }
