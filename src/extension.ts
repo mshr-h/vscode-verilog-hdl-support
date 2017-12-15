@@ -23,27 +23,19 @@ export function activate(context: ExtensionContext) {
 
 class Linter {
 
-    // private output: string;
-
     constructor(){
         let subscriptions: Disposable[] = [];
-        // window.onDidChangeTextEditorSelection(this._runIVerilog, this, subscriptions);
         workspace.onDidOpenTextDocument(this._runIVerilog, this, subscriptions);
         workspace.onDidCloseTextDocument( (textDocument)=> {
             diagnosticCollection.delete(textDocument.uri);
         }, null, subscriptions);
         workspace.onDidSaveTextDocument(this._runIVerilog, this, subscriptions);
-        // window.onDidChangeActiveTextEditor(this._runIVerilog, this, subscriptions);
     }
 
     public _runIVerilog(doc: TextDocument) {
-
         if(doc.languageId=='verilog')
         {
-            window.showInformationMessage('linter running');
             var foo: child.ChildProcess = child.exec('iverilog -t null ' + doc.fileName +' ',(error:Error, stdout:string, stderr:string) => {
-            // this.output = stderr;
-            // console.log(stderr);
                 let isWindows: boolean = false;
                 if(doc.fileName[1] == ':'){
                     isWindows = true;
