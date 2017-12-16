@@ -23,6 +23,8 @@ export function activate(context: ExtensionContext) {
 
 class Linter {
 
+    private iverilogCommands: string;
+
     constructor(){
         let subscriptions: Disposable[] = [];
         workspace.onDidOpenTextDocument(this._runIVerilog, this, subscriptions);
@@ -30,12 +32,15 @@ class Linter {
             diagnosticCollection.delete(textDocument.uri);
         }, null, subscriptions);
         workspace.onDidSaveTextDocument(this._runIVerilog, this, subscriptions);
+        workspace.onDidChangeConfiguration(() => {
+             this.iverilogCommands = <string>workspace.getConfiguration().get('verilog.iverilog.commands');
+        })
     }
 
     public _runIVerilog(doc: TextDocument) {
         if(doc.languageId=='verilog')
         {
-            var foo: child.ChildProcess = child.exec('iverilog -t null ' + doc.fileName +' ',(error:Error, stdout:string, stderr:string) => {
+            var foo: child.ChildProcess = child.exec('iverilog -t null' + this.iverilogCommands + ' ' + doc.fileName,(error:Error, stdout:string, stderr:string) => {
                 let isWindows: boolean = false;
                 if(doc.fileName[1] == ':'){
                     isWindows = true;

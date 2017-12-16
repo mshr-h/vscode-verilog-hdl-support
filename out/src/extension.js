@@ -10,40 +10,26 @@ function activate(context) {
     // This line of code will only be executed once when your extension is activated
     console.log('Congratulations, your extension "verilog" is now active!');
     let linter = new Linter();
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with  registerCommand
-    // The commandId parameter must match the command field in package.json
-    let disposable = vscode_1.commands.registerCommand('extension.sayHello', () => {
-        // The code you place here will be executed every time your command is executed
-        // var foo: child.ChildProcess = child.exec('iverilog -V',(error:Error, stdout:string, stderr:string) => {
-        //     console.log(stdout);
-        // })
-        // Display a message box to the user
-        vscode_1.window.showInformationMessage('Hello World!');
-    });
-    context.subscriptions.push(disposable);
+    // context.subscriptions.push(disposable);
     diagnosticCollection = vscode_1.languages.createDiagnosticCollection();
     context.subscriptions.push(diagnosticCollection);
 }
 exports.activate = activate;
 class Linter {
-    // private output: string;
     constructor() {
         let subscriptions = [];
-        // window.onDidChangeTextEditorSelection(this._runIVerilog, this, subscriptions);
         vscode_1.workspace.onDidOpenTextDocument(this._runIVerilog, this, subscriptions);
         vscode_1.workspace.onDidCloseTextDocument((textDocument) => {
             diagnosticCollection.delete(textDocument.uri);
         }, null, subscriptions);
         vscode_1.workspace.onDidSaveTextDocument(this._runIVerilog, this, subscriptions);
-        // window.onDidChangeActiveTextEditor(this._runIVerilog, this, subscriptions);
+        vscode_1.workspace.onDidChangeConfiguration(() => {
+            this.iverilogCommands = vscode_1.workspace.getConfiguration().get('verilog.iverilog.commands');
+        });
     }
     _runIVerilog(doc) {
         if (doc.languageId == 'verilog') {
-            vscode_1.window.showInformationMessage('linter running');
-            var foo = child.exec('iverilog -t null ' + doc.fileName + ' ', (error, stdout, stderr) => {
-                // this.output = stderr;
-                // console.log(stderr);
+            var foo = child.exec('iverilog -t null' + this.iverilogCommands + ' ' + doc.fileName, (error, stdout, stderr) => {
                 let isWindows = false;
                 if (doc.fileName[1] == ':') {
                     isWindows = true;
@@ -83,8 +69,6 @@ class Linter {
                 diagnosticCollection.set(doc.uri, diagnostics);
             });
         }
-    }
-    parseOutput(doc, output) {
     }
 }
 // this method is called when your extension is deactivated

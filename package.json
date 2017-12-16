@@ -50,7 +50,18 @@
 				"language": "verilog",
 				"path": "./snippets/verilog.json"
 			}
-		]
+		],
+		"configuration":{
+			"title": "Icarus Verilog configuration",
+			"properties": {
+				"verilog.iverilog.commands":{
+					"scope" :"resource",
+					"type" : "string",
+					"default" : "",
+					"description": "Add Icarus Verilog commands here (like macros). They will be added to Icarus Verilog while linting (The command \"-t null\" will be added by the linter)"
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "tsc -p ./",

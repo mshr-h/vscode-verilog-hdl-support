@@ -17,9 +17,9 @@ Verilog HDL support based on [https://github.com/textmate/verilog.tmbundle](http
    * etc...
 
 ### In progress
-
+- Icarus Verilog integration
 ### In the future
-- Icarus Verilog integration (please post issue if you have any idea :smile: )
+- Please post issue if you have any new idea
 
 ## GitHub repos
 [mshr-h/vscode-verilog-hdl-support](https://github.com/mshr-h/vscode-verilog-hdl-support)
