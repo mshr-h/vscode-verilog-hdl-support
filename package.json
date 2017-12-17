@@ -51,13 +51,13 @@
 				"path": "./snippets/verilog.json"
 			}
 		],
-		"configuration":{
+		"configuration": {
 			"title": "Icarus Verilog configuration",
 			"properties": {
-				"verilog.iverilog.commands":{
-					"scope" :"resource",
-					"type" : "string",
-					"default" : "",
+				"verilog.iverilog.commands": {
+					"scope": "resource",
+					"type": "string",
+					"default": "",
 					"description": "Add Icarus Verilog commands here (like macros). They will be added to Icarus Verilog while linting (The command \"-t null\" will be added by the linter)"
 				}
 			}
@@ -74,9 +74,9 @@
 		"vscode": "^1.1.10"
 	},
 	"devDependencies": {
-		"typescript": "^2.6.1",
-		"vscode": "^1.1.6",
+		"@types/mocha": "^2.2.42",
 		"@types/node": "^7.0.43",
-		"@types/mocha": "^2.2.42"
+		"typescript": "^2.6.2",
+		"vscode": "^1.1.6"
 	}
 }

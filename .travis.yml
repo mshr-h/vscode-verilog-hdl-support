@@ -9,10 +9,10 @@ before_install:
       sh -e /etc/init.d/xvfb start;
       sleep 3;
     fi
-  - chmod +x tsc
 
 install:
   - npm install
+  - npm install -g typescript
   - npm run vscode:prepublish
 
 script:
