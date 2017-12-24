@@ -1,9 +1,9 @@
 {
 	"name": "VerilogHDL",
 	"description": "Verilog HDL support for VS Code",
-	"version": "0.0.13",
+	"version": "0.1.0",
 	"publisher": "mshr-h",
-    "homepage": "https://github.com/mshr-h/vscode-verilog-hdl-support",
+	"homepage": "https://github.com/mshr-h/vscode-verilog-hdl-support",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/mshr-h/vscode-verilog-hdl-support.git"
@@ -16,23 +16,67 @@
 	},
 	"categories": [
 		"Languages",
-		"Snippets"
+		"Snippets",
+		"Linters"
 	],
+	"activationEvents": [
+		"onLanguage:verilog"
+	],
+	"main": "./out/src/extension",
 	"contributes": {
-		"languages": [{
-			"id": "verilog",
-			"aliases": ["Verilog", "verilog"],
-			"extensions": [".v",".vh"],
-			"configuration": "./verilog.configuration.json"
-		}],
-		"grammars": [{
-			"language": "verilog",
-			"scopeName": "source.verilog",
-			"path": "./syntaxes/verilog.tmLanguage"
-		}],
-		"snippets": [{
-			"language": "verilog",
-			"path": "./snippets/verilog.json"
-		}]
+		"languages": [
+			{
+				"id": "verilog",
+				"aliases": [
+					"Verilog",
+					"verilog"
+				],
+				"extensions": [
+					".v",
+					".vh"
+				],
+				"configuration": "./verilog.configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "verilog",
+				"scopeName": "source.verilog",
+				"path": "./syntaxes/verilog.tmLanguage"
+			}
+		],
+		"snippets": [
+			{
+				"language": "verilog",
+				"path": "./snippets/verilog.json"
+			}
+		],
+		"configuration": {
+			"title": "Icarus Verilog configuration",
+			"properties": {
+				"verilog.iverilog.commands": {
+					"scope": "resource",
+					"type": "string",
+					"default": "",
+					"description": "Add Icarus Verilog commands here (like macros). They will be added to Icarus Verilog while linting (The command \"-t null\" will be added by the linter)"
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "tsc -p ./",
+		"compile": "tsc -p ./",
+		"watch": "tsc -w -p ./",
+		"update-vscode": "node ./node_modules/vscode/bin/install",
+		"postinstall": "node ./node_modules/vscode/bin/install"
+	},
+	"dependencies": {
+		"vscode": "^1.1.10"
+	},
+	"devDependencies": {
+		"@types/mocha": "^2.2.42",
+		"@types/node": "^7.0.43",
+		"typescript": "^2.6.2",
+		"vscode": "^1.1.6"
 	}
 }
