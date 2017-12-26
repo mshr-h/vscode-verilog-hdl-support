@@ -24,7 +24,6 @@ export function activate(context: ExtensionContext) {
 class Linter {
 
     private iverilogArgs: string;
-
     constructor(){
         let subscriptions: Disposable[] = [];
         workspace.onDidOpenTextDocument(this._runIVerilog, this, subscriptions);
