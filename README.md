@@ -15,13 +15,17 @@ Verilog HDL support based on [https://github.com/textmate/verilog.tmbundle](http
    * `wire`
    * testbench template
    * etc...
+- Icarus Verilog linting
+    * To install Icarus Verilog, [check this out](http://iverilog.wikia.com/wiki/Installation_Guide)
+    * Make sure the path to your Icaurus Verilog installation is present in the `PATH` variable.
+    * If your module references other designs from other .v files, use `` `include "module.v"`` syntax to include them in your design. IVerilog uses these `` `include "path/to/file.v"`` directives to refer those modules. The `path/to/file.v` should be relative to your workspace directory.
+    * Use `verilog.iverilog.arguments` setting to add custom arguments to the linter. The argument `-t null` will be added by the linter automatically
 
 ### In progress
 - Icarus Verilog integration
-    * Make sure the path to your Icaurus Verilog installation is present in the `PATH` variable
     * Working in:
         * Windows: Yes
-            * Tested on Windows 10 Creators Update (build 16299). Visual Studio Code 1.19.0
+            * Tested on Windows 10 Fall Creators Update (build 16299). Visual Studio Code 1.19.1
         * Linux: Not Tested
         * MacOS: Not Tested
 
