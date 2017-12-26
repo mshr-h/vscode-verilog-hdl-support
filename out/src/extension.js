@@ -29,7 +29,7 @@ class Linter {
     }
     _runIVerilog(doc) {
         if (doc.languageId == 'verilog') {
-            var foo = child.exec('iverilog -t null' + this.iverilogCommands + ' ' + doc.fileName, (error, stdout, stderr) => {
+            var foo = child.exec('iverilog -t null' + this.iverilogCommands + ' ' + doc.fileName, { cwd: vscode_1.workspace.rootPath }, (error, stdout, stderr) => {
                 let isWindows = false;
                 if (doc.fileName[1] == ':') {
                     isWindows = true;
