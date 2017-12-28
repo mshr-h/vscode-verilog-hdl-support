@@ -24,12 +24,12 @@ class Linter {
         }, null, subscriptions);
         vscode_1.workspace.onDidSaveTextDocument(this._runIVerilog, this, subscriptions);
         vscode_1.workspace.onDidChangeConfiguration(() => {
-            this.iverilogCommands = vscode_1.workspace.getConfiguration().get('verilog.iverilog.commands');
+            this.iverilogArgs = vscode_1.workspace.getConfiguration().get('verilog.iverilog.arguments');
         });
     }
     _runIVerilog(doc) {
         if (doc.languageId == 'verilog') {
-            var foo = child.exec('iverilog -t null' + this.iverilogCommands + ' ' + doc.fileName, { cwd: vscode_1.workspace.rootPath }, (error, stdout, stderr) => {
+            var foo = child.exec('iverilog -t null' + this.iverilogArgs + ' ' + doc.fileName, { cwd: vscode_1.workspace.rootPath }, (error, stdout, stderr) => {
                 let isWindows = false;
                 if (doc.fileName[1] == ':') {
                     isWindows = true;
@@ -41,7 +41,7 @@ class Linter {
                         line = line.replace(doc.fileName, '');
                         let terms = line.split(':');
                         console.log(terms[1] + ' ' + terms[2]);
-                        let lineNum = parseInt(terms[1].trim());
+                        let lineNum = parseInt(terms[1].trim()) - 1;
                         if (terms.length == 3)
                             diagnostics.push({
                                 severity: vscode_1.DiagnosticSeverity.Error,
