@@ -1,5 +1,5 @@
 {
-	"name": "VerilogHDL",
+	"name": "verilog-hdl",
 	"description": "Verilog HDL support for VS Code",
 	"version": "0.1.1",
 	"publisher": "mshr-h",
@@ -12,7 +12,7 @@
 		"url": "https://github.com/mshr-h/vscode-verilog-hdl-support/issues"
 	},
 	"engines": {
-		"vscode": "^0.10.1"
+		"vscode": "^1.19.3"
 	},
 	"categories": [
 		"Languages",
@@ -52,10 +52,16 @@
 			}
 		],
 		"configuration": {
-			"title": "Icarus Verilog configuration",
+			"title": "Verilog configuration",
 			"properties": {
-				"verilog.iverilog.arguments": {
-					"scope": "resource",
+				"verilog.linting.linter": {
+					"scope": "window",
+					"type": "string",
+					"default": "false",
+					"description": "Select the verilog linter. Possible values are 'iverilog' and 'xvlog'"
+				},
+				"verilog.linting.iverilog.arguments": {
+					"scope": "window",
 					"type": "string",
 					"default": "",
 					"description": "Add Icarus Verilog arguments here (like macros). They will be added to Icarus Verilog while linting (The command \"-t null\" will be added by the linter by default)"
