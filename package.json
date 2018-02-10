@@ -1,7 +1,7 @@
 {
 	"name": "verilog-hdl",
 	"description": "Verilog HDL support for VS Code",
-	"version": "0.1.2",
+	"version": "0.2.0",
 	"publisher": "mshr-h",
 	"homepage": "https://github.com/mshr-h/vscode-verilog-hdl-support",
 	"repository": {
