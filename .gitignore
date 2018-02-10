@@ -1,3 +1,4 @@
 /VerilogHDL-*.vsix
 /node_modules/
+/out/src/extension.js.map
 /package-lock.json
