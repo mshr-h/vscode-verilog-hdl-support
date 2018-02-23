@@ -30,8 +30,9 @@ Verilog HDL support based on [https://github.com/textmate/verilog.tmbundle](http
 - Icarus Verilog integration
     * Working in:
         - Windows: Yes
-            * Tested on Windows 10 Fall Creators Update (build 16299). Visual Studio Code 1.19.1
-        - Linux: Not Tested
+            * Tested on Windows 10 Fall Creators Update (build 16299). Visual Studio Code 1.20.1
+        - Linux: Yes
+            * Tested on Ubuntu 14.04. Visual Studio Code 1.20.1
         - macOS: Not Tested
 - xvlog(Vivado) integration
     * Working in:

@@ -59,7 +59,12 @@
 				"verilog.linting.linter": {
 					"scope": "window",
 					"type": "string",
-					"default": "false",
+					"enum":[
+						"none",
+						"iverilog",
+						"none"
+					],
+					"default": "none",
 					"description": "Select the verilog linter. Possible values are 'iverilog' and 'xvlog'"
 				},
 				"verilog.linting.iverilog.arguments": {
