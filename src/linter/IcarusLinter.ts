@@ -12,8 +12,12 @@ export default class IcarusLinter extends BaseLinter {
         super("iverilog");
 
         workspace.onDidChangeConfiguration(() => {
-             this.iverilogArgs = <string>workspace.getConfiguration().get('verilog.linting.iverilog.arguments');
+            this.getArgs();
         })
+        this.getArgs();
+    }
+
+    private getArgs() {
         this.iverilogArgs = <string>workspace.getConfiguration().get('verilog.linting.iverilog.arguments');
     }
 
