@@ -61,7 +61,7 @@
 					"scope": "window",
 					"type": "string",
 					"enum": [
-						"none",
+						"xvlog",
 						"iverilog",
 						"none"
 					],
