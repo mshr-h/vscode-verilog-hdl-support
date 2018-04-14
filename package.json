@@ -65,13 +65,19 @@
 						"none"
 					],
 					"default": "none",
-					"description": "Select the verilog linter. Possible values are 'iverilog' and 'xvlog'"
+					"description": "Select the verilog linter. Possible values are 'iverilog', 'xvlog' or 'none'"
 				},
 				"verilog.linting.iverilog.arguments": {
 					"scope": "window",
 					"type": "string",
 					"default": "",
 					"description": "Add Icarus Verilog arguments here (like macros). They will be added to Icarus Verilog while linting (The command \"-t null\" will be added by the linter by default)"
+				},
+				"verilog.linting.iverilog.runAtFileLocation": {
+					"scope": "window",
+					"type": "boolean",
+					"default": "False",
+					"description": "If enabled, Icarus Verilog will be ran at the file location for linting. Else it will be run at workspace folder. Disabled by default."
 				}
 			}
 		}
