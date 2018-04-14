@@ -77,7 +77,7 @@
 				"verilog.linting.iverilog.runAtFileLocation": {
 					"scope": "window",
 					"type": "boolean",
-					"default": "False",
+					"default": false,
 					"description": "If enabled, Icarus Verilog will be ran at the file location for linting. Else it will be run at workspace folder. Disabled by default."
 				}
 			}

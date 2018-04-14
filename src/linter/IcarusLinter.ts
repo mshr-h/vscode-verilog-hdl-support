@@ -1,41 +1,39 @@
 import {workspace, window, Disposable, Range, TextDocument, Diagnostic, DiagnosticSeverity, DiagnosticCollection, languages} from "vscode";
 import * as child from 'child_process';
 import BaseLinter from "./BaseLinter";
-// import { error } from "util";
 
 var isWindows = process.platform === "win32";
 
 export default class IcarusLinter extends BaseLinter {
     private iverilogArgs: string;
+    private runAtFileLocation: boolean;
 
     constructor() {
         super("iverilog");
 
         workspace.onDidChangeConfiguration(() => {
-            this.getArgs();
+            this.getConfig();
         })
-        this.getArgs();
+        this.getConfig();
     }
 
-    private getArgs() {
+    private getConfig() {
         this.iverilogArgs = <string>workspace.getConfiguration().get('verilog.linting.iverilog.arguments');
+        this.runAtFileLocation = <boolean>workspace.getConfiguration().get('verilog.linting.iverilog.runAtFileLocation')
     }
 
     protected lint(doc: TextDocument) {
-        let docUri = doc.uri.fsPath
-        let lastIndex = 0;
-        if(isWindows){
-            lastIndex = docUri.lastIndexOf("\\");
-        }
-        else {
-            lastIndex = docUri.lastIndexOf("/");
-        }
+        let docUri: string = doc.uri.fsPath
+        let lastIndex:number = (isWindows == true)? docUri.lastIndexOf("\\") : docUri.lastIndexOf("/");
+        // if(isWindows){
+        //     lastIndex = docUri.lastIndexOf("\\");
+        // }
+        // else {
+        //     lastIndex = docUri.lastIndexOf("/");
+        // }
         let docFolder = docUri.substr(0, lastIndex);
-        var foo: child.ChildProcess = child.exec('iverilog -t null' + this.iverilogArgs + ' ' + doc.fileName,{cwd:docFolder},(error:Error, stdout:string, stderr:string) => {
-            // let isWindows: boolean = false;
-            // if(doc.fileName[1] == ':'){
-            //     isWindows = true;
-            // }
+        let runLocation: string = (this.runAtFileLocation == true)? docFolder : workspace.rootPath;
+        var foo: child.ChildProcess = child.exec('iverilog -t null' + this.iverilogArgs + ' ' + doc.fileName,{cwd:runLocation},(error:Error, stdout:string, stderr:string) => {
             let diagnostics: Diagnostic[] = [];
             let lines = stderr.split(/\r?\n/g);
             lines.forEach((line, i) => {
