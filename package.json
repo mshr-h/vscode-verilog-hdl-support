@@ -60,7 +60,7 @@
 				"verilog.linting.linter": {
 					"scope": "window",
 					"type": "string",
-					"enum":[
+					"enum": [
 						"none",
 						"iverilog",
 						"none"
@@ -90,13 +90,11 @@
 		"update-vscode": "node ./node_modules/vscode/bin/install",
 		"postinstall": "node ./node_modules/vscode/bin/install"
 	},
-	"dependencies": {
-		"vscode": "^1.1.10"
-	},
+	"dependencies": {},
 	"devDependencies": {
 		"@types/mocha": "^2.2.45",
 		"@types/node": "^7.0.51",
-		"typescript": "^2.6.2",
-		"vscode": "^1.1.6"
+		"typescript": "^2.8.1",
+		"vscode": "^1.1.14"
 	}
 }
