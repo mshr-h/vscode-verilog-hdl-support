@@ -20,18 +20,21 @@ Verilog HDL support based on [https://github.com/textmate/verilog.tmbundle](http
         - Possible values are
             * `iverilog`
             * `xvlog`
-    * Icarus Verilog
+            * `none`
+    * Icarus Verilog (`iverilog`)
         - Make sure the path to your Icaurus Verilog installation is present in the `PATH` variable.
         - If your module references other designs from other .v files, use `` `include "module.v"`` syntax to include them in your design. IVerilog uses these `` `include "path/to/file.v"`` directives to refer those modules. The `path/to/file.v` should be relative to your workspace directory.
-        - Use `verilog.iverilog.arguments` setting to add custom arguments to the linter. The argument `-t null` will be added by the linter automatically
-    * xvlog(Vivado)
+        - Use `verilog.linting.iverilog.arguments` setting to add custom arguments to the linter. The argument `-t null` will be added by the linter automatically
+        - Use `verilog.linting.iverilog.runAtFileLocation` setting to run Icarus Verilog at the file location. By default, it will be run at workspace directory, requiring that `` `include`` directives contain file paths relative to the workspace directory.
+    * Xilinx Vivado Logical Simulation (`xvlog`)
 
 ### In progress
 - Icarus Verilog integration
     * Working in:
         - Windows: Yes
-            * Tested on Windows 10 Fall Creators Update (build 16299). Visual Studio Code 1.19.1
-        - Linux: Not Tested
+            * Tested on Windows 10 Fall Creators Update (build 16299). Visual Studio Code 1.20.1
+        - Linux: Yes
+            * Tested on Ubuntu 14.04. Visual Studio Code 1.20.1
         - macOS: Not Tested
 - xvlog(Vivado) integration
     * Working in:
