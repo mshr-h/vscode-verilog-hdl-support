@@ -25,15 +25,10 @@ export default class IcarusLinter extends BaseLinter {
     protected lint(doc: TextDocument) {
         let docUri: string = doc.uri.fsPath
         let lastIndex:number = (isWindows == true)? docUri.lastIndexOf("\\") : docUri.lastIndexOf("/");
-        // if(isWindows){
-        //     lastIndex = docUri.lastIndexOf("\\");
-        // }
-        // else {
-        //     lastIndex = docUri.lastIndexOf("/");
-        // }
         let docFolder = docUri.substr(0, lastIndex);
         let runLocation: string = (this.runAtFileLocation == true)? docFolder : workspace.rootPath;
-        var foo: child.ChildProcess = child.exec('iverilog -t null' + this.iverilogArgs + ' ' + doc.fileName,{cwd:runLocation},(error:Error, stdout:string, stderr:string) => {
+        let command: string = 'iverilog -t null ' + this.iverilogArgs + ' \"' + doc.fileName +'\"';
+        var foo: child.ChildProcess = child.exec(command,{cwd:runLocation},(error:Error, stdout:string, stderr:string) => {
             let diagnostics: Diagnostic[] = [];
             let lines = stderr.split(/\r?\n/g);
             lines.forEach((line, i) => {
