@@ -23,14 +23,15 @@ export default class IcarusLinter extends BaseLinter {
     }
 
     protected lint(doc: TextDocument) {
-        let docUri: string = doc.uri.fsPath
+        let docUri: string = doc.uri.fsPath     //path of current doc
         let lastIndex:number = (isWindows == true)? docUri.lastIndexOf("\\") : docUri.lastIndexOf("/");
-        let docFolder = docUri.substr(0, lastIndex);
-        let runLocation: string = (this.runAtFileLocation == true)? docFolder : workspace.rootPath;
-        let command: string = 'iverilog -t null ' + this.iverilogArgs + ' \"' + doc.fileName +'\"';
+        let docFolder = docUri.substr(0, lastIndex);    //folder of current doc
+        let runLocation: string = (this.runAtFileLocation == true)? docFolder : workspace.rootPath;     //choose correct location to run
+        let command: string = 'iverilog -t null ' + this.iverilogArgs + ' \"' + doc.fileName +'\"';     //command to execute
         var foo: child.ChildProcess = child.exec(command,{cwd:runLocation},(error:Error, stdout:string, stderr:string) => {
             let diagnostics: Diagnostic[] = [];
             let lines = stderr.split(/\r?\n/g);
+            // Parse output lines
             lines.forEach((line, i) => {
                 if(line.startsWith(doc.fileName)){
                     line = line.replace(doc.fileName, '');
