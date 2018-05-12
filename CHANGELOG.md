@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [0.3.1] - 2018-05-12
+### Fixed
+- Fixed [#16](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/16)
+
 ## [0.3.0] - 2018-05-01
 ### Added
 - Added CHANGELOG
