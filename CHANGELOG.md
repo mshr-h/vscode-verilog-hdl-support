@@ -1,7 +1,11 @@
-# Changelog
+# Verilog HDL Changelog
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+
+## Unreleased
+### Added
+- Show notification to view CHANGELOG when the extension gets updated [#14](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/14)
 
 ## [0.3.1] - 2018-05-12
 ### Fixed
