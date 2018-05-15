@@ -26,14 +26,10 @@ function checkIfUpdated(context: ExtensionContext) {
     let currVersion: string = extensions.getExtension(extensionID).packageJSON.version;
     let cv = currVersion.split('.').map(Number);
     // check if current version > previous version
-    if(pv[0] < cv[0])
-        showUpdatedNotif();
-    else {
-        if(pv[1] < cv[1])
+    for(let i = 0; i < pv.length; i++) {
+        if(pv[i] < cv[i]) {
             showUpdatedNotif();
-        else {
-            if(pv[2] < cv[2])
-                showUpdatedNotif();
+            break;
         }
     }
     // update the value
