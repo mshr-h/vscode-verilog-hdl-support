@@ -63,6 +63,7 @@
 					"enum": [
 						"xvlog",
 						"iverilog",
+						"modelsim",
 						"none"
 					],
 					"default": "none",

@@ -5,6 +5,7 @@ import {workspace, window, commands, Disposable, Range, ExtensionContext,
 import BaseLinter from "./linter/BaseLinter";
 import IcarusLinter from "./linter/IcarusLinter";
 import XvlogLinter from "./linter/XvlogLinter";
+import ModelsimLinter from "./linter/ModelsimLinter";
 
 let diagnosticCollection: DiagnosticCollection;
 var linter: BaseLinter;
@@ -28,6 +29,9 @@ function configLinter() {
             break;
         case "xvlog":
             linter = new XvlogLinter();
+            break;
+        case "modelsim":
+            linter = new ModelsimLinter();
             break;
         default:
             console.log("Invalid linter name.")
