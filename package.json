@@ -63,6 +63,7 @@
 					"enum": [
 						"xvlog",
 						"iverilog",
+						"modelsim",
 						"none"
 					],
 					"default": "none",
@@ -79,6 +80,12 @@
 					"type": "boolean",
 					"default": false,
 					"description": "If enabled, Icarus Verilog will be ran at the file location for linting. Else it will be run at workspace folder. Disabled by default."
+				},
+				"verilog.linting.modelsim.arguments": {
+					"scope": "window",
+					"type": "string",
+					"default": "",
+					"description": "Add Modelsim arguments here. They will be added to Modelsim while linting."
 				}
 			}
 		}
