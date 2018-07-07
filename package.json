@@ -39,6 +39,18 @@
 					".vl"
 				],
 				"configuration": "./verilog.configuration.json"
+			},
+			{
+				"id": "systemverilog",
+				"aliases": [
+					"System Verilog",
+					"systemverilog"
+				],
+				"extensions": [
+					".sv",
+					".SV"
+				],
+				"configuration": "./systemverilog.configuration.json"
 			}
 		],
 		"grammars": [
@@ -46,12 +58,21 @@
 				"language": "verilog",
 				"scopeName": "source.verilog",
 				"path": "./syntaxes/verilog.tmLanguage"
+			},
+			{
+				"language": "systemverilog",
+				"scopeName": "source.systemverilog",
+				"path": "./syntaxes/systemverilog.tmLanguage"
 			}
 		],
 		"snippets": [
 			{
 				"language": "verilog",
 				"path": "./snippets/verilog.json"
+			},
+			{
+				"language": "systemverilog",
+				"path": "./snippets/systemverilog.json"
 			}
 		],
 		"configuration": {
