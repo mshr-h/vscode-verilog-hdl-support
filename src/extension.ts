@@ -7,16 +7,33 @@ import BaseLinter from "./linter/BaseLinter";
 import IcarusLinter from "./linter/IcarusLinter";
 import XvlogLinter from "./linter/XvlogLinter";
 import ModelsimLinter from "./linter/ModelsimLinter";
+import * as hover from "./hover";
 
-let diagnosticCollection: DiagnosticCollection;
+//let diagnosticCollection: DiagnosticCollection;
 var linter: BaseLinter;
 let extensionID: string = "mshr-h.veriloghdl";
 
 export function activate(context: ExtensionContext) {
     console.log('"verilog-hdl" is now active!');
+
+    // Check if the Extension was updated recently
     checkIfUpdated(context);
+
+    // Configure linter
     workspace.onDidChangeConfiguration(configLinter, this, context.subscriptions);
     configLinter();
+
+    // Configure Hover Provider - SystemVerilog
+    let disposable = languages.registerHoverProvider('systemverilog',
+        new hover.HoverProvider('systemverilog')
+    );
+    context.subscriptions.push(disposable);
+
+    // Configure Hover Provider - Verilog
+    disposable = languages.registerHoverProvider('verilog',
+        new hover.HoverProvider('verilog')
+    );
+    context.subscriptions.push(disposable);
 }
 
 function checkIfUpdated(context: ExtensionContext) {
