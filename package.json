@@ -13,7 +13,7 @@
 		"url": "https://github.com/mshr-h/vscode-verilog-hdl-support/issues"
 	},
 	"engines": {
-		"vscode": "^1.19.3"
+		"vscode": "^1.25.0"
 	},
 	"categories": [
 		"Programming Languages",
@@ -108,6 +108,12 @@
 					"type": "string",
 					"default": "",
 					"description": "Add Modelsim arguments here. They will be added to Modelsim while linting."
+				},
+				"verilog.ctags.path": {
+					"scope": "window",
+					"type": "string",
+					"default": "ctags",
+					"description": "A path to the insallation of Universal Ctags"
 				}
 			}
 		}

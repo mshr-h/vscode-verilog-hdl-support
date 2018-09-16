@@ -1,13 +1,12 @@
 'use strict';
 
-import {workspace, window, commands, Disposable, Range, ExtensionContext,
-        TextDocument, Diagnostic, DiagnosticSeverity, DiagnosticCollection,
-        languages, extensions, Selection, Uri} from "vscode";
+import {workspace, window, DocumentSelector, ExtensionContext, extensions, Uri, StatusBarAlignment, languages} from "vscode";
 import BaseLinter from "./linter/BaseLinter";
 import IcarusLinter from "./linter/IcarusLinter";
 import XvlogLinter from "./linter/XvlogLinter";
 import ModelsimLinter from "./linter/ModelsimLinter";
-import * as hover from "./hover";
+import {VerilogDocumentSymbolProvider} from "./providers/DocumentSymbolProvider";
+import * as hover from "./providers/hover";
 
 //let diagnosticCollection: DiagnosticCollection;
 var linter: BaseLinter;
@@ -15,6 +14,9 @@ let extensionID: string = "mshr-h.veriloghdl";
 
 export function activate(context: ExtensionContext) {
     console.log('"verilog-hdl" is now active!');
+    // document selector
+    let systemverilogSelector:DocumentSelector = { scheme: 'file', language: 'systemverilog' };
+    let verilogSelector:DocumentSelector = {scheme: 'file', language: 'verilog'};
 
     // Check if the Extension was updated recently
     checkIfUpdated(context);
@@ -23,17 +25,26 @@ export function activate(context: ExtensionContext) {
     workspace.onDidChangeConfiguration(configLinter, this, context.subscriptions);
     configLinter();
 
-    // Configure Hover Provider - SystemVerilog
-    let disposable = languages.registerHoverProvider('systemverilog',
-        new hover.HoverProvider('systemverilog')
-    );
-    context.subscriptions.push(disposable);
+    // Show status bar item
+    createStatusBarItem();
+    //context.subscriptions.push(commands.registerCommand('systemverilog.build_index', rebuild));
 
-    // Configure Hover Provider - Verilog
-    disposable = languages.registerHoverProvider('verilog',
-        new hover.HoverProvider('verilog')
-    );
-    context.subscriptions.push(disposable);
+    // Configure Document Symbol Provider
+    let docProvider = new VerilogDocumentSymbolProvider();
+    context.subscriptions.push(languages.registerDocumentSymbolProvider(systemverilogSelector, docProvider));
+    context.subscriptions.push(languages.registerDocumentSymbolProvider(verilogSelector, docProvider));
+
+    // Configure Hover Provider - SystemVerilog
+    // let disposable = languages.registerHoverProvider('systemverilog',
+    //     new hover.HoverProvider('systemverilog')
+    // );
+    // context.subscriptions.push(disposable);
+
+    // // Configure Hover Provider - Verilog
+    // disposable = languages.registerHoverProvider('verilog',
+    //     new hover.HoverProvider('verilog')
+    // );
+    // context.subscriptions.push(disposable);
 }
 
 function checkIfUpdated(context: ExtensionContext) {
@@ -95,6 +106,12 @@ function configLinter() {
     }
 }
 
+function createStatusBarItem() {
+    let statusBar = window.createStatusBarItem(StatusBarAlignment.Left, 0)
+    statusBar.text = 'SystemVerilog: Active'
+    statusBar.show()
+    statusBar.command = 'systemverilog.build_index';
+}
 
 export function deactivate() {
 }
