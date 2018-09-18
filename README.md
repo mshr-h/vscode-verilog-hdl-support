@@ -20,6 +20,7 @@ Verilog HDL support based on [https://github.com/textmate/verilog.tmbundle](http
         - Possible values are
             * `iverilog`
             * `xvlog`
+            * `modelsim`
             * `none`
     * Icarus Verilog (`iverilog`)
         - Make sure the path to your Icaurus Verilog installation is present in the `PATH` variable.
@@ -27,6 +28,12 @@ Verilog HDL support based on [https://github.com/textmate/verilog.tmbundle](http
         - Use `verilog.linting.iverilog.arguments` setting to add custom arguments to the linter. The argument `-t null` will be added by the linter automatically
         - Use `verilog.linting.iverilog.runAtFileLocation` setting to run Icarus Verilog at the file location. By default, it will be run at workspace directory, requiring that `` `include`` directives contain file paths relative to the workspace directory.
     * Xilinx Vivado Logical Simulation (`xvlog`)
+    * ModelSim (`modelsim`)
+        - Make sure the path to "vlog" executable file is present in the `PATH` variable.
+        - Use filepath relative to the workspace directory in `` `include `` directives.
+        - The "work" library of Modelsim should be present in the workspace directory.
+            * If not already present, create the work library in the workspace directory by running `vlib work`.
+        - Use `verilog.linting.modelsim.arguments` setting to add custom arguments to the linter.
 
 ### In progress
 - Icarus Verilog integration
@@ -40,6 +47,11 @@ Verilog HDL support based on [https://github.com/textmate/verilog.tmbundle](http
     * Working in:
         - Windows: Yes
         - Ubuntu: Not Tested (Will be tested soon)
+        - macOS: Not Tested
+- Modelsim integration
+    * Working in:
+        - Windows: Yes
+        - Linux: Not Tested
         - macOS: Not Tested
 
 ### In the future

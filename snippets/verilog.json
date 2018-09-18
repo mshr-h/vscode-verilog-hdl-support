@@ -1,12 +1,148 @@
 {
+	"filehead":{
+		"prefix": "desc",
+		"body": [
+			"//-----------------------------------------------------------------------------",
+			"// Title         : ${TM_FILENAME_BASE}",
+			"// Project       : ${1:*Insert project name here*}",
+			"//-----------------------------------------------------------------------------",
+			"// File          : ${TM_FILENAME}",
+			"// Author        : ${2:*Insert author here*}",
+			"// Created       : ${CURRENT_DATE}.${CURRENT_MONTH}.${CURRENT_YEAR}",
+			"// Last modified : ${CURRENT_DATE}.${CURRENT_MONTH}.${CURRENT_YEAR}",
+			"//-----------------------------------------------------------------------------",
+			"// Description :",
+			"// ",
+			"//-----------------------------------------------------------------------------",
+			"// Copyright (c) ${CURRENT_YEAR} by $2. All rights reserved.",
+			"//------------------------------------------------------------------------------",
+			"// Modification history :",
+			"// ${CURRENT_DATE}.${CURRENT_MONTH}.${CURRENT_YEAR} : created",
+			"//-----------------------------------------------------------------------------"
+
+		],
+		"description": "filename: ... author: ... "
+	},
+	"statemachine":{
+		"prefix": "sm3",
+		"body": [
+			"//********************************************************************************",
+  			"// state machine control", 
+  			"//********************************************************************************",
+
+  			"//----------------------------------------",
+  			"// state enumeration",
+  			"`define SM_ENUM_BITS 4",
+  			"parameter [`SM_ENUM_BITS-1:0] // synopsys enum state_info",
+  			"SM_IDLE = `SM_ENUM_BITS'h0,",
+  			"SM_${1:STATE1} = `SM_ENUM_BITS'h1,",
+			"SM_${2:STATE2} = `SM_ENUM_BITS'h2,",
+			"SM_${3:STATE3} = `SM_ENUM_BITS'h3,",
+			"SM_${4:STATE4} = `SM_ENUM_BITS'h4,",
+			"SM_STATE_FINAL = `SM_ENUM_BITS'h5",
+			"//----------------------------------------",
+			"// state variables",
+			"reg [`SM_ENUM_BITS-1:0]\tst_cur;", 
+			"reg [`SM_ENUM_BITS-1:0]\tst_next;",
+			"//----------------------------------------",
+			"//********************************************************************************",
+			"// state machine logic",
+			"//********************************************************************************",
+			"always @ ( posedge clk or posedge rst ) begin",
+			"\tif( rst )begin", 
+			"\t\tst_cur <= SM_IDLE;", 
+			"\tend",
+			"\telse begin",
+			"\t\tst_cur <= st_next;",
+			"\tend",
+			"end\n",
+
+			"always @ (*) begin",
+			"\tif( rst )begin",  
+			"\t\tst_next = SM_IDLE;", 
+			"\tend",
+			"\telse begin",
+			"\t\tcase (st_cur)",
+			"\t\t\tSM_IDLE: begin",  
+			"\t\t\t\tif(${5:flag})begin",
+			"\t\t\t\t\tst_next=SM_${1:STATE1}", 
+			"\t\t\t\tend else begin",
+			"\t\t\t\t\tst_next=SM_IDLE", 
+			"\t\t\t\tend", 
+			"\t\t\tend", 
+			"\t\t\tSM_${1:STATE1}: begin", 
+			"\t\t\t\t",   
+			"\t\t\tend", 
+			"\t\t\tSM_${2:STATE2}: begin",  
+			"\t\t\t\t",  
+			"\t\t\tend", 
+			"\t\t\tSM_${3:STATE3}: begin",  
+			"\t\t\t\t",  
+			"\t\t\tend", 
+			"\t\t\tSM_${4:STATE4}: begin",  
+			"\t\t\t\t",  
+			"\t\t\tend", 
+			"\t\t\tSM_STATE_FINAL: begin",  
+			"\t\t\t\t",  
+			"\t\t\tend",  
+			"\t\t\tdefault: begin",
+			"\t\t\t\tst_next = STR_IDLE;",
+			"\t\t\tend",
+			"\t\tendcase", 
+			"\tend",
+			"end\n",
+
+			"always @ ( posedge clk or posedge rst ) begin",
+			"\tif( rst )begin",  
+			"\t\t/*RESET*/",
+			"\tend",
+			"\telse begin",
+			"\t\tcase (st_next) ",
+			"\t\t\tSM_IDLE: begin",   
+			"\t\t\t\t",  
+			"\t\t\tend", 
+			"\t\t\tSM_${1:STATE1}: begin",  
+			"\t\t\t\t",  
+			"\t\t\tend", 
+			"\t\t\tSM_${2:STATE2}: begin", 
+			"\t\t\t\t",   
+			"\t\t\tend", 
+			"\t\t\tSM_${3:STATE3}: begin",  
+			"\t\t\t\t",  
+			"\t\t\tend", 
+			"\t\t\tSM_${4:STATE4}: begin", 
+			"\t\t\t\t",   
+			"\t\t\tend", 
+			"\t\t\tSM_STATE_FINAL: begin",  
+			"\t\t\t\t",  
+			"\t\t\tend",  
+			"\t\t\tdefault: begin ",
+			"\t\t\t\t",  
+			"\t\t\tend",
+			"\t\tendcase ", 
+			"\tend",
+			"end", 
+			"// End of state machine logic"
+
+		],
+		"description": "st_cur...st_next..."
+	},
 	"module": {
 		"prefix": "mod",
 		"body": [
 			"module $1(",
 			"  $2",
 			");",
-			"$3",
-			"endmodule // $1"
+			    "//--------------------------------------------------------------------------------",
+				"// register and wire declaration for output ports",
+				"//--------------------------------------------------------------------------------\n\n", 
+				"//--------------------------------------------------------------------------------",
+				"// register and wire declaration for internal signals",
+				"//--------------------------------------------------------------------------------\n\n", 
+				"//********************************************************************************",
+				"// functional block start",
+				"//********************************************************************************\n\n",
+			"endmodule // end of module $1"
 		],
 		"description": "module ... endmodule"
 	},
@@ -14,7 +150,7 @@
 		"prefix": "al",
 		"body": [
 			"always @($1) begin",
-			"  $2",
+			"\t$2",
 			"end"
 		],
 		"description": "always @()"
@@ -22,8 +158,8 @@
 	"alwaysposclk": {
 		"prefix": "alclk",
 		"body": [
-			"always @(posedge clk $1) begin",
-			"  $2",
+			"always @(posedge clk ${1| ,or posedge rst,or negedge rst_n|}) begin",
+			"\t${2}",
 			"end"
 		],
 		"description": "always @(posedge clk)"
@@ -32,7 +168,7 @@
 		"prefix": "beginend",
 		"body": [
 			"begin",
-			"  $1",
+			"\t$1",
 			"end"
 		],
 		"description": "begin ... end"
@@ -41,8 +177,8 @@
 		"prefix": "case",
 		"body": [
 			"case ($1)",
-			"  $2: $3",
-			"  default: $4",
+			"\t$2: $3",
+			"\tdefault: $4",
 			"endcase"
 		],
 		"description": "case () ... endcase"
@@ -50,35 +186,35 @@
 	"reg": {
 		"prefix": "reg",
 		"body": [
-			"reg $1;"
+			"reg\t$1;"
 		],
 		"description": "reg reg_name;"
 	},
 	"regarray": {
 		"prefix": "rega",
 		"body": [
-			"reg [$1:$2] $3;"
+			"reg\t[$1:$2]\t$3;"
 		],
 		"description": "reg [N:0] reg_name;"
 	},
 	"regmemory": {
 		"prefix": "regm",
 		"body": [
-			"reg [$1:$2] $3 [$4:$5];"
+			"reg\t[$1:$2]\t$3\t[$4:$5];"
 		],
 		"description": "reg [N:0] reg_name [0:M];"
 	},
 	"wire": {
 		"prefix": "wire",
 		"body": [
-			"wire $1;"
+			"wire\t$1;"
 		],
 		"description": "wire wire_name;"
 	},
 	"wirearray": {
 		"prefix": "wirea",
 		"body": [
-			"wire [$1:$2] $3;"
+			"wire\t[$1:$2]\t$3;"
 		],
 		"description": "wire [N:0] wire_name;"
 	},
@@ -92,14 +228,14 @@
 	"define": {
 		"prefix": "def",
 		"body": [
-			"`def $1 = $2"
+			"`define $1 = $2"
 		],
 		"description": "`define var = val"
 	},
 	"parameter": {
 		"prefix": "param",
 		"body": [
-			"parameter $1 = $2;"
+			"parameter\t$1 = $2;"
 		],
 		"description": "paramter var = val;"
 	},
@@ -114,7 +250,7 @@
 		"prefix": "if",
 		"body": [
 			"if ($1) begin",
-			"  $2",
+			"\t$2",
 			"end"
 		],
 		"description": "if (...) begin ... end"
@@ -123,9 +259,9 @@
 		"prefix": "ifelse",
 		"body": [
 			"if ($1) begin",
-			"  $2",
+			"\t$2",
 			"end else begin",
-			"  $3",
+			"\t$3",
             "end"
 		],
 		"description": "if (...) begin ... end else begin ... end"
@@ -134,7 +270,7 @@
 		"prefix": "for",
 		"body": [
 			"for ($1 = $2; $3; $4) begin",
-			"  $5",
+			"\t$5",
 			"end"
 		],
 		"description": "for (...) begin ... end"
@@ -143,7 +279,7 @@
 		"prefix": "while",
 		"body": [
 			"while ($1) begin",
-			"  $2",
+			"\t$2",
 			"end"
 		],
 		"description": "while (...) begin ... end"
@@ -152,8 +288,8 @@
 		"prefix": "func",
 		"body": [
 			"function $1;",
-			"  $2;",
-			"  $3",
+			"\t$2;",
+			"\t$3",
 			"endfunction"
 		],
 		"description": "function (...) ... endfunction"

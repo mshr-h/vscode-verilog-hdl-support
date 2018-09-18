@@ -3,6 +3,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Unreleased
+### Nothing
+
+## [0.3.4] - 2018-09.18
+### Added
+- Added "sm3" command to generate 3-level state machine
+- Added "desc" command to generate file description
+### Changed
+- Replace some space with '\t'
+- Added some comment to "mod" command;
+
+
+## [0.3.3] - 2018-07.01
+### Added
+- Added support for **Modelsim** linter
+
 ## [0.3.2] - 2018-05-15
 ### Added
 - Show notification to view CHANGELOG when the extension gets updated [#14](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/14)
