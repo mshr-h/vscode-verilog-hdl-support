@@ -63,11 +63,12 @@
 					"enum": [
 						"xvlog",
 						"iverilog",
+						"verilator",
 						"modelsim",
 						"none"
 					],
 					"default": "none",
-					"description": "Select the verilog linter. Possible values are 'iverilog', 'xvlog' or 'none'"
+					"description": "Select the verilog linter. Possible values are 'iverilog', 'verilator', xvlog' or 'none'"
 				},
 				"verilog.linting.iverilog.arguments": {
 					"scope": "window",

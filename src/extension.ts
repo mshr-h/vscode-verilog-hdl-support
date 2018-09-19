@@ -5,6 +5,7 @@ import {workspace, window, commands, Disposable, Range, ExtensionContext,
         languages, extensions, Selection, Uri} from "vscode";
 import BaseLinter from "./linter/BaseLinter";
 import IcarusLinter from "./linter/IcarusLinter";
+import VerilatorLinter from "./linter/VerilatorLinter";
 import XvlogLinter from "./linter/XvlogLinter";
 import ModelsimLinter from "./linter/ModelsimLinter";
 
@@ -65,6 +66,9 @@ function configLinter() {
             break;
         case "modelsim":
             linter = new ModelsimLinter();
+            break;
+        case "verilator":
+            linter = new VerilatorLinter();
             break;
         default:
             console.log("Invalid linter name.")
