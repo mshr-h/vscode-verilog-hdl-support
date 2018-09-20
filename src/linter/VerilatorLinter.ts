@@ -71,25 +71,32 @@ export default class VerilatorLinter extends BaseLinter {
                 if(line.startsWith('%')){
                     // remove the %
                     line = line.substr(1)
-                    // remove the filename 
-                    line = line.replace(doc.fileName, '');
-                    line = line.replace(/\s+/g,' ').trim();
-                    
-                    let terms = this.splitTerms(line);
-                    let severity = this.getSeverity(terms[0]);
-                    let message = terms.slice(2).join(' ')
-                    let lineNum = parseInt(terms[1].trim()) - 1;
-                    
-                    console.log(terms[1].trim() + ' ' + message);
 
-                    diagnostics.push({
-                        severity: severity,
-                        range:new Range(lineNum, 0, lineNum, Number.MAX_VALUE),
-                        message: message,
-                        code: 'verilator',
-                        source: 'verilator'
-                    });
-                                        
+                    // was it for a submodule
+                    if (line.search(doc.fileName) > 0)
+                    {
+                        // remove the filename 
+                        line = line.replace(doc.fileName, '');
+                        line = line.replace(/\s+/g,' ').trim();
+                        
+                        let terms = this.splitTerms(line);
+                        let severity = this.getSeverity(terms[0]);
+                        let message = terms.slice(2).join(' ')
+                        let lineNum = parseInt(terms[1].trim()) - 1;
+
+                        if (lineNum != NaN)
+                        {                    
+                            console.log(terms[1].trim() + ' ' + message);
+
+                            diagnostics.push({
+                                severity: severity,
+                                range:new Range(lineNum, 0, lineNum, Number.MAX_VALUE),
+                                message: message,
+                                code: 'verilator',
+                                source: 'verilator'
+                            });      
+                        }
+                    }
                 }
             })
             this.diagnostic_collection.set(doc.uri, diagnostics)

@@ -21,6 +21,7 @@ Verilog HDL support based on [https://github.com/textmate/verilog.tmbundle](http
             * `iverilog`
             * `xvlog`
             * `modelsim`
+            * `verilator`
             * `none`
     * Icarus Verilog (`iverilog`)
         - Make sure the path to your Icaurus Verilog installation is present in the `PATH` variable.
@@ -34,7 +35,10 @@ Verilog HDL support based on [https://github.com/textmate/verilog.tmbundle](http
         - The "work" library of Modelsim should be present in the workspace directory.
             * If not already present, create the work library in the workspace directory by running `vlib work`.
         - Use `verilog.linting.modelsim.arguments` setting to add custom arguments to the linter.
-
+    * Verilator (`verilator`)
+        - Make sure the path to "verilator" executable file is present in the `PATH` variable.
+        - Use `verilog.linting.verilator.arguments` setting to add custom arguments to the linter. The argument `--lint-only -I<document folder>` will be added by the linter automatically
+        - Use `verilog.linting.verilator.runAtFileLocation` setting to run Verilator at the file location. By default, it will be run at workspace directory, requiring that `` `include`` directives contain file paths relative to the workspace directory.
 ### In progress
 - Icarus Verilog integration
     * Working in:
@@ -52,6 +56,13 @@ Verilog HDL support based on [https://github.com/textmate/verilog.tmbundle](http
     * Working in:
         - Windows: Yes
         - Linux: Not Tested
+        - macOS: Not Tested
+- Verilator integration
+    * Working in:
+        - Windows: Not Tested
+            * There are no available windows binaries to
+        - Linux: Yes
+            * Tested on Debian 9. Visual Studio Code 1.26.1
         - macOS: Not Tested
 
 ### In the future
