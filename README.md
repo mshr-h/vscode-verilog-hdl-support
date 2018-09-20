@@ -60,7 +60,7 @@ Verilog HDL support based on [https://github.com/textmate/verilog.tmbundle](http
 - Verilator integration
     * Working in:
         - Windows: Not Tested
-            * There are no available windows binaries to
+            * There are no available windows binaries to test with.
         - Linux: Yes
             * Tested on Debian 9. Visual Studio Code 1.26.1
         - macOS: Not Tested
