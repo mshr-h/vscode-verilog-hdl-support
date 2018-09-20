@@ -3,6 +3,7 @@
 import {workspace, window, DocumentSelector, ExtensionContext, extensions, Uri, StatusBarAlignment, languages} from "vscode";
 import BaseLinter from "./linter/BaseLinter";
 import IcarusLinter from "./linter/IcarusLinter";
+import VerilatorLinter from "./linter/VerilatorLinter";
 import XvlogLinter from "./linter/XvlogLinter";
 import ModelsimLinter from "./linter/ModelsimLinter";
 import {VerilogDocumentSymbolProvider} from "./providers/DocumentSymbolProvider";
@@ -93,6 +94,9 @@ function configLinter() {
             break;
         case "modelsim":
             linter = new ModelsimLinter();
+            break;
+        case "verilator":
+            linter = new VerilatorLinter();
             break;
         default:
             console.log("Invalid linter name.")
