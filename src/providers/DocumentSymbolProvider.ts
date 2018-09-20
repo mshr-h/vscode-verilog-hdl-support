@@ -37,6 +37,38 @@ export function getSymbolKind(name: String): SymbolKind {
     */
 }
 
+export function isContainer(type: SymbolKind) : boolean {
+    switch(type) {
+        case SymbolKind.Array:
+        case SymbolKind.Boolean:
+        case SymbolKind.Constant:
+        case SymbolKind.EnumMember:
+        case SymbolKind.Event:
+        case SymbolKind.Field:
+        case SymbolKind.Key:
+        case SymbolKind.Null:
+        case SymbolKind.Number:
+        case SymbolKind.Object:
+        case SymbolKind.Property:
+        case SymbolKind.String:
+        case SymbolKind.TypeParameter:
+        case SymbolKind.Variable:
+            return false
+        case SymbolKind.Class:
+        case SymbolKind.Constructor:
+        case SymbolKind.Enum:
+        case SymbolKind.File:
+        case SymbolKind.Function:
+        case SymbolKind.Interface:
+        case SymbolKind.Method:
+        case SymbolKind.Module:
+        case SymbolKind.Namespace:
+        case SymbolKind.Package:
+        case SymbolKind.Struct:
+            return true
+    }
+}
+
 // Store the starting index of each line
 let symbolsList : Symbol [] = [];
 
@@ -48,27 +80,26 @@ class Symbol {
     endPosition: Position;
     parentScope: string;
     parentType: string;
-    isContainer: boolean;
     isValid: boolean;
-    constructor(name: string, type: string, startPosition: Position, parentScope: string, parentType: string, endPosition: Position, isValid: boolean) {
+    constructor(name: string, type: string, startLine: number, parentScope: string, parentType: string, endLine?: number, isValid?: boolean) {
         this.name = name;
         this.type = type;
-        this.startPosition = startPosition;
+        this.startPosition = new Position(startLine, 0);
         this.parentScope = parentScope;
         this.parentType = parentType;
         this.isValid = isValid;
-        this.endPosition = endPosition;
+        this.endPosition = new Position(endLine, Number.MAX_VALUE);
     }
 
-    setEndPosition(endPosition: Position) {
-        this.endPosition = endPosition;
+    setEndPosition(endLine: number) {
+        this.endPosition = new Position(endLine, Number.MAX_VALUE);
         this.isValid = true;
     }
 
     getDocumentSymbol() : DocumentSymbol {
         let range = new Range(this.startPosition, this.endPosition);
-        let selectionRange = new Range(this.startPosition, new Position(this.endPosition.line, this.endPosition.character - 1));
-        return new DocumentSymbol(this.name, this.type, getSymbolKind(this.type), range, selectionRange);
+//        let selectionRange = new Range(this.startPosition, new Position(this.endPosition.line, this.endPosition.character - 1));
+        return new DocumentSymbol(this.name, this.type, getSymbolKind(this.type), range, range);
     }
 }
 
@@ -78,7 +109,7 @@ class Symbol {
 function findContainer(con:DocumentSymbol, sym: DocumentSymbol) : boolean {
     let res:boolean = false;
     for(let i of con.children) {
-        if(i.range.contains(sym.range)) {
+        if(isContainer(i.kind) && i.range.contains(sym.range)) {
             res = findContainer(i, sym);
             if(res) return true;
         }
@@ -89,13 +120,13 @@ function findContainer(con:DocumentSymbol, sym: DocumentSymbol) : boolean {
     }
 }
 
-/*
+
 // Build heiarchial DocumentSymbol[] from linear symbolsList[]
-function buildDocumentSymbolList() : DocumentSymbol[] {
+function buildDocumentSymbolList(symbolsList : Symbol []) : DocumentSymbol[] {
     let list : DocumentSymbol [] = [];
     symbolsList = symbolsList.sort((a,b) : number => {
-        if(a.startLine < b.startLine) return -1;
-        if(a.startLine > b.startLine) return 1;
+        if(a.startPosition.isBefore(b.startPosition)) return -1;
+        if(a.startPosition.isAfter(b.startPosition)) return 1;
         return 0;
     })
     // Add each of the symbols in order
@@ -110,7 +141,7 @@ function buildDocumentSymbolList() : DocumentSymbol[] {
             // find a parent among the top level element
             let done : boolean;
             for(let j of list) {
-                if(j.range.contains(sym.range)) {
+                if(isContainer(j.kind) && j.range.contains(sym.range)) {
                     findContainer(j, sym);
                     done = true;
                     break;
@@ -123,7 +154,7 @@ function buildDocumentSymbolList() : DocumentSymbol[] {
     }
 
     return list;
-}*/
+}
 
 export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
 
@@ -132,14 +163,14 @@ export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
 
     provideDocumentSymbols(document: TextDocument, token: CancellationToken): Thenable<DocumentSymbol[]> {
         return new Promise((resolve, reject) => {
-            // if(document.isDirty)
-            //     return;
+            if(document.isDirty)
+                reject();
             let symbols: Symbol [] = [];
             let ctags: string = <string>workspace.getConfiguration().get('verilog.ctags.path');
             let command: string = ctags + ' -f - --fields=+nK --sort=no "' + document.uri.fsPath + '"';
             console.log(command);
             var cmd: child.ChildProcess = child.exec(command, (error:Error, stdout:string, stderr:string) => {
-                // console.log(stdout);
+                try {
                 if(stdout == '')
                 return;
                 let lines: string [] = stdout.split('\r\n');
@@ -162,20 +193,20 @@ export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
                         parentType = '';
                     }
                     lineNoStr = parts[4];
-                    lineNo = <number>((lineNoStr.split(':'))[1]);
-                    symbols.push(new Symbol(name, type, new Position(lineNo, 0), parentScope, parentType, new Position(lineNo, Number.MAX_VALUE), true));
+                    lineNo = Number((lineNoStr.split(':'))[1]) - 1;
+                    symbols.push(new Symbol(name, type, lineNo, parentScope, parentType, lineNo, false));
                 });
 
-/*                let match;
+                let match;
                 let endPosition;
                 let text = document.getText();
-                // end tags
+                // end tags are not supported yet in ctags. So, using regex
                 while(match = this.eRegex.exec(text)) {
-                    if(match) {
+                    if(match && typeof match[1] !== 'undefined') {
                         endPosition = document.positionAt(match.index + match[0].length - 1);
                         // get the starting symbols of the same type
-                        if(typeof match[1] !== 'undefined') {
-                            let s = symbols.filter(i => i.type === match[1] && i.startPosition.isBeforeOrEqual(endPosition) && !i.isValid);
+                        let s = symbols.filter(i => i.type === match[1] && i.startPosition.isBefore(endPosition) && !i.isValid);
+                        if(s.length > 0) {
                             // get the symbol nearest to the end tag
                             let max : Symbol = s[0];
                             for(let i = 0; i < s.length; i++) {
@@ -184,22 +215,15 @@ export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
                             for(let i of symbols) {
                                 if(i.name === max.name && i.startPosition.isEqual(max.startPosition) && i.type === max.type) {
                                     // i.setEndPosition(new Position(endPosition.line, Number.MAX_VALUE));
-                                    i.setEndPosition(endPosition);
+                                    i.setEndPosition(endPosition.line);
                                     break;
                                 }
                             }
                         }
                     }
                 }
-*/                console.log(symbols);
-                try {
-                let docSym : DocumentSymbol [] = [];
-                symbols.forEach(sym => {
-                    docSym.push(sym.getDocumentSymbol());
-                });
-
-                console.log(docSym);
-                resolve(docSym);
+                console.log(symbols);
+                resolve(buildDocumentSymbolList(symbols));
                 }
                 catch(e) {console.log(e);}
             })
