@@ -1,7 +1,7 @@
 import {DefinitionProvider, TextDocument, CancellationToken, Position, ProviderResult, DefinitionLink, Range} from 'vscode';
 import {Ctags, CtagsManager, Symbol} from '../ctags';
 
-export class VerilogDefinitionProvider implements DefinitionProvider {
+export default class VerilogDefinitionProvider implements DefinitionProvider {
 
     provideDefinition(document: TextDocument, position: Position, token: CancellationToken) : Promise<DefinitionLink[]> {
         return new Promise((resolve, reject) => {

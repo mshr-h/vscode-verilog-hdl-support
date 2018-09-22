@@ -6,10 +6,10 @@ import IcarusLinter from "./linter/IcarusLinter";
 import VerilatorLinter from "./linter/VerilatorLinter";
 import XvlogLinter from "./linter/XvlogLinter";
 import ModelsimLinter from "./linter/ModelsimLinter";
-import {VerilogDocumentSymbolProvider} from "./providers/DocumentSymbolProvider";
+import VerilogDocumentSymbolProvider from "./providers/DocumentSymbolProvider";
 import {CtagsManager} from "./ctags";
-import {VerilogHoverProvider} from "./providers/HoverProvider";
-import {VerilogDefinitionProvider} from "./providers/DefinitionProvider";
+import VerilogHoverProvider from "./providers/HoverProvider";
+import VerilogDefinitionProvider from "./providers/DefinitionProvider";
 
 var linter: BaseLinter;
 export let ctagsManager:CtagsManager = new CtagsManager;
@@ -30,10 +30,6 @@ export function activate(context: ExtensionContext) {
     // Configure linter
     workspace.onDidChangeConfiguration(configLinter, this, context.subscriptions);
     configLinter();
-
-    // Show status bar item
-    //createStatusBarItem();
-    //context.subscriptions.push(commands.registerCommand('systemverilog.build_index', rebuild));
 
     // Configure Document Symbol Provider
     let docProvider = new VerilogDocumentSymbolProvider();
@@ -112,13 +108,6 @@ function configLinter() {
     if (linter != null) {
         console.log("Using linter " + linter.name);
     }
-}
-
-function createStatusBarItem() {
-    let statusBar = window.createStatusBarItem(StatusBarAlignment.Left, 0)
-    statusBar.text = 'SystemVerilog: Active'
-    statusBar.show()
-    statusBar.command = 'systemverilog.build_index';
 }
 
 export function deactivate() {

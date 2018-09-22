@@ -2,7 +2,7 @@
 import {HoverProvider, TextDocument, Position, CancellationToken, Hover, window, Range, MarkdownString} from 'vscode';
 import {Ctags, CtagsManager, Symbol} from '../ctags';
 
-export class VerilogHoverProvider implements HoverProvider {
+export default class VerilogHoverProvider implements HoverProvider {
     // lang: verilog / systemverilog
     private lang: string;
 
