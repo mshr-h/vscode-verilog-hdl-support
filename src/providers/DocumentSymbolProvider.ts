@@ -1,7 +1,5 @@
-import {DocumentSymbolProvider, SymbolInformation, CancellationToken, TextDocument, Location, Position, SymbolKind, Range,
-    Event, EventEmitter, window, ProviderResult, DocumentSymbol, workspace} from 'vscode'
-import * as child from 'child_process';
-var isWindows = process.platform === "win32";
+import {DocumentSymbolProvider, CancellationToken, TextDocument, Position, SymbolKind, Range, DocumentSymbol, workspace, window, TextEdit, TextEditor} from 'vscode'
+import { Ctags, CtagsManager, Symbol } from '../ctags';
 
 export function getSymbolKind(name: String): SymbolKind {
     switch (name) {
@@ -69,39 +67,6 @@ export function isContainer(type: SymbolKind) : boolean {
     }
 }
 
-// Store the starting index of each line
-let symbolsList : Symbol [] = [];
-
-// Internal representation of a symbol
-class Symbol {
-    name: string;
-    type: string;
-    startPosition: Position;
-    endPosition: Position;
-    parentScope: string;
-    parentType: string;
-    isValid: boolean;
-    constructor(name: string, type: string, startLine: number, parentScope: string, parentType: string, endLine?: number, isValid?: boolean) {
-        this.name = name;
-        this.type = type;
-        this.startPosition = new Position(startLine, 0);
-        this.parentScope = parentScope;
-        this.parentType = parentType;
-        this.isValid = isValid;
-        this.endPosition = new Position(endLine, Number.MAX_VALUE);
-    }
-
-    setEndPosition(endLine: number) {
-        this.endPosition = new Position(endLine, Number.MAX_VALUE);
-        this.isValid = true;
-    }
-
-    getDocumentSymbol() : DocumentSymbol {
-        let range = new Range(this.startPosition, this.endPosition);
-//        let selectionRange = new Range(this.startPosition, new Position(this.endPosition.line, this.endPosition.character - 1));
-        return new DocumentSymbol(this.name, this.type, getSymbolKind(this.type), range, range);
-    }
-}
 
 // find the appropriate container RECURSIVELY and add to its childrem
 // return true: if done
@@ -120,7 +85,7 @@ function findContainer(con:DocumentSymbol, sym: DocumentSymbol) : boolean {
     }
 }
 
-
+// TODO: Use parentscope/parenttype of symbol to construct heirarchial DocumentSymbol []
 // Build heiarchial DocumentSymbol[] from linear symbolsList[]
 function buildDocumentSymbolList(symbolsList : Symbol []) : DocumentSymbol[] {
     let list : DocumentSymbol [] = [];
@@ -160,74 +125,28 @@ export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
 
     // end tags
     public eRegex: RegExp = /^(?![\r\n])\s*end(\w*)*[\s:]?/gm;
+    public docSymbols : DocumentSymbol [] = [];
 
     provideDocumentSymbols(document: TextDocument, token: CancellationToken): Thenable<DocumentSymbol[]> {
         return new Promise((resolve, reject) => {
-            if(document.isDirty)
-                reject();
             let symbols: Symbol [] = [];
-            let ctags: string = <string>workspace.getConfiguration().get('verilog.ctags.path');
-            let command: string = ctags + ' -f - --fields=+nK --sort=no "' + document.uri.fsPath + '"';
-            console.log(command);
-            var cmd: child.ChildProcess = child.exec(command, (error:Error, stdout:string, stderr:string) => {
-                try {
-                if(stdout == '')
-                return;
-                let lines: string [] = stdout.split('\r\n');
-                lines.forEach(line => {
-                    if(line == '')
-                        return;
-                    let name, type, lineNoStr, parentScope, parentType : string;
-                    let scope: string [];
-                    let lineNo: number;
-                    let parts: string [] = line.split('\t');
-                    name = parts[0];
-                    type = parts[3];
-                    if(parts.length == 6) {
-                        scope = parts[5].split(':');
-                        parentType = scope[0];
-                        parentScope = scope[1];
-                    }
-                    else {
-                        parentScope = '';
-                        parentType = '';
-                    }
-                    lineNoStr = parts[4];
-                    lineNo = Number((lineNoStr.split(':'))[1]) - 1;
-                    symbols.push(new Symbol(name, type, lineNo, parentScope, parentType, lineNo, false));
-                });
-
-                let match;
-                let endPosition;
-                let text = document.getText();
-                // end tags are not supported yet in ctags. So, using regex
-                while(match = this.eRegex.exec(text)) {
-                    if(match && typeof match[1] !== 'undefined') {
-                        endPosition = document.positionAt(match.index + match[0].length - 1);
-                        // get the starting symbols of the same type
-                        let s = symbols.filter(i => i.type === match[1] && i.startPosition.isBefore(endPosition) && !i.isValid);
-                        if(s.length > 0) {
-                            // get the symbol nearest to the end tag
-                            let max : Symbol = s[0];
-                            for(let i = 0; i < s.length; i++) {
-                                max = s[i].startPosition.isAfter(max.startPosition) ? s[i] : max;
-                            }
-                            for(let i of symbols) {
-                                if(i.name === max.name && i.startPosition.isEqual(max.startPosition) && i.type === max.type) {
-                                    // i.setEndPosition(new Position(endPosition.line, Number.MAX_VALUE));
-                                    i.setEndPosition(endPosition.line);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                console.log(symbols);
-                resolve(buildDocumentSymbolList(symbols));
-                }
-                catch(e) {console.log(e);}
-            })
+            console.log("symbol provider");
+            let activeDoc : TextDocument = window.activeTextEditor.document;
+            if(CtagsManager.ctags.doc === undefined || CtagsManager.ctags.doc.uri.fsPath !== activeDoc.uri.fsPath)
+                CtagsManager.ctags.setDocument(activeDoc);
+            let ctags : Ctags = CtagsManager.ctags;
+            if(ctags.isDirty) {
+                ctags.index()
+                .then(() => {
+                    symbols = ctags.symbols;
+                    console.log(symbols);
+                    this.docSymbols =  buildDocumentSymbolList(symbols);
+                    resolve(this.docSymbols);
+                })
+            }
+            else {
+                    resolve(this.docSymbols);
+            }
         })
     }
-
 }

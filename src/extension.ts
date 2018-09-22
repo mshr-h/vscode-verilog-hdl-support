@@ -1,17 +1,18 @@
 'use strict';
 
-import {workspace, window, DocumentSelector, ExtensionContext, extensions, Uri, StatusBarAlignment, languages} from "vscode";
+import {workspace, window, DocumentSelector, ExtensionContext, extensions, Uri, StatusBarAlignment, languages, TextDocument} from "vscode";
 import BaseLinter from "./linter/BaseLinter";
 import IcarusLinter from "./linter/IcarusLinter";
 import VerilatorLinter from "./linter/VerilatorLinter";
 import XvlogLinter from "./linter/XvlogLinter";
 import ModelsimLinter from "./linter/ModelsimLinter";
 import {VerilogDocumentSymbolProvider} from "./providers/DocumentSymbolProvider";
+import {CtagsManager} from "./ctags";
 import * as hover from "./providers/hover";
 
-//let diagnosticCollection: DiagnosticCollection;
 var linter: BaseLinter;
-let extensionID: string = "mshr-h.veriloghdl";
+export let ctagsManager:CtagsManager = new CtagsManager;
+var extensionID: string = "mshr-h.veriloghdl";
 
 export function activate(context: ExtensionContext) {
     console.log('"verilog-hdl" is now active!');
@@ -22,12 +23,15 @@ export function activate(context: ExtensionContext) {
     // Check if the Extension was updated recently
     checkIfUpdated(context);
 
+    // Configure ctags
+    ctagsManager.configure();
+
     // Configure linter
     workspace.onDidChangeConfiguration(configLinter, this, context.subscriptions);
     configLinter();
 
     // Show status bar item
-    createStatusBarItem();
+    //createStatusBarItem();
     //context.subscriptions.push(commands.registerCommand('systemverilog.build_index', rebuild));
 
     // Configure Document Symbol Provider
