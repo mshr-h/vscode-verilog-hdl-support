@@ -8,7 +8,7 @@ import XvlogLinter from "./linter/XvlogLinter";
 import ModelsimLinter from "./linter/ModelsimLinter";
 import {VerilogDocumentSymbolProvider} from "./providers/DocumentSymbolProvider";
 import {CtagsManager} from "./ctags";
-import * as hover from "./providers/hover";
+import {VerilogHoverProvider} from "./providers/HoverProvider";
 
 var linter: BaseLinter;
 export let ctagsManager:CtagsManager = new CtagsManager;
@@ -39,17 +39,10 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(languages.registerDocumentSymbolProvider(systemverilogSelector, docProvider));
     context.subscriptions.push(languages.registerDocumentSymbolProvider(verilogSelector, docProvider));
 
-    // Configure Hover Provider - SystemVerilog
-    // let disposable = languages.registerHoverProvider('systemverilog',
-    //     new hover.HoverProvider('systemverilog')
-    // );
-    // context.subscriptions.push(disposable);
 
-    // // Configure Hover Provider - Verilog
-    // disposable = languages.registerHoverProvider('verilog',
-    //     new hover.HoverProvider('verilog')
-    // );
-    // context.subscriptions.push(disposable);
+    // Configure Hover Providers
+    context.subscriptions.push(languages.registerHoverProvider(systemverilogSelector, new VerilogHoverProvider('systemverilog')));
+    context.subscriptions.push(languages.registerHoverProvider(verilogSelector, new VerilogHoverProvider('verilog')));
 }
 
 function checkIfUpdated(context: ExtensionContext) {

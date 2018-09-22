@@ -33,43 +33,38 @@ export class Symbol {
         return new DocumentSymbol(this.name, this.type, Symbol.getSymbolKind(this.type), range, range);
     }
 
-    //TODO: change the case according to the types produced by ctags
+    // types used by ctags
+    // taken from https://github.com/universal-ctags/ctags/blob/master/parsers/verilog.c
     static getSymbolKind(name: String): SymbolKind {
-        switch (name) {
-            case 'parameter':
-            case 'localparam': return SymbolKind.Constant;
-            case 'package':
-            case 'import': return SymbolKind.Package;
-            case 'wire':
-            case 'reg':
-            case 'logic': return SymbolKind.Boolean;
-            case 'int':
-            case 'integer':
-            case 'longint':
-            case 'shortint': return SymbolKind.Number;
-            case 'string': return SymbolKind.String;
-            case 'class': return SymbolKind.Class;
-            case 'task': return SymbolKind.Method;
-            case 'function': return SymbolKind.Function;
+        switch(name) {
+            case 'constant' : return SymbolKind.Constant;
+            case 'event'    : return SymbolKind.Event;
+            case 'function' : return SymbolKind.Function;
+            case 'module'   : return SymbolKind.Module;
+            case 'net'      : return SymbolKind.Variable;
+            // Boolean uses a double headed arrow as symbol (kinda looks like a port)
+            case 'port'     : return SymbolKind.Boolean;
+            case 'register' : return SymbolKind.Variable;
+            case 'task'     : return SymbolKind.Function;
+            case 'block'    : return SymbolKind.Module;
+            case 'assert'   : return SymbolKind.Variable;   // No idea what to use
+            case 'class'    : return SymbolKind.Class;
+            case 'covergroup':return SymbolKind.Class;  // No idea what to use
+            case 'enum'     : return SymbolKind.Enum;
             case 'interface': return SymbolKind.Interface;
-            case 'event': return SymbolKind.Event;
-            case 'struct': return SymbolKind.Struct;
-            case 'enum': return SymbolKind.Enum;
-            case 'module':
-            case 'program': return SymbolKind.Module;
-            default: return SymbolKind.Variable;
+            case 'modport'  : return SymbolKind.Boolean;    // same as ports
+            case 'package'  : return SymbolKind.Package;
+            case 'program'  : return SymbolKind.Module;
+            case 'prototype': return SymbolKind.Function;
+            case 'property' : return SymbolKind.Property;
+            case 'struct'   : return SymbolKind.Struct;
+            case 'typedef'  : return SymbolKind.TypeParameter;
+            default         : return SymbolKind.Variable;
         }
-        /* Not used! / Free SymbolKind icons
-            return SymbolKind.EnumMember;
-            return SymbolKind.Operator;
-            return SymbolKind.TypeParameter;
-            return SymbolKind.Property;
-            return SymbolKind.Array;
-        */
     }
-
 }
 
+// TODO: add a user setting to enable/disable all ctags based operations
 export class Ctags {
 
     symbols: Symbol [] ;
@@ -154,6 +149,7 @@ export class Ctags {
             if(match && typeof match[1] !== 'undefined') {
                 endPosition = this.doc.positionAt(match.index + match[0].length - 1);
                 // get the starting symbols of the same type
+                // doesn't check for begin...end blocks
                 let s = this.symbols.filter(i => i.type === match[1] && i.startPosition.isBefore(endPosition) && !i.isValid);
                 if(s.length > 0) {
                     // get the symbol nearest to the end tag

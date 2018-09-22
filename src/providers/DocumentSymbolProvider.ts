@@ -1,40 +1,6 @@
 import {DocumentSymbolProvider, CancellationToken, TextDocument, Position, SymbolKind, Range, DocumentSymbol, workspace, window, TextEdit, TextEditor} from 'vscode'
 import { Ctags, CtagsManager, Symbol } from '../ctags';
 
-export function getSymbolKind(name: String): SymbolKind {
-    switch (name) {
-        case 'parameter':
-        case 'localparam': return SymbolKind.Constant;
-        case 'package':
-        case 'import': return SymbolKind.Package;
-        case 'wire':
-        case 'reg':
-        case 'logic': return SymbolKind.Boolean;
-        case 'int':
-        case 'integer':
-        case 'longint':
-        case 'shortint': return SymbolKind.Number;
-        case 'string': return SymbolKind.String;
-        case 'class': return SymbolKind.Class;
-        case 'task': return SymbolKind.Method;
-        case 'function': return SymbolKind.Function;
-        case 'interface': return SymbolKind.Interface;
-        case 'event': return SymbolKind.Event;
-        case 'struct': return SymbolKind.Struct;
-        case 'enum': return SymbolKind.Enum;
-        case 'module':
-        case 'program': return SymbolKind.Module;
-        default: return SymbolKind.Variable;
-    }
-    /* Not used! / Free SymbolKind icons
-        return SymbolKind.EnumMember;
-        return SymbolKind.Operator;
-        return SymbolKind.TypeParameter;
-        return SymbolKind.Property;
-        return SymbolKind.Array;
-    */
-}
-
 export function isContainer(type: SymbolKind) : boolean {
     switch(type) {
         case SymbolKind.Array:
