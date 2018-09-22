@@ -9,6 +9,7 @@ import ModelsimLinter from "./linter/ModelsimLinter";
 import {VerilogDocumentSymbolProvider} from "./providers/DocumentSymbolProvider";
 import {CtagsManager} from "./ctags";
 import {VerilogHoverProvider} from "./providers/HoverProvider";
+import {VerilogDefinitionProvider} from "./providers/DefinitionProvider";
 
 var linter: BaseLinter;
 export let ctagsManager:CtagsManager = new CtagsManager;
@@ -43,6 +44,12 @@ export function activate(context: ExtensionContext) {
     // Configure Hover Providers
     context.subscriptions.push(languages.registerHoverProvider(systemverilogSelector, new VerilogHoverProvider('systemverilog')));
     context.subscriptions.push(languages.registerHoverProvider(verilogSelector, new VerilogHoverProvider('verilog')));
+
+    // Configure Definition Providers
+    let defProvider = new VerilogDefinitionProvider;
+    context.subscriptions.push(languages.registerDefinitionProvider(systemverilogSelector, defProvider));
+    context.subscriptions.push(languages.registerDefinitionProvider(verilogSelector, defProvider));
+
 }
 
 function checkIfUpdated(context: ExtensionContext) {

@@ -13,6 +13,8 @@ export class VerilogHoverProvider implements HoverProvider {
     public provideHover(document: TextDocument, position: Position, token: CancellationToken) : Hover {
         // get word start and end
         let textRange = document.getWordRangeAtPosition(position);
+        if(textRange.isEmpty)
+            return;
         // hover word
         let targetText = document.getText(textRange);
         let ctags : Ctags = CtagsManager.ctags;
