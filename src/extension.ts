@@ -1,22 +1,51 @@
 'use strict';
 
-import {workspace, window, commands, Disposable, Range, ExtensionContext,
-        TextDocument, Diagnostic, DiagnosticSeverity, DiagnosticCollection,
-        languages, extensions, Selection, Uri} from "vscode";
+import {workspace, window, DocumentSelector, ExtensionContext, extensions, Uri, StatusBarAlignment, languages, TextDocument} from "vscode";
 import BaseLinter from "./linter/BaseLinter";
 import IcarusLinter from "./linter/IcarusLinter";
+import VerilatorLinter from "./linter/VerilatorLinter";
 import XvlogLinter from "./linter/XvlogLinter";
 import ModelsimLinter from "./linter/ModelsimLinter";
+import VerilogDocumentSymbolProvider from "./providers/DocumentSymbolProvider";
+import {CtagsManager} from "./ctags";
+import VerilogHoverProvider from "./providers/HoverProvider";
+import VerilogDefinitionProvider from "./providers/DefinitionProvider";
 
-let diagnosticCollection: DiagnosticCollection;
 var linter: BaseLinter;
-let extensionID: string = "mshr-h.veriloghdl";
+export let ctagsManager:CtagsManager = new CtagsManager;
+var extensionID: string = "mshr-h.veriloghdl";
 
 export function activate(context: ExtensionContext) {
     console.log('"verilog-hdl" is now active!');
+    // document selector
+    let systemverilogSelector:DocumentSelector = { scheme: 'file', language: 'systemverilog' };
+    let verilogSelector:DocumentSelector = {scheme: 'file', language: 'verilog'};
+
+    // Check if the Extension was updated recently
     checkIfUpdated(context);
+
+    // Configure ctags
+    ctagsManager.configure();
+
+    // Configure linter
     workspace.onDidChangeConfiguration(configLinter, this, context.subscriptions);
     configLinter();
+
+    // Configure Document Symbol Provider
+    let docProvider = new VerilogDocumentSymbolProvider();
+    context.subscriptions.push(languages.registerDocumentSymbolProvider(systemverilogSelector, docProvider));
+    context.subscriptions.push(languages.registerDocumentSymbolProvider(verilogSelector, docProvider));
+
+
+    // Configure Hover Providers
+    context.subscriptions.push(languages.registerHoverProvider(systemverilogSelector, new VerilogHoverProvider('systemverilog')));
+    context.subscriptions.push(languages.registerHoverProvider(verilogSelector, new VerilogHoverProvider('verilog')));
+
+    // Configure Definition Providers
+    let defProvider = new VerilogDefinitionProvider;
+    context.subscriptions.push(languages.registerDefinitionProvider(systemverilogSelector, defProvider));
+    context.subscriptions.push(languages.registerDefinitionProvider(verilogSelector, defProvider));
+
 }
 
 function checkIfUpdated(context: ExtensionContext) {
@@ -66,6 +95,9 @@ function configLinter() {
         case "modelsim":
             linter = new ModelsimLinter();
             break;
+        case "verilator":
+            linter = new VerilatorLinter();
+            break;
         default:
             console.log("Invalid linter name.")
             linter = null;
@@ -77,7 +109,6 @@ function configLinter() {
         console.log("Using linter " + linter.name);
     }
 }
-
 
 export function deactivate() {
 }

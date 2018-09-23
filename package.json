@@ -13,7 +13,7 @@
 		"url": "https://github.com/mshr-h/vscode-verilog-hdl-support/issues"
 	},
 	"engines": {
-		"vscode": "^1.19.3"
+		"vscode": "^1.26.0"
 	},
 	"categories": [
 		"Programming Languages",
@@ -22,7 +22,8 @@
 	],
 	"icon": "images/icon.png",
 	"activationEvents": [
-		"onLanguage:verilog"
+		"onLanguage:verilog",
+		"onLanguage:systemverilog"
 	],
 	"main": "./out/src/extension",
 	"contributes": {
@@ -84,11 +85,12 @@
 					"enum": [
 						"xvlog",
 						"iverilog",
+						"verilator",
 						"modelsim",
 						"none"
 					],
 					"default": "none",
-					"description": "Select the verilog linter. Possible values are 'iverilog', 'xvlog' or 'none'"
+					"description": "Select the verilog linter. Possible values are 'iverilog', 'verilator', xvlog' or 'none'"
 				},
 				"verilog.linting.iverilog.arguments": {
 					"scope": "window",
@@ -107,6 +109,24 @@
 					"type": "string",
 					"default": "",
 					"description": "Add Modelsim arguments here. They will be added to Modelsim while linting."
+				},
+				"verilog.linting.verilator.arguments": {
+					"scope": "window",
+					"type": "string",
+					"default": "",
+					"description": "Add Verilator arguments here (like macros). They will be added to Verilator while linting (The command \"--lint-only -I<document folder>\" will be added by the linter by default)"
+				},
+				"verilog.linting.verilator.runAtFileLocation": {
+					"scope": "window",
+					"type": "boolean",
+					"default": false,
+					"description": "If enabled, Verilator will be ran at the file location for linting. Else it will be run at workspace folder. Disabled by default."
+				},
+				"verilog.ctags.path": {
+					"scope": "window",
+					"type": "string",
+					"default": "ctags",
+					"description": "A path to the insallation of Universal Ctags"
 				}
 			}
 		}
@@ -118,11 +138,15 @@
 		"update-vscode": "node ./node_modules/vscode/bin/install",
 		"postinstall": "node ./node_modules/vscode/bin/install"
 	},
-	"dependencies": {},
+	"dependencies": {
+		"code-generator": "^1.0.7",
+		"vsce": "^1.49.2",
+		"yo": "^2.0.5"
+	},
 	"devDependencies": {
 		"@types/mocha": "^2.2.45",
 		"@types/node": "^7.0.51",
-		"typescript": "^2.8.1",
+		"typescript": "^2.9.2",
 		"vscode": "^1.1.14"
 	}
 }
