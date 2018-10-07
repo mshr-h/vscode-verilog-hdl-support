@@ -6,7 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Unreleased
 ### Nothing
 
-## [0.3.3] - 2018-07.01
+## [0.3.4] - 2018-09-23
+### Added
+- Added support for **Verilator** linter
+
+## [0.3.3] - 2018-07-01
 ### Added
 - Added support for **Modelsim** linter
 

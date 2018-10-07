@@ -110,11 +110,7 @@
 		"update-vscode": "node ./node_modules/vscode/bin/install",
 		"postinstall": "node ./node_modules/vscode/bin/install"
 	},
-	"dependencies": {
-		"code-generator": "^1.0.7",
-		"vsce": "^1.49.2",
-		"yo": "^2.0.5"
-	},
+	"dependencies": {},
 	"devDependencies": {
 		"@types/mocha": "^2.2.45",
 		"@types/node": "^7.0.51",
