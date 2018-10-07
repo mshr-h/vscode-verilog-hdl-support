@@ -5,9 +5,7 @@ Verilog HDL support for VS Code with Syntax Highlighting, Snippets, Linting and 
 
 ## Installation
 
-[Click here to install](vscode:extension/mshr-h.VerilogHDL)
-
-Or install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items/mshr-h.VerilogHDL)
+Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items/mshr-h.VerilogHDL)
 
 ## Features
 
