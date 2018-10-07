@@ -1,84 +1,93 @@
-# Verilog HDL support for VSCode [![Build Status](https://travis-ci.org/mshr-h/vscode-verilog-hdl-support.svg?branch=master)](https://travis-ci.org/mshr-h/vscode-verilog-hdl-support)
-Verilog HDL support based on [https://github.com/textmate/verilog.tmbundle](https://github.com/textmate/verilog.tmbundle) TextMate package.
+# Verilog HDL support for VS Code
+Verilog HDL support for VS Code with Syntax Highlighting, Snippets, Linting and much more!
+
+[![Build Status](https://travis-ci.org/mshr-h/vscode-verilog-hdl-support.svg?branch=master)](https://travis-ci.org/mshr-h/vscode-verilog-hdl-support)
+
+## Installation
+
+[Click here to install](vscode:extension/mshr-h.VerilogHDL)
+
+Or install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items/mshr-h.VerilogHDL)
 
 ## Features
+
 ### Done
+
 - Syntax highlighting for `.v` `.vh` files
 - Simple Snippets
-    * `module`
-    * `always`
-    * `case`
-    * `for`
-    * `while`
-    * `function`
-    * `reg`
-    * `wire`
-    * testbench template
-    * etc...
-- Linting
-    * Use `verilog.linting.linter` to select linter.
-        - Possible values are
-            * `iverilog`
-            * `xvlog`
-            * `modelsim`
-            * `verilator`
-            * `none`
-    * Icarus Verilog (`iverilog`)
-        - Make sure the path to your Icaurus Verilog installation is present in the `PATH` variable.
-        - If your module references other designs from other .v files, use `` `include "module.v"`` syntax to include them in your design. IVerilog uses these `` `include "path/to/file.v"`` directives to refer those modules. The `path/to/file.v` should be relative to your workspace directory.
-        - Use `verilog.linting.iverilog.arguments` setting to add custom arguments to the linter. The argument `-t null` will be added by the linter automatically
-        - Use `verilog.linting.iverilog.runAtFileLocation` setting to run Icarus Verilog at the file location. By default, it will be run at workspace directory, requiring that `` `include`` directives contain file paths relative to the workspace directory.
-    * Xilinx Vivado Logical Simulation (`xvlog`)
-    * ModelSim (`modelsim`)
-        - Make sure the path to "vlog" executable file is present in the `PATH` variable.
-        - Use filepath relative to the workspace directory in `` `include `` directives.
-        - The "work" library of Modelsim should be present in the workspace directory.
-            * If not already present, create the work library in the workspace directory by running `vlib work`.
-        - Use `verilog.linting.modelsim.arguments` setting to add custom arguments to the linter.
-    * Verilator (`verilator`)
-        - Make sure the path to "verilator" executable file is present in the `PATH` variable.
-        - Use `verilog.linting.verilator.arguments` setting to add custom arguments to the linter. The argument `--lint-only -I<document folder>` will be added by the linter automatically
-        - Use `verilog.linting.verilator.runAtFileLocation` setting to run Verilator at the file location. By default, it will be run at workspace directory, requiring that `` `include`` directives contain file paths relative to the workspace directory.
-### In progress
-- Icarus Verilog integration
-    * Working in:
-        - Windows: Yes
-            * Tested on Windows 10 Fall Creators Update (build 16299). Visual Studio Code 1.20.1
-        - Linux: Yes
-            * Tested on Ubuntu 14.04. Visual Studio Code 1.20.1
-        - macOS: Not Tested
-- xvlog(Vivado) integration
-    * Working in:
-        - Windows: Yes
-        - Ubuntu: Not Tested (Will be tested soon)
-        - macOS: Not Tested
-- Modelsim integration
-    * Working in:
-        - Windows: Yes
-        - Linux: Not Tested
-        - macOS: Not Tested
-- Verilator integration
-    * Working in:
-        - Windows: Not Tested
-            * There are no available windows binaries to test with.
-        - Linux: Yes
-            * Tested on Debian 9. Visual Studio Code 1.26.1
-        - macOS: Not Tested
+- Linting support from:
+    * Icarus Verilog - `iverilog`
+    * Vivado Logical Simulation - `xvlog`
+    * Modelsim - `modelsim`
+    * Verilator - `verilator`
 
-### In the future
-- Please post issue if you have any new idea
+### In Progress / Future
 
-## GitHub repos
-[mshr-h/vscode-verilog-hdl-support](https://github.com/mshr-h/vscode-verilog-hdl-support)
+- SystemVerilog Support
+    * Syntax highlighting
+    * Snippets
+    * Linting
+- Document Symbols Outline
+- Hover over variable declaration
+- Go to Definition & Peek Definition
+- and lot more...
 
-## Contributing
-Any contribution is welcome!(fixing typo, refactoring, documentation, and so on)
+[Take a look at our list of planned features](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/25)
 
-1. Fork it ( [https://github.com/mshr-h/vscode-verilog-hdl-support](https://github.com/mshr-h/vscode-verilog-hdl-support) )
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
+## Configuration Settings
 
-## See also
-[https://marketplace.visualstudio.com/items/mshr-h.VerilogHDL](https://marketplace.visualstudio.com/items/mshr-h.VerilogHDL)
+Use the following settings to configure the extension to your needs
+
+* `verilog.linting.linter` (Default: `none`)
+
+    Choose the linter for you. Possible values are
+    - `iverilog`
+    - `xvlog`
+    - `modelsim`
+    - `verilator`
+    - `none`
+
+* `verilog.linting.iverilog.arguments` (Default: nothing)
+
+    Add custom arguments to Icarus Verilog for linting, like `-Wall`. The argument `-t null` will be added by the linter automatically.
+
+* `verilog.linting.iverilog.runAtFileLocation` (Default: False)
+
+    By default, the linter will be run at the workspace directory. Enable this option to run at the file location. If enabled, `` `include`` directives should contain file paths relative to the current file.
+
+* `verilog.linting.modelsim.arguments` (Default: nothing)
+
+    Add custom arguments to Modelsim for linting.
+
+* `verilog.linting.verilator.arguments` (Default: nothing)
+
+    Add custom arguments to Verilator for linting, like `-Wall`. The argument `--lint-only -I<document folder>` will be added by the linter automatically.
+
+* `verilog.linting.verilator.runAtFileLocation` (Default: False)
+
+    By default, the linter will be run at the workspace directory. Enable this option to run at the file location. If enabled, `` `include`` directives should contain file paths relative to the current file.
+
+## Usage Instructions
+
+* All linters expect the executable binary (`iverilog`, `verilator`...) to be present in the `PATH` environment variable, unless otherwise specified.
+* While using `` `include`` directives, the path to the files should be relative to the workspace directory, unless `runAtFileLocation` is enabled (not supported by all linters)
+
+## Compatability
+
+Feature | Windows | Linux | MacOS
+--- |:---:|:---:|:---:
+Basics (like Syntax highlighting) | Yes | Yes | Should work
+Icarus Verilog | Windows 10 | Ubuntu 18.04 | Not Tested
+Vivado Logical Simulation | Yes | Not Tested | Not Tested
+Modelsim | Windows 10 | Not Tested | Not Tested
+Verilator | Not available | Debian 9 | Not Tested
+
+If you have tested the linters in new platforms or have issues with them, feel free to file a issue.
+
+## [Guidelines for Contributing](./CONTRIBUTING.md)
+
+## Thanks
+* To all our [Contributors](https://github.com/mshr-h/vscode-verilog-hdl-support/graphs/contributors)
+* [Textmate Package for Verilog](https://github.com/textmate/verilog.tmbundle)
+* [SublimeLinter-contrib-iverilog](https://github.com/jfcherng/SublimeLinter-contrib-iverilog)
+* [SublimeLinter-contrib-vlog](https://github.com/dave2pi/SublimeLinter-contrib-vlog)
