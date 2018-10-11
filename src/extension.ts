@@ -10,6 +10,7 @@ import VerilogDocumentSymbolProvider from "./providers/DocumentSymbolProvider";
 import {CtagsManager} from "./ctags";
 import VerilogHoverProvider from "./providers/HoverProvider";
 import VerilogDefinitionProvider from "./providers/DefinitionProvider";
+import VerilogCompletionItemProvider from "./providers/CompletionItemProvider";
 
 var linter: BaseLinter;
 export let ctagsManager:CtagsManager = new CtagsManager;
@@ -36,6 +37,11 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(languages.registerDocumentSymbolProvider(systemverilogSelector, docProvider));
     context.subscriptions.push(languages.registerDocumentSymbolProvider(verilogSelector, docProvider));
 
+    // Configure Completion Item Provider
+    // Trigger on ".", "(", "="
+    let compItemProvider = new VerilogCompletionItemProvider();
+    context.subscriptions.push(languages.registerCompletionItemProvider(verilogSelector, compItemProvider, ".", "(", "="));
+    context.subscriptions.push(languages.registerCompletionItemProvider(systemverilogSelector, compItemProvider, ".", "(", "="));
 
     // Configure Hover Providers
     context.subscriptions.push(languages.registerHoverProvider(systemverilogSelector, new VerilogHoverProvider('systemverilog')));
