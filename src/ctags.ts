@@ -33,6 +33,34 @@ export class Symbol {
         return new DocumentSymbol(this.name, this.type, Symbol.getSymbolKind(this.type), range, range);
     }
 
+    static isContainer(type: string) : boolean {
+        switch(type) {
+            case 'constant' :
+            case 'event'    :
+            case 'net'      :
+            case 'port'     :
+            case 'register' :
+            case 'modport'  :
+            case 'prototype':
+            case 'typedef'  :
+            case 'property' :
+            case 'assert'   :
+                return false;
+            case 'function' :
+            case 'module'   :
+            case 'task'     :
+            case 'block'    :
+            case 'class'    :
+            case 'covergroup':
+            case 'enum'     :
+            case 'interface':
+            case 'package'  :
+            case 'program'  :
+            case 'struct'   :
+                return true;
+        }
+    }
+
     // types used by ctags
     // taken from https://github.com/universal-ctags/ctags/blob/master/parsers/verilog.c
     static getSymbolKind(name: String): SymbolKind {
@@ -110,6 +138,7 @@ export class Ctags {
         let lineNo: number;
         let parts: string [] = line.split('\t');
         name = parts[0];
+        pattern = parts[2];
         type = parts[3];
         if(parts.length == 6) {
             scope = parts[5].split(':');
