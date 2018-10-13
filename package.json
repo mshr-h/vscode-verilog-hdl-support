@@ -101,7 +101,11 @@
 					"description": "If enabled, Verilator will be ran at the file location for linting. Else it will be run at workspace folder. Disabled by default."
 				}
 			}
-		}
+		},
+		"commands": [{
+			"command":	"verilog.lint",
+			"title":	"Verilog: Rerun lint tool"
+		}]
 	},
 	"scripts": {
 		"vscode:prepublish": "tsc -p ./",

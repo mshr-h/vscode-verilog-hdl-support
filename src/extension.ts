@@ -2,7 +2,7 @@
 
 import {workspace, window, commands, Disposable, Range, ExtensionContext,
         TextDocument, Diagnostic, DiagnosticSeverity, DiagnosticCollection,
-        languages, extensions, Selection, Uri} from "vscode";
+        languages, extensions, Selection, Uri, ProgressLocation, QuickPickItem} from "vscode";
 import BaseLinter from "./linter/BaseLinter";
 import IcarusLinter from "./linter/IcarusLinter";
 import VerilatorLinter from "./linter/VerilatorLinter";
@@ -18,6 +18,53 @@ export function activate(context: ExtensionContext) {
     checkIfUpdated(context);
     workspace.onDidChangeConfiguration(configLinter, this, context.subscriptions);
     configLinter();
+    // Register command for manual linting
+    commands.registerCommand("verilog.lint", RunLintTool);
+}
+
+async function RunLintTool() {
+    if(window.activeTextEditor === undefined)
+        window.showErrorMessage("Verilog HDL: No document opened");
+    else if(window.activeTextEditor.document.languageId !== "verilog")
+        window.showErrorMessage("Verilog HDL: No Verilog document opened");
+    else {
+        let linterStr: QuickPickItem = await window.showQuickPick([
+        {   label: "iverilog",
+            description: "Icarus Verilog",
+        },
+        {   label: "xvlog",
+            description: "Vivado Logical Simulator"
+        },
+        {   label: "modelsim",
+            description: "Modelsim"
+        },
+        {   label: "verilator",
+            description: "Verilator"
+        }],
+        {   matchOnDescription: true,
+            placeHolder: "Choose a linter to run",
+        });
+        if(linterStr === undefined)
+            return;
+        let tempLinter: BaseLinter;
+        switch(linterStr.label) {
+            case "iverilog":  tempLinter = new IcarusLinter;    break;
+            case "xvlog":     tempLinter = new XvlogLinter;     break;
+            case "modelsim":  tempLinter = new ModelsimLinter;  break;
+            case "verilator": tempLinter = new VerilatorLinter; break;
+            default:
+                return;
+        }
+        await window.withProgress(
+            {
+                location: ProgressLocation.Notification,
+                title: "Verilog HDL: Running lint tool..."
+            }, async (progress, token) => {
+                linter.removeFileDiagnostics(window.activeTextEditor.document);
+                linter.startLint(window.activeTextEditor.document);
+            }
+        );
+    }
 }
 
 function checkIfUpdated(context: ExtensionContext) {
@@ -41,14 +88,16 @@ function checkIfUpdated(context: ExtensionContext) {
 function showUpdatedNotif() {
     window
         .showInformationMessage("Verilog HDL extension has been updated", "Open Changelog")
-        .then(function(){
-            // get path of CHANGELOG.md
-            let changelogPath:string = extensions.getExtension(extensionID).extensionPath + "/CHANGELOG.md";
-            let path = Uri.file(changelogPath);
-            // open
-            workspace.openTextDocument(path).then(doc => {
-                window.showTextDocument(doc);
-            });
+        .then(function(str: string){
+                if(str === "Open Changelog") {
+                // get path of CHANGELOG.md
+                let changelogPath:string = extensions.getExtension(extensionID).extensionPath + "/CHANGELOG.md";
+                let path = Uri.file(changelogPath);
+                // open
+                workspace.openTextDocument(path).then(doc => {
+                    window.showTextDocument(doc);
+                });
+            }
         });
 }
 
