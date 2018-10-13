@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Unreleased
 ### Nothing
 
+## [0.3.5] - 2018-10-13
+### Added
+- Added contributing guidelines [#36](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/36)
+
+### Changed
+- Reorganized README [#36](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/36)
+
+### Fixed
+- Fixed dependencies in package.json [#35](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/35)
+
 ## [0.3.4] - 2018-09-23
 ### Added
 - Added support for **Verilator** linter
