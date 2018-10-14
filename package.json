@@ -129,7 +129,13 @@
 					"description": "A path to the insallation of Universal Ctags"
 				}
 			}
-		}
+		},
+		"commands":[
+			{
+				"command": "verilog.instantiateModule",
+				"title": "Verilog: Instantiate Module"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "tsc -p ./",
