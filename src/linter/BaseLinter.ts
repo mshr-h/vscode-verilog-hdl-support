@@ -12,13 +12,13 @@ export default abstract class BaseLinter {
 		workspace.onDidCloseTextDocument(this.removeFileDiagnostics, this, this.subscriptions)
 	}
 
-	private startLint(doc: TextDocument) {
+	public startLint(doc: TextDocument) {
 		if (doc.languageId == "verilog") {
 			this.lint(doc);
 		}
 	}
 
-	private removeFileDiagnostics(doc: TextDocument) {
+	public removeFileDiagnostics(doc: TextDocument) {
 		this.diagnostic_collection.delete(doc.uri);
 	}
 

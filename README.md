@@ -65,6 +65,12 @@ Use the following settings to configure the extension to your needs
 
     By default, the linter will be run at the workspace directory. Enable this option to run at the file location. If enabled, `` `include`` directives should contain file paths relative to the current file.
 
+## Commands
+
+* **Rerun lint tool**
+
+    Choose a lint tool from the list and run it manually. Useful if the code was changed by an external script or version control system.
+
 ## Usage Instructions
 
 * All linters expect the executable binary (`iverilog`, `verilator`...) to be present in the `PATH` environment variable, unless otherwise specified.
