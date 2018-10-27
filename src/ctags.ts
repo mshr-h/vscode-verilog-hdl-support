@@ -118,11 +118,11 @@ export class Ctags {
         return this.symbols;
     }
 
-    execCtags() : Thenable<string> {
+    execCtags(filepath: string) : Thenable<string> {
         console.log("executing ctags");
 
         let ctags: string = <string>workspace.getConfiguration().get('verilog.ctags.path');
-        let command: string = ctags + ' -f - --fields=+nK --sort=no "' + this.doc.uri.fsPath + '"';
+        let command: string = ctags + ' -f - --fields=+K --sort=no --excmd=n "' + filepath + '"';
         console.log(command);
         return new Promise((resolve, reject) =>{
             child.exec(command, (error:Error, stdout:string, stderr:string) => {
@@ -138,10 +138,10 @@ export class Ctags {
         let lineNo: number;
         let parts: string [] = line.split('\t');
         name = parts[0];
-        pattern = parts[2];
+        // pattern = parts[2];
         type = parts[3];
-        if(parts.length == 6) {
-            scope = parts[5].split(':');
+        if(parts.length == 5) {
+            scope = parts[4].split(':');
             parentType = scope[0];
             parentScope = scope[1];
         }
@@ -149,8 +149,8 @@ export class Ctags {
             parentScope = '';
             parentType = '';
         }
-        lineNoStr = parts[4];
-        lineNo = Number((lineNoStr.split(':'))[1]) - 1;
+        lineNoStr = parts[2];
+        lineNo = Number(lineNoStr.slice(0, -2)) - 1;
         return new Symbol(name, type, pattern, lineNo, parentScope, parentType, lineNo, false);
         } catch(e) {console.log(e)}
     }
@@ -204,7 +204,7 @@ export class Ctags {
     index() : Thenable<void> {
         console.log("indexing...");
         return new Promise((resolve, reject) => {
-            this.execCtags()
+            this.execCtags(this.doc.uri.fsPath)
             .then(output => this.buildSymbolsList(output))
             .then(() => resolve());
         })

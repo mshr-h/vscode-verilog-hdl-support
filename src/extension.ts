@@ -1,16 +1,21 @@
 'use strict';
 
-import {workspace, window, DocumentSelector, ExtensionContext, extensions, Uri, StatusBarAlignment, languages, TextDocument} from "vscode";
+import {workspace, window, DocumentSelector, ExtensionContext, extensions, Uri, StatusBarAlignment, languages, TextDocument, commands} from "vscode";
+// Linters
 import BaseLinter from "./linter/BaseLinter";
 import IcarusLinter from "./linter/IcarusLinter";
 import VerilatorLinter from "./linter/VerilatorLinter";
 import XvlogLinter from "./linter/XvlogLinter";
 import ModelsimLinter from "./linter/ModelsimLinter";
-import VerilogDocumentSymbolProvider from "./providers/DocumentSymbolProvider";
+// ctags
 import {CtagsManager} from "./ctags";
+// Providers
+import VerilogDocumentSymbolProvider from "./providers/DocumentSymbolProvider";
 import VerilogHoverProvider from "./providers/HoverProvider";
 import VerilogDefinitionProvider from "./providers/DefinitionProvider";
 import VerilogCompletionItemProvider from "./providers/CompletionItemProvider";
+// Commands
+import * as ModuleInstantiation from "./commands/ModuleInstantiation"
 
 var linter: BaseLinter;
 export let ctagsManager:CtagsManager = new CtagsManager;
@@ -52,6 +57,8 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(languages.registerDefinitionProvider(systemverilogSelector, defProvider));
     context.subscriptions.push(languages.registerDefinitionProvider(verilogSelector, defProvider));
 
+    // Configure command to instantiate a module
+    commands.registerCommand("verilog.instantiateModule", ModuleInstantiation.instantiateModuleInteract);
 }
 
 function checkIfUpdated(context: ExtensionContext) {
