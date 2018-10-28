@@ -27,7 +27,9 @@ export default class IcarusLinter extends BaseLinter {
         let lastIndex:number = (isWindows == true)? docUri.lastIndexOf("\\") : docUri.lastIndexOf("/");
         let docFolder = docUri.substr(0, lastIndex);    //folder of current doc
         let runLocation: string = (this.runAtFileLocation == true)? docFolder : workspace.rootPath;     //choose correct location to run
-        let command: string = 'iverilog -t null ' + this.iverilogArgs + ' \"' + doc.fileName +'\"';     //command to execute
+        let svArgs : string = (doc.languageId == "systemverilog")? "-g2012" : "";                       //SystemVerilog args
+        let command: string = 'iverilog ' + svArgs + ' -t null ' + this.iverilogArgs + ' \"' + doc.fileName +'\"';     //command to execute
+
         var foo: child.ChildProcess = child.exec(command,{cwd:runLocation},(error:Error, stdout:string, stderr:string) => {
             let diagnostics: Diagnostic[] = [];
             let lines = stderr.split(/\r?\n/g);
@@ -46,7 +48,7 @@ export default class IcarusLinter extends BaseLinter {
                             code: 'iverilog',
                             source: 'iverilog'
                         });
-                    else if(terms.length == 4){
+                    else if(terms.length >= 4){
                         let sev: DiagnosticSeverity;
                         if(terms[2].trim() == 'error')
                             sev = DiagnosticSeverity.Error;
