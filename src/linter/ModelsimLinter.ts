@@ -21,6 +21,7 @@ export default class ModelsimLinter extends BaseLinter {
     }
 
     protected lint(doc: TextDocument) {
+        // no change needed for systemverilog
         let command: string = 'vlog -nologo -work work \"' + doc.fileName +'\" ' + this.modelsimArgs;     //command to execute
         var process: child.ChildProcess = child.exec(command, {cwd:workspace.rootPath}, (error:Error, stdout: string, stderr: string) => {
             let diagnostics: Diagnostic[] = [];

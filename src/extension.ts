@@ -1,23 +1,23 @@
 'use strict';
 
 import {workspace, window, DocumentSelector, ExtensionContext, extensions, Uri, StatusBarAlignment, languages, TextDocument, commands} from "vscode";
+
 // Linters
-import BaseLinter from "./linter/BaseLinter";
-import IcarusLinter from "./linter/IcarusLinter";
-import VerilatorLinter from "./linter/VerilatorLinter";
-import XvlogLinter from "./linter/XvlogLinter";
-import ModelsimLinter from "./linter/ModelsimLinter";
+import LintManager from "./linter/LintManager";
+
 // ctags
 import {CtagsManager} from "./ctags";
+
 // Providers
 import VerilogDocumentSymbolProvider from "./providers/DocumentSymbolProvider";
 import VerilogHoverProvider from "./providers/HoverProvider";
 import VerilogDefinitionProvider from "./providers/DefinitionProvider";
 import VerilogCompletionItemProvider from "./providers/CompletionItemProvider";
+
 // Commands
 import * as ModuleInstantiation from "./commands/ModuleInstantiation"
 
-var linter: BaseLinter;
+let lintManager: LintManager;
 export let ctagsManager:CtagsManager = new CtagsManager;
 var extensionID: string = "mshr-h.veriloghdl";
 
@@ -33,9 +33,8 @@ export function activate(context: ExtensionContext) {
     // Configure ctags
     ctagsManager.configure();
 
-    // Configure linter
-    workspace.onDidChangeConfiguration(configLinter, this, context.subscriptions);
-    configLinter();
+    // Configure lint manager
+    lintManager = new LintManager();
 
     // Configure Document Symbol Provider
     let docProvider = new VerilogDocumentSymbolProvider();
@@ -91,36 +90,6 @@ function showUpdatedNotif() {
                 window.showTextDocument(doc);
             });
         });
-}
-
-function configLinter() {
-    let linter_name;
-    linter_name = workspace.getConfiguration("verilog.linting").get<string>("linter");
-
-    if (linter == null || linter.name != linter_name) {
-        switch (linter_name) {
-        case "iverilog":
-            linter = new IcarusLinter();
-            break;
-        case "xvlog":
-            linter = new XvlogLinter();
-            break;
-        case "modelsim":
-            linter = new ModelsimLinter();
-            break;
-        case "verilator":
-            linter = new VerilatorLinter();
-            break;
-        default:
-            console.log("Invalid linter name.")
-            linter = null;
-            break;
-        }
-    }
-
-    if (linter != null) {
-        console.log("Using linter " + linter.name);
-    }
 }
 
 export function deactivate() {
