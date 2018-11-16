@@ -25,13 +25,13 @@ export default class VerilatorLinter extends BaseLinter {
 
     protected splitTerms(line: string){
         let terms = line.split(':');
-        
+
         for (var i = 0; i < terms.length; i++) {
-            if (terms[i] == ' ') {         
+            if (terms[i] == ' ') {
                 terms.splice(i, 1);
                 i--;
             }
-            else 
+            else
             {
                 terms[i] = terms[i].trim();
             }
@@ -54,20 +54,21 @@ export default class VerilatorLinter extends BaseLinter {
 
         return result;
     }
-    
+
     protected lint(doc: TextDocument) {
         let docUri: string = doc.uri.fsPath     //path of current doc
         let lastIndex:number = (isWindows == true)? docUri.lastIndexOf("\\") : docUri.lastIndexOf("/");
         let docFolder = docUri.substr(0, lastIndex);    //folder of current doc
         let runLocation: string = (this.runAtFileLocation == true)? docFolder : workspace.rootPath;     //choose correct location to run
-        let command: string = 'verilator --lint-only -I'+docFolder+ ' ' + this.verilatorArgs + ' \"' + doc.fileName +'\"';     //command to execute
+        let svArgs : string = (doc.languageId == "systemverilog") ? "-sv" : "";                         //Systemverilog args
+        let command: string = 'verilator ' + svArgs + ' --lint-only -I'+docFolder+ ' ' + this.verilatorArgs + ' \"' + doc.fileName +'\"';     //command to execute
+
         var foo: child.ChildProcess = child.exec(command,{cwd:runLocation},(error:Error, stdout:string, stderr:string) => {
             let diagnostics: Diagnostic[] = [];
             let lines = stderr.split(/\r?\n/g);
-            
+
             // Parse output lines
             lines.forEach((line, i) => {
-            
                 if(line.startsWith('%')){
                     // remove the %
                     line = line.substr(1)
@@ -75,17 +76,17 @@ export default class VerilatorLinter extends BaseLinter {
                     // was it for a submodule
                     if (line.search(doc.fileName) > 0)
                     {
-                        // remove the filename 
+                        // remove the filename
                         line = line.replace(doc.fileName, '');
                         line = line.replace(/\s+/g,' ').trim();
-                        
+
                         let terms = this.splitTerms(line);
                         let severity = this.getSeverity(terms[0]);
                         let message = terms.slice(2).join(' ')
                         let lineNum = parseInt(terms[1].trim()) - 1;
 
                         if (lineNum != NaN)
-                        {                    
+                        {
                             console.log(terms[1].trim() + ' ' + message);
 
                             diagnostics.push({
@@ -94,7 +95,7 @@ export default class VerilatorLinter extends BaseLinter {
                                 message: message,
                                 code: 'verilator',
                                 source: 'verilator'
-                            });      
+                            });
                         }
                     }
                 }
