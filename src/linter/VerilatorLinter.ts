@@ -69,7 +69,6 @@ export default class VerilatorLinter extends BaseLinter {
 
             // Parse output lines
             lines.forEach((line, i) => {
-
                 if(line.startsWith('%')){
                     // remove the %
                     line = line.substr(1)

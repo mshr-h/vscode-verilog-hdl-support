@@ -81,14 +81,16 @@ function checkIfUpdated(context: ExtensionContext) {
 function showUpdatedNotif() {
     window
         .showInformationMessage("Verilog HDL extension has been updated", "Open Changelog")
-        .then(function(){
-            // get path of CHANGELOG.md
-            let changelogPath:string = extensions.getExtension(extensionID).extensionPath + "/CHANGELOG.md";
-            let path = Uri.file(changelogPath);
-            // open
-            workspace.openTextDocument(path).then(doc => {
-                window.showTextDocument(doc);
-            });
+        .then(function(str: string){
+                if(str === "Open Changelog") {
+                // get path of CHANGELOG.md
+                let changelogPath:string = extensions.getExtension(extensionID).extensionPath + "/CHANGELOG.md";
+                let path = Uri.file(changelogPath);
+                // open
+                workspace.openTextDocument(path).then(doc => {
+                    window.showTextDocument(doc);
+                });
+            }
         });
 }
 
