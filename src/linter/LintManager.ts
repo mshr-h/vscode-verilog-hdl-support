@@ -1,4 +1,4 @@
-import { Disposable, workspace, TextDocument, DiagnosticCollection, Diagnostic, languages } from "vscode";
+import { Disposable, workspace, TextDocument, DiagnosticCollection, Diagnostic, languages, window, QuickPickItem, ProgressLocation } from "vscode";
 
 import BaseLinter from "./BaseLinter";
 import IcarusLinter from "./IcarusLinter";
@@ -59,6 +59,55 @@ export default class LintManager {
     removeFileDiagnostics(doc: TextDocument) {
         if(this.linter != null)
             this.linter.removeFileDiagnostics(doc);
+    }
+
+    async RunLintTool() {
+        // Check for language id
+        let lang : string = window.activeTextEditor.document.languageId;
+        if(window.activeTextEditor === undefined || (lang !== "verilog" && lang !== "systemverilog"))
+            window.showErrorMessage("Verilog HDL: No document opened");
+        // else if(window.activeTextEditor.document.languageId !== "verilog")
+            // window.showErrorMessage("Verilog HDL: No Verilog document opened");
+        else {
+            // Show the available linters
+            let linterStr: QuickPickItem = await window.showQuickPick([
+            {   label: "iverilog",
+                description: "Icarus Verilog",
+            },
+            {   label: "xvlog",
+                description: "Vivado Logical Simulator"
+            },
+            {   label: "modelsim",
+                description: "Modelsim"
+            },
+            {   label: "verilator",
+                description: "Verilator"
+            }],
+            {   matchOnDescription: true,
+                placeHolder: "Choose a linter to run",
+            });
+            if(linterStr === undefined)
+                return;
+            // Create and run the linter with progress bar
+            let tempLinter: BaseLinter;
+            switch(linterStr.label) {
+                case "iverilog":  tempLinter = new IcarusLinter;    break;
+                case "xvlog":     tempLinter = new XvlogLinter;     break;
+                case "modelsim":  tempLinter = new ModelsimLinter;  break;
+                case "verilator": tempLinter = new VerilatorLinter; break;
+                default:
+                    return;
+            }
+            await window.withProgress(
+                {
+                    location: ProgressLocation.Notification,
+                    title: "Verilog HDL: Running lint tool..."
+                }, async (progress, token) => {
+                    tempLinter.removeFileDiagnostics(window.activeTextEditor.document);
+                    tempLinter.startLint(window.activeTextEditor.document);
+                }
+            );
+        }
     }
 
 }
