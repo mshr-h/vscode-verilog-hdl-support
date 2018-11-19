@@ -130,10 +130,14 @@
 				}
 			}
 		},
-		"commands":[
+		"commands": [
 			{
 				"command": "verilog.instantiateModule",
 				"title": "Verilog: Instantiate Module"
+			},
+			{
+				"command": "verilog.lint",
+				"title": "Verilog: Rerun lint tool"
 			}
 		]
 	},
@@ -144,15 +148,11 @@
 		"update-vscode": "node ./node_modules/vscode/bin/install",
 		"postinstall": "node ./node_modules/vscode/bin/install"
 	},
-	"dependencies": {
-		"code-generator": "^1.0.7",
-		"vsce": "^1.49.2",
-		"yo": "^2.0.5"
-	},
+	"dependencies": {},
 	"devDependencies": {
 		"@types/mocha": "^2.2.45",
-		"@types/node": "^7.0.51",
-		"typescript": "^2.9.2",
-		"vscode": "^1.1.14"
+		"@types/node": "^7.10.0",
+		"typescript": "^3.1.1",
+		"vscode": "^1.1.21"
 	}
 }

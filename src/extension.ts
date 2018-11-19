@@ -58,6 +58,8 @@ export function activate(context: ExtensionContext) {
 
     // Configure command to instantiate a module
     commands.registerCommand("verilog.instantiateModule", ModuleInstantiation.instantiateModuleInteract);
+    // Register command for manual linting
+    commands.registerCommand("verilog.lint", lintManager.RunLintTool);
 }
 
 function checkIfUpdated(context: ExtensionContext) {

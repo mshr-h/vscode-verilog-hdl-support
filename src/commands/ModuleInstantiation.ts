@@ -62,10 +62,10 @@ function instantiateModule(srcpath: string) : Thenable<SnippetString> {
             }
             console.log(portsName)
             resolve(new SnippetString()
-          .appendText(moduleName + " ")
+          .appendText(module.name + " ")
           .appendText(paramString)
           .appendPlaceholder("u_")
-          .appendPlaceholder(`${moduleName}(\n`)
+          .appendPlaceholder(`${module.name}(\n`)
           .appendText(instantiatePort(portsName))
           .appendText(');\n'));
         })
