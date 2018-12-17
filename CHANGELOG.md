@@ -3,6 +3,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [Unreleased]
+### Added
+- First Major Release
+- Added support for **SystemVerilog**
+- Added **Ctags Integration** and the follwing features:
+    * Autocomplete
+    * Document Symbols Outline
+    * Hover over variable declaration
+    * Go to Definition & Peek Definition
+- Added a command to **Instantiate Module** (also uses Ctags)
+- Added a configuration setting `verilog.ctags.path` to specify ctags installation path
+
+### Fixed
+- Updated all linters to support SystemVerilog
+- Updated README with all the new features and with a gif image showcasing the features of the extension
+
 ## [0.3.6] - 2018-10-28
 ### Added
 - Added a command **Rerun lint tool** to manually run the lint tool [#29](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/29)
