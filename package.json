@@ -102,7 +102,7 @@
 					"scope": "window",
 					"type": "boolean",
 					"default": false,
-					"description": "If enabled, Icarus Verilog will be ran at the file location for linting. Else it will be run at workspace folder. Disabled by default."
+					"description": "If enabled, Icarus Verilog will be run at the file location for linting. Else it will be run at workspace folder. Disabled by default."
 				},
 				"verilog.linting.modelsim.arguments": {
 					"scope": "window",
@@ -120,13 +120,13 @@
 					"scope": "window",
 					"type": "boolean",
 					"default": false,
-					"description": "If enabled, Verilator will be ran at the file location for linting. Else it will be run at workspace folder. Disabled by default."
+					"description": "If enabled, Verilator will be run at the file location for linting. Else it will be run at workspace folder. Disabled by default."
 				},
 				"verilog.ctags.path": {
 					"scope": "window",
 					"type": "string",
 					"default": "ctags",
-					"description": "A path to the insallation of Universal Ctags"
+					"description": "A path to the installation of Universal Ctags"
 				}
 			}
 		},
