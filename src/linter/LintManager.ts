@@ -52,7 +52,9 @@ export default class LintManager {
     }
 
     lint(doc: TextDocument) {
-        if(this.linter != null)
+        // Check for language id
+        let lang : string = window.activeTextEditor.document.languageId;
+        if(this.linter != null && window.activeTextEditor !== undefined && (lang === "verilog" || lang === "systemverilog"))
             this.linter.startLint(doc);
     }
 
