@@ -3,7 +3,8 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## [UNRELEASED]
+## [1.0.1] - 2019-01-01
+### Fixed
 - Fixed a bug which caused linter to run on all files
 
 ## [1.0.0] - 2018-12-18
