@@ -1,70 +1,65 @@
 'use strict';
 
-import {workspace, window, commands, Disposable, Range, ExtensionContext,
-        TextDocument, Diagnostic, DiagnosticSeverity, DiagnosticCollection,
-        languages, extensions, Selection, Uri, ProgressLocation, QuickPickItem} from "vscode";
-import BaseLinter from "./linter/BaseLinter";
-import IcarusLinter from "./linter/IcarusLinter";
-import VerilatorLinter from "./linter/VerilatorLinter";
-import XvlogLinter from "./linter/XvlogLinter";
-import ModelsimLinter from "./linter/ModelsimLinter";
+import {workspace, window, DocumentSelector, ExtensionContext, extensions, Uri, StatusBarAlignment, languages, TextDocument, commands} from "vscode";
 
-let diagnosticCollection: DiagnosticCollection;
-var linter: BaseLinter;
-let extensionID: string = "mshr-h.veriloghdl";
+// Linters
+import LintManager from "./linter/LintManager";
+
+// ctags
+import {CtagsManager} from "./ctags";
+
+// Providers
+import VerilogDocumentSymbolProvider from "./providers/DocumentSymbolProvider";
+import VerilogHoverProvider from "./providers/HoverProvider";
+import VerilogDefinitionProvider from "./providers/DefinitionProvider";
+import VerilogCompletionItemProvider from "./providers/CompletionItemProvider";
+
+// Commands
+import * as ModuleInstantiation from "./commands/ModuleInstantiation"
+
+let lintManager: LintManager;
+export let ctagsManager:CtagsManager = new CtagsManager;
+var extensionID: string = "mshr-h.veriloghdl";
 
 export function activate(context: ExtensionContext) {
     console.log('"verilog-hdl" is now active!');
-    checkIfUpdated(context);
-    workspace.onDidChangeConfiguration(configLinter, this, context.subscriptions);
-    configLinter();
-    // Register command for manual linting
-    commands.registerCommand("verilog.lint", RunLintTool);
-}
+    // document selector
+    let systemverilogSelector:DocumentSelector = { scheme: 'file', language: 'systemverilog' };
+    let verilogSelector:DocumentSelector = {scheme: 'file', language: 'verilog'};
 
-async function RunLintTool() {
-    if(window.activeTextEditor === undefined)
-        window.showErrorMessage("Verilog HDL: No document opened");
-    else if(window.activeTextEditor.document.languageId !== "verilog")
-        window.showErrorMessage("Verilog HDL: No Verilog document opened");
-    else {
-        let linterStr: QuickPickItem = await window.showQuickPick([
-        {   label: "iverilog",
-            description: "Icarus Verilog",
-        },
-        {   label: "xvlog",
-            description: "Vivado Logical Simulator"
-        },
-        {   label: "modelsim",
-            description: "Modelsim"
-        },
-        {   label: "verilator",
-            description: "Verilator"
-        }],
-        {   matchOnDescription: true,
-            placeHolder: "Choose a linter to run",
-        });
-        if(linterStr === undefined)
-            return;
-        let tempLinter: BaseLinter;
-        switch(linterStr.label) {
-            case "iverilog":  tempLinter = new IcarusLinter;    break;
-            case "xvlog":     tempLinter = new XvlogLinter;     break;
-            case "modelsim":  tempLinter = new ModelsimLinter;  break;
-            case "verilator": tempLinter = new VerilatorLinter; break;
-            default:
-                return;
-        }
-        await window.withProgress(
-            {
-                location: ProgressLocation.Notification,
-                title: "Verilog HDL: Running lint tool..."
-            }, async (progress, token) => {
-                linter.removeFileDiagnostics(window.activeTextEditor.document);
-                linter.startLint(window.activeTextEditor.document);
-            }
-        );
-    }
+    // Check if the Extension was updated recently
+    checkIfUpdated(context);
+
+    // Configure ctags
+    ctagsManager.configure();
+
+    // Configure lint manager
+    lintManager = new LintManager();
+
+    // Configure Document Symbol Provider
+    let docProvider = new VerilogDocumentSymbolProvider();
+    context.subscriptions.push(languages.registerDocumentSymbolProvider(systemverilogSelector, docProvider));
+    context.subscriptions.push(languages.registerDocumentSymbolProvider(verilogSelector, docProvider));
+
+    // Configure Completion Item Provider
+    // Trigger on ".", "(", "="
+    let compItemProvider = new VerilogCompletionItemProvider();
+    context.subscriptions.push(languages.registerCompletionItemProvider(verilogSelector, compItemProvider, ".", "(", "="));
+    context.subscriptions.push(languages.registerCompletionItemProvider(systemverilogSelector, compItemProvider, ".", "(", "="));
+
+    // Configure Hover Providers
+    context.subscriptions.push(languages.registerHoverProvider(systemverilogSelector, new VerilogHoverProvider('systemverilog')));
+    context.subscriptions.push(languages.registerHoverProvider(verilogSelector, new VerilogHoverProvider('verilog')));
+
+    // Configure Definition Providers
+    let defProvider = new VerilogDefinitionProvider;
+    context.subscriptions.push(languages.registerDefinitionProvider(systemverilogSelector, defProvider));
+    context.subscriptions.push(languages.registerDefinitionProvider(verilogSelector, defProvider));
+
+    // Configure command to instantiate a module
+    commands.registerCommand("verilog.instantiateModule", ModuleInstantiation.instantiateModuleInteract);
+    // Register command for manual linting
+    commands.registerCommand("verilog.lint", lintManager.RunLintTool);
 }
 
 function checkIfUpdated(context: ExtensionContext) {
@@ -100,37 +95,6 @@ function showUpdatedNotif() {
             }
         });
 }
-
-function configLinter() {
-    let linter_name;
-    linter_name = workspace.getConfiguration("verilog.linting").get<string>("linter");
-
-    if (linter == null || linter.name != linter_name) {
-        switch (linter_name) {
-        case "iverilog":
-            linter = new IcarusLinter();
-            break;
-        case "xvlog":
-            linter = new XvlogLinter();
-            break;
-        case "modelsim":
-            linter = new ModelsimLinter();
-            break;
-        case "verilator":
-            linter = new VerilatorLinter();
-            break;
-        default:
-            console.log("Invalid linter name.")
-            linter = null;
-            break;
-        }
-    }
-
-    if (linter != null) {
-        console.log("Using linter " + linter.name);
-    }
-}
-
 
 export function deactivate() {
 }

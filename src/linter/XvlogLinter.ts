@@ -11,7 +11,8 @@ export default class XvlogLinter extends BaseLinter {
     }
 
     protected lint(doc: TextDocument) {
-        let command = "xvlog --nolog " + doc.fileName;
+        let svArgs : string = (doc.languageId == "systemverilog") ? "-sv" : "";         //Systemverilog args
+        let command = "xvlog " + svArgs + " -nolog " + doc.fileName;
 
         let process: ChildProcess = exec(command, (error: Error, stdout: string, stderr: string) => {
             let diagnostics: Diagnostic[] = [];

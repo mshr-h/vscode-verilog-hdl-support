@@ -1,8 +1,8 @@
 {
 	"name": "veriloghdl",
-	"displayName": "Verilog HDL",
-	"description": "Verilog HDL support for VS Code",
-	"version": "0.3.6",
+	"displayName": "Verilog HDL/SystemVerilog",
+	"description": "Verilog HDL/SystemVerilog support for VS Code",
+	"version": "1.0.1",
 	"publisher": "mshr-h",
 	"homepage": "https://github.com/mshr-h/vscode-verilog-hdl-support",
 	"repository": {
@@ -22,7 +22,8 @@
 	],
 	"icon": "images/icon.png",
 	"activationEvents": [
-		"onLanguage:verilog"
+		"onLanguage:verilog",
+		"onLanguage:systemverilog"
 	],
 	"main": "./out/src/extension",
 	"contributes": {
@@ -39,6 +40,18 @@
 					".vl"
 				],
 				"configuration": "./verilog.configuration.json"
+			},
+			{
+				"id": "systemverilog",
+				"aliases": [
+					"System Verilog",
+					"systemverilog"
+				],
+				"extensions": [
+					".sv",
+					".SV"
+				],
+				"configuration": "./systemverilog.configuration.json"
 			}
 		],
 		"grammars": [
@@ -46,12 +59,21 @@
 				"language": "verilog",
 				"scopeName": "source.verilog",
 				"path": "./syntaxes/verilog.tmLanguage"
+			},
+			{
+				"language": "systemverilog",
+				"scopeName": "source.systemverilog",
+				"path": "./syntaxes/systemverilog.tmLanguage"
 			}
 		],
 		"snippets": [
 			{
 				"language": "verilog",
 				"path": "./snippets/verilog.json"
+			},
+			{
+				"language": "systemverilog",
+				"path": "./snippets/systemverilog.json"
 			}
 		],
 		"configuration": {
@@ -80,7 +102,7 @@
 					"scope": "window",
 					"type": "boolean",
 					"default": false,
-					"description": "If enabled, Icarus Verilog will be ran at the file location for linting. Else it will be run at workspace folder. Disabled by default."
+					"description": "If enabled, Icarus Verilog will be run at the file location for linting. Else it will be run at workspace folder. Disabled by default."
 				},
 				"verilog.linting.modelsim.arguments": {
 					"scope": "window",
@@ -98,11 +120,21 @@
 					"scope": "window",
 					"type": "boolean",
 					"default": false,
-					"description": "If enabled, Verilator will be ran at the file location for linting. Else it will be run at workspace folder. Disabled by default."
+					"description": "If enabled, Verilator will be run at the file location for linting. Else it will be run at workspace folder. Disabled by default."
+				},
+				"verilog.ctags.path": {
+					"scope": "window",
+					"type": "string",
+					"default": "ctags",
+					"description": "A path to the installation of Universal Ctags"
 				}
 			}
 		},
 		"commands": [
+			{
+				"command": "verilog.instantiateModule",
+				"title": "Verilog: Instantiate Module"
+			},
 			{
 				"command": "verilog.lint",
 				"title": "Verilog: Rerun lint tool"
