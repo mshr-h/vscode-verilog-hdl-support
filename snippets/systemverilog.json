@@ -115,8 +115,8 @@
 		"prefix": "function",
 		"body": [
 			"function $1;",
-			"  $2;",
-			"  $3",
+			"\t$2;",
+			"\t$3",
 			"endfunction"
 		],
 		"description": "function (...) ... endfunction"
