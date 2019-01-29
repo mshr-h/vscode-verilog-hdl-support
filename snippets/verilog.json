@@ -3,7 +3,7 @@
 		"prefix": "mod",
 		"body": [
 			"module $1(",
-			"  $2",
+			"\t$2",
 			");",
 			"$3",
 			"endmodule // $1"
@@ -14,7 +14,7 @@
 		"prefix": "al",
 		"body": [
 			"always @($1) begin",
-			"  $2",
+			"\t$2",
 			"end"
 		],
 		"description": "always @()"
@@ -23,7 +23,7 @@
 		"prefix": "alclk",
 		"body": [
 			"always @(posedge clk $1) begin",
-			"  $2",
+			"\t$2",
 			"end"
 		],
 		"description": "always @(posedge clk)"
@@ -32,7 +32,7 @@
 		"prefix": "beginend",
 		"body": [
 			"begin",
-			"  $1",
+			"\t$1",
 			"end"
 		],
 		"description": "begin ... end"
@@ -41,8 +41,8 @@
 		"prefix": "case",
 		"body": [
 			"case ($1)",
-			"  $2: $3",
-			"  default: $4",
+			"\t$2: $3",
+			"\tdefault: $4",
 			"endcase"
 		],
 		"description": "case () ... endcase"
@@ -114,7 +114,7 @@
 		"prefix": "if",
 		"body": [
 			"if ($1) begin",
-			"  $2",
+			"\t$2",
 			"end"
 		],
 		"description": "if (...) begin ... end"
@@ -123,9 +123,9 @@
 		"prefix": "ifelse",
 		"body": [
 			"if ($1) begin",
-			"  $2",
+			"\t$2",
 			"end else begin",
-			"  $3",
+			"\t$3",
             "end"
 		],
 		"description": "if (...) begin ... end else begin ... end"
@@ -134,7 +134,7 @@
 		"prefix": "for",
 		"body": [
 			"for ($1 = $2; $3; $4) begin",
-			"  $5",
+			"\t$5",
 			"end"
 		],
 		"description": "for (...) begin ... end"
@@ -143,7 +143,7 @@
 		"prefix": "while",
 		"body": [
 			"while ($1) begin",
-			"  $2",
+			"\t$2",
 			"end"
 		],
 		"description": "while (...) begin ... end"
@@ -152,8 +152,8 @@
 		"prefix": "func",
 		"body": [
 			"function $1;",
-			"  $2;",
-			"  $3",
+			"\t$2;",
+			"\t$3",
 			"endfunction"
 		],
 		"description": "function (...) ... endfunction"
@@ -170,27 +170,27 @@
 			"",
 			"${1} $3",
 			"(",
-            "  .rst_n (rst_n),",
-            "  .clk (clk),",
+            "\t.rst_n (rst_n),",
+            "\t.clk (clk),",
 			");",
 			"",
 			"localparam CLK_PERIOD = 10;",
 			"always #(CLK_PERIOD/2) clk=~clk;",
 			"",
 			"initial begin",
-			"  $dumpfile(\"tb_${1}.vcd\");",
-			"  $dumpvars(0, tb_${1});",
+			"\t$dumpfile(\"tb_${1}.vcd\");",
+			"\t$dumpvars(0, tb_${1});",
 			"end",
 			"",
 			"initial begin",
-			"  #1 rst_n<=1'bx;clk<=1'bx;",
-			"  #(CLK_PERIOD*3) rst_n<=1;",
-			"  #(CLK_PERIOD*3) rst_n<=0;clk<=0;",
-			"  repeat(5) @(posedge clk);",
-			"  rst_n<=1;",
-			"  @(posedge clk);",
-			"  repeat(2) @(posedge clk);",
-			"  $finish(2);",
+			"\t#1 rst_n<=1'bx;clk<=1'bx;",
+			"\t#(CLK_PERIOD*3) rst_n<=1;",
+			"\t#(CLK_PERIOD*3) rst_n<=0;clk<=0;",
+			"\trepeat(5) @(posedge clk);",
+			"\trst_n<=1;",
+			"\t@(posedge clk);",
+			"\trepeat(2) @(posedge clk);",
+			"\t$finish(2);",
 			"end",
 			"",
 			"endmodule",
