@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased] - 2019-01-29
 ### Changed
-- Replace fixed space to tab on snippets files
+- Replace fixed space with tab on snippets files
 
 ## [1.0.1] - 2019-01-01
 ### Fixed
