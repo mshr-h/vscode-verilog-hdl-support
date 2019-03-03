@@ -1,4 +1,4 @@
-import { Disposable, workspace, TextDocument, DiagnosticCollection, Diagnostic, languages, window, QuickPickItem, ProgressLocation } from "vscode";
+import { Disposable, workspace, TextDocument, DiagnosticCollection, Diagnostic, languages, window, QuickPickItem, ProgressLocation, TextEditor } from "vscode";
 
 import BaseLinter from "./BaseLinter";
 import IcarusLinter from "./IcarusLinter";
@@ -53,8 +53,8 @@ export default class LintManager {
 
     lint(doc: TextDocument) {
         // Check for language id
-        let lang : string = window.activeTextEditor.document.languageId;
-        if(this.linter != null && window.activeTextEditor !== undefined && (lang === "verilog" || lang === "systemverilog"))
+        let lang : string = doc.languageId;
+        if(this.linter != null && (lang === "verilog" || lang === "systemverilog"))
             this.linter.startLint(doc);
     }
 
