@@ -1,4 +1,4 @@
-import { Disposable, workspace, TextDocument, DiagnosticCollection, Diagnostic, languages, window, QuickPickItem, ProgressLocation, TextEditor } from "vscode";
+import { Disposable, workspace, TextDocument, window, QuickPickItem, ProgressLocation} from "vscode";
 
 import BaseLinter from "./BaseLinter";
 import IcarusLinter from "./IcarusLinter";
@@ -14,7 +14,7 @@ export default class LintManager {
 
     constructor() {
         workspace.onDidOpenTextDocument(this.lint, this, this.subscriptions);
-		workspace.onDidSaveTextDocument(this.lint, this, this.subscriptions);
+        workspace.onDidSaveTextDocument(this.lint, this, this.subscriptions);
         workspace.onDidCloseTextDocument(this.removeFileDiagnostics, this, this.subscriptions)
 
         workspace.onDidChangeConfiguration(this.configLinter, this, this.subscriptions);
