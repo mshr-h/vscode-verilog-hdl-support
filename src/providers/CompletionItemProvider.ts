@@ -1,27 +1,36 @@
-import { CompletionItemProvider, CompletionItem, TextDocument, Position, CancellationToken, CompletionContext, ProviderResult, CompletionItemKind, CompletionTriggerKind, Range, MarkdownString } from "vscode";
-import {Ctags, CtagsManager, Symbol} from '../ctags';
+import { CompletionItemProvider, CompletionItem, TextDocument, Position, CancellationToken, CompletionContext, ProviderResult, CompletionItemKind, CompletionTriggerKind, Range, MarkdownString, SymbolKind } from "vscode";
 
+import VerilogWorkspaceSymbolProvider from "./WorkspaceSymbolProvider";
+import VerilogDocumentSymbolProvider from "./DocumentSymbolProvider";
 export default class VerilogCompletionItemProvider implements CompletionItemProvider {
 
-    //TODO: Better context based completion items
-    provideCompletionItems (document: TextDocument, position: Position, token: CancellationToken,
-        context: CompletionContext) : ProviderResult<CompletionItem[]> {
-        return new Promise((resolve, reject) => {
-            let items : CompletionItem[] = [];
+    private workspaceSymProvider: VerilogWorkspaceSymbolProvider;
+    private docSymProvider: VerilogDocumentSymbolProvider;
 
-            let ctags : Ctags = CtagsManager.ctags;
-            if (ctags.doc === undefined || ctags.doc.uri !== document.uri ) { // systemverilog keywords
+
+    constructor(workspaceSymProvider: VerilogWorkspaceSymbolProvider, docSymProvider: VerilogDocumentSymbolProvider) {
+        this.workspaceSymProvider = workspaceSymProvider;
+        this.docSymProvider = docSymProvider;
+    };
+
+    //TODO: Better context based completion items
+    provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken,
+        context: CompletionContext): ProviderResult<CompletionItem[]> {
+        return new Promise((resolve, reject) => {
+            let items: CompletionItem[] = [];
+
+            if (!this.docSymProvider.docSymbols) { // systemverilog keywords
                 return;
             }
             else {
-                ctags.symbols.forEach(symbol => {
-                    let newItem : CompletionItem = new CompletionItem(symbol.name, this.getCompletionItemKind(symbol.type));
-                    let codeRange = new Range(symbol.startPosition, new Position (symbol.startPosition.line, Number.MAX_VALUE));
+                this.docSymProvider.docSymbols.forEach(symbol => {
+                    let newItem: CompletionItem = new CompletionItem(symbol.name, this.getCompletionItemKind(symbol.kind));
+                    let codeRange = symbol.range;
                     let code = document.getText(codeRange).trim();
-                    newItem.detail = symbol.type;
-                    let doc : string = "```systemverilog\n" + code + "\n```";
-                    if(symbol.parentScope !== undefined && symbol.parentScope !== "")
-                        doc += "\nHeirarchial Scope: " + symbol.parentScope;
+                    newItem.detail = symbol.detail;
+                    let doc: string = "```systemverilog\n" + code + "\n```";
+                    /* if(symbol.parentScope !== undefined && symbol.parentScope !== "")
+                        doc += "\nHeirarchial Scope: " + symbol.parentScope; */
                     newItem.documentation = new MarkdownString(doc);
                     items.push(newItem);
                 });
@@ -30,30 +39,20 @@ export default class VerilogCompletionItemProvider implements CompletionItemProv
         })
     }
 
-    private getCompletionItemKind(type: string) : CompletionItemKind {
-        switch(type) {
-            case 'constant' : return CompletionItemKind.Constant;
-            case 'event'    : return CompletionItemKind.Event;
-            case 'function' : return CompletionItemKind.Function;
-            case 'module'   : return CompletionItemKind.Module;
-            case 'net'      : return CompletionItemKind.Variable;
-            case 'port'     : return CompletionItemKind.Variable;
-            case 'register' : return CompletionItemKind.Variable;
-            case 'task'     : return CompletionItemKind.Function;
-            case 'block'    : return CompletionItemKind.Module;
-            case 'assert'   : return CompletionItemKind.Variable;   // No idea what to use
-            case 'class'    : return CompletionItemKind.Class;
-            case 'covergroup':return CompletionItemKind.Class;  // No idea what to use
-            case 'enum'     : return CompletionItemKind.Enum;
-            case 'interface': return CompletionItemKind.Interface;
-            case 'modport'  : return CompletionItemKind.Variable;    // same as ports
-            case 'package'  : return CompletionItemKind.Module;
-            case 'program'  : return CompletionItemKind.Module;
-            case 'prototype': return CompletionItemKind.Function;
-            case 'property' : return CompletionItemKind.Property;
-            case 'struct'   : return CompletionItemKind.Struct;
-            case 'typedef'  : return CompletionItemKind.TypeParameter;
-            default         : return CompletionItemKind.Variable;
+    private getCompletionItemKind(type: SymbolKind): CompletionItemKind {
+        switch (type) {
+            case SymbolKind.Constant: return CompletionItemKind.Constant;
+            case SymbolKind.Event: return CompletionItemKind.Event;
+            case SymbolKind.Function: return CompletionItemKind.Function;
+            case SymbolKind.Module: return CompletionItemKind.Module;
+            case SymbolKind.Variable: return CompletionItemKind.Variable;
+            case SymbolKind.Class: return CompletionItemKind.Class;
+            case SymbolKind.Enum : return CompletionItemKind.Enum;
+            case SymbolKind.Interface : return CompletionItemKind.Interface;
+            case SymbolKind.Property: return CompletionItemKind.Property;
+            case SymbolKind.Struct: return CompletionItemKind.Struct;
+            case SymbolKind.TypeParameter: return CompletionItemKind.TypeParameter;
+            default: return CompletionItemKind.Variable;
         }
     }
 

@@ -1,118 +1,98 @@
-import {DocumentSymbolProvider, CancellationToken, TextDocument, Position, SymbolKind, Range, DocumentSymbol, workspace, window, TextEdit, TextEditor} from 'vscode'
-import { Ctags, CtagsManager, Symbol } from '../ctags';
+import { DocumentSymbolProvider, SymbolInformation, CancellationToken, TextDocument, Location, Position, SymbolKind, Range, TreeDataProvider, TreeItem, Event, EventEmitter, TreeItemCollapsibleState, DocumentSymbol, workspace, window, TextEdit, TextEditor,  } from 'vscode'
 
 export default class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
+    // XXX: Does not match virtual interface instantiantion, eg virtual intf u_virtInterface;
+    // XXX: Does not match input/output/inout ports, eg input logic din, ..
+    private illegalTypes = /(?!return|begin|end|else|join|fork|for|if|virtual|static|automatic|generate)/
+    // TODO: Match labels with SymbolKind.Enum
+    public regex: RegExp = new RegExp([
+        // Potential identifier
+        , /(?<=^\s*(?:(?:virtual|static|automatic|rand|randc|pure virtual)\s+)?)/
+        // Illegal Symbol types
+        , this.illegalTypes
+        // Symbol type
+        , /([:\w]+)\s+/
+        // (modifier? returnType [.*]?      | parameterlist)?
+        , /(?:(?:\w*\s+)?\w+(?:\s*\[.*?\])?\s+|\s*#\s*\([\s\S]*?\)\s*)?/
+        // Symbol name, ignore multiple defines FIXME
+        , this.illegalTypes
+        , /(\w+)(?:\s*,\s*\w+)*?/
+        // Port-list | class suffix
+        , /(?:\s*\([\s\S]*?\)|(?:\s+(?:extends|implements)\s+\w+)+)?/
+        // End of definition
+        , /\s*;/
+    ].map(x => x.source).join(''), 'mg');
 
-    public docSymbols : DocumentSymbol [] = [];
 
-    provideDocumentSymbols(document: TextDocument, token: CancellationToken): Thenable<DocumentSymbol[]> {
+    public docSymbols: DocumentSymbol[] = [];
+
+    provideDocumentSymbols(document: TextDocument, token?: CancellationToken, regex?: RegExp): Thenable<SymbolInformation[]> {
         return new Promise((resolve, reject) => {
-            let symbols: Symbol [] = [];
+            let symbols = [];
+            var match;
             console.log("symbol provider");
-            let activeDoc : TextDocument = window.activeTextEditor.document;
-            if(CtagsManager.ctags.doc === undefined || CtagsManager.ctags.doc.uri.fsPath !== activeDoc.uri.fsPath)
-                CtagsManager.ctags.setDocument(activeDoc);
-            let ctags : Ctags = CtagsManager.ctags;
-            // If dirty, re index and then build symbols
-            if(ctags.isDirty) {
-                ctags.index()
-                .then(() => {
-                    symbols = ctags.symbols;
-                    console.log(symbols);
-                    this.docSymbols =  this.buildDocumentSymbolList(symbols);
-                    resolve(this.docSymbols);
-                })
-            }
-            else {
-                    resolve(this.docSymbols);
-            }
-        })
-    }
+            let targetText =  document.getText();
 
-    isContainer(type: SymbolKind) : boolean {
-        switch(type) {
-            case SymbolKind.Array:
-            case SymbolKind.Boolean:
-            case SymbolKind.Constant:
-            case SymbolKind.EnumMember:
-            case SymbolKind.Event:
-            case SymbolKind.Field:
-            case SymbolKind.Key:
-            case SymbolKind.Null:
-            case SymbolKind.Number:
-            case SymbolKind.Object:
-            case SymbolKind.Property:
-            case SymbolKind.String:
-            case SymbolKind.TypeParameter:
-            case SymbolKind.Variable:
-                return false
-            case SymbolKind.Class:
-            case SymbolKind.Constructor:
-            case SymbolKind.Enum:
-            case SymbolKind.File:
-            case SymbolKind.Function:
-            case SymbolKind.Interface:
-            case SymbolKind.Method:
-            case SymbolKind.Module:
-            case SymbolKind.Namespace:
-            case SymbolKind.Package:
-            case SymbolKind.Struct:
-                return true
-        }
-    }
-
-
-    // find the appropriate container RECURSIVELY and add to its childrem
-    // return true: if done
-    // return false: if container not found
-    findContainer(con:DocumentSymbol, sym: DocumentSymbol) : boolean {
-        let res:boolean = false;
-        for(let i of con.children) {
-            if(this.isContainer(i.kind) && i.range.contains(sym.range)) {
-                res = this.findContainer(i, sym);
-                if(res) return true;
+            if (regex == undefined) {
+                regex = this.regex;
             }
-        }
-        if(!res) {
-            con.children.push(sym);
-            return true;
-        }
-    }
-
-    // Build heiarchial DocumentSymbol[] from linear symbolsList[] using start and end position
-    // TODO: Use parentscope/parenttype of symbol to construct heirarchial DocumentSymbol []
-    buildDocumentSymbolList(symbolsList : Symbol []) : DocumentSymbol[] {
-        let list : DocumentSymbol [] = [];
-        symbolsList = symbolsList.sort((a,b) : number => {
-            if(a.startPosition.isBefore(b.startPosition)) return -1;
-            if(a.startPosition.isAfter(b.startPosition)) return 1;
-            return 0;
-        })
-        // Add each of the symbols in order
-        for(let i of symbolsList) {
-            let sym: DocumentSymbol = i.getDocumentSymbol();
-            // if no top level elements present
-            if(list.length === 0) {
-                list.push(sym);
-                continue;
-            }
-            else {
-                // find a parent among the top level element
-                let done : boolean;
-                for(let j of list) {
-                    if(this.isContainer(j.kind) && j.range.contains(sym.range)) {
-                        this.findContainer(j, sym);
-                        done = true;
-                        break;
-                    }
+            /* 
+                Matches the regex and uses the index from the regex to find the position
+            */
+            do {
+                match = regex.exec(targetText);
+                if (match) {
+                    let s = new SymbolInformation(
+                        match[2],
+                        getSymbolKind(match[1]),
+                        match[1],
+                        new Location(document.uri,
+                            new Range(document.positionAt(match.index),
+                                document.positionAt(match.index + match[0].length)
+                            )))
+                    symbols.push(s);
                 }
-                // add a new top level element
-                if(!done)
-                    list.push(sym);
-            }
-        }
+            } while (match != null);
 
-        return list;
+            resolve(symbols);
+        })
     }
+}
 
+//See test/SymbolKind_icons.png for an overview of the icons
+export function getSymbolKind(name: String): SymbolKind {
+    switch (name) {
+        case 'constant':
+        case 'parameter':
+        case 'localparam': return SymbolKind.Constant;
+        case 'package':
+        case 'import': return SymbolKind.Package;
+        case 'wire':
+        case 'port':
+        case 'modport'  :// same as ports
+        case 'logic': return SymbolKind.Boolean;
+        case 'string': return SymbolKind.String;
+        case 'class': return SymbolKind.Class;
+        case 'task':
+        case 'prototype':
+        case 'function': return SymbolKind.Function;
+        case 'interface': return SymbolKind.Interface;
+        case 'event': return SymbolKind.Event;
+        case 'struct': return SymbolKind.Struct;
+        case 'module' :
+        case 'block' :
+        case 'program': return SymbolKind.Module;
+        case 'enum' : return SymbolKind.Enum;
+        case 'property' : return SymbolKind.Property;
+        case 'typedef' : return SymbolKind.TypeParameter;
+        case 'net' :
+        case 'reg':
+        default: return SymbolKind.Variable;
+    }
+    /* Unused/Free SymbolKind icons
+        return SymbolKind.Number;
+        return SymbolKind.EnumMember;
+        return SymbolKind.Operator;
+        return SymbolKind.Array; 
+    */
 }
