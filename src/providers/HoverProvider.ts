@@ -19,7 +19,7 @@ export default class VerilogHoverProvider implements HoverProvider {
     public provideHover(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Hover> {
         // get word start and end
         let textRange = document.getWordRangeAtPosition(position);
-        if (textRange.isEmpty)
+        if (!textRange)
             return;
         // hover word
         let targetText = document.getText(textRange);

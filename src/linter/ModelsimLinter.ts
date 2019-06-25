@@ -1,6 +1,7 @@
-import {workspace, window, Disposable, Range, TextDocument, Diagnostic, DiagnosticSeverity, DiagnosticCollection, languages} from "vscode";
+import { workspace, window, Disposable, Range, TextDocument, Diagnostic, DiagnosticSeverity, DiagnosticCollection, languages } from "vscode";
 import * as child from 'child_process';
 import BaseLinter from "./BaseLinter";
+import * as path from "path";
 
 //var isWindows = process.platform === "win32";
 
@@ -22,8 +23,10 @@ export default class ModelsimLinter extends BaseLinter {
 
     protected lint(doc: TextDocument) {
         // no change needed for systemverilog
-        let command: string = 'vlog -nologo -work work \"' + doc.fileName +'\" ' + this.modelsimArgs;     //command to execute
-        var process: child.ChildProcess = child.exec(command, {cwd:workspace.rootPath}, (error:Error, stdout: string, stderr: string) => {
+        let work: string = path.dirname(doc.uri.fsPath) + '\\work';
+        let command: string = 'vlog -nologo -work ' + work + ' ' + doc.fileName + ' ' + this.modelsimArgs;     //command to execute
+        console.log(command);
+        var process: child.ChildProcess = child.exec(command, { cwd: workspace.rootPath }, (error: Error, stdout: string, stderr: string) => {
             let diagnostics: Diagnostic[] = [];
             let lines = stdout.split(/\r?\n/g);
 
@@ -32,11 +35,11 @@ export default class ModelsimLinter extends BaseLinter {
             let regexExp = "^\\*\\* (((Error)|(Warning))( \\(suppressible\\))?: )(\\([a-z]+-[0-9]+\\) )?([^\\(]*)\\(([0-9]+)\\): (\\([a-z]+-[0-9]+\\) )?((((near|Unknown identifier|Undefined variable):? )?[\"\']([\\w:;\\.]+)[\"\'][ :.]*)?.*)";
             // Parse output lines
             lines.forEach((line, i) => {
-                let sev: DiagnosticSeverity;
-                if(line.startsWith('**')) {
+                let sev: DiagnosticSeverity = DiagnosticSeverity.Information;
+                if (line.startsWith('**')) {
                     let m = line.match(regexExp);
                     try {
-                        if( m[7] != doc.fileName)
+                        if (m == null || m[7] != doc.fileName)
                             return;
                         switch (m[2]) {
                             case "Error":
@@ -53,7 +56,7 @@ export default class ModelsimLinter extends BaseLinter {
                         let msg = m[10];
                         diagnostics.push({
                             severity: sev,
-                            range:new Range(lineNum, 0, lineNum, Number.MAX_VALUE),
+                            range: new Range(lineNum, 0, lineNum, Number.MAX_VALUE),
                             message: msg,
                             code: 'modelsim',
                             source: 'modelsim'
@@ -62,7 +65,7 @@ export default class ModelsimLinter extends BaseLinter {
                     catch (e) {
                         diagnostics.push({
                             severity: sev,
-                            range:new Range(0, 0, 0, Number.MAX_VALUE),
+                            range: new Range(0, 0, 0, Number.MAX_VALUE),
                             message: line,
                             code: 'modelsim',
                             source: 'modelsim'
