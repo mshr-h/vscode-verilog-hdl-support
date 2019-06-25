@@ -22,7 +22,7 @@ export default class VerilogWorkspaceSymbolProvider implements WorkspaceSymbolPr
 
     private regex = new RegExp([
         , /(?<=^\s*(?:virtual\s+)?)/
-        , /(module|class|interface|package|program)\s+/
+        , /(module|class|interface|package|program|task|block|struct)\s+/
         , /(?:automatic\s+)?/
         , /(\w+)/
         , /[\w\W.]*?/

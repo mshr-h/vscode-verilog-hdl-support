@@ -11,7 +11,6 @@ import VerilogDocumentSymbolProvider from "./providers/DocumentSymbolProvider";
 import VerilogHoverProvider from "./providers/HoverProvider";
 import VerilogDefinitionProvider from "./providers/DefinitionProvider";
 import VerilogCompletionItemProvider from "./providers/CompletionItemProvider";
-import VerilogTreeDataProvider from "./providers/TreeDataProvider";
 import VerilogWorkspaceSymbolProvider from "./providers/WorkspaceSymbolProvider";
 
 // Commands
