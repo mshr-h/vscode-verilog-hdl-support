@@ -18,7 +18,7 @@ export default class VerilogModuleInstantiation {
             let parametersName: string[] = [];
             //console.log("Executing ctags for module instantiation");
             let module: SymbolInformation;
-            let modules: SymbolInformation[] = this.workspaceSymbolProvider.symbols.filter(tag => tag.containerName == "module");
+            let modules: SymbolInformation[] = this.workspaceSymbolProvider.moduleSymbols.filter(tag => tag.containerName == "module");
             // No modules found
             if (modules.length <= 0) {
                 window.showErrorMessage("Verilog HDL: No modules found in the file");
@@ -30,7 +30,7 @@ export default class VerilogModuleInstantiation {
             // many modules found
             else if (modules.length > 1) {
                 moduleName = await window.showQuickPick
-                    (this.workspaceSymbolProvider.symbols.filter(tag => tag.containerName === "module")
+                    (this.workspaceSymbolProvider.moduleSymbols.filter(tag => tag.containerName === "module")
                         .map(tag => tag.name),
                         {
                             placeHolder: "Choose a module to instantiate"
@@ -38,11 +38,11 @@ export default class VerilogModuleInstantiation {
                 if (moduleName === undefined) return;
                 module = modules.filter(tag => tag.name === moduleName)[0];
             }
-            let ports: SymbolInformation[] = this.workspaceSymbolProvider.symbols.filter(tag => tag.containerName === "port"/*
+            let ports: SymbolInformation[] = this.workspaceSymbolProvider.moduleSymbols.filter(tag => tag.containerName === "port"/*
                 tag.parentType === "module"  &&
                 tag.parentScope === scope */);
             portsName = ports.map(tag => tag.containerName);
-            let params: SymbolInformation[] = this.workspaceSymbolProvider.symbols.filter(tag => tag.containerName === "constant"/* &&
+            let params: SymbolInformation[] = this.workspaceSymbolProvider.moduleSymbols.filter(tag => tag.containerName === "constant"/* &&
                 tag.parentType === "module"  &&
                 tag.parentScope === scope */);
             parametersName = params.map(tag => tag.containerName);

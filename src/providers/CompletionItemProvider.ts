@@ -25,9 +25,9 @@ export default class VerilogCompletionItemProvider implements CompletionItemProv
             else {
                 this.docSymProvider.docSymbols.forEach(symbol => {
                     let newItem: CompletionItem = new CompletionItem(symbol.name, this.getCompletionItemKind(symbol.kind));
-                    let codeRange = symbol.range;
+                    let codeRange = symbol.location.range;
                     let code = document.getText(codeRange).trim();
-                    newItem.detail = symbol.detail;
+                    //newItem.detail = symbol.detail;
                     let doc: string = "```systemverilog\n" + code + "\n```";
                     /* if(symbol.parentScope !== undefined && symbol.parentScope !== "")
                         doc += "\nHeirarchial Scope: " + symbol.parentScope; */

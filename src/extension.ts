@@ -5,6 +5,7 @@ import { workspace, window, DocumentSelector, ExtensionContext, extensions, Uri,
 
 // Linters
 import LintManager from "./linter/LintManager";
+import {Ctags} from "./ctags";
 
 // Providers
 import VerilogDocumentSymbolProvider from "./providers/DocumentSymbolProvider";
@@ -18,6 +19,7 @@ import VerilogModuleInstantiation from "./commands/ModuleInstantiation"
 
 let lintManager: LintManager;
 var extensionID: string = "mshr-h.veriloghdl";
+let ctags : Ctags;
 
 export function activate(context: ExtensionContext) {
     console.log('"verilog-hdl" is now active!');
@@ -30,11 +32,13 @@ export function activate(context: ExtensionContext) {
 
     // Configure lint manager
     lintManager = new LintManager();
+    ctags = new Ctags();
 
     // Configure Document Symbol Provider
-    let docProvider = new VerilogDocumentSymbolProvider();
+    let docProvider = new VerilogDocumentSymbolProvider(ctags);
     let symProvider = new VerilogWorkspaceSymbolProvider(
-        docProvider
+        docProvider,
+        ctags
     );
 
     context.subscriptions.push(languages.registerDocumentSymbolProvider(systemverilogSelector, docProvider));
