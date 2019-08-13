@@ -1,6 +1,6 @@
 'use strict';
 
-import {workspace, window, DocumentSelector, ExtensionContext, extensions, Uri, StatusBarAlignment, languages, TextDocument, commands} from "vscode";
+import {workspace, window, DocumentSelector, ExtensionContext, extensions, Uri, StatusBarAlignment, languages, TextDocument, commands, OutputChannel} from "vscode";
 
 // Linters
 import LintManager from "./linter/LintManager";
@@ -17,12 +17,19 @@ import VerilogCompletionItemProvider from "./providers/CompletionItemProvider";
 // Commands
 import * as ModuleInstantiation from "./commands/ModuleInstantiation"
 
+// Logger
+import Logger from "./Logger"
+
 let lintManager: LintManager;
 export let ctagsManager:CtagsManager = new CtagsManager;
 var extensionID: string = "mshr-h.veriloghdl";
+let logger: Logger = new Logger("extension");
 
 export function activate(context: ExtensionContext) {
-    console.log('"verilog-hdl" is now active!');
+    // Configure Logger
+    logger.log(extensionID + " is now active");
+    console.log(extensionID + ' is now active!');
+
     // document selector
     let systemverilogSelector:DocumentSelector = { scheme: 'file', language: 'systemverilog' };
     let verilogSelector:DocumentSelector = {scheme: 'file', language: 'verilog'};
@@ -68,6 +75,7 @@ function checkIfUpdated(context: ExtensionContext) {
     let pv = prevVersion.split('.').map(Number);
     // Get current version
     let currVersion: string = extensions.getExtension(extensionID).packageJSON.version;
+    logger.log("Version " + currVersion);
     let cv = currVersion.split('.').map(Number);
     // check if current version > previous version
     for(let i = 0; i < pv.length; i++) {

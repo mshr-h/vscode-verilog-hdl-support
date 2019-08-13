@@ -1,12 +1,20 @@
-import {DocumentSymbolProvider, CancellationToken, TextDocument, Position, SymbolKind, Range, DocumentSymbol, workspace, window, TextEdit, TextEditor} from 'vscode'
+import {DocumentSymbolProvider, CancellationToken, TextDocument, SymbolKind, DocumentSymbol, window} from 'vscode'
 import { Ctags, CtagsManager, Symbol } from '../ctags';
+import Logger from '../Logger';
 
 export default class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
 
     public docSymbols : DocumentSymbol [] = [];
 
+    private logger : Logger;
+    constructor()
+    {
+        this.logger = new Logger("DocumentSymbolProvider")
+        this.logger.log("Started")
+    }
+
     provideDocumentSymbols(document: TextDocument, token: CancellationToken): Thenable<DocumentSymbol[]> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             let symbols: Symbol [] = [];
             console.log("symbol provider");
             let activeDoc : TextDocument = window.activeTextEditor.document;
