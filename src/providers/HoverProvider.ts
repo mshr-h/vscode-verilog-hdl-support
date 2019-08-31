@@ -1,20 +1,22 @@
 // import * as vscode from 'vscode';
 import {HoverProvider, TextDocument, Position, CancellationToken, Hover, window, Range, MarkdownString} from 'vscode';
 import {Ctags, CtagsManager, Symbol} from '../ctags';
+import { Logger, Log_Severity } from '../Logger';
 
 export default class VerilogHoverProvider implements HoverProvider {
     // lang: verilog / systemverilog
-    private lang: string;
+    private logger: Logger;
 
-    constructor(lang: string) {
-        this.lang = lang;
+    constructor(logger: Logger) {
+        this.logger = logger;
     }
 
     public provideHover(document: TextDocument, position: Position, token: CancellationToken) : Hover {
+        this.logger.log("Hover requested");
         // get word start and end
         let textRange = document.getWordRangeAtPosition(position);
         if(textRange.isEmpty)
-            return;
+        return;
         // hover word
         let targetText = document.getText(textRange);
         let ctags : Ctags = CtagsManager.ctags;
@@ -30,10 +32,12 @@ export default class VerilogHoverProvider implements HoverProvider {
                     let codeRange = new Range(i.startPosition, new Position (i.startPosition.line, Number.MAX_VALUE));
                     let code = document.getText(codeRange).trim();
                     let hoverText : MarkdownString = new MarkdownString();
-                    hoverText.appendCodeblock(code, this.lang);
+                    hoverText.appendCodeblock(code, document.languageId);
+                    this.logger.log("Hover object returned");
                     return new Hover(hoverText);
                 }
             }
+            this.logger.log("Hover object not found", Log_Severity.Warn);
             return;
         }
     }

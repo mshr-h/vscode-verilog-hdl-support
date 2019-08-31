@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {Ctags, Symbol} from "../ctags";
 import { window, QuickPickItem, workspace, SnippetString } from 'vscode';
+import { Logger } from '../Logger';
 
 export function instantiateModuleInteract() {
     let filePath = path.dirname(window.activeTextEditor.document.fileName);
@@ -19,7 +20,8 @@ function instantiateModule(srcpath: string) : Thenable<SnippetString> {
         let moduleName : string = "";
         let portsName : string[] = [];
         let parametersName : string[] = [];
-        let ctags: moduleTags = new moduleTags;
+        let logger: Logger = new Logger;
+        let ctags: moduleTags = new moduleTags(logger);
         console.log("Executing ctags for module instantiation");
         ctags.execCtags(srcpath)
         .then(output => {
