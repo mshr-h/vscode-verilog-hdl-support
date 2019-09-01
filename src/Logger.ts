@@ -1,6 +1,6 @@
 import {OutputChannel, workspace, window} from 'vscode'
 
-const logChannel: OutputChannel = window.createOutputChannel("verilog");
+const logChannel: OutputChannel = window.createOutputChannel("Verilog");
 
 export enum Log_Severity {
     Info,

@@ -23,6 +23,9 @@ Steps to reproduce the behavior:
 3. Scroll down to '....'
 4. See error
 
+**Log**
+Attach the log generated while following the above steps
+
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 

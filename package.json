@@ -132,7 +132,7 @@
 					"scope": "window",
 					"type": "boolean",
 					"default": false,
-					"description": "Enabled logging for this extension"
+					"description": "Enable logging for this extension"
 				}
 			}
 		},
