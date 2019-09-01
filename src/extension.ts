@@ -40,7 +40,7 @@ export function activate(context: ExtensionContext) {
     ctagsManager.configure();
 
     // Configure lint manager
-    lintManager = new LintManager();
+    lintManager = new LintManager(logger);
 
     // Configure Document Symbol Provider
     let docProvider = new VerilogDocumentSymbolProvider(logger);
