@@ -104,11 +104,23 @@
 					"default": false,
 					"description": "If enabled, Icarus Verilog will be run at the file location for linting. Else it will be run at workspace folder. Disabled by default."
 				},
+				"verilog.linting.modelsim.runAtFileLocation": {
+					"scope": "window",
+					"type": "boolean",
+					"default": false,
+					"description": "If enabled, Modelsim will be run at the file location for linting. Else it will be run at workspace folder. Disabled by default."
+				},
 				"verilog.linting.modelsim.arguments": {
 					"scope": "window",
 					"type": "string",
 					"default": "",
 					"description": "Add Modelsim arguments here. They will be added to Modelsim while linting."
+				},
+				"verilog.linting.modelsim.work": {
+					"scope": "window",
+					"type": "string",
+					"default": "",
+					"description": "Add Modelsim work library here."
 				},
 				"verilog.linting.verilator.arguments": {
 					"scope": "window",
@@ -154,5 +166,10 @@
 		"@types/node": "^7.10.0",
 		"typescript": "^3.1.1",
 		"vscode": "^1.1.21"
+	},
+	"__metadata": {
+		"id": "feb7e3b5-7d35-4f95-a3d2-61eeaa12efa5",
+		"publisherDisplayName": "mshr-h",
+		"publisherId": "fcf32c99-a624-437b-9f47-9333ea128623"
 	}
 }

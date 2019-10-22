@@ -2,10 +2,12 @@ import {workspace, window, Disposable, Range, TextDocument, Diagnostic, Diagnost
 import * as child from 'child_process';
 import BaseLinter from "./BaseLinter";
 
-//var isWindows = process.platform === "win32";
+var isWindows = process.platform === "win32";
 
 export default class ModelsimLinter extends BaseLinter {
     private modelsimArgs: string;
+    private modelsimWork: string;
+    private runAtFileLocation: boolean;
 
     constructor() {
         super("modelsim");
@@ -18,12 +20,18 @@ export default class ModelsimLinter extends BaseLinter {
     private getConfig() {
         //get custom arguments
         this.modelsimArgs = <string>workspace.getConfiguration().get('verilog.linting.modelsim.arguments');
+        this.modelsimWork = <string>workspace.getConfiguration().get('verilog.linting.modelsim.work');
+        this.runAtFileLocation = <boolean>workspace.getConfiguration().get('verilog.linting.modelsim.runAtFileLocation')
     }
 
     protected lint(doc: TextDocument) {
+        let docUri: string = doc.uri.fsPath     //path of current doc
+        let lastIndex: number = (isWindows == true) ? docUri.lastIndexOf("\\") : docUri.lastIndexOf("/");
+        let docFolder = docUri.substr(0, lastIndex);    //folder of current doc
+        let runLocation: string = (this.runAtFileLocation == true) ? docFolder : workspace.rootPath;     //choose correct location to run
         // no change needed for systemverilog
-        let command: string = 'vlog -nologo -work work \"' + doc.fileName +'\" ' + this.modelsimArgs;     //command to execute
-        var process: child.ChildProcess = child.exec(command, {cwd:workspace.rootPath}, (error:Error, stdout: string, stderr: string) => {
+        let command: string = 'vlog -nologo -work ' + this.modelsimWork + ' \"' + doc.fileName +'\" ' + this.modelsimArgs;     //command to execute
+        var process: child.ChildProcess = child.exec(command, { cwd: runLocation}, (error:Error, stdout: string, stderr: string) => {
             let diagnostics: Diagnostic[] = [];
             let lines = stdout.split(/\r?\n/g);
 
