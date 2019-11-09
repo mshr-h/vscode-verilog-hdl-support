@@ -71,6 +71,10 @@ Use the following settings to configure the extension to your needs
 
     Add custom arguments to Modelsim for linting.
 
+  `verilog.linting.modelsim.work` (Default: nothing)
+
+    Add custom work library to Modelsim for linting.
+
 * `verilog.linting.verilator.arguments` (Default: nothing)
 
     Add custom arguments to Verilator for linting, like `-Wall`. The argument `--lint-only -I<document folder>` will be added by the linter automatically.
