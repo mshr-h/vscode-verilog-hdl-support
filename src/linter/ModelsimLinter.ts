@@ -1,14 +1,15 @@
 import {workspace, window, Disposable, Range, TextDocument, Diagnostic, DiagnosticSeverity, DiagnosticCollection, languages} from "vscode";
 import * as child from 'child_process';
 import BaseLinter from "./BaseLinter";
+import { Logger, Log_Severity } from "../Logger";
 
 //var isWindows = process.platform === "win32";
 
 export default class ModelsimLinter extends BaseLinter {
     private modelsimArgs: string;
 
-    constructor() {
-        super("modelsim");
+    constructor(logger: Logger) {
+        super("modelsim", logger);
         workspace.onDidChangeConfiguration(() => {
             this.getConfig();
         })
@@ -21,8 +22,11 @@ export default class ModelsimLinter extends BaseLinter {
     }
 
     protected lint(doc: TextDocument) {
+        this.logger.log('modelsim lint requested');
         // no change needed for systemverilog
         let command: string = 'vlog -nologo -work work \"' + doc.fileName +'\" ' + this.modelsimArgs;     //command to execute
+        this.logger.log(command, Log_Severity.Command);
+
         var process: child.ChildProcess = child.exec(command, {cwd:workspace.rootPath}, (error:Error, stdout: string, stderr: string) => {
             let diagnostics: Diagnostic[] = [];
             let lines = stdout.split(/\r?\n/g);
@@ -70,6 +74,7 @@ export default class ModelsimLinter extends BaseLinter {
                     }
                 }
             })
+            this.logger.log(diagnostics.length + ' errors/warnings returned');
             this.diagnostic_collection.set(doc.uri, diagnostics);
         })
     }

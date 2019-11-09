@@ -1,6 +1,6 @@
-import {TextDocument, Position, SymbolKind, Range, DocumentSymbol, workspace, window, TextEditor, commands} from 'vscode'
+import {TextDocument, Position, SymbolKind, Range, DocumentSymbol, workspace, window, TextEditor, commands, Uri} from 'vscode'
 import * as child from 'child_process';
-import { resolve } from 'url';
+import {Logger, Log_Severity} from './Logger';
 
 // Internal representation of a symbol
 export class Symbol {
@@ -98,10 +98,12 @@ export class Ctags {
     symbols: Symbol [] ;
     doc: TextDocument;
     isDirty: boolean;
+    private logger : Logger;
 
-    constructor() {
+    constructor(logger: Logger) {
         this.symbols = [];
         this.isDirty = true;
+        this.logger = logger;
     }
 
     setDocument(doc: TextDocument) {
@@ -124,6 +126,7 @@ export class Ctags {
         let ctags: string = <string>workspace.getConfiguration().get('verilog.ctags.path');
         let command: string = ctags + ' -f - --fields=+K --sort=no --excmd=n "' + filepath + '"';
         console.log(command);
+        this.logger.log(command, Log_Severity.Command)
         return new Promise((resolve, reject) =>{
             child.exec(command, (error:Error, stdout:string, stderr:string) => {
             resolve(stdout);
@@ -152,7 +155,12 @@ export class Ctags {
         lineNoStr = parts[2];
         lineNo = Number(lineNoStr.slice(0, -2)) - 1;
         return new Symbol(name, type, pattern, lineNo, parentScope, parentType, lineNo, false);
-        } catch(e) {console.log(e)}
+        }
+        catch(e) {
+            console.log(e)
+            this.logger.log('Ctags Line Parser: ' + e, Log_Severity.Error)
+            this.logger.log('Line: ' + line, Log_Severity.Error)
+        }
     }
 
     buildSymbolsList(tags:string) : Thenable<void> {
@@ -214,15 +222,17 @@ export class Ctags {
 
 export class CtagsManager {
     static ctags : Ctags;
+    private logger: Logger;
 
-    constructor() {
-        CtagsManager.ctags = new Ctags();
+    constructor(logger: Logger) {
+        this.logger = logger;
+        CtagsManager.ctags = new Ctags(logger);
     }
 
     configure() {
         console.log("ctags manager configure");
         workspace.onDidSaveTextDocument(this.onSave);
-        workspace.onDidOpenTextDocument(this.onOpen);
+        window.onDidChangeActiveTextEditor(this.onDidChangeActiveTextEditor);
     }
 
     onSave(doc:TextDocument) {
@@ -232,8 +242,16 @@ export class CtagsManager {
         commands.executeCommand('vscode.executeDocumentSymbolProvider', doc.uri);
     }
 
-    onOpen(doc:TextDocument) {
-        console.log("on open");
-        CtagsManager.ctags.setDocument(doc);
+    onDidChangeActiveTextEditor(editor:TextEditor) {
+        if(!this.isOutputPanel(editor.document.uri))
+        {
+            console.log("on open");
+            CtagsManager.ctags.setDocument(editor.document);
+        }
     }
+
+    isOutputPanel(uri: Uri) {
+        return uri.toString().startsWith('output:extension-output-');
+    }
+
 }

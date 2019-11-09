@@ -5,18 +5,21 @@ import IcarusLinter from "./IcarusLinter";
 import VerilatorLinter from "./VerilatorLinter";
 import XvlogLinter from "./XvlogLinter";
 import ModelsimLinter from "./ModelsimLinter";
+import { Logger } from "../Logger";
 
 export default class LintManager {
 
     private subscriptions: Disposable[];
 
     private linter: BaseLinter;
+    private logger: Logger;
 
-    constructor() {
+    constructor(logger: Logger) {
+        this.logger = logger;
         workspace.onDidOpenTextDocument(this.lint, this, this.subscriptions);
         workspace.onDidSaveTextDocument(this.lint, this, this.subscriptions);
         workspace.onDidCloseTextDocument(this.removeFileDiagnostics, this, this.subscriptions)
-
+        
         workspace.onDidChangeConfiguration(this.configLinter, this, this.subscriptions);
         this.configLinter();
     }
@@ -28,16 +31,16 @@ export default class LintManager {
         if (this.linter == null || this.linter.name != linter_name) {
             switch (linter_name) {
             case "iverilog":
-                this.linter = new IcarusLinter();
+                this.linter = new IcarusLinter(this.logger);
                 break;
             case "xvlog":
-                this.linter = new XvlogLinter();
+                this.linter = new XvlogLinter(this.logger);
                 break;
             case "modelsim":
-                this.linter = new ModelsimLinter();
+                this.linter = new ModelsimLinter(this.logger);
                 break;
             case "verilator":
-                this.linter = new VerilatorLinter();
+                this.linter = new VerilatorLinter(this.logger);
                 break;
             default:
                 console.log("Invalid linter name.")
@@ -93,10 +96,10 @@ export default class LintManager {
             // Create and run the linter with progress bar
             let tempLinter: BaseLinter;
             switch(linterStr.label) {
-                case "iverilog":  tempLinter = new IcarusLinter;    break;
-                case "xvlog":     tempLinter = new XvlogLinter;     break;
-                case "modelsim":  tempLinter = new ModelsimLinter;  break;
-                case "verilator": tempLinter = new VerilatorLinter; break;
+                case "iverilog":  tempLinter = new IcarusLinter(this.logger);    break;
+                case "xvlog":     tempLinter = new XvlogLinter(this.logger);     break;
+                case "modelsim":  tempLinter = new ModelsimLinter(this.logger);  break;
+                case "verilator": tempLinter = new VerilatorLinter(this.logger); break;
                 default:
                     return;
             }

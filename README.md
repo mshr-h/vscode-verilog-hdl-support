@@ -83,6 +83,10 @@ Use the following settings to configure the extension to your needs
 
     Path to your installation of Ctags if it isn't already present in your `PATH` environment variable.
 
+* `verilog.logging.enabled` (Default: `false`)
+
+    Enable logging for this extension. Open the **Output** pane in VS Code and choose *Verilog* in the drop-down menu to view the log.
+
 ## Commands
 
 * **Rerun lint tool**

@@ -1,14 +1,23 @@
 import {DefinitionProvider, TextDocument, CancellationToken, Position, ProviderResult, DefinitionLink, Range} from 'vscode';
 import {Ctags, CtagsManager, Symbol} from '../ctags';
+import {Logger} from '../Logger';
 
 export default class VerilogDefinitionProvider implements DefinitionProvider {
 
+    private logger : Logger;
+    constructor(logger: Logger)
+    {
+        this.logger = logger
+    }
+    
+    
     provideDefinition(document: TextDocument, position: Position, token: CancellationToken) : Promise<DefinitionLink[]> {
+        this.logger.log("Definitions Requested: " + document.uri)
         return new Promise((resolve, reject) => {
             // get word start and end
             let textRange = document.getWordRangeAtPosition(position);
             if(textRange.isEmpty)
-                return;
+            return;
             // hover word
             let targetText = document.getText(textRange);
             let ctags : Ctags = CtagsManager.ctags;
@@ -31,6 +40,7 @@ export default class VerilogDefinitionProvider implements DefinitionProvider {
                         targetSelectionRange : new Range(i.startPosition, i.endPosition)
                     });
                 }
+                this.logger.log(definitions.length + " definitions returned")
                 resolve(definitions);
             }
         })
