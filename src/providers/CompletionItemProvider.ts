@@ -1,14 +1,23 @@
 import { CompletionItemProvider, CompletionItem, TextDocument, Position, CancellationToken, CompletionContext, ProviderResult, CompletionItemKind, CompletionTriggerKind, Range, MarkdownString } from "vscode";
 import {Ctags, CtagsManager, Symbol} from '../ctags';
+import { Logger } from "../Logger";
 
 export default class VerilogCompletionItemProvider implements CompletionItemProvider {
+
+    private logger: Logger;
+
+    constructor(logger: Logger)
+    {
+        this.logger = logger;
+    }
 
     //TODO: Better context based completion items
     provideCompletionItems (document: TextDocument, position: Position, token: CancellationToken,
         context: CompletionContext) : ProviderResult<CompletionItem[]> {
+        this.logger.log("Completion items requested");
         return new Promise((resolve, reject) => {
             let items : CompletionItem[] = [];
-
+            
             let ctags : Ctags = CtagsManager.ctags;
             if (ctags.doc === undefined || ctags.doc.uri !== document.uri ) { // systemverilog keywords
                 return;
@@ -26,6 +35,7 @@ export default class VerilogCompletionItemProvider implements CompletionItemProv
                     items.push(newItem);
                 });
             }
+            this.logger.log(items.length + " items requested");
             resolve(items);
         })
     }

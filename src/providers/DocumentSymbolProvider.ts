@@ -1,29 +1,39 @@
-import {DocumentSymbolProvider, CancellationToken, TextDocument, Position, SymbolKind, Range, DocumentSymbol, workspace, window, TextEdit, TextEditor} from 'vscode'
-import { Ctags, CtagsManager, Symbol } from '../ctags';
+import {DocumentSymbolProvider, CancellationToken, TextDocument, SymbolKind, DocumentSymbol, window} from 'vscode'
+import {Ctags, CtagsManager, Symbol} from '../ctags';
+import {Logger, Log_Severity} from '../Logger';
 
 export default class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
 
     public docSymbols : DocumentSymbol [] = [];
 
+    private logger : Logger;
+    constructor(logger: Logger)
+    {
+        this.logger = logger
+    }
+
     provideDocumentSymbols(document: TextDocument, token: CancellationToken): Thenable<DocumentSymbol[]> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
+            this.logger.log("Symbols Requested: " + document.uri)
             let symbols: Symbol [] = [];
             console.log("symbol provider");
             let activeDoc : TextDocument = window.activeTextEditor.document;
             if(CtagsManager.ctags.doc === undefined || CtagsManager.ctags.doc.uri.fsPath !== activeDoc.uri.fsPath)
                 CtagsManager.ctags.setDocument(activeDoc);
-            let ctags : Ctags = CtagsManager.ctags;
-            // If dirty, re index and then build symbols
-            if(ctags.isDirty) {
-                ctags.index()
-                .then(() => {
-                    symbols = ctags.symbols;
-                    console.log(symbols);
-                    this.docSymbols =  this.buildDocumentSymbolList(symbols);
-                    resolve(this.docSymbols);
-                })
-            }
-            else {
+                let ctags : Ctags = CtagsManager.ctags;
+                // If dirty, re index and then build symbols
+                if(ctags.isDirty) {
+                    ctags.index()
+                    .then(() => {
+                        symbols = ctags.symbols;
+                        console.log(symbols);
+                        this.docSymbols =  this.buildDocumentSymbolList(symbols);
+                        this.logger.log(this.docSymbols.length + " top-level symbols returned", (this.docSymbols.length > 0)? Log_Severity.Info : Log_Severity.Warn)
+                        resolve(this.docSymbols);
+                    })
+                }
+                else {
+                    this.logger.log(this.docSymbols.length + " top-level symbols returned")
                     resolve(this.docSymbols);
             }
         })

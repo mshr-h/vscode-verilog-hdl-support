@@ -1,6 +1,7 @@
 import {workspace, window, Disposable, Range, TextDocument, Diagnostic, DiagnosticSeverity, DiagnosticCollection, languages} from "vscode";
 import * as child from 'child_process';
 import BaseLinter from "./BaseLinter";
+import { Logger, Log_Severity } from "../Logger";
 
 var isWindows = process.platform === "win32";
 
@@ -9,8 +10,8 @@ export default class ModelsimLinter extends BaseLinter {
     private modelsimWork: string;
     private runAtFileLocation: boolean;
 
-    constructor() {
-        super("modelsim");
+    constructor(logger: Logger) {
+        super("modelsim", logger);
         workspace.onDidChangeConfiguration(() => {
             this.getConfig();
         })
@@ -25,6 +26,7 @@ export default class ModelsimLinter extends BaseLinter {
     }
 
     protected lint(doc: TextDocument) {
+        this.logger.log('modelsim lint requested');
         let docUri: string = doc.uri.fsPath     //path of current doc
         let lastIndex: number = (isWindows == true) ? docUri.lastIndexOf("\\") : docUri.lastIndexOf("/");
         let docFolder = docUri.substr(0, lastIndex);    //folder of current doc
@@ -78,6 +80,7 @@ export default class ModelsimLinter extends BaseLinter {
                     }
                 }
             })
+            this.logger.log(diagnostics.length + ' errors/warnings returned');
             this.diagnostic_collection.set(doc.uri, diagnostics);
         })
     }

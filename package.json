@@ -139,6 +139,12 @@
 					"type": "string",
 					"default": "ctags",
 					"description": "A path to the installation of Universal Ctags"
+				},
+				"verilog.logging.enabled": {
+					"scope": "window",
+					"type": "boolean",
+					"default": false,
+					"description": "Enable logging for this extension"
 				}
 			}
 		},

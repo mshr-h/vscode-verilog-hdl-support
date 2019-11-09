@@ -2,6 +2,7 @@ import {workspace, window, Disposable, Range, TextDocument, Diagnostic, Diagnost
 import * as child from 'child_process';
 import BaseLinter from "./BaseLinter";
 import { join } from "path";
+import { Logger, Log_Severity } from "../Logger";
 
 var isWindows = process.platform === "win32";
 
@@ -9,8 +10,8 @@ export default class VerilatorLinter extends BaseLinter {
     private verilatorArgs: string;
     private runAtFileLocation: boolean;
 
-    constructor() {
-        super("verilator");
+    constructor(logger: Logger) {
+        super("verilator", logger);
 
         workspace.onDidChangeConfiguration(() => {
             this.getConfig();
@@ -56,12 +57,14 @@ export default class VerilatorLinter extends BaseLinter {
     }
 
     protected lint(doc: TextDocument) {
+        this.logger.log('verilator lint requested');
         let docUri: string = doc.uri.fsPath     //path of current doc
         let lastIndex:number = (isWindows == true)? docUri.lastIndexOf("\\") : docUri.lastIndexOf("/");
         let docFolder = docUri.substr(0, lastIndex);    //folder of current doc
         let runLocation: string = (this.runAtFileLocation == true)? docFolder : workspace.rootPath;     //choose correct location to run
         let svArgs : string = (doc.languageId == "systemverilog") ? "-sv" : "";                         //Systemverilog args
         let command: string = 'verilator ' + svArgs + ' --lint-only -I'+docFolder+ ' ' + this.verilatorArgs + ' \"' + doc.fileName +'\"';     //command to execute
+        this.logger.log(command, Log_Severity.Command);
 
         var foo: child.ChildProcess = child.exec(command,{cwd:runLocation},(error:Error, stdout:string, stderr:string) => {
             let diagnostics: Diagnostic[] = [];
@@ -100,6 +103,7 @@ export default class VerilatorLinter extends BaseLinter {
                     }
                 }
             })
+            this.logger.log(diagnostics.length + ' errors/warnings returned');
             this.diagnostic_collection.set(doc.uri, diagnostics)
         })
     }
