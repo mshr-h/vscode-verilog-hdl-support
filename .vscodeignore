@@ -4,4 +4,4 @@ test/**
 tsconfig.json
 *.vsix
 build.sh
-
+node_modules
