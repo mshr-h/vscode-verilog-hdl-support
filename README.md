@@ -114,7 +114,7 @@ Basics (like Syntax highlighting) | Yes | Yes | Should work
 Icarus Verilog | Windows 10 | Ubuntu 18.04 | Not Tested
 Vivado Logical Simulation | Yes | Not Tested | Not Tested
 Modelsim | Windows 10 | Not Tested | Not Tested
-Verilator | Not available | Debian 9 | Not Tested
+Verilator | Windows 10 | Debian 9 | Not Tested
 Ctags Integration | Windows 10 | Ubuntu 18.10 | Not Tested
 
 If you have tested the linters in new platforms or have issues with them, feel free to file an issue.

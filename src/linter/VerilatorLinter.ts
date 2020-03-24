@@ -63,7 +63,13 @@ export default class VerilatorLinter extends BaseLinter {
         let docFolder = docUri.substr(0, lastIndex);    //folder of current doc
         let runLocation: string = (this.runAtFileLocation == true)? docFolder : workspace.rootPath;     //choose correct location to run
         let svArgs : string = (doc.languageId == "systemverilog") ? "-sv" : "";                         //Systemverilog args
-        let command: string = 'verilator ' + svArgs + ' --lint-only -I'+docFolder+ ' ' + this.verilatorArgs + ' \"' + doc.fileName +'\"';     //command to execute
+        let verilator: string = "verilator";
+        if(isWindows) {
+            verilator = verilator + "_bin.exe";
+            docUri = docUri.replace(/\\/g, "/");
+            docFolder = docFolder.replace(/\\/g, "/");
+        }
+        let command: string = verilator + ' ' + svArgs + ' --lint-only -I'+docFolder+ ' ' + this.verilatorArgs + ' \"' + docUri +'\"';     //command to execute
         this.logger.log(command, Log_Severity.Command);
 
         var foo: child.ChildProcess = child.exec(command,{cwd:runLocation},(error:Error, stdout:string, stderr:string) => {
@@ -77,10 +83,10 @@ export default class VerilatorLinter extends BaseLinter {
                     line = line.substr(1)
 
                     // was it for a submodule
-                    if (line.search(doc.fileName) > 0)
+                    if (line.search(docUri) > 0)
                     {
                         // remove the filename
-                        line = line.replace(doc.fileName, '');
+                        line = line.replace(docUri, '');
                         line = line.replace(/\s+/g,' ').trim();
 
                         let terms = this.splitTerms(line);
