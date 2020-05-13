@@ -23,7 +23,8 @@
 	"icon": "images/icon.png",
 	"activationEvents": [
 		"onLanguage:verilog",
-		"onLanguage:systemverilog"
+		"onLanguage:systemverilog",
+		"onLanguage:markdown"
 	],
 	"main": "./out/src/extension",
 	"contributes": {
@@ -64,6 +65,17 @@
 				"language": "systemverilog",
 				"scopeName": "source.systemverilog",
 				"path": "./syntaxes/systemverilog.tmLanguage"
+			},
+			{
+				"scopeName": "markdown.verilog.codeblock",
+				"path": "./syntaxes/codeblock.json",
+				"injectTo": [
+					"text.html.markdown"
+				],
+				"embeddedLanguages": {
+					"meta.embedded.block.verilog": "source.verilog",
+					"meta.embedded.block.systemverilog": "source.systemverilog"
+				}
 			}
 		],
 		"snippets": [
