@@ -13,10 +13,10 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 
 ### Done
 
-- Verilog and SystemVerilog Support
 - Syntax Highlighting
     * Verilog-HDL
     * SystemVerilog
+    * Vivado UCF constraints
 - Simple Snippets
 - Linting support from:
     * Icarus Verilog - `iverilog`

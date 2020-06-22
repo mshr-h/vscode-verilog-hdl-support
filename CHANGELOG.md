@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.2.0] - 2020-06-22
+### Added
+- Added syntax highlighting for Vivado UCF constraints 
+
 ## [1.1.0] - 2020-05-13
 ### Added
 - Update language configuration for better bracket-matching and auto-closing [#100](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/100)

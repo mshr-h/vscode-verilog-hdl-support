@@ -2,7 +2,7 @@
 	"name": "veriloghdl",
 	"displayName": "Verilog-HDL/SystemVerilog",
 	"description": "Verilog-HDL/SystemVerilog support for VS Code",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"publisher": "mshr-h",
 	"homepage": "https://github.com/mshr-h/vscode-verilog-hdl-support",
 	"repository": {
@@ -53,6 +53,12 @@
 					".SV"
 				],
 				"configuration": "./systemverilog.configuration.json"
+			},
+			{
+				"id": "ucf",
+				"aliases": ["vivado ucf", "ucf"],
+				"extensions": ["ucf"],
+				"configuration": "./ucfconstraints.configuration.json"
 			}
 		],
 		"grammars": [
@@ -65,6 +71,11 @@
 				"language": "systemverilog",
 				"scopeName": "source.systemverilog",
 				"path": "./syntaxes/systemverilog.tmLanguage"
+			},
+			{
+				"language": "ucf",
+				"scopeName": "source.ucfconstraints",
+				"path": "./syntaxes/ucf.tmLanguage"
 			},
 			{
 				"scopeName": "markdown.verilog.codeblock",
