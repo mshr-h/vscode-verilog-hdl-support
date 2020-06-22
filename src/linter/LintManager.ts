@@ -70,9 +70,9 @@ export default class LintManager {
         // Check for language id
         let lang : string = window.activeTextEditor.document.languageId;
         if(window.activeTextEditor === undefined || (lang !== "verilog" && lang !== "systemverilog"))
-            window.showErrorMessage("Verilog HDL: No document opened");
+            window.showErrorMessage("Verilog-HDL/SystemVerilog: No document opened");
         // else if(window.activeTextEditor.document.languageId !== "verilog")
-            // window.showErrorMessage("Verilog HDL: No Verilog document opened");
+            // window.showErrorMessage("Verilog-HDL/SystemVerilog: No Verilog document opened");
         else {
             // Show the available linters
             let linterStr: QuickPickItem = await window.showQuickPick([
@@ -106,7 +106,7 @@ export default class LintManager {
             await window.withProgress(
                 {
                     location: ProgressLocation.Notification,
-                    title: "Verilog HDL: Running lint tool..."
+                    title: "Verilog-HDL/SystemVerilog: Running lint tool..."
                 }, async (progress, token) => {
                     tempLinter.removeFileDiagnostics(window.activeTextEditor.document);
                     tempLinter.startLint(window.activeTextEditor.document);

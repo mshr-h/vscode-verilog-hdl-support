@@ -93,7 +93,7 @@ function checkIfUpdated(context: ExtensionContext) {
 function showUpdatedNotif() {
     logger.log("Recently Updated");
     window
-    .showInformationMessage("Verilog HDL extension has been updated", "Open Changelog")
+    .showInformationMessage("Verilog-HDL/SystemVerilog extension has been updated", "Open Changelog")
     .then(function(str: string){
         if(str === "Open Changelog") {
                 // get path of CHANGELOG.md

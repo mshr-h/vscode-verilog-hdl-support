@@ -1,4 +1,4 @@
-# Contributing to Verilog HDL Support for VS Code
+# Contributing to Verilog-HDL/SystemVerilog Support for VS Code
 
 :+1::tada: First off, thanks for taking the time to contribute! :tada::+1:
 

@@ -31,7 +31,7 @@ function instantiateModule(srcpath: string) : Thenable<SnippetString> {
             let modules: Symbol[] = ctags.symbols.filter(tag => tag.type === "module");
             // No modules found
             if(modules.length <= 0) {
-                window.showErrorMessage("Verilog HDL: No modules found in the file");
+                window.showErrorMessage("Verilog-HDL/SystemVerilog: No modules found in the file");
                 return;
             }
             // Only one module found

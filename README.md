@@ -1,5 +1,5 @@
-# Verilog HDL support for VS Code
-Verilog HDL and SystemVerilog support for VS Code with Syntax Highlighting, Snippets, Linting and much more!
+# Verilog-HDL/SystemVerilog support for VS Code
+Verilog-HDL and SystemVerilog support for VS Code with Syntax Highlighting, Snippets, Linting and much more!
 
 [![Build Status](https://travis-ci.org/mshr-h/vscode-verilog-hdl-support.svg?branch=master)](https://travis-ci.org/mshr-h/vscode-verilog-hdl-support)
 
@@ -15,6 +15,8 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 
 - Verilog and SystemVerilog Support
 - Syntax Highlighting
+    * Verilog-HDL
+    * SystemVerilog
 - Simple Snippets
 - Linting support from:
     * Icarus Verilog - `iverilog`
