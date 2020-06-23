@@ -113,7 +113,7 @@ Use the following settings to configure the extension to your needs
 Feature | Windows | Linux | MacOS
 --- |:---:|:---:|:---:
 Basics (like Syntax highlighting) | Yes | Yes | Should work
-Icarus Verilog | Windows 10 | Ubuntu 18.04 | Not Tested
+Icarus Verilog | Windows 10 | Ubuntu 18.04 | Yes
 Vivado Logical Simulation | Yes | Not Tested | Not Tested
 Modelsim | Windows 10 | Not Tested | Not Tested
 Verilator | Windows 10 | Debian 9 | Not Tested
