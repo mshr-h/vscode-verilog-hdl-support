@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.2.1] - 2020-06-27
+### Added
+- Tested OSX + iverilog linter
+
+### Fixed
+- Fix onDidChangeActiveTextEditor/onSave callback `this` is undefined error [#106](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/106)
+
 ## [1.2.0] - 2020-06-22
 ### Added
 - Added syntax highlighting for Vivado UCF constraints 
