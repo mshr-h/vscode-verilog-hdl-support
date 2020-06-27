@@ -85,6 +85,13 @@ Use the following settings to configure the extension to your needs
 
     By default, the linter will be run at the workspace directory. Enable this option to run at the file location. If enabled, `` `include`` directives should contain file paths relative to the current file.
 
+* `verilog.linting.verilator.useWSL` (Default: False)
+
+    Run verilator under WSL (use `apg-get install verilator` to install).  Paths generated automatically by the
+    extension (the path to the Verilog file as well as the auto-generated document folder for `-I`) are translated
+    to WSL paths using the `wslpath` program.  Any other paths you specify in `verilog.linting.verilator.arguments`
+    must be manually converted.
+
 * `verilog.ctags.path` (Default: ctags)
 
     Path to your installation of Ctags if it isn't already present in your `PATH` environment variable.

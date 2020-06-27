@@ -9,6 +9,7 @@ var isWindows = process.platform === "win32";
 export default class VerilatorLinter extends BaseLinter {
     private verilatorArgs: string;
     private runAtFileLocation: boolean;
+    private useWSL: boolean;
 
     constructor(logger: Logger) {
         super("verilator", logger);
@@ -21,7 +22,8 @@ export default class VerilatorLinter extends BaseLinter {
 
     private getConfig() {
         this.verilatorArgs = <string>workspace.getConfiguration().get('verilog.linting.verilator.arguments', '');
-        this.runAtFileLocation = <boolean>workspace.getConfiguration().get('verilog.linting.verilator.runAtFileLocation')
+        this.runAtFileLocation = <boolean>workspace.getConfiguration().get('verilog.linting.verilator.runAtFileLocation');
+        this.useWSL = <boolean>workspace.getConfiguration().get('verilog.linting.verilator.useWSL');
     }
 
     protected splitTerms(line: string){
@@ -65,9 +67,20 @@ export default class VerilatorLinter extends BaseLinter {
         let svArgs : string = (doc.languageId == "systemverilog") ? "-sv" : "";                         //Systemverilog args
         let verilator: string = "verilator";
         if(isWindows) {
-            verilator = verilator + "_bin.exe";
-            docUri = docUri.replace(/\\/g, "/");
-            docFolder = docFolder.replace(/\\/g, "/");
+            if (this.useWSL == true) {
+                verilator = `wsl ${verilator}`;
+                let docUri_cmd: string = `wsl wslpath '${docUri}'`;
+                docUri = child.execSync(docUri_cmd,{}).toString().replace(/\r?\n/g, "");
+                this.logger.log(`Rewrote docUri to ${docUri} for WSL`, Log_Severity.Info);
+
+                let docFolder_cmd: string = `wsl wslpath '${docFolder}'`;
+                docFolder = child.execSync(docFolder_cmd,{}).toString().replace(/\r?\n/g, "");
+                this.logger.log(`Rewrote docFolder to ${docFolder} for WSL`, Log_Severity.Info);
+            } else {
+                verilator = verilator + "_bin.exe";
+                docUri = docUri.replace(/\\/g, "/");
+                docFolder = docFolder.replace(/\\/g, "/");
+            }
         }
         let command: string = verilator + ' ' + svArgs + ' --lint-only -I'+docFolder+ ' ' + this.verilatorArgs + ' \"' + docUri +'\"';     //command to execute
         this.logger.log(command, Log_Severity.Command);

@@ -157,6 +157,12 @@
 					"default": false,
 					"description": "If enabled, Verilator will be run at the file location for linting. Else it will be run at workspace folder. Disabled by default."
 				},
+				"verilog.linting.verilator.useWSL": {
+					"scope": "window",
+					"type": "boolean",
+					"default": false,
+					"description": "If enabled, run verilator in WSL."
+				},
 				"verilog.ctags.path": {
 					"scope": "window",
 					"type": "string",
