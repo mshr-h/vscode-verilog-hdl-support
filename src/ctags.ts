@@ -231,8 +231,8 @@ export class CtagsManager {
 
     configure() {
         console.log("ctags manager configure");
-        workspace.onDidSaveTextDocument(this.onSave);
-        window.onDidChangeActiveTextEditor(this.onDidChangeActiveTextEditor);
+        workspace.onDidSaveTextDocument(this.onSave.bind(this));
+        window.onDidChangeActiveTextEditor(this.onDidChangeActiveTextEditor.bind(this));
     }
 
     onSave(doc:TextDocument) {
