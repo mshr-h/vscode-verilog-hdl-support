@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Unreleased
+### Added
+- Support running  Verilator under WSL
+
 ## [1.2.1] - 2020-06-27
 ### Added
 - Tested OSX + iverilog linter
