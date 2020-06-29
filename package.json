@@ -13,7 +13,7 @@
 		"url": "https://github.com/mshr-h/vscode-verilog-hdl-support/issues"
 	},
 	"engines": {
-		"vscode": "^1.28.1"
+		"vscode": "^1.39.0"
 	},
 	"categories": [
 		"Programming Languages",
@@ -200,13 +200,13 @@
 		"postinstall": "node ./node_modules/vscode/bin/install"
 	},
 	"dependencies": {
-		"vsce": "^1.74.0"
+		"vsce": "^1.77.0"
 	},
 	"devDependencies": {
 		"@types/mocha": "^2.2.45",
-		"@types/node": "^7.10.0",
-		"typescript": "^3.1.1",
-		"vscode": "^1.1.21"
+		"@types/node": "^7.10.11",
+		"typescript": "^3.9.5",
+		"vscode": "^1.39.0"
 	},
 	"__metadata": {
 		"id": "feb7e3b5-7d35-4f95-a3d2-61eeaa12efa5",
