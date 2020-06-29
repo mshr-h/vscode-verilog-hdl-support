@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## [1.2.2] - 2020-06-29
 ### Added
 - Added support running Verilator under WSL [#109](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/109)
+### Changed
+- Refactored snippets for Verilog/SystemVerilog
 
 ## [1.2.1] - 2020-06-27
 ### Added

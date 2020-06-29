@@ -96,6 +96,10 @@
 			},
 			{
 				"language": "systemverilog",
+				"path": "./snippets/verilog.json"
+			},
+			{
+				"language": "systemverilog",
 				"path": "./snippets/systemverilog.json"
 			}
 		],
