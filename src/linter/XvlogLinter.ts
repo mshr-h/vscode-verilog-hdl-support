@@ -1,5 +1,5 @@
-import {Disposable, Range, TextDocument, Diagnostic, DiagnosticSeverity, DiagnosticCollection} from "vscode";
-import {ChildProcess, exec} from 'child_process';
+import { Disposable, Range, TextDocument, Diagnostic, DiagnosticSeverity, DiagnosticCollection } from "vscode";
+import { ChildProcess, exec } from 'child_process';
 import BaseLinter from "./BaseLinter";
 import { Logger, Log_Severity } from "../Logger";
 
@@ -13,7 +13,7 @@ export default class XvlogLinter extends BaseLinter {
 
     protected lint(doc: TextDocument) {
         this.logger.log('xvlog lint requested');
-        let svArgs : string = (doc.languageId == "systemverilog") ? "-sv" : "";         //Systemverilog args
+        let svArgs: string = (doc.languageId == "systemverilog") ? "-sv" : "";         //Systemverilog args
         let command = "xvlog " + svArgs + " -nolog " + doc.fileName;
         this.logger.log(command, Log_Severity.Command);
 

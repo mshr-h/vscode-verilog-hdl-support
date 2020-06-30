@@ -1,46 +1,45 @@
-import {DocumentSymbolProvider, CancellationToken, TextDocument, SymbolKind, DocumentSymbol, window} from 'vscode'
-import {Ctags, CtagsManager, Symbol} from '../ctags';
-import {Logger, Log_Severity} from '../Logger';
+import { DocumentSymbolProvider, CancellationToken, TextDocument, SymbolKind, DocumentSymbol, window } from 'vscode'
+import { Ctags, CtagsManager, Symbol } from '../ctags';
+import { Logger, Log_Severity } from '../Logger';
 
 export default class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
 
-    public docSymbols : DocumentSymbol [] = [];
+    public docSymbols: DocumentSymbol[] = [];
 
-    private logger : Logger;
-    constructor(logger: Logger)
-    {
+    private logger: Logger;
+    constructor(logger: Logger) {
         this.logger = logger
     }
 
     provideDocumentSymbols(document: TextDocument, token: CancellationToken): Thenable<DocumentSymbol[]> {
         return new Promise((resolve) => {
             this.logger.log("Symbols Requested: " + document.uri)
-            let symbols: Symbol [] = [];
+            let symbols: Symbol[] = [];
             console.log("symbol provider");
-            let activeDoc : TextDocument = window.activeTextEditor.document;
-            if(CtagsManager.ctags.doc === undefined || CtagsManager.ctags.doc.uri.fsPath !== activeDoc.uri.fsPath)
+            let activeDoc: TextDocument = window.activeTextEditor.document;
+            if (CtagsManager.ctags.doc === undefined || CtagsManager.ctags.doc.uri.fsPath !== activeDoc.uri.fsPath)
                 CtagsManager.ctags.setDocument(activeDoc);
-                let ctags : Ctags = CtagsManager.ctags;
-                // If dirty, re index and then build symbols
-                if(ctags.isDirty) {
-                    ctags.index()
+            let ctags: Ctags = CtagsManager.ctags;
+            // If dirty, re index and then build symbols
+            if (ctags.isDirty) {
+                ctags.index()
                     .then(() => {
                         symbols = ctags.symbols;
                         console.log(symbols);
-                        this.docSymbols =  this.buildDocumentSymbolList(symbols);
-                        this.logger.log(this.docSymbols.length + " top-level symbols returned", (this.docSymbols.length > 0)? Log_Severity.Info : Log_Severity.Warn)
+                        this.docSymbols = this.buildDocumentSymbolList(symbols);
+                        this.logger.log(this.docSymbols.length + " top-level symbols returned", (this.docSymbols.length > 0) ? Log_Severity.Info : Log_Severity.Warn)
                         resolve(this.docSymbols);
                     })
-                }
-                else {
-                    this.logger.log(this.docSymbols.length + " top-level symbols returned")
-                    resolve(this.docSymbols);
+            }
+            else {
+                this.logger.log(this.docSymbols.length + " top-level symbols returned")
+                resolve(this.docSymbols);
             }
         })
     }
 
-    isContainer(type: SymbolKind) : boolean {
-        switch(type) {
+    isContainer(type: SymbolKind): boolean {
+        switch (type) {
             case SymbolKind.Array:
             case SymbolKind.Boolean:
             case SymbolKind.Constant:
@@ -75,15 +74,15 @@ export default class VerilogDocumentSymbolProvider implements DocumentSymbolProv
     // find the appropriate container RECURSIVELY and add to its childrem
     // return true: if done
     // return false: if container not found
-    findContainer(con:DocumentSymbol, sym: DocumentSymbol) : boolean {
-        let res:boolean = false;
-        for(let i of con.children) {
-            if(this.isContainer(i.kind) && i.range.contains(sym.range)) {
+    findContainer(con: DocumentSymbol, sym: DocumentSymbol): boolean {
+        let res: boolean = false;
+        for (let i of con.children) {
+            if (this.isContainer(i.kind) && i.range.contains(sym.range)) {
                 res = this.findContainer(i, sym);
-                if(res) return true;
+                if (res) return true;
             }
         }
-        if(!res) {
+        if (!res) {
             con.children.push(sym);
             return true;
         }
@@ -91,33 +90,33 @@ export default class VerilogDocumentSymbolProvider implements DocumentSymbolProv
 
     // Build heiarchial DocumentSymbol[] from linear symbolsList[] using start and end position
     // TODO: Use parentscope/parenttype of symbol to construct heirarchial DocumentSymbol []
-    buildDocumentSymbolList(symbolsList : Symbol []) : DocumentSymbol[] {
-        let list : DocumentSymbol [] = [];
-        symbolsList = symbolsList.sort((a,b) : number => {
-            if(a.startPosition.isBefore(b.startPosition)) return -1;
-            if(a.startPosition.isAfter(b.startPosition)) return 1;
+    buildDocumentSymbolList(symbolsList: Symbol[]): DocumentSymbol[] {
+        let list: DocumentSymbol[] = [];
+        symbolsList = symbolsList.sort((a, b): number => {
+            if (a.startPosition.isBefore(b.startPosition)) return -1;
+            if (a.startPosition.isAfter(b.startPosition)) return 1;
             return 0;
         })
         // Add each of the symbols in order
-        for(let i of symbolsList) {
+        for (let i of symbolsList) {
             let sym: DocumentSymbol = i.getDocumentSymbol();
             // if no top level elements present
-            if(list.length === 0) {
+            if (list.length === 0) {
                 list.push(sym);
                 continue;
             }
             else {
                 // find a parent among the top level element
-                let done : boolean;
-                for(let j of list) {
-                    if(this.isContainer(j.kind) && j.range.contains(sym.range)) {
+                let done: boolean;
+                for (let j of list) {
+                    if (this.isContainer(j.kind) && j.range.contains(sym.range)) {
                         this.findContainer(j, sym);
                         done = true;
                         break;
                     }
                 }
                 // add a new top level element
-                if(!done)
+                if (!done)
                     list.push(sym);
             }
         }

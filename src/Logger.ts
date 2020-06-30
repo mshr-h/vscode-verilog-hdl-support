@@ -1,4 +1,4 @@
-import {OutputChannel, workspace, window} from 'vscode'
+import { OutputChannel, workspace, window } from 'vscode'
 
 const logChannel: OutputChannel = window.createOutputChannel("Verilog");
 
@@ -25,9 +25,9 @@ export class Logger {
         this.isEnabled = <boolean>workspace.getConfiguration().get('verilog.logging.enabled');
     }
 
-    log(msg: string, severity:Log_Severity = Log_Severity.Info) {
-        if(this.isEnabled) {
-            if(severity == Log_Severity.Command)
+    log(msg: string, severity: Log_Severity = Log_Severity.Info) {
+        if (this.isEnabled) {
+            if (severity == Log_Severity.Command)
                 logChannel.appendLine("> " + msg)
             else
                 logChannel.appendLine("[" + Log_Severity[severity] + "] " + msg)

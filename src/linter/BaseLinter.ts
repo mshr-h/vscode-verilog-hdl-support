@@ -3,7 +3,7 @@ import { Logger } from "../Logger";
 
 export default abstract class BaseLinter {
 	protected diagnostic_collection: DiagnosticCollection;
-	name : string;
+	name: string;
 	protected logger: Logger;
 
 	constructor(name: string, logger: Logger) {
