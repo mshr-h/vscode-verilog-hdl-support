@@ -53,6 +53,11 @@ Add the installation path of Ctags binary in your `PATH` environment variable or
 
 Use the following settings to configure the extension to your needs
 
+* `verilog.languageServer` (Default: `none` )
+
+    Select the Language Server. Currently supports [svls](https://github.com/dalance/svls) .
+    Experimental support. 
+
 * `verilog.linting.linter` (Default: `none` )
 
     Choose the linter for you. Possible values are

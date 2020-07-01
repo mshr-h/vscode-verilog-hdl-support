@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.3.0] - 2020-07-01
+### Added
+- Added experimental suppport for [svls](https://github.com/dalance/svls) Language Server.
+
 ## [1.2.2] - 2020-06-29
 ### Added
 - Added support running Verilator under WSL [#109](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/109)

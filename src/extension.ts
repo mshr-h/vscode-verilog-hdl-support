@@ -17,6 +17,14 @@ import VerilogCompletionItemProvider from "./providers/CompletionItemProvider";
 // Commands
 import * as ModuleInstantiation from "./commands/ModuleInstantiation"
 
+// Language Server
+import {
+    LanguageClient,
+    LanguageClientOptions,
+    ServerOptions,
+    TransportKind
+} from 'vscode-languageclient';
+
 // Logger
 import { Logger } from "./Logger"
 
@@ -24,6 +32,7 @@ let lintManager: LintManager;
 let logger: Logger = new Logger();
 export let ctagsManager: CtagsManager = new CtagsManager(logger);
 var extensionID: string = "mshr-h.veriloghdl";
+let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
     console.log(extensionID + ' is now active!');
@@ -66,8 +75,41 @@ export function activate(context: ExtensionContext) {
     commands.registerCommand("verilog.instantiateModule", ModuleInstantiation.instantiateModuleInteract);
     // Register command for manual linting
     commands.registerCommand("verilog.lint", lintManager.RunLintTool);
-    
+
+    // Configure svls language server
+    configLanguageServer();
+
     logger.log("Activation complete");
+}
+
+function configLanguageServer() {
+    let langserver: string = <string>workspace.getConfiguration().get('verilog.languageServer', 'none');
+    switch (langserver) {
+        case "svls":
+            let serverOptions: ServerOptions = {
+                run: { command: "svls" },
+                debug: { command: "svls", args: ["--debug"] },
+            };
+
+            let clientOptions: LanguageClientOptions = {
+                documentSelector: [{ scheme: 'file', language: 'systemverilog' }],
+            };
+
+            client = new LanguageClient(
+                'svls',
+                'SystemVerilog language server',
+                serverOptions,
+                clientOptions
+            );
+            client.start();
+            console.log("Language server svls started.");
+            break;
+        default:
+            console.log("Invalid language server name.")
+            client = null;
+            break;
+    }
+
 }
 
 function checkIfUpdated(context: ExtensionContext) {
