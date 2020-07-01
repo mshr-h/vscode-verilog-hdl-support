@@ -68,13 +68,13 @@ Use the following settings to configure the extension to your needs
 
 * `verilog.linting.iverilog.runAtFileLocation` (Default: `false` )
 
-    By default, the linter will be run at the workspace directory. Enable this option to run at the file location. If enabled, ` ` ` include`` directives should contain file paths relative to the current file.
+    By default, the linter will be run at the workspace directory. Enable this option to run at the file location. If enabled, ` `  ` include` ` directives should contain file paths relative to the current file.
 
 * `verilog.linting.modelsim.arguments` (Default: nothing)
 
     Add custom arguments to Modelsim for linting.
 
-`verilog.linting.modelsim.work` (Default: nothing)
+* `verilog.linting.modelsim.work` (Default: nothing)
 
     Add custom work library to Modelsim for linting.
 
@@ -84,7 +84,7 @@ Use the following settings to configure the extension to your needs
 
 * `verilog.linting.verilator.runAtFileLocation` (Default: `false` )
 
-    By default, the linter will be run at the workspace directory. Enable this option to run at the file location. If enabled, ` ` ` include`` directives should contain file paths relative to the current file.
+    By default, the linter will be run at the workspace directory. Enable this option to run at the file location. If enabled, ` `  ` include` ` directives should contain file paths relative to the current file.
 
 * `verilog.linting.verilator.useWSL` (Default: `false` )
 
@@ -114,7 +114,7 @@ Use the following settings to configure the extension to your needs
 ## Usage Instructions
 
 * All linters expect the executable binary ( `iverilog` , `verilator` ...) to be present in the `PATH` environment variable, unless otherwise specified.
-* While using ` ` ` include` ` directives, the path to the files should be relative to the workspace directory, unless ` runAtFileLocation` is enabled (not supported by all linters)
+* While using ` `  ` include`  ` directives, the path to the files should be relative to the workspace directory, unless ` runAtFileLocation` is enabled (not supported by all linters)
 
 ## Compatability
 
