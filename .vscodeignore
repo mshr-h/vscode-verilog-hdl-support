@@ -2,6 +2,10 @@
 test/**
 .gitignore
 tsconfig.json
+src/**
 *.vsix
 build.sh
-node_modules
+**/tsconfig.json
+**/tslint.json
+**/*.map
+**/*.ts
