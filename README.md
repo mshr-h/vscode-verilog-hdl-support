@@ -33,6 +33,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 
 ### In Progress / Future
 
+* Language Server support
 * Improvements in the newly added features
 
 [Take a look at our list of planned features](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/25)
@@ -131,6 +132,7 @@ Use the following settings to configure the extension to your needs
 | Modelsim                          | Windows 10 | Ubuntu 18.04 |  Not Tested |
 | Verilator                         | Windows 10 |   Debian 9   |  Not Tested |
 | Ctags Integration                 | Windows 10 | Ubuntu 18.10 |  Not Tested |
+| Language Server                   | Not Tested |  Not Tested  | macOS 10.15 |
 
 If you have tested the linters in new platforms or have issues with them, feel free to file an issue.
 
