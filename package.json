@@ -122,13 +122,13 @@
 						"none"
 					],
 					"default": "none",
-					"description": "Select the verilog linter. Possible values are 'iverilog', 'verilator', xvlog' or 'none'"
+					"description": "Select the verilog linter. Possible values are 'iverilog', 'verilator', xvlog' or 'none'."
 				},
 				"verilog.linting.iverilog.arguments": {
 					"scope": "window",
 					"type": "string",
 					"default": "",
-					"description": "Add Icarus Verilog arguments here (like macros). They will be added to Icarus Verilog while linting (The command \"-t null\" will be added by the linter by default)"
+					"description": "Add Icarus Verilog arguments here (like macros). They will be added to Icarus Verilog while linting (The command \"-t null\" will be added by the linter by default)."
 				},
 				"verilog.linting.iverilog.runAtFileLocation": {
 					"scope": "window",
@@ -158,7 +158,7 @@
 					"scope": "window",
 					"type": "string",
 					"default": "",
-					"description": "Add Verilator arguments here (like macros). They will be added to Verilator while linting (The command \"--lint-only -I<document folder>\" will be added by the linter by default)"
+					"description": "Add Verilator arguments here (like macros). They will be added to Verilator while linting (The command \"--lint-only -I<document folder>\" will be added by the linter by default)."
 				},
 				"verilog.linting.verilator.runAtFileLocation": {
 					"scope": "window",
@@ -182,7 +182,7 @@
 					"scope": "window",
 					"type": "boolean",
 					"default": false,
-					"description": "Enable logging for this extension"
+					"description": "Enable logging for this extension."
 				}
 			}
 		},
