@@ -145,3 +145,4 @@ If you have tested the linters in new platforms or have issues with them, feel f
 - [Textmate Package for Verilog](https://github.com/textmate/verilog.tmbundle)
 - [SublimeLinter-contrib-iverilog](https://github.com/jfcherng/SublimeLinter-contrib-iverilog)
 - [SublimeLinter-contrib-vlog](https://github.com/dave2pi/SublimeLinter-contrib-vlog)
+- [svls](https://github.com/dalance/svls)
