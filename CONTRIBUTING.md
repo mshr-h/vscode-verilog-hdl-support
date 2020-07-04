@@ -10,17 +10,17 @@ Or, any other contribution is also welcome! (fixing typo, refactoring, documenta
 
 ## Steps to follow
 
-01. File an issue about your new feature
-02. Fork this repository
-03. Create your feature branch
-04. Make your changes
-05. Add your changes to __CHANGELOG__ under "Unreleased"
-06. Edit the __README__
+1.  File an issue about your new feature
+2.  Fork this repository
+3.  Create your feature branch
+4.  Make your changes
+5.  Add your changes to **CHANGELOG** under "Unreleased"
+6.  Edit the **README**
     - List of Configuration Settings
     - Table of Compatability
     - Add References/Thanks
     - anything else...
-07. Commit your changes
-08. Push to the branch
-09. Create a new Pull Request
+7.  Commit your changes
+8.  Push to the branch
+9.  Create a new Pull Request
 10. And wait patiently :smile:
