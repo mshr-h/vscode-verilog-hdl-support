@@ -34,6 +34,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 ### In Progress / Future
 
 - Language Server support
+  - Currently only supports [svls](https://github.com/dalance/svls)
 - Improvements in the newly added features
 
 [Take a look at our list of planned features](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/25)
@@ -53,11 +54,6 @@ Add the installation path of Ctags binary in your `PATH` environment variable or
 ## Configuration Settings
 
 Use the following settings to configure the extension to your needs
-
-- `verilog.languageServer` (Default: `none` )
-
-  Select the Language Server. Currently supports [svls](https://github.com/dalance/svls) .
-  Experimental support.
 
 - `verilog.linting.linter` (Default: `none` )
 
@@ -103,6 +99,12 @@ Use the following settings to configure the extension to your needs
 - `verilog.ctags.path` (Default: `ctags` )
 
   Path to your installation of Ctags if it isn't already present in your `PATH` environment variable.
+
+- `verilog.languageServer` (Default: `none` )
+
+  Select the Language Server. Currently supports [svls](https://github.com/dalance/svls) .
+  Make sure `svls` is in your`$PATH` environmental variable.
+  Experimental support.
 
 - `verilog.logging.enabled` (Default: `false` )
 
