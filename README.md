@@ -1,6 +1,6 @@
-# Verilog-HDL/SystemVerilog support for VS Code
+# Verilog-HDL/SystemVerilog/Bluespec SystemVerilog support for VS Code
 
-Verilog-HDL and SystemVerilog support for VS Code with Syntax Highlighting, Snippets, Linting and much more!
+Verilog-HDL, SystemVerilog and Bluespec SystemVerilog support for VS Code with Syntax Highlighting, Snippets, Linting and much more!
 
 [![Build Status](https://travis-ci.org/mshr-h/vscode-verilog-hdl-support.svg?branch=master)](https://travis-ci.org/mshr-h/vscode-verilog-hdl-support)
 
