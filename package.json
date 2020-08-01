@@ -55,6 +55,19 @@
 				"configuration": "./systemverilog.configuration.json"
 			},
 			{
+				"id": "bsv",
+				"aliases": [
+					"BluespecSystemVerilog",
+					"Bluespec SystemVerilog",
+					"BSV"
+				],
+				"extensions": [
+					".bsv",
+					".BSV"
+				],
+				"configuration": "./BSV.configuration.json"
+			},
+			{
 				"id": "ucf",
 				"aliases": [
 					"vivado ucf",
@@ -76,6 +89,11 @@
 				"language": "systemverilog",
 				"scopeName": "source.systemverilog",
 				"path": "./syntaxes/systemverilog.tmLanguage"
+			},
+			{
+				"language": "bsv",
+				"scopeName": "source.bsv",
+				"path": "./syntaxes/BSV.tmLanguage"
 			},
 			{
 				"language": "ucf",

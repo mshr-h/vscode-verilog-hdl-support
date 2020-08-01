@@ -17,6 +17,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 - Syntax Highlighting
   - Verilog-HDL
   - SystemVerilog
+  - Bluespec SystemVerilog
   - Vivado UCF constraints
 - Simple Snippets
 - Linting support from:
@@ -147,4 +148,5 @@ If you have tested the linters in new platforms or have issues with them, feel f
 - [Textmate Package for Verilog](https://github.com/textmate/verilog.tmbundle)
 - [SublimeLinter-contrib-iverilog](https://github.com/jfcherng/SublimeLinter-contrib-iverilog)
 - [SublimeLinter-contrib-vlog](https://github.com/dave2pi/SublimeLinter-contrib-vlog)
+- [Sublime Text Bluespec SystemVerilog](https://github.com/thotypous/sublime-bsv)
 - [svls](https://github.com/dalance/svls)
