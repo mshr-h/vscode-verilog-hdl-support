@@ -58,10 +58,10 @@
 				"id": "ucf",
 				"aliases": [
 					"vivado ucf",
-					"ucf"
+					"ucf constraints"
 				],
 				"extensions": [
-					"ucf"
+					".ucf"
 				],
 				"configuration": "./ucfconstraints.configuration.json"
 			}
