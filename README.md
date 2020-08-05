@@ -19,6 +19,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - SystemVerilog
   - Bluespec SystemVerilog
   - Vivado UCF constraints
+  - Synopsys Design Constraints
 - Simple Snippets
 - Linting support from:
   - Icarus Verilog - `iverilog`
@@ -150,3 +151,4 @@ If you have tested the linters in new platforms or have issues with them, feel f
 - [SublimeLinter-contrib-vlog](https://github.com/dave2pi/SublimeLinter-contrib-vlog)
 - [Sublime Text Bluespec SystemVerilog](https://github.com/thotypous/sublime-bsv)
 - [svls](https://github.com/dalance/svls)
+- [Sublime EDA](https://github.com/tschinz/sublime_eda)

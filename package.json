@@ -2,7 +2,7 @@
 	"name": "veriloghdl",
 	"displayName": "Verilog-HDL/SystemVerilog/Bluespec SystemVerilog",
 	"description": "Verilog-HDL/SystemVerilog/Bluespec SystemVerilog support for VS Code",
-	"version": "1.3.1",
+	"version": "1.3.2",
 	"publisher": "mshr-h",
 	"homepage": "https://github.com/mshr-h/vscode-verilog-hdl-support",
 	"repository": {
@@ -77,6 +77,16 @@
 					".ucf"
 				],
 				"configuration": "./ucfconstraints.configuration.json"
+			},
+			{
+				"id": "sdc",
+				"aliases": [
+					"Synopsys Design Constraint"
+				],
+				"extensions": [
+					".sdc"
+				],
+				"configuration": "./sdc.configuration.json"
 			}
 		],
 		"grammars": [
@@ -101,6 +111,11 @@
 				"path": "./syntaxes/ucf.tmLanguage"
 			},
 			{
+				"language": "sdc",
+				"scopeName": "source.sdc",
+				"path": "./syntaxes/sdc.tmLanguage"
+			},
+			{
 				"scopeName": "markdown.verilog.codeblock",
 				"path": "./syntaxes/codeblock.json",
 				"injectTo": [
@@ -108,7 +123,8 @@
 				],
 				"embeddedLanguages": {
 					"meta.embedded.block.verilog": "source.verilog",
-					"meta.embedded.block.systemverilog": "source.systemverilog"
+					"meta.embedded.block.systemverilog": "source.systemverilog",
+					"meta.embedded.block.sdc": "source.sdc"
 				}
 			}
 		],

@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.3.2] - 2020-08-05
+
+### Added
+
+- Added syntax suppport for Synopsys Design Constraints.
+
 ## [1.3.1] - 2020-08-01
 
 ### Added
