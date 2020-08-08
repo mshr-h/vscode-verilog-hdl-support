@@ -256,7 +256,7 @@
 				</dict>
 				<dict>
 					<key>match</key>
-					<string>^\s*`((cell)?define|default_(decay_time|nettype|trireg_strength)|delay_mode_(path|unit|zero)|ifdef|include|end(if|celldefine)|else|(no)?unconnected_drive|resetall|timescale|undef)\b</string>
+					<string>^\s*`((cell)?define|default_(decay_time|nettype|trireg_strength)|delay_mode_(path|unit|zero)|ifdef|ifndef|include|end(if|celldefine)|else|(no)?unconnected_drive|resetall|timescale|undef)\b</string>
 					<key>name</key>
 					<string>keyword.other.compiler.directive.verilog</string>
 				</dict>
