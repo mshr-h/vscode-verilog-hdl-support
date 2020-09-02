@@ -88,35 +88,37 @@ export default class VerilatorLinter extends BaseLinter {
 
             // Parse output lines
             lines.forEach((line, i) => {
-                if (line.startsWith('%')) {
-                    // remove the %
-                    line = line.substr(1)
+                // Error for our file
+                if (line.startsWith('%') && line.search(docUri) > 0) {
+                    let rex = line.match(/%(\w+):\s*(?:[^:]+):\s*(\d+):(?:\s*(\d+):)?\s*(\s*.+)/);
 
-                    // was it for a submodule
-                    if (line.search(docUri) > 0) {
-                        // remove the filename
-                        line = line.replace(docUri, '');
-                        line = line.replace(/\s+/g, ' ').trim();
+                    if (rex[0].length > 0)
+                    {
+                        let severity = this.getSeverity(rex[1]);
+                        let lineNum  = rex[2] - 1;
+                        let colNum   = rex[3] - 1;
+                        let message  = rex[4];
+                        
+                        colNum = isNaN(colNum) ? 0 : colNum; // for older Verilator versions (< 4.030 ~ish)
 
-                        let terms = this.splitTerms(line);
-                        let severity = this.getSeverity(terms[0]);
-                        let message = terms.slice(2).join(' ')
-                        let lineNum = parseInt(terms[1].trim()) - 1;
-
-                        if (lineNum != NaN) {
-                            console.log(terms[1].trim() + ' ' + message);
+                        if (!isNaN(lineNum)) {
+                            console.log(severity + ': [' + lineNum + '] ' + message);
 
                             diagnostics.push({
                                 severity: severity,
-                                range: new Range(lineNum, 0, lineNum, Number.MAX_VALUE),
+                                range: new Range(lineNum, colNum, lineNum, Number.MAX_VALUE),
                                 message: message,
                                 code: 'verilator',
                                 source: 'verilator'
                             });
                         }
                     }
+                    else
+                    {
+                        this.logger.log('failed to parse error: ' + line, Log_Severity.Warning);
+                    }
                 }
-            })
+            });
             this.logger.log(diagnostics.length + ' errors/warnings returned');
             this.diagnostic_collection.set(doc.uri, diagnostics)
         })
