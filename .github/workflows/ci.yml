@@ -18,10 +18,10 @@ jobs:
         with:
           node-version: 12
       - name: Install dependencies
-        run: |
-        npm install
-        npm install vsce
-      - name: Run vscode:prepublish
+        run: npm install
+      - name: Install vsce
+        run: npm install vsce
+        - name: Run vscode:prepublish
         run: npm run vscode:prepublish
       - name: Run headless test
         uses: GabrielBB/xvfb-action@v1.0
