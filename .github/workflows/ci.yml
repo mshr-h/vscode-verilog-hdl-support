@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Install vsce
-        run: npm install vsce
+        run: npm install -g vsce
       - name: Run vscode:prepublish
         run: npm run vscode:prepublish
       - name: Run headless test
