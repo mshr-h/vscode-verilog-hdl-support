@@ -115,7 +115,7 @@ export default class VerilatorLinter extends BaseLinter {
                     }
                     else
                     {
-                        this.logger.log('failed to parse error: ' + line, Log_Severity.Warning);
+                        this.logger.log('failed to parse error: ' + line, Log_Severity.Warn);
                     }
                 }
             });
