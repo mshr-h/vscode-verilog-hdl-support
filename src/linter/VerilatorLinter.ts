@@ -95,8 +95,8 @@ export default class VerilatorLinter extends BaseLinter {
                     if (rex[0].length > 0)
                     {
                         let severity = this.getSeverity(rex[1]);
-                        let lineNum  = rex[2] - 1;
-                        let colNum   = rex[3] - 1;
+                        let lineNum  = Number(rex[2]) - 1;
+                        let colNum   = Number(rex[3]) - 1;
                         let message  = rex[4];
                         
                         colNum = isNaN(colNum) ? 0 : colNum; // for older Verilator versions (< 4.030 ~ish)
