@@ -25,3 +25,9 @@ jobs:
         uses: GabrielBB/xvfb-action@v1.0
         with:
           run: npm test
+      - name: Build vsix package
+        run: vsce package
+      - name: Upload vsix package
+        uses: actions/upload-artifact@v2
+        with:
+          path: veriloghdl-*.vsix
