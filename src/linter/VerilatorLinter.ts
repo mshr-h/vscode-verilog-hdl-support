@@ -92,7 +92,7 @@ export default class VerilatorLinter extends BaseLinter {
                 if (line.startsWith('%') && line.search(docUri) > 0) {
                     let rex = line.match(/%(\w+):\s*(?:[^:]+):\s*(\d+):(?:\s*(\d+):)?\s*(\s*.+)/);
 
-                    if (rex[0].length > 0) {
+                    if (rex && rex[0].length > 0) {
                         let severity = this.getSeverity(rex[1]);
                         let lineNum = Number(rex[2]) - 1;
                         let colNum = Number(rex[3]) - 1;
