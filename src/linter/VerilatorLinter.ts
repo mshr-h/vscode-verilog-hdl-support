@@ -90,14 +90,14 @@ export default class VerilatorLinter extends BaseLinter {
             lines.forEach((line, i) => {
                 // Error for our file
                 if (line.startsWith('%') && line.search(docUri) > 0) {
-                    let rex = line.match(/%(\w+):\s*(\w+:)?(?:[^:]+):\s*(\d+):(?:\s*(\d+):)?\s*(\s*.+)/);
+                    let rex = line.match(/%(\w+)(-[A-Z0-9_]+)?:\s*(\w+:)?(?:[^:]+):\s*(\d+):(?:\s*(\d+):)?\s*(\s*.+)/);
 
                     if (rex && rex[0].length > 0) {
                         let severity = this.getSeverity(rex[1]);
-                        let lineNum = Number(rex[3]) - 1;
-                        let colNum = Number(rex[4]) - 1;
-                        let message = rex[5];
-
+                        let lineNum = Number(rex[4]) - 1;
+                        let colNum = Number(rex[5]) - 1;
+                        let message = rex[6];
+                        // Type of warning is in rex[2]
                         colNum = isNaN(colNum) ? 0 : colNum; // for older Verilator versions (< 4.030 ~ish)
 
                         if (!isNaN(lineNum)) {
