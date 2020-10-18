@@ -1,8 +1,8 @@
 on: [push, pull_request]
 
 jobs:
-  test:
-    name: Test
+  run:
+    name: Upload vsix package
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
