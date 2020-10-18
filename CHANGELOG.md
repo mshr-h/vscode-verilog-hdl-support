@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.3.4] - 2020-10-17
+
+### Fixed
+
+- Include null check for Verilator regex [#114](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/114)
+
 ## [1.3.3] - 2020-09-06
 
 ### Fixed
