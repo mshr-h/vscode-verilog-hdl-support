@@ -4,9 +4,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## [Unreleased]
+## [1.3.5] - 2020-10-24
 
-- Add double quotation marks to fix path issue for Xvlog Linter
+- Fix path issue for Xvlog Linter [#119](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/119)
 
 ## [1.3.4] - 2020-10-17
 
