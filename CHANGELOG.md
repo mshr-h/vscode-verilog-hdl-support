@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.3.6] - 2020-11-21
+
+### Added
+
+- Add arguments support for xvlog linter [#122](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/122)
+
 ## [1.3.5] - 2020-10-24
 
 ### Fixed

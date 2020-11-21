@@ -2,7 +2,7 @@
 	"name": "veriloghdl",
 	"displayName": "Verilog-HDL/SystemVerilog/Bluespec SystemVerilog",
 	"description": "Verilog-HDL/SystemVerilog/Bluespec SystemVerilog support for VS Code",
-	"version": "1.3.5",
+	"version": "1.3.6",
 	"publisher": "mshr-h",
 	"homepage": "https://github.com/mshr-h/vscode-verilog-hdl-support",
 	"repository": {
@@ -157,6 +157,12 @@
 					],
 					"default": "none",
 					"description": "Select the verilog linter. Possible values are 'iverilog', 'verilator', xvlog' or 'none'."
+				},
+				"verilog.linting.xvlog.arguments": {
+					"scope": "window",
+					"type": "string",
+					"default": "",
+					"description": "Add Modelsim arguments here. They will be added to xvlog while linting."
 				},
 				"verilog.linting.iverilog.arguments": {
 					"scope": "window",
