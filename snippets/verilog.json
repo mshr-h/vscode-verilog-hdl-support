@@ -1,6 +1,6 @@
 {
 	"module with parameters": {
-		"prefix": "paramod",
+		"prefix": ["paramod", "module #"],
 		"body": [
 			"module ${1:moduleName} #(",
 			"\t${2:parameters}",
@@ -24,7 +24,7 @@
 		"description": "Insert a module without parameter"
 	},
 	"always": {
-		"prefix": "al",
+		"prefix": "always",
 		"body": [
 			"always @($1) begin",
 			"\t$2",
@@ -33,7 +33,7 @@
 		"description": "always @()"
 	},
 	"alwaysposclk": {
-		"prefix": "alclk",
+		"prefix": ["alclk", "alwaysposclk"],
 		"body": [
 			"always @(posedge clk $1) begin",
 			"\t$2",
@@ -68,14 +68,14 @@
 		"description": "reg reg_name;"
 	},
 	"regarray": {
-		"prefix": "rega",
+		"prefix": ["regarray", "reg ["],
 		"body": [
 			"reg [$1:$2] $3;"
 		],
 		"description": "reg [N:0] reg_name;"
 	},
 	"regmemory": {
-		"prefix": "regm",
+		"prefix": ["regmemory","memory"],
 		"body": [
 			"reg [$1:$2] $3 [$4:$5];"
 		],
@@ -89,35 +89,35 @@
 		"description": "wire wire_name;"
 	},
 	"wirearray": {
-		"prefix": "wirea",
+		"prefix": ["wirearray", "wire ["],
 		"body": [
 			"wire [$1:$2] $3;"
 		],
 		"description": "wire [N:0] wire_name;"
 	},
 	"include": {
-		"prefix": "inc",
+		"prefix": ["include", "`include"],
 		"body": [
 			"`include \"$1\""
 		],
 		"description": "`include \"..\""
 	},
 	"define": {
-		"prefix": "def",
+		"prefix": ["define", "`define"],
 		"body": [
 			"`def $1 = $2"
 		],
 		"description": "`define var = val"
 	},
 	"parameter": {
-		"prefix": "param",
+		"prefix": "parameter",
 		"body": [
 			"parameter $1 = $2;"
 		],
 		"description": "paramter var = val;"
 	},
 	"ternary": {
-		"prefix": "ter",
+		"prefix": "ternary",
 		"body": [
 			"$1 ? $2 : $3"
 		],
@@ -172,7 +172,7 @@
 		"description": "function (...) ... endfunction"
 	},
 	"testbench template": {
-		"prefix": "tb",
+		"prefix": ["tb", "testbench"],
 		"body": [
 			"`include \"$1.v\"",
 			"`default_nettype none",
