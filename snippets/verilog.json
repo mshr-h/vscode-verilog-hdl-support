@@ -23,6 +23,13 @@
 		],
 		"description": "Insert a module without parameter"
 	},
+	"instantiate module": {
+		"prefix": ["set module", "instantiate module"],
+		"body": [
+			"${1:mod_name} ${2:instance_name} (${3:.*}$0);"
+		],
+		"description": "set module, mod i0 (.*);"
+	},
 	"always": {
 		"prefix": "always",
 		"body": [
@@ -30,7 +37,7 @@
 			"\t$2",
 			"end"
 		],
-		"description": "always @()"
+		"description": "Insert an always block"
 	},
 	"alwaysposclk": {
 		"prefix": ["alclk", "alwaysposclk"],
@@ -41,14 +48,23 @@
 		],
 		"description": "always @(posedge clk)"
 	},
-	"beginend": {
+	"begin/end": {
 		"prefix": "begin",
 		"body": [
 			"begin",
 			"\t$1",
 			"end"
 		],
-		"description": "begin ... end"
+		"description": "Insert a begin ... end block"
+	},
+	"initial": {
+		"prefix": "initial",
+		"body": [
+			"initial begin",
+			"\t$0",
+			"end"
+		],
+		"description": "initial begin ... end"
 	},
 	"case": {
 		"prefix": "case",
@@ -95,6 +111,18 @@
 		],
 		"description": "wire [N:0] wire_name;"
 	},
+	"array": {
+		"prefix": "array",
+		"body": "[${1:8}:${2:0}]$0",
+		"description": "insert [x:y]"
+	},
+	"parameter": {
+		"prefix": "parameter",
+		"body": [
+			"parameter $1 = $2;"
+		],
+		"description": "paramter var = val;"
+	},
 	"include": {
 		"prefix": ["include", "`include"],
 		"body": [
@@ -109,12 +137,11 @@
 		],
 		"description": "`define var = val"
 	},
-	"parameter": {
-		"prefix": "parameter",
+	"timescale": {
+		"prefix": ["ts", "timescale", "`timescale"],
 		"body": [
-			"parameter $1 = $2;"
-		],
-		"description": "paramter var = val;"
+			"`timescale ${1:1ps}/${2:1ps}$0"
+		]
 	},
 	"ternary": {
 		"prefix": "ternary",
@@ -160,6 +187,15 @@
 			"end"
 		],
 		"description": "while (...) begin ... end"
+	},
+	"forever": {
+		"prefix": "forever",
+		"body": [
+			"forever begin",
+			"\t$0",
+			"end"
+		],
+		"description": "forever begin ... end"
 	},
 	"function": {
 		"prefix": "function",

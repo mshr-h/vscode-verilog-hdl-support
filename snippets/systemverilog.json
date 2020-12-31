@@ -23,30 +23,8 @@
 			"always_latch begin : ${1:blockName}",
 			"\t$0",
 			"end"
-		]
-	},
-	"include": {
-		"prefix": "inc",
-		"body": [
-			"`include \"$1\""
 		],
-		"description": "`include \"..\""
-	},
-	"parameter": {
-		"prefix": "parameter",
-		"body": [
-			"parameter $1 = $2;"
-		],
-		"description": "paramter var = val;"
-	},
-	"initial": {
-		"prefix": "initial",
-		"body": [
-			"initial begin",
-			"\t$0",
-			"end"
-		],
-		"description": "initial begin ... end"
+		"description": "Insert an always_latch block"
 	},
 	"bit": {
 		"prefix": "bit",
@@ -71,11 +49,6 @@
 	"this": {
 		"prefix": "this",
 		"body": "this"
-	},
-	"array": {
-		"prefix": "array",
-		"body": "[${1:8}:${2:0}]$0",
-		"description": "insert [x:y]"
 	},
 	"typedef struct packed": {
 		"prefix": "typedef struct packed",
@@ -133,19 +106,6 @@
 		],
 		"description": "$display(\"...\", params...)"
 	},
-	"timescale": {
-		"prefix": ["ts", "timescale", "`timescale"],
-		"body": [
-			"`timescale ${1:1ps}/${2:1ps}$0"
-		]
-	},
-	"set Module": {
-		"prefix": ["set module", "instantiate module"],
-		"body": [
-			"${1:mod_name} ${2:instance_name} (${3:.*}$0);"
-		],
-		"description": "set module, mod i0 (.*);"
-	},
 	"typedef enum": {
 		"prefix": "typedef enum",
 		"body": [
@@ -173,7 +133,7 @@
 		],
 		"description": "insert mailbox instance"
 	},
-	"Associative array": {
+	"associative array": {
 		"prefix": "AA",
 		"body": "${1:data_type} ${2:name}[${3:index_type}];$0",
 		"description": "insert Associative array(AA)."
@@ -194,14 +154,5 @@
 			"join"
 		],
 		"description": "fork ... join"
-	},
-	"forever": {
-		"prefix": "forever",
-		"body": [
-			"forever begin",
-			"\t$0",
-			"end"
-		],
-		"description": "forever begin ... end"
 	}
 }
