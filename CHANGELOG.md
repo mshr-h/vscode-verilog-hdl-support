@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Unreleased
+
+### Added
+
+- Add always_latch snippet [#99](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/99)
+
+### Changed
+
+- Change prefix for module without parameters [#94](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/94)
+
 ## [1.3.6] - 2020-11-21
 
 ### Added

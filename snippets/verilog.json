@@ -13,7 +13,7 @@
 		"description": "Insert a module with parameter"
 	},
 	"module without parameters": {
-		"prefix": "mod",
+		"prefix": "module",
 		"body": [
 			"module ${1:moduleName} (",
 			"\t${2:ports}",

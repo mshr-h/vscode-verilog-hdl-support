@@ -17,6 +17,14 @@
 		],
 		"description": "Insert an always_comb block"
 	},
+	"always_latch block": {
+		"prefix": "always_latch",
+		"body": [
+			"always_latch begin : ${1:blockName}",
+			"\t$0",
+			"end"
+		]
+	},
 	"include": {
 		"prefix": "inc",
 		"body": [
