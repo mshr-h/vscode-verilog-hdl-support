@@ -66,6 +66,11 @@
 		],
 		"description": "Insert a begin ... end block"
 	},
+	"end": {
+		"prefix": "end",
+		"body": "end",
+		"description": "Insert end keyword"
+	},
 	"initial": {
 		"prefix": "initial",
 		"body": [
