@@ -48,6 +48,15 @@
 		],
 		"description": "always @(posedge clk)"
 	},
+	"alwaysnegclk": {
+		"prefix": ["alnegclk", "alwaysnegclk"],
+		"body": [
+			"always @(negedge clk $1) begin",
+			"\t$2",
+			"end"
+		],
+		"description": "always @(negedge clk)"
+	},
 	"begin/end": {
 		"prefix": "begin",
 		"body": [
@@ -75,6 +84,26 @@
 			"endcase"
 		],
 		"description": "case () ... endcase"
+	},
+	"casex": {
+		"prefix": "casex",
+		"body": [
+			"casex (${1:param})",
+			"\t$2: $3",
+			"\tdefault: $4",
+			"endcase"
+		],
+		"description": "casex () ... endcase"
+	},
+	"casez": {
+		"prefix": "casez",
+		"body": [
+			"casez (${1:param})",
+			"\t$2: $3",
+			"\tdefault: $4",
+			"endcase"
+		],
+		"description": "casez () ... endcase"
 	},
 	"reg": {
 		"prefix": "reg",
@@ -123,6 +152,21 @@
 		],
 		"description": "paramter var = val;"
 	},
+	"localparam": {
+		"prefix": "localparam",
+		"body": "localparam $1 = $2",
+		"description": "localparam var = val"
+	},
+	"integer": {
+		"prefix": "integer",
+		"body": "integer $1",
+		"description": "integer int_name"
+	},
+	"signed": {
+		"prefix": "signed",
+		"body": "signed $1 $2",
+		"description": "signed datatype name"
+	},
 	"include": {
 		"prefix": ["include", "`include"],
 		"body": [
@@ -133,15 +177,45 @@
 	"define": {
 		"prefix": ["define", "`define"],
 		"body": [
-			"`def $1 = $2"
+			"`define $1"
 		],
-		"description": "`define var = val"
+		"description": "`define macro = val"
+	},
+	"ifdef": {
+		"prefix": ["ifdef", "`ifdef"],
+		"body": "`ifdef $1",
+		"description": "`ifdef macro"
+	},
+	"ifndef": {
+		"prefix": ["ifndef", "`ifndef"],
+		"body": "`ifndef $1",
+		"description": "`ifndef macro"
+	},
+	"elsif": {
+		"prefix": ["elsif", "`elsif"],
+		"body": "`elsif $1",
+		"description": "`elsif macro"
+	},
+	"endif": {
+		"prefix": ["endif", "`endif"],
+		"body": "`endif $1",
+		"description": "`endif macro"
+	},
+	"undef": {
+		"prefix": ["undef", "`undef"],
+		"body": "`undef $1",
+		"description": "`undef macro"
 	},
 	"timescale": {
 		"prefix": ["ts", "timescale", "`timescale"],
 		"body": [
 			"`timescale ${1:1ps}/${2:1ps}$0"
 		]
+	},
+	"default_nettype": {
+		"prefix": ["default_nettype", "`default_nettype"],
+		"body": "`default_nettype ${1:none)",
+		"description": "Set default nettype"
 	},
 	"ternary": {
 		"prefix": "ternary",
@@ -206,6 +280,20 @@
 			"endfunction"
 		],
 		"description": "function (...) ... endfunction"
+	},
+	"generate": {
+		"prefix": "generate",
+		"body": [
+			"generate",
+			"\t$1",
+			"endgenerate"
+		],
+		"description": "generate (...) ... endgenerate"
+	},
+	"genvar": {
+		"prefix": "genvar",
+		"body": "genvar $1",
+		"description": "genvar i"
 	},
 	"testbench template": {
 		"prefix": ["tb", "testbench"],

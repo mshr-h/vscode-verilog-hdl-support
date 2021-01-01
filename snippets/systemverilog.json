@@ -28,23 +28,31 @@
 	},
 	"bit": {
 		"prefix": "bit",
-		"body": "bit"
+		"body": "bit ${1:bit_name}"
 	},
 	"int": {
 		"prefix": "int",
-		"body": "int"
+		"body": "int ${1:int_name}"
+	},
+	"shortint": {
+		"prefix": "shortint",
+		"body": "shortint ${1:name}"
+	},
+	"longint": {
+		"prefix": "longint",
+		"body": "longint ${1:name}"
 	},
 	"byte": {
 		"prefix": "byte",
-		"body": "byte"
+		"body": "byte ${1:byte:_name}"
 	},
 	"logic": {
 		"prefix": "logic",
-		"body": "logic"
+		"body": "logic ${1:logic_name}"
 	},
 	"packed": {
 		"prefix": "packed",
-		"body": "packed"
+		"body": "packed ${1:name}"
 	},
 	"this": {
 		"prefix": "this",
@@ -90,6 +98,20 @@
 		],
 		"description": "task name; ... endtask"
 	},
+	"package": {
+		"prefix": "package",
+		"body": [
+			"package ${1:package_name",
+			"\t$2",
+			"endpackage"
+		],
+		"description": "package name; ... endpackage"
+	},
+	"import": {
+		"prefix": "import",
+		"body": "import ${1:name}::${2:scope}",
+		"description": "import name::scope"
+	},
 	"interface": {
 		"prefix": "interface",
 		"body": [
@@ -98,6 +120,16 @@
 			"endinterface //$1"
 		],
 		"description": "interface name; ... endinterface"
+	},
+	"modport": {
+		"prefix": "modport",
+		"body": [
+			"modport ${1:identifier} (",
+			"input ${2:input_ports},",
+			"output ${3:output_ports}",
+			");"
+		],
+		"description": "modport name (input ports_in, output ports_out); "
 	},
 	"display": {
 		"prefix": "display",
