@@ -31,7 +31,7 @@
 		"description": "set module, mod i0 (.*);"
 	},
 	"always": {
-		"prefix": "always",
+		"prefix": ["al", "always"],
 		"body": [
 			"always @($1) begin",
 			"\t$2",
@@ -154,17 +154,17 @@
 	},
 	"localparam": {
 		"prefix": "localparam",
-		"body": "localparam $1 = $2",
+		"body": "localparam $1 = $2;",
 		"description": "localparam var = val"
 	},
 	"integer": {
 		"prefix": "integer",
-		"body": "integer $1",
+		"body": "integer $1;",
 		"description": "integer int_name"
 	},
 	"signed": {
 		"prefix": "signed",
-		"body": "signed $1 $2",
+		"body": "signed $1 $2;",
 		"description": "signed datatype name"
 	},
 	"include": {
@@ -175,35 +175,35 @@
 		"description": "`include \"..\""
 	},
 	"define": {
-		"prefix": ["define", "`define"],
+		"prefix": ["def", "define", "`define"],
 		"body": [
-			"`define $1"
+			"`define ${1:macro}"
 		],
-		"description": "`define macro = val"
+		"description": "`define macro"
 	},
 	"ifdef": {
 		"prefix": ["ifdef", "`ifdef"],
-		"body": "`ifdef $1",
+		"body": "`ifdef ${1:macro}",
 		"description": "`ifdef macro"
 	},
 	"ifndef": {
 		"prefix": ["ifndef", "`ifndef"],
-		"body": "`ifndef $1",
+		"body": "`ifndef ${1:macro}",
 		"description": "`ifndef macro"
 	},
 	"elsif": {
 		"prefix": ["elsif", "`elsif"],
-		"body": "`elsif $1",
+		"body": "`elsif ${1:macro}",
 		"description": "`elsif macro"
 	},
 	"endif": {
 		"prefix": ["endif", "`endif"],
-		"body": "`endif $1",
+		"body": "`endif ${1:macro}",
 		"description": "`endif macro"
 	},
 	"undef": {
 		"prefix": ["undef", "`undef"],
-		"body": "`undef $1",
+		"body": "`undef ${1:macro}",
 		"description": "`undef macro"
 	},
 	"timescale": {
@@ -214,7 +214,7 @@
 	},
 	"default_nettype": {
 		"prefix": ["default_nettype", "`default_nettype"],
-		"body": "`default_nettype ${1:none)",
+		"body": "`default_nettype ${1:none}",
 		"description": "Set default nettype"
 	},
 	"ternary": {

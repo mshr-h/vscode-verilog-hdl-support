@@ -28,31 +28,31 @@
 	},
 	"bit": {
 		"prefix": "bit",
-		"body": "bit ${1:bit_name}"
+		"body": "bit ${1:bit_name} = ${2:value};"
 	},
 	"int": {
 		"prefix": "int",
-		"body": "int ${1:int_name}"
+		"body": "int ${1:int_name} = ${2:value};"
 	},
 	"shortint": {
 		"prefix": "shortint",
-		"body": "shortint ${1:name}"
+		"body": "shortint ${1:name} = ${2:value};"
 	},
 	"longint": {
 		"prefix": "longint",
-		"body": "longint ${1:name}"
+		"body": "longint ${1:name} = ${2:value};"
 	},
 	"byte": {
 		"prefix": "byte",
-		"body": "byte ${1:byte:_name}"
+		"body": "byte ${1:byte:_name} = ${2:value};"
 	},
 	"logic": {
 		"prefix": "logic",
-		"body": "logic ${1:logic_name}"
+		"body": "logic ${1:logic_name} = ${2:value};"
 	},
 	"packed": {
 		"prefix": "packed",
-		"body": "packed ${1:name}"
+		"body": "packed"
 	},
 	"this": {
 		"prefix": "this",
@@ -101,7 +101,7 @@
 	"package": {
 		"prefix": "package",
 		"body": [
-			"package ${1:package_name",
+			"package ${1:package_name}",
 			"\t$2",
 			"endpackage"
 		],
@@ -109,7 +109,7 @@
 	},
 	"import": {
 		"prefix": "import",
-		"body": "import ${1:name}::${2:scope}",
+		"body": "import ${1:name}::${2:scope};",
 		"description": "import name::scope"
 	},
 	"interface": {
@@ -146,7 +146,7 @@
 		"description": "typedef enum (data_type) { ... } name"
 	},
 	"enum": {
-		"prefix": "enum",
+		"prefix": ["en", "enum"],
 		"body": [
 			"enum ${1:data_type} { $0 } ${2:name}"
 		],
