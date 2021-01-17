@@ -165,46 +165,48 @@ export class Ctags {
 
     buildSymbolsList(tags: string): Thenable<void> {
         try {
-            console.log("building symbols");
-            if (tags === '') {
-                console.log("No output from ctags");
-                return;
-            }
-            // Parse ctags output
-            let lines: string[] = tags.split(/\r?\n/);
-            lines.forEach(line => {
-                if (line !== '')
-                    this.symbols.push(this.parseTagLine(line));
-            });
+            if(this.isDirty) {
+                console.log("building symbols");
+                if (tags === '') {
+                    console.log("No output from ctags");
+                    return;
+                }
+                // Parse ctags output
+                let lines: string[] = tags.split(/\r?\n/);
+                lines.forEach(line => {
+                    if (line !== '')
+                        this.symbols.push(this.parseTagLine(line));
+                });
 
-            // end tags are not supported yet in ctags. So, using regex
-            let match;
-            let endPosition;
-            let text = this.doc.getText();
-            let eRegex: RegExp = /^(?![\r\n])\s*end(\w*)*[\s:]?/gm;
-            while (match = eRegex.exec(text)) {
-                if (match && typeof match[1] !== 'undefined') {
-                    endPosition = this.doc.positionAt(match.index + match[0].length - 1);
-                    // get the starting symbols of the same type
-                    // doesn't check for begin...end blocks
-                    let s = this.symbols.filter(i => i.type === match[1] && i.startPosition.isBefore(endPosition) && !i.isValid);
-                    if (s.length > 0) {
-                        // get the symbol nearest to the end tag
-                        let max: Symbol = s[0];
-                        for (let i = 0; i < s.length; i++) {
-                            max = s[i].startPosition.isAfter(max.startPosition) ? s[i] : max;
-                        }
-                        for (let i of this.symbols) {
-                            if (i.name === max.name && i.startPosition.isEqual(max.startPosition) && i.type === max.type) {
-                                i.setEndPosition(endPosition.line);
-                                break;
+                // end tags are not supported yet in ctags. So, using regex
+                let match;
+                let endPosition;
+                let text = this.doc.getText();
+                let eRegex: RegExp = /^(?![\r\n])\s*end(\w*)*[\s:]?/gm;
+                while (match = eRegex.exec(text)) {
+                    if (match && typeof match[1] !== 'undefined') {
+                        endPosition = this.doc.positionAt(match.index + match[0].length - 1);
+                        // get the starting symbols of the same type
+                        // doesn't check for begin...end blocks
+                        let s = this.symbols.filter(i => i.type === match[1] && i.startPosition.isBefore(endPosition) && !i.isValid);
+                        if (s.length > 0) {
+                            // get the symbol nearest to the end tag
+                            let max: Symbol = s[0];
+                            for (let i = 0; i < s.length; i++) {
+                                max = s[i].startPosition.isAfter(max.startPosition) ? s[i] : max;
+                            }
+                            for (let i of this.symbols) {
+                                if (i.name === max.name && i.startPosition.isEqual(max.startPosition) && i.type === max.type) {
+                                    i.setEndPosition(endPosition.line);
+                                    break;
+                                }
                             }
                         }
                     }
                 }
+                console.log(this.symbols);
+                this.isDirty = false;
             }
-            console.log(this.symbols);
-            this.isDirty = false;
             return Promise.resolve()
         } catch (e) { console.log(e) }
     }
@@ -246,6 +248,7 @@ export class CtagsManager {
         if (!this.isOutputPanel(editor.document.uri)) {
             console.log("on open");
             CtagsManager.ctags.setDocument(editor.document);
+            CtagsManager.ctags.index();
         }
     }
 
