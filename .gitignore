@@ -2,3 +2,5 @@
 /node_modules/
 /out
 /package-lock.json
+/.vscode/
+!/.vscode/launch.json

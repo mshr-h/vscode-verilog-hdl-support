@@ -1,6 +1,6 @@
 {
 	"module with parameters": {
-		"prefix": "paramod",
+		"prefix": ["paramod", "module #"],
 		"body": [
 			"module ${1:moduleName} #(",
 			"\t${2:parameters}",
@@ -13,7 +13,7 @@
 		"description": "Insert a module with parameter"
 	},
 	"module without parameters": {
-		"prefix": "mod",
+		"prefix": "module",
 		"body": [
 			"module ${1:moduleName} (",
 			"\t${2:ports}",
@@ -23,17 +23,24 @@
 		],
 		"description": "Insert a module without parameter"
 	},
+	"instantiate module": {
+		"prefix": ["set module", "instantiate module"],
+		"body": [
+			"${1:mod_name} ${2:instance_name} (${3:.*}$0);"
+		],
+		"description": "set module, mod i0 (.*);"
+	},
 	"always": {
-		"prefix": "al",
+		"prefix": ["al", "always"],
 		"body": [
 			"always @($1) begin",
 			"\t$2",
 			"end"
 		],
-		"description": "always @()"
+		"description": "Insert an always block"
 	},
 	"alwaysposclk": {
-		"prefix": "alclk",
+		"prefix": ["alclk", "alwaysposclk"],
 		"body": [
 			"always @(posedge clk $1) begin",
 			"\t$2",
@@ -41,14 +48,37 @@
 		],
 		"description": "always @(posedge clk)"
 	},
-	"beginend": {
+	"alwaysnegclk": {
+		"prefix": ["alnegclk", "alwaysnegclk"],
+		"body": [
+			"always @(negedge clk $1) begin",
+			"\t$2",
+			"end"
+		],
+		"description": "always @(negedge clk)"
+	},
+	"begin/end": {
 		"prefix": "begin",
 		"body": [
 			"begin",
 			"\t$1",
 			"end"
 		],
-		"description": "begin ... end"
+		"description": "Insert a begin ... end block"
+	},
+	"end": {
+		"prefix": "end",
+		"body": "end",
+		"description": "Insert end keyword"
+	},
+	"initial": {
+		"prefix": "initial",
+		"body": [
+			"initial begin",
+			"\t$0",
+			"end"
+		],
+		"description": "initial begin ... end"
 	},
 	"case": {
 		"prefix": "case",
@@ -60,6 +90,26 @@
 		],
 		"description": "case () ... endcase"
 	},
+	"casex": {
+		"prefix": "casex",
+		"body": [
+			"casex (${1:param})",
+			"\t$2: $3",
+			"\tdefault: $4",
+			"endcase"
+		],
+		"description": "casex () ... endcase"
+	},
+	"casez": {
+		"prefix": "casez",
+		"body": [
+			"casez (${1:param})",
+			"\t$2: $3",
+			"\tdefault: $4",
+			"endcase"
+		],
+		"description": "casez () ... endcase"
+	},
 	"reg": {
 		"prefix": "reg",
 		"body": [
@@ -68,14 +118,14 @@
 		"description": "reg reg_name;"
 	},
 	"regarray": {
-		"prefix": "rega",
+		"prefix": ["regarray", "reg ["],
 		"body": [
 			"reg [$1:$2] $3;"
 		],
 		"description": "reg [N:0] reg_name;"
 	},
 	"regmemory": {
-		"prefix": "regm",
+		"prefix": ["regmemory","memory"],
 		"body": [
 			"reg [$1:$2] $3 [$4:$5];"
 		],
@@ -89,35 +139,91 @@
 		"description": "wire wire_name;"
 	},
 	"wirearray": {
-		"prefix": "wirea",
+		"prefix": ["wirearray", "wire ["],
 		"body": [
 			"wire [$1:$2] $3;"
 		],
 		"description": "wire [N:0] wire_name;"
 	},
+	"array": {
+		"prefix": "array",
+		"body": "[${1:8}:${2:0}]$0",
+		"description": "insert [x:y]"
+	},
+	"parameter": {
+		"prefix": "parameter",
+		"body": [
+			"parameter $1 = $2;"
+		],
+		"description": "paramter var = val;"
+	},
+	"localparam": {
+		"prefix": "localparam",
+		"body": "localparam $1 = $2;",
+		"description": "localparam var = val"
+	},
+	"integer": {
+		"prefix": "integer",
+		"body": "integer $1;",
+		"description": "integer int_name"
+	},
+	"signed": {
+		"prefix": "signed",
+		"body": "signed $1 $2;",
+		"description": "signed datatype name"
+	},
 	"include": {
-		"prefix": "inc",
+		"prefix": ["include", "`include"],
 		"body": [
 			"`include \"$1\""
 		],
 		"description": "`include \"..\""
 	},
 	"define": {
-		"prefix": "def",
+		"prefix": ["def", "define", "`define"],
 		"body": [
-			"`def $1 = $2"
+			"`define ${1:macro}"
 		],
-		"description": "`define var = val"
+		"description": "`define macro"
 	},
-	"parameter": {
-		"prefix": "param",
+	"ifdef": {
+		"prefix": ["ifdef", "`ifdef"],
+		"body": "`ifdef ${1:macro}",
+		"description": "`ifdef macro"
+	},
+	"ifndef": {
+		"prefix": ["ifndef", "`ifndef"],
+		"body": "`ifndef ${1:macro}",
+		"description": "`ifndef macro"
+	},
+	"elsif": {
+		"prefix": ["elsif", "`elsif"],
+		"body": "`elsif ${1:macro}",
+		"description": "`elsif macro"
+	},
+	"endif": {
+		"prefix": ["endif", "`endif"],
+		"body": "`endif ${1:macro}",
+		"description": "`endif macro"
+	},
+	"undef": {
+		"prefix": ["undef", "`undef"],
+		"body": "`undef ${1:macro}",
+		"description": "`undef macro"
+	},
+	"timescale": {
+		"prefix": ["ts", "timescale", "`timescale"],
 		"body": [
-			"parameter $1 = $2;"
-		],
-		"description": "paramter var = val;"
+			"`timescale ${1:1ps}/${2:1ps}$0"
+		]
+	},
+	"default_nettype": {
+		"prefix": ["default_nettype", "`default_nettype"],
+		"body": "`default_nettype ${1:none}",
+		"description": "Set default nettype"
 	},
 	"ternary": {
-		"prefix": "ter",
+		"prefix": "ternary",
 		"body": [
 			"$1 ? $2 : $3"
 		],
@@ -161,6 +267,15 @@
 		],
 		"description": "while (...) begin ... end"
 	},
+	"forever": {
+		"prefix": "forever",
+		"body": [
+			"forever begin",
+			"\t$0",
+			"end"
+		],
+		"description": "forever begin ... end"
+	},
 	"function": {
 		"prefix": "function",
 		"body": [
@@ -171,8 +286,22 @@
 		],
 		"description": "function (...) ... endfunction"
 	},
+	"generate": {
+		"prefix": "generate",
+		"body": [
+			"generate",
+			"\t$1",
+			"endgenerate"
+		],
+		"description": "generate (...) ... endgenerate"
+	},
+	"genvar": {
+		"prefix": "genvar",
+		"body": "genvar $1",
+		"description": "genvar i"
+	},
 	"testbench template": {
-		"prefix": "tb",
+		"prefix": ["tb", "testbench"],
 		"body": [
 			"`include \"$1.v\"",
 			"`default_nettype none",
