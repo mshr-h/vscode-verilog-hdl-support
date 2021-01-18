@@ -2,7 +2,7 @@
 	"name": "veriloghdl",
 	"displayName": "Verilog-HDL/SystemVerilog/Bluespec SystemVerilog",
 	"description": "Verilog-HDL/SystemVerilog/Bluespec SystemVerilog support for VS Code",
-	"version": "1.3.6",
+	"version": "1.4.0",
 	"publisher": "mshr-h",
 	"homepage": "https://github.com/mshr-h/vscode-verilog-hdl-support",
 	"repository": {
@@ -250,7 +250,7 @@
 		"update-vscode": "vscode-install"
 	},
 	"dependencies": {
-		"vsce": "^1.77.0",
+		"vsce": "^1.83.0",
 		"vscode-languageclient": "^6.1.3"
 	},
 	"devDependencies": {

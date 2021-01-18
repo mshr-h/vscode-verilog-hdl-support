@@ -1,6 +1,6 @@
 {
 	"always_ff block": {
-		"prefix": "ff",
+		"prefix": "always_ff",
 		"body": [
 			"always_ff @( ${1:clock} ) begin : ${2:blockName}",
 			"\t$0",
@@ -9,7 +9,7 @@
 		"description": "Insert an always_ff block"
 	},
 	"always_comb block": {
-		"prefix": "comb",
+		"prefix": "always_comb",
 		"body": [
 			"always_comb begin : ${1:blockName}",
 			"\t$0",
@@ -17,44 +17,38 @@
 		],
 		"description": "Insert an always_comb block"
 	},
-	"include": {
-		"prefix": "inc",
+	"always_latch block": {
+		"prefix": "always_latch",
 		"body": [
-			"`include \"$1\""
-		],
-		"description": "`include \"..\""
-	},
-	"parameter": {
-		"prefix": "parameter",
-		"body": [
-			"parameter $1 = $2;"
-		],
-		"description": "paramter var = val;"
-	},
-	"initial": {
-		"prefix": "initial",
-		"body": [
-			"initial begin",
+			"always_latch begin : ${1:blockName}",
 			"\t$0",
 			"end"
 		],
-		"description": "initial begin ... end"
+		"description": "Insert an always_latch block"
 	},
 	"bit": {
 		"prefix": "bit",
-		"body": "bit"
+		"body": "bit ${1:bit_name} = ${2:value};"
 	},
 	"int": {
 		"prefix": "int",
-		"body": "int"
+		"body": "int ${1:int_name} = ${2:value};"
+	},
+	"shortint": {
+		"prefix": "shortint",
+		"body": "shortint ${1:name} = ${2:value};"
+	},
+	"longint": {
+		"prefix": "longint",
+		"body": "longint ${1:name} = ${2:value};"
 	},
 	"byte": {
 		"prefix": "byte",
-		"body": "byte"
+		"body": "byte ${1:byte:_name} = ${2:value};"
 	},
 	"logic": {
 		"prefix": "logic",
-		"body": "logic"
+		"body": "logic ${1:logic_name} = ${2:value};"
 	},
 	"packed": {
 		"prefix": "packed",
@@ -64,13 +58,8 @@
 		"prefix": "this",
 		"body": "this"
 	},
-	"array": {
-		"prefix": "array",
-		"body": "[${1:8}:${2:0}]$0",
-		"description": "insert [x:y]"
-	},
 	"typedef struct packed": {
-		"prefix": "typedefstructpacked",
+		"prefix": "typedef struct packed",
 		"body": [
 			"typedef struct packed {",
 			"\t$0",
@@ -90,7 +79,7 @@
 		"description": "class name; ... endclass"
 	},
 	"class extends": {
-		"prefix": "classextends",
+		"prefix": "class extends",
 		"body": [
 			"class ${1:className} extends ${2:superClass};",
 			"\tfunction new();",
@@ -109,6 +98,20 @@
 		],
 		"description": "task name; ... endtask"
 	},
+	"package": {
+		"prefix": "package",
+		"body": [
+			"package ${1:package_name}",
+			"\t$2",
+			"endpackage"
+		],
+		"description": "package name; ... endpackage"
+	},
+	"import": {
+		"prefix": "import",
+		"body": "import ${1:name}::${2:scope};",
+		"description": "import name::scope"
+	},
 	"interface": {
 		"prefix": "interface",
 		"body": [
@@ -118,6 +121,16 @@
 		],
 		"description": "interface name; ... endinterface"
 	},
+	"modport": {
+		"prefix": "modport",
+		"body": [
+			"modport ${1:identifier} (",
+			"input ${2:input_ports},",
+			"output ${3:output_ports}",
+			");"
+		],
+		"description": "modport name (input ports_in, output ports_out); "
+	},
 	"display": {
 		"prefix": "display",
 		"body": [
@@ -125,28 +138,15 @@
 		],
 		"description": "$display(\"...\", params...)"
 	},
-	"timescale": {
-		"prefix": "ts",
-		"body": [
-			"`timescale ${1:1ps}/${2:1ps}$0"
-		]
-	},
-	"set Module": {
-		"prefix": "setmodule",
-		"body": [
-			"${1:mod_name} ${2:instance_name} (${3:.*}$0);"
-		],
-		"description": "set module, mod i0 (.*);"
-	},
 	"typedef enum": {
-		"prefix": "typedefenum",
+		"prefix": "typedef enum",
 		"body": [
 			"typedef enum ${1:data_type} { $0 } ${2:name};"
 		],
 		"description": "typedef enum (data_type) { ... } name"
 	},
 	"enum": {
-		"prefix": "enum",
+		"prefix": ["en", "enum"],
 		"body": [
 			"enum ${1:data_type} { $0 } ${2:name}"
 		],
@@ -165,7 +165,7 @@
 		],
 		"description": "insert mailbox instance"
 	},
-	"Associative array": {
+	"associative array": {
 		"prefix": "AA",
 		"body": "${1:data_type} ${2:name}[${3:index_type}];$0",
 		"description": "insert Associative array(AA)."
@@ -179,21 +179,12 @@
 		"description": "insert assert() ... else ..."
 	},
 	"fork-join": {
-		"prefix": "forkjoin",
+		"prefix": "fork join",
 		"body": [
 			"fork",
 			"\t$0",
 			"join"
 		],
 		"description": "fork ... join"
-	},
-	"forever": {
-		"prefix": "forever",
-		"body": [
-			"forever begin",
-			"\t$0",
-			"end"
-		],
-		"description": "forever begin ... end"
 	}
 }
