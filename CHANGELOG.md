@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [Unreleased]
+
+### Fixed
+
+- Add Ctags execution when opening document [#132](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/132)
+
 ## [1.4.0] - 2021-01-18
 
 ### Added
