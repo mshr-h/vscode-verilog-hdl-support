@@ -81,10 +81,20 @@
 			{
 				"id": "sdc",
 				"aliases": [
-					"Synopsys Design Constraint"
+					"Synopsys Design Constraints"
 				],
 				"extensions": [
 					".sdc"
+				],
+				"configuration": "./sdc.configuration.json"
+			},
+			{
+				"id": "xdc",
+				"aliases": [
+					"Xilinx Design Constraints"
+				],
+				"extensions": [
+					".xdc"
 				],
 				"configuration": "./sdc.configuration.json"
 			}
@@ -113,7 +123,12 @@
 			{
 				"language": "sdc",
 				"scopeName": "source.sdc",
-				"path": "./syntaxes/sdc.tmLanguage"
+				"path": "./syntaxes/sdc.tmLanguage.json"
+			},
+			{
+				"language": "xdc",
+				"scopeName": "source.sdc",
+				"path": "./syntaxes/sdc.tmLanguage.json"
 			},
 			{
 				"scopeName": "markdown.verilog.codeblock",
