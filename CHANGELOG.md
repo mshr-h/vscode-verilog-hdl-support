@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [Unreleased]
+
+### Added
+
+- Update SDC syntax and add support XDC files [#134](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/134)
+
 ## [1.4.1] - 2021-01-18
 
 ### Fixed
