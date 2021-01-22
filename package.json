@@ -23,8 +23,7 @@
 	"icon": "images/icon.png",
 	"activationEvents": [
 		"onLanguage:verilog",
-		"onLanguage:systemverilog",
-		"onLanguage:markdown"
+		"onLanguage:systemverilog"
 	],
 	"main": "./out/src/extension",
 	"contributes": {
@@ -138,8 +137,7 @@
 				],
 				"embeddedLanguages": {
 					"meta.embedded.block.verilog": "source.verilog",
-					"meta.embedded.block.systemverilog": "source.systemverilog",
-					"meta.embedded.block.sdc": "source.sdc"
+					"meta.embedded.block.systemverilog": "source.systemverilog"
 				}
 			}
 		],
