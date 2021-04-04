@@ -15,7 +15,7 @@ export default class VerilogDefinitionProvider implements DefinitionProvider {
         return new Promise((resolve, reject) => {
             // get word start and end
             let textRange = document.getWordRangeAtPosition(position);
-            if (textRange.isEmpty)
+            if (!textRange || textRange.isEmpty)
                 return;
             // hover word
             let targetText = document.getText(textRange);

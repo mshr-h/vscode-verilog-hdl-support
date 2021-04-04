@@ -244,8 +244,8 @@ export class CtagsManager {
         commands.executeCommand('vscode.executeDocumentSymbolProvider', doc.uri);
     }
 
-    onDidChangeActiveTextEditor(editor: TextEditor) {
-        if (!this.isOutputPanel(editor.document.uri)) {
+    onDidChangeActiveTextEditor(editor: TextEditor | undefined) {
+        if (editor && !this.isOutputPanel(editor.document.uri)) {
             console.log("on open");
             CtagsManager.ctags.setDocument(editor.document);
             CtagsManager.ctags.index();
