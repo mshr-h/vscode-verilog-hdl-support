@@ -74,7 +74,7 @@ export function activate(context: ExtensionContext) {
     // Configure command to instantiate a module
     commands.registerCommand("verilog.instantiateModule", ModuleInstantiation.instantiateModuleInteract);
     // Register command for manual linting
-    commands.registerCommand("verilog.lint", lintManager.RunLintTool);
+    commands.registerCommand("verilog.lint", lintManager.RunLintTool, lintManager);
 
     // Configure svls language server
     configLanguageServer();

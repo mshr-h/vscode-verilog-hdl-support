@@ -22,7 +22,7 @@ export default class XvlogLinter extends BaseLinter {
     protected lint(doc: TextDocument) {
         this.logger.log('xvlog lint requested');
         let svArgs: string = (doc.languageId == "systemverilog") ? "-sv" : "";         //Systemverilog args
-        let command = "xvlog " + svArgs + " -nolog " + this.xvlogArgs + "\"" + doc.fileName + "\"";
+        let command = "xvlog " + svArgs + " -nolog " + this.xvlogArgs + " \"" + doc.fileName + "\"";
         this.logger.log(command, Log_Severity.Command);
 
         let process: ChildProcess = exec(command, (error: Error, stdout: string, stderr: string) => {
@@ -31,24 +31,25 @@ export default class XvlogLinter extends BaseLinter {
             let lines = stdout.split(/\r?\n/g);
             lines.forEach((line) => {
 
-                let tokens = line.split(/:?\s*(?:\[|\])\s*/).filter(Boolean);
-                if (tokens.length < 4
-                    || tokens[0] != "ERROR"
-                    || !tokens[1].startsWith("VRFC")) {
+                let match = line.match(/^(ERROR|WARNING):\s+\[(VRFC\b[^\]]*)\]\s+(.*\S)\s+\[(.*):(\d+)\]\s*$/);
+                if (!match) {
                     return;
                 }
 
+                let severity = (match[1] === "ERROR") ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning;
+
                 // Get filename and line number
-                let [filename, lineno_str] = tokens[3].split(/:(\d+)/);
+                let filename = match[4];
+                let lineno_str = match[5];
                 let lineno = parseInt(lineno_str) - 1;
 
                 // if (filename != doc.fileName) // Check that filename matches
                 //     return;
 
                 let diagnostic: Diagnostic = {
-                    severity: DiagnosticSeverity.Error,
-                    code: tokens[1],
-                    message: "[" + tokens[1] + "] " + tokens[2],
+                    severity: severity,
+                    code: match[2],
+                    message: "[" + match[2] + "] " + match[3],
                     range: new Range(lineno, 0, lineno, Number.MAX_VALUE),
                     source: "xvlog",
                 }

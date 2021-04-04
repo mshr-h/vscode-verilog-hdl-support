@@ -22,6 +22,11 @@ export default class LintManager {
 
         workspace.onDidChangeConfiguration(this.configLinter, this, this.subscriptions);
         this.configLinter();
+
+        // Run linting for open documents on launch
+        window.visibleTextEditors.forEach(editor => {
+            this.lint(editor.document);
+        });
     }
 
     configLinter() {

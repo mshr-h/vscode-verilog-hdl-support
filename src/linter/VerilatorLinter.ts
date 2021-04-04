@@ -89,7 +89,7 @@ export default class VerilatorLinter extends BaseLinter {
             // Parse output lines
             lines.forEach((line, i) => {
                 // Error for our file
-                if (line.startsWith('%') && line.search(docUri) > 0) {
+                if (line.startsWith('%') && line.indexOf(docUri) > 0) {
                     let rex = line.match(/%(\w+)(-[A-Z0-9_]+)?:\s*(\w+:)?(?:[^:]+):\s*(\d+):(?:\s*(\d+):)?\s*(\s*.+)/);
 
                     if (rex && rex[0].length > 0) {

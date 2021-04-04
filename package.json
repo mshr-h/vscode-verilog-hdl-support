@@ -175,7 +175,7 @@
 					"scope": "window",
 					"type": "string",
 					"default": "",
-					"description": "Add Modelsim arguments here. They will be added to xvlog while linting."
+					"description": "Add xvlog arguments here. They will be added to xvlog while linting."
 				},
 				"verilog.linting.iverilog.arguments": {
 					"scope": "window",
