@@ -11,32 +11,25 @@ export default class VerilogCompletionItemProvider implements CompletionItemProv
     }
 
     //TODO: Better context based completion items
-    provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken,
-        context: CompletionContext): ProviderResult<CompletionItem[]> {
+    async provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken,
+        context: CompletionContext): Promise<CompletionItem[]> {
         this.logger.log("Completion items requested");
-        return new Promise((resolve, reject) => {
-            let items: CompletionItem[] = [];
+        let items: CompletionItem[] = [];
 
-            let ctags: Ctags = CtagsManager.ctags;
-            if (ctags.doc === undefined || ctags.doc.uri !== document.uri) { // systemverilog keywords
-                return;
-            }
-            else {
-                ctags.symbols.forEach(symbol => {
-                    let newItem: CompletionItem = new CompletionItem(symbol.name, this.getCompletionItemKind(symbol.type));
-                    let codeRange = new Range(symbol.startPosition, new Position(symbol.startPosition.line, Number.MAX_VALUE));
-                    let code = document.getText(codeRange).trim();
-                    newItem.detail = symbol.type;
-                    let doc: string = "```systemverilog\n" + code + "\n```";
-                    if (symbol.parentScope !== undefined && symbol.parentScope !== "")
-                        doc += "\nHeirarchial Scope: " + symbol.parentScope;
-                    newItem.documentation = new MarkdownString(doc);
-                    items.push(newItem);
-                });
-            }
-            this.logger.log(items.length + " items requested");
-            resolve(items);
-        })
+        let symbols: Symbol[] = await CtagsManager.getSymbols(document);
+        symbols.forEach(symbol => {
+            let newItem: CompletionItem = new CompletionItem(symbol.name, this.getCompletionItemKind(symbol.type));
+            let codeRange = new Range(symbol.startPosition, new Position(symbol.startPosition.line, Number.MAX_VALUE));
+            let code = document.getText(codeRange).trim();
+            newItem.detail = symbol.type;
+            let doc: string = "```systemverilog\n" + code + "\n```";
+            if (symbol.parentScope !== undefined && symbol.parentScope !== "")
+                doc += "\nHeirarchial Scope: " + symbol.parentScope;
+            newItem.documentation = new MarkdownString(doc);
+            items.push(newItem);
+        });
+        this.logger.log(items.length + " items requested");
+        return items;
     }
 
     private getCompletionItemKind(type: string): CompletionItemKind {
