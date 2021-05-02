@@ -1,4 +1,4 @@
-import { Disposable, workspace, TextDocument, window, QuickPickItem, ProgressLocation } from "vscode";
+import { Disposable, workspace, TextDocument, DiagnosticCollection, languages, window, QuickPickItem, ProgressLocation } from "vscode";
 
 import BaseLinter from "./BaseLinter";
 import IcarusLinter from "./IcarusLinter";
@@ -12,9 +12,11 @@ export default class LintManager {
     private subscriptions: Disposable[];
 
     private linter: BaseLinter;
+	private diagnostic_collection: DiagnosticCollection;
     private logger: Logger;
 
     constructor(logger: Logger) {
+        this.diagnostic_collection = languages.createDiagnosticCollection();
         this.logger = logger;
         workspace.onDidOpenTextDocument(this.lint, this, this.subscriptions);
         workspace.onDidSaveTextDocument(this.lint, this, this.subscriptions);
@@ -36,16 +38,16 @@ export default class LintManager {
         if (this.linter == null || this.linter.name != linter_name) {
             switch (linter_name) {
                 case "iverilog":
-                    this.linter = new IcarusLinter(this.logger);
+                    this.linter = new IcarusLinter(this.diagnostic_collection, this.logger);
                     break;
                 case "xvlog":
-                    this.linter = new XvlogLinter(this.logger);
+                    this.linter = new XvlogLinter(this.diagnostic_collection, this.logger);
                     break;
                 case "modelsim":
-                    this.linter = new ModelsimLinter(this.logger);
+                    this.linter = new ModelsimLinter(this.diagnostic_collection, this.logger);
                     break;
                 case "verilator":
-                    this.linter = new VerilatorLinter(this.logger);
+                    this.linter = new VerilatorLinter(this.diagnostic_collection, this.logger);
                     break;
                 default:
                     console.log("Invalid linter name.")
@@ -106,10 +108,10 @@ export default class LintManager {
             // Create and run the linter with progress bar
             let tempLinter: BaseLinter;
             switch (linterStr.label) {
-                case "iverilog": tempLinter = new IcarusLinter(this.logger); break;
-                case "xvlog": tempLinter = new XvlogLinter(this.logger); break;
-                case "modelsim": tempLinter = new ModelsimLinter(this.logger); break;
-                case "verilator": tempLinter = new VerilatorLinter(this.logger); break;
+                case "iverilog": tempLinter = new IcarusLinter(this.diagnostic_collection, this.logger); break;
+                case "xvlog": tempLinter = new XvlogLinter(this.diagnostic_collection, this.logger); break;
+                case "modelsim": tempLinter = new ModelsimLinter(this.diagnostic_collection, this.logger); break;
+                case "verilator": tempLinter = new VerilatorLinter(this.diagnostic_collection, this.logger); break;
                 default:
                     return;
             }

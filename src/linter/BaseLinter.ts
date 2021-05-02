@@ -6,8 +6,8 @@ export default abstract class BaseLinter {
 	name: string;
 	protected logger: Logger;
 
-	constructor(name: string, logger: Logger) {
-		this.diagnostic_collection = languages.createDiagnosticCollection();
+	constructor(name: string, diagnostic_collection: DiagnosticCollection, logger: Logger) {
+		this.diagnostic_collection = diagnostic_collection;
 		this.name = name;
 		this.logger = logger;
 	}

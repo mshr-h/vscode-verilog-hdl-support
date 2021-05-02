@@ -9,8 +9,8 @@ export default class IcarusLinter extends BaseLinter {
     private iverilogArgs: string;
     private runAtFileLocation: boolean;
 
-    constructor(logger: Logger) {
-        super("iverilog", logger);
+    constructor(diagnostic_collection: DiagnosticCollection, logger: Logger) {
+        super("iverilog", diagnostic_collection, logger);
         workspace.onDidChangeConfiguration(() => {
             this.getConfig();
         })

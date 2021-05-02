@@ -11,8 +11,8 @@ export default class VerilatorLinter extends BaseLinter {
     private runAtFileLocation: boolean;
     private useWSL: boolean;
 
-    constructor(logger: Logger) {
-        super("verilator", logger);
+    constructor(diagnostic_collection: DiagnosticCollection, logger: Logger) {
+        super("verilator", diagnostic_collection, logger);
 
         workspace.onDidChangeConfiguration(() => {
             this.getConfig();

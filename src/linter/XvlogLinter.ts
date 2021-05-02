@@ -7,8 +7,8 @@ import { Logger, Log_Severity } from "../Logger";
 export default class XvlogLinter extends BaseLinter {
     private xvlogArgs: string;
 
-    constructor(logger: Logger) {
-        super("xvlog", logger);
+    constructor(diagnostic_collection: DiagnosticCollection, logger: Logger) {
+        super("xvlog", diagnostic_collection, logger);
         workspace.onDidChangeConfiguration(() => {
             this.getConfig();
         })
