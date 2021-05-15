@@ -273,6 +273,12 @@
                         <key>include</key>
                         <string>#ifmodport</string>
                     </dict>
+                    <dict>
+                        <key>match</key>
+                        <string>\$\b([a-zA-Z_][a-zA-Z0-9_]*)\b</string>
+                        <key>name</key>
+                        <string>support.function.systemverilog</string>
+                    </dict>
                 </array>
                 <key>name</key>
                 <string>meta.module.systemverilog</string>
