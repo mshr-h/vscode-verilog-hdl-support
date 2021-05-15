@@ -223,7 +223,7 @@ export class Ctags {
 }
 
 export class CtagsManager {
-    static ctags: Ctags;
+    private static ctags: Ctags;
     private logger: Logger;
 
     constructor(logger: Logger) {
@@ -234,26 +234,26 @@ export class CtagsManager {
     configure() {
         console.log("ctags manager configure");
         workspace.onDidSaveTextDocument(this.onSave.bind(this));
-        window.onDidChangeActiveTextEditor(this.onDidChangeActiveTextEditor.bind(this));
     }
 
     onSave(doc: TextDocument) {
         console.log("on save");
-        CtagsManager.ctags.clearSymbols();
-        // Should automatically refresh the Document symbols show, but doesn't seem to be working
-        commands.executeCommand('vscode.executeDocumentSymbolProvider', doc.uri);
-    }
-
-    onDidChangeActiveTextEditor(editor: TextEditor | undefined) {
-        if (editor && !this.isOutputPanel(editor.document.uri)) {
-            console.log("on open");
-            CtagsManager.ctags.setDocument(editor.document);
-            CtagsManager.ctags.index();
+        let ctags: Ctags = CtagsManager.ctags;
+        if (ctags.doc === undefined || ctags.doc.uri.fsPath === doc.uri.fsPath) {
+            CtagsManager.ctags.clearSymbols();
         }
     }
 
-    isOutputPanel(uri: Uri) {
-        return uri.toString().startsWith('output:extension-output-');
+    static async getSymbols(doc: TextDocument): Promise<Symbol[]> {
+        let ctags: Ctags = CtagsManager.ctags;
+        if (ctags.doc === undefined || ctags.doc.uri.fsPath !== doc.uri.fsPath) {
+            ctags.setDocument(doc);
+        }
+        // If dirty, re index and then build symbols
+        if (ctags.isDirty) {
+            await ctags.index();
+        }
+        return ctags.symbols;
     }
 
 }

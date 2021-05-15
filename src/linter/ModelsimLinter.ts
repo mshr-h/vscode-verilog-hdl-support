@@ -10,8 +10,8 @@ export default class ModelsimLinter extends BaseLinter {
     private modelsimWork: string;
     private runAtFileLocation: boolean;
 
-    constructor(logger: Logger) {
-        super("modelsim", logger);
+    constructor(diagnostic_collection: DiagnosticCollection, logger: Logger) {
+        super("modelsim", diagnostic_collection, logger);
         workspace.onDidChangeConfiguration(() => {
             this.getConfig();
         })
