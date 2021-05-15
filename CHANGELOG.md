@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.4.4] - 2021-05-15
+
+### Fixed
+
+- Fix ctags symbols not being updated in some cases [#150](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/150)
+- Share DiagnosticCollection between linters [#150](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/150)
+
+## [1.4.3] - 2021-04-28
+
+- Fix linters and some errors [#146](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/146)
+
 ## [1.4.2] - 2021-01-23
 
 ### Added
