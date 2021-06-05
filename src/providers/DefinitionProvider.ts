@@ -1,8 +1,8 @@
-import { DefinitionProvider, TextDocument, CancellationToken, Position, ProviderResult, DefinitionLink, Range } from 'vscode';
+import { DefinitionProvider, TextDocument, CancellationToken, Position, ProviderResult, DefinitionLink, Range, Definition, LocationLink } from 'vscode';
 import { Ctags, CtagsManager, Symbol } from '../ctags';
 import { Logger } from '../Logger';
 
-export default class VerilogDefinitionProvider implements DefinitionProvider {
+export class VerilogDefinitionProvider implements DefinitionProvider {
 
     private logger: Logger;
     constructor(logger: Logger) {
@@ -38,4 +38,10 @@ export default class VerilogDefinitionProvider implements DefinitionProvider {
         return definitions;
     }
 
+}
+
+export class BsvDefinitionProvider implements DefinitionProvider {
+    provideDefinition(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<LocationLink[] | Definition> {
+        throw new Error('Method not implemented.');
+    }
 }

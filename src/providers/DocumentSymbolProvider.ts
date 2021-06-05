@@ -1,8 +1,8 @@
-import { DocumentSymbolProvider, CancellationToken, TextDocument, SymbolKind, DocumentSymbol, window } from 'vscode'
+import { DocumentSymbolProvider, CancellationToken, TextDocument, SymbolKind, DocumentSymbol, window, ProviderResult, SymbolInformation } from 'vscode'
 import { Ctags, CtagsManager, Symbol } from '../ctags';
 import { Logger, Log_Severity } from '../Logger';
 
-export default class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
+export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
 
     public docSymbols: DocumentSymbol[] = [];
 
@@ -105,6 +105,19 @@ export default class VerilogDocumentSymbolProvider implements DocumentSymbolProv
         }
 
         return list;
+    }
+
+}
+
+
+export class BsvDocumentSymbolProvider implements DocumentSymbolProvider {
+    private logger: Logger;
+    constructor(logger: Logger) {
+        this.logger = logger
+    }
+
+    provideDocumentSymbols(document: TextDocument, token: CancellationToken): ProviderResult<DocumentSymbol[] | SymbolInformation[]> {
+        throw new Error('Method not implemented.');
     }
 
 }

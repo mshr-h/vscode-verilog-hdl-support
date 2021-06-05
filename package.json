@@ -23,7 +23,8 @@
   "icon": "images/icon.png",
   "activationEvents": [
     "onLanguage:verilog",
-    "onLanguage:systemverilog"
+    "onLanguage:systemverilog",
+    "onLanguage:bsv"
   ],
   "main": "./out/src/extension",
   "contributes": {
@@ -260,16 +261,21 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -w -p ./",
-    "update-vscode": "vscode-install"
+    "update-vscode": "vscode-install",
+    "makeBsv": "antlr4ts -visitor syntaxes/bsv.g4 -o src/bsvjs"
   },
   "dependencies": {
+    "antlr4": "^4.9.2",
+    "antlr4ts": "^0.5.0-alpha.4",
     "vsce": "^1.83.0",
     "vscode-languageclient": "^6.1.3"
   },
   "devDependencies": {
+    "@types/antlr4": "^4.7.2",
     "@types/mocha": "^2.2.45",
     "@types/node": "^7.10.11",
     "@types/vscode": "^1.46.0",
+    "antlr4ts-cli": "^0.5.0-alpha.4",
     "typescript": "^3.9.5",
     "vscode-test": "^1.4.0"
   },

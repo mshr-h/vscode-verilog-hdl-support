@@ -1,9 +1,9 @@
 // import * as vscode from 'vscode';
-import { HoverProvider, TextDocument, Position, CancellationToken, Hover, window, Range, MarkdownString } from 'vscode';
+import { HoverProvider, TextDocument, Position, CancellationToken, Hover, window, Range, MarkdownString, ProviderResult } from 'vscode';
 import { Ctags, CtagsManager, Symbol } from '../ctags';
 import { Logger, Log_Severity } from '../Logger';
 
-export default class VerilogHoverProvider implements HoverProvider {
+export class VerilogHoverProvider implements HoverProvider {
     // lang: verilog / systemverilog
     private logger: Logger;
 
@@ -38,3 +38,15 @@ export default class VerilogHoverProvider implements HoverProvider {
     }
 }
 
+export class BsvHoverProvider implements HoverProvider {
+    private logger: Logger;
+
+    constructor(logger: Logger) {
+        this.logger = logger;
+    }
+
+    provideHover(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Hover> {
+        throw new Error('Method not implemented.');
+    }
+
+}

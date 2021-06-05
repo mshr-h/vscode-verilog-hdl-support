@@ -1,8 +1,8 @@
-import { CompletionItemProvider, CompletionItem, TextDocument, Position, CancellationToken, CompletionContext, ProviderResult, CompletionItemKind, CompletionTriggerKind, Range, MarkdownString } from "vscode";
+import { CompletionItemProvider, CompletionItem, TextDocument, Position, CancellationToken, CompletionContext, ProviderResult, CompletionItemKind, CompletionTriggerKind, Range, MarkdownString, CompletionList } from "vscode";
 import { Ctags, CtagsManager, Symbol } from '../ctags';
 import { Logger } from "../Logger";
 
-export default class VerilogCompletionItemProvider implements CompletionItemProvider {
+export class VerilogCompletionItemProvider implements CompletionItemProvider {
 
     private logger: Logger;
 
@@ -57,6 +57,21 @@ export default class VerilogCompletionItemProvider implements CompletionItemProv
             case 'typedef': return CompletionItemKind.TypeParameter;
             default: return CompletionItemKind.Variable;
         }
+    }
+
+}
+
+export class BsvCompletionItemProvider implements CompletionItemProvider {
+    private logger: Logger;
+    constructor(logger: Logger) {
+        this.logger = logger
+    }
+    
+    provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext): ProviderResult<CompletionItem[] | CompletionList<CompletionItem>> {
+        throw new Error("Method not implemented.");
+    }
+    resolveCompletionItem?(item: CompletionItem, token: CancellationToken): ProviderResult<CompletionItem> {
+        throw new Error("Method not implemented.");
     }
 
 }
