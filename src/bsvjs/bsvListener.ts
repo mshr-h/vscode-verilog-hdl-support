@@ -4,20 +4,7 @@
 import { ParseTreeListener } from "antlr4ts/tree/ParseTreeListener";
 
 import { IdentifierContext } from "./bsvParser";
-import { IntLiteralContext } from "./bsvParser";
-import { SizedIntLiteralContext } from "./bsvParser";
-import { UnsizedIntLiteralContext } from "./bsvParser";
-import { BaseLiteralContext } from "./bsvParser";
-import { DecNumContext } from "./bsvParser";
-import { BitWidthContext } from "./bsvParser";
-import { SignContext } from "./bsvParser";
-import { DecDigitsContext } from "./bsvParser";
-import { DecDigitsUnderscoreContext } from "./bsvParser";
-import { HexDigitsUnderscoreContext } from "./bsvParser";
-import { OctDigitsUnderscoreContext } from "./bsvParser";
-import { BinDigitsUnderscoreContext } from "./bsvParser";
-import { RealLiteralContext } from "./bsvParser";
-import { ExpContext } from "./bsvParser";
+import { Identifier_typeContext } from "./bsvParser";
 import { StringLiteralContext } from "./bsvParser";
 import { TopContext } from "./bsvParser";
 import { R_packageContext } from "./bsvParser";
@@ -174,6 +161,7 @@ import { DisplayTaskNameContext } from "./bsvParser";
 import { StringTaskNameContext } from "./bsvParser";
 import { SystemFunctionCallContext } from "./bsvParser";
 import { SystemTaskCallContext } from "./bsvParser";
+import { StringAVTaskNameContext } from "./bsvParser";
 import { AttributeInstancesContext } from "./bsvParser";
 import { AttributeInstanceContext } from "./bsvParser";
 import { AttrSpecContext } from "./bsvParser";
@@ -190,6 +178,10 @@ import { TypeclassInstanceDefContext } from "./bsvParser";
 import { DerivesContext } from "./bsvParser";
 import { ExternModuleImportContext } from "./bsvParser";
 import { ImportBVIStmtContext } from "./bsvParser";
+import { Enabled_selContext } from "./bsvParser";
+import { Ready_selContext } from "./bsvParser";
+import { Clocked_by_selContext } from "./bsvParser";
+import { Reset_by_selContext } from "./bsvParser";
 import { ParameterBVIStmtContext } from "./bsvParser";
 import { MethodBVIStmtContext } from "./bsvParser";
 import { PortBVIStmtContext } from "./bsvParser";
@@ -244,158 +236,15 @@ export interface bsvListener extends ParseTreeListener {
 	exitIdentifier?: (ctx: IdentifierContext) => void;
 
 	/**
-	 * Enter a parse tree produced by `bsvParser.intLiteral`.
+	 * Enter a parse tree produced by `bsvParser.identifier_type`.
 	 * @param ctx the parse tree
 	 */
-	enterIntLiteral?: (ctx: IntLiteralContext) => void;
+	enterIdentifier_type?: (ctx: Identifier_typeContext) => void;
 	/**
-	 * Exit a parse tree produced by `bsvParser.intLiteral`.
+	 * Exit a parse tree produced by `bsvParser.identifier_type`.
 	 * @param ctx the parse tree
 	 */
-	exitIntLiteral?: (ctx: IntLiteralContext) => void;
-
-	/**
-	 * Enter a parse tree produced by `bsvParser.sizedIntLiteral`.
-	 * @param ctx the parse tree
-	 */
-	enterSizedIntLiteral?: (ctx: SizedIntLiteralContext) => void;
-	/**
-	 * Exit a parse tree produced by `bsvParser.sizedIntLiteral`.
-	 * @param ctx the parse tree
-	 */
-	exitSizedIntLiteral?: (ctx: SizedIntLiteralContext) => void;
-
-	/**
-	 * Enter a parse tree produced by `bsvParser.unsizedIntLiteral`.
-	 * @param ctx the parse tree
-	 */
-	enterUnsizedIntLiteral?: (ctx: UnsizedIntLiteralContext) => void;
-	/**
-	 * Exit a parse tree produced by `bsvParser.unsizedIntLiteral`.
-	 * @param ctx the parse tree
-	 */
-	exitUnsizedIntLiteral?: (ctx: UnsizedIntLiteralContext) => void;
-
-	/**
-	 * Enter a parse tree produced by `bsvParser.baseLiteral`.
-	 * @param ctx the parse tree
-	 */
-	enterBaseLiteral?: (ctx: BaseLiteralContext) => void;
-	/**
-	 * Exit a parse tree produced by `bsvParser.baseLiteral`.
-	 * @param ctx the parse tree
-	 */
-	exitBaseLiteral?: (ctx: BaseLiteralContext) => void;
-
-	/**
-	 * Enter a parse tree produced by `bsvParser.decNum`.
-	 * @param ctx the parse tree
-	 */
-	enterDecNum?: (ctx: DecNumContext) => void;
-	/**
-	 * Exit a parse tree produced by `bsvParser.decNum`.
-	 * @param ctx the parse tree
-	 */
-	exitDecNum?: (ctx: DecNumContext) => void;
-
-	/**
-	 * Enter a parse tree produced by `bsvParser.bitWidth`.
-	 * @param ctx the parse tree
-	 */
-	enterBitWidth?: (ctx: BitWidthContext) => void;
-	/**
-	 * Exit a parse tree produced by `bsvParser.bitWidth`.
-	 * @param ctx the parse tree
-	 */
-	exitBitWidth?: (ctx: BitWidthContext) => void;
-
-	/**
-	 * Enter a parse tree produced by `bsvParser.sign`.
-	 * @param ctx the parse tree
-	 */
-	enterSign?: (ctx: SignContext) => void;
-	/**
-	 * Exit a parse tree produced by `bsvParser.sign`.
-	 * @param ctx the parse tree
-	 */
-	exitSign?: (ctx: SignContext) => void;
-
-	/**
-	 * Enter a parse tree produced by `bsvParser.decDigits`.
-	 * @param ctx the parse tree
-	 */
-	enterDecDigits?: (ctx: DecDigitsContext) => void;
-	/**
-	 * Exit a parse tree produced by `bsvParser.decDigits`.
-	 * @param ctx the parse tree
-	 */
-	exitDecDigits?: (ctx: DecDigitsContext) => void;
-
-	/**
-	 * Enter a parse tree produced by `bsvParser.decDigitsUnderscore`.
-	 * @param ctx the parse tree
-	 */
-	enterDecDigitsUnderscore?: (ctx: DecDigitsUnderscoreContext) => void;
-	/**
-	 * Exit a parse tree produced by `bsvParser.decDigitsUnderscore`.
-	 * @param ctx the parse tree
-	 */
-	exitDecDigitsUnderscore?: (ctx: DecDigitsUnderscoreContext) => void;
-
-	/**
-	 * Enter a parse tree produced by `bsvParser.hexDigitsUnderscore`.
-	 * @param ctx the parse tree
-	 */
-	enterHexDigitsUnderscore?: (ctx: HexDigitsUnderscoreContext) => void;
-	/**
-	 * Exit a parse tree produced by `bsvParser.hexDigitsUnderscore`.
-	 * @param ctx the parse tree
-	 */
-	exitHexDigitsUnderscore?: (ctx: HexDigitsUnderscoreContext) => void;
-
-	/**
-	 * Enter a parse tree produced by `bsvParser.octDigitsUnderscore`.
-	 * @param ctx the parse tree
-	 */
-	enterOctDigitsUnderscore?: (ctx: OctDigitsUnderscoreContext) => void;
-	/**
-	 * Exit a parse tree produced by `bsvParser.octDigitsUnderscore`.
-	 * @param ctx the parse tree
-	 */
-	exitOctDigitsUnderscore?: (ctx: OctDigitsUnderscoreContext) => void;
-
-	/**
-	 * Enter a parse tree produced by `bsvParser.binDigitsUnderscore`.
-	 * @param ctx the parse tree
-	 */
-	enterBinDigitsUnderscore?: (ctx: BinDigitsUnderscoreContext) => void;
-	/**
-	 * Exit a parse tree produced by `bsvParser.binDigitsUnderscore`.
-	 * @param ctx the parse tree
-	 */
-	exitBinDigitsUnderscore?: (ctx: BinDigitsUnderscoreContext) => void;
-
-	/**
-	 * Enter a parse tree produced by `bsvParser.realLiteral`.
-	 * @param ctx the parse tree
-	 */
-	enterRealLiteral?: (ctx: RealLiteralContext) => void;
-	/**
-	 * Exit a parse tree produced by `bsvParser.realLiteral`.
-	 * @param ctx the parse tree
-	 */
-	exitRealLiteral?: (ctx: RealLiteralContext) => void;
-
-	/**
-	 * Enter a parse tree produced by `bsvParser.exp`.
-	 * @param ctx the parse tree
-	 */
-	enterExp?: (ctx: ExpContext) => void;
-	/**
-	 * Exit a parse tree produced by `bsvParser.exp`.
-	 * @param ctx the parse tree
-	 */
-	exitExp?: (ctx: ExpContext) => void;
+	exitIdentifier_type?: (ctx: Identifier_typeContext) => void;
 
 	/**
 	 * Enter a parse tree produced by `bsvParser.stringLiteral`.
@@ -2114,6 +1963,17 @@ export interface bsvListener extends ParseTreeListener {
 	exitSystemTaskCall?: (ctx: SystemTaskCallContext) => void;
 
 	/**
+	 * Enter a parse tree produced by `bsvParser.stringAVTaskName`.
+	 * @param ctx the parse tree
+	 */
+	enterStringAVTaskName?: (ctx: StringAVTaskNameContext) => void;
+	/**
+	 * Exit a parse tree produced by `bsvParser.stringAVTaskName`.
+	 * @param ctx the parse tree
+	 */
+	exitStringAVTaskName?: (ctx: StringAVTaskNameContext) => void;
+
+	/**
 	 * Enter a parse tree produced by `bsvParser.attributeInstances`.
 	 * @param ctx the parse tree
 	 */
@@ -2288,6 +2148,50 @@ export interface bsvListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitImportBVIStmt?: (ctx: ImportBVIStmtContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `bsvParser.enabled_sel`.
+	 * @param ctx the parse tree
+	 */
+	enterEnabled_sel?: (ctx: Enabled_selContext) => void;
+	/**
+	 * Exit a parse tree produced by `bsvParser.enabled_sel`.
+	 * @param ctx the parse tree
+	 */
+	exitEnabled_sel?: (ctx: Enabled_selContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `bsvParser.ready_sel`.
+	 * @param ctx the parse tree
+	 */
+	enterReady_sel?: (ctx: Ready_selContext) => void;
+	/**
+	 * Exit a parse tree produced by `bsvParser.ready_sel`.
+	 * @param ctx the parse tree
+	 */
+	exitReady_sel?: (ctx: Ready_selContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `bsvParser.clocked_by_sel`.
+	 * @param ctx the parse tree
+	 */
+	enterClocked_by_sel?: (ctx: Clocked_by_selContext) => void;
+	/**
+	 * Exit a parse tree produced by `bsvParser.clocked_by_sel`.
+	 * @param ctx the parse tree
+	 */
+	exitClocked_by_sel?: (ctx: Clocked_by_selContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `bsvParser.reset_by_sel`.
+	 * @param ctx the parse tree
+	 */
+	enterReset_by_sel?: (ctx: Reset_by_selContext) => void;
+	/**
+	 * Exit a parse tree produced by `bsvParser.reset_by_sel`.
+	 * @param ctx the parse tree
+	 */
+	exitReset_by_sel?: (ctx: Reset_by_selContext) => void;
 
 	/**
 	 * Enter a parse tree produced by `bsvParser.parameterBVIStmt`.

@@ -2,6 +2,7 @@ import { DocumentSymbolProvider, CancellationToken, TextDocument, SymbolKind, Do
 import { Ctags, CtagsManager, Symbol } from '../ctags';
 import { Logger, Log_Severity } from '../Logger';
 
+
 export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
 
     public docSymbols: DocumentSymbol[] = [];

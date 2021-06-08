@@ -43,6 +43,10 @@ CChar
     ;
 
 fragment
+NoneWhitespace:
+    ~[ \t];
+
+fragment
 EscapeSequence
     :   SimpleEscapeSequence
     |   OctalEscapeSequence
@@ -99,11 +103,11 @@ Digit
     ;
 
 Identifier
-    :   IdentifierNondigit
+    :   (IdentifierNondigit)
         (   IdentifierNondigit
         |   Digit
-        )+
-    ;
+        )*
+    | '\\' NoneWhitespace+; // for special symbal
 
 fragment
 FileName
@@ -125,53 +129,62 @@ Nondigit
     ;
 
 
-identifier : Identifier;
+identifier : Identifier
+           | 'no_reset' 
+           | identifier '::' identifier
+           | identifier '.' identifier
+           | identifier ('[' expression? ']')//undoc
+           | identifier '[]';//undoc
+identifier_type : Identifier
+                | 'Action'
+                | 'ActionValue'
+                | 'Rules'
+                | 'void'
+                | 'module'
+                | 'rule';
 // Integer literals
-intLiteral  :   '\'0' | '\'1'
-            |   sizedIntLiteral
-            |   unsizedIntLiteral;
+IntLiteral  :   '\'0' | '\'1'
+            |   SizedIntLiteral
+            |   UnsizedIntLiteral;
 
-sizedIntLiteral :  bitWidth baseLiteral;
-
-unsizedIntLiteral   :  sign? baseLiteral
-                    |   sign? decNum;
-
-
-baseLiteral :   ('\'d' | '\'D') decDigitsUnderscore
-            |   ('\'h' | '\'H') hexDigitsUnderscore
-            |   ('\'o' | '\'O') octDigitsUnderscore
-            |   ('\'b' | '\'B') binDigitsUnderscore;
-
-
-decNum      :  decDigits decDigitsUnderscore?;
-bitWidth    :  decDigits;
-sign        :  '+' | '-';
-
-Digit_      :  Digit+;
-decDigits   :  Digit_;
 fragment
-DecDigitsUnderscore     :  [0-9_];
-DecDigitsUnderscore_    :  DecDigitsUnderscore+;
-decDigitsUnderscore     :  DecDigitsUnderscore_;
+SizedIntLiteral :  BitWidth BaseLiteral;
+
 fragment
-HexDigitsUnderscore     :  [0-9a-fA-F_];
-HexDigitsUnderscore_    :  HexDigitsUnderscore+;
-hexDigitsUnderscore     :  HexDigitsUnderscore_;
+UnsizedIntLiteral   :  /*Sign?*/ BaseLiteral  // ignore sign this stage
+                    |   /*Sign?*/ DecNum;
+
 fragment
-OctDigitsUnderscore     :  [0-7_]; 
-OctDigitsUnderscore_    :  OctDigitsUnderscore+;
-octDigitsUnderscore     :  OctDigitsUnderscore_;
+BaseLiteral :   ('\'d' | '\'D') DecDigitsUnderscore
+            |   ('\'h' | '\'H') HexDigitsUnderscore
+            |   ('\'o' | '\'O') OctDigitsUnderscore
+            |   ('\'b' | '\'B') BinDigitsUnderscore;
+
 fragment
-BinDigitsUnderscore     :  [01_];
-BinDigitsUnderscore_    :  BinDigitsUnderscore+;
-binDigitsUnderscore     :  BinDigitsUnderscore_;
+DecNum      :  DecDigits DecDigitsUnderscore?;
+fragment
+BitWidth    :  DecDigits;
+fragment
+Sign        :  '+' | '-';
+
+fragment
+DecDigits   :  Digit+;
+fragment
+DecDigitsUnderscore     :  [0-9_]+;
+fragment
+HexDigitsUnderscore     :  [0-9a-fA-F_]+;
+fragment
+OctDigitsUnderscore     :  [0-7_]+; 
+fragment
+BinDigitsUnderscore     :  [01_]+;
 
 //  Real literals
 
-realLiteral : decNum('.'decDigitsUnderscore)? exp sign? decDigitsUnderscore
-            | decNum'.'decDigitsUnderscore;
+RealLiteral : DecNum('.'DecDigitsUnderscore)? Exp Sign? DecDigitsUnderscore
+            | DecNum'.'DecDigitsUnderscore;
 
-exp         : 'e' | 'E';
+fragment
+Exp         : 'e' | 'E';
 
 //  String literals
 stringLiteral : StringLiteral;
@@ -187,13 +200,17 @@ CompilerDirective   : ('`include' Whitespace* StringLiteral
                     | '`ifdef' Whitespace* MacroName
                     | '`ifndef' Whitespace* MacroName
                     | '`elsif' Whitespace* MacroName
-                    | '`endif' Whitespace* MacroName 
+                    | '`else'
+                    | '`endif'
                     ) -> skip;
 
-
-LineNumber  : Digit_;
+fragment
+LineNumber  : DecDigits;
+fragment
 Level       : '0' | '1' | '2';
+fragment
 MacroName   : Identifier;
+fragment
 MacroFormals: Identifier;
  
 fragment
@@ -213,9 +230,7 @@ top           :  exportDecl*
               |  packageStmt*
               |  r_package*;
 r_package     : 'package' packageIde ';'
-              exportDecl*
-              importDecl*
-              packageStmt*
+              (exportDecl|importDecl|packageStmt)*
               'endpackage' (':'packageIde)? ;
 
 non_package : exportDecl*
@@ -224,7 +239,7 @@ non_package : exportDecl*
 
 exportDecl  : 'export' exportItem (',' exportItem)* ';';
 exportItem  : identifier '(..)'?
-            | Identifier '(..)'?
+            | identifier_type '(..)'?
             | packageIde '::' '*';
 
 importDecl  : 'import' importItem (',' importItem)* ';';
@@ -237,20 +252,24 @@ packageStmt : moduleDef
             | functionDef
             | typeclassDef
             | typeclassInstanceDef
-            | externModuleImport;
+            | externModuleImport
+            | externCImport;
 
-packageIde  : Identifier;
+packageIde  : identifier_type;
 
 //  Types
 type        : typePrimary
-            | typePrimary '(' type (',' type)* ')';
+            | typePrimary '(' type identifier? (',' type identifier?)* ')' // strange
+            | 'let';//strange
 
 typePrimary : typeIde ('#' '(' type  (',' type)* ')')?
             | typeNat
-            | 'bit' '[' typeNat ':' typeNat ']';
+            | 'bit' '[' typeNat ':' typeNat ']'
+            | 'function' typePrimary identifier?
+            | '(' type ')'; //strange
 
-typeIde     : Identifier;
-typeNat     : decDigits;
+typeIde     : identifier_type;
+typeNat     : IntLiteral;
 
 
 
@@ -258,48 +277,50 @@ typeNat     : decDigits;
 
 interfaceDecl   : ( attributeInstances )?
                   'interface' typeDefType ';'
-                  '{' interfaceMemberDecl '}'
+                    interfaceMemberDecl*
                   'endinterface'  (':' typeIde)? ;
 
-typeDefType     : typeIde typeFormals?;
+typeDefType     : typeIde typeFormals?
+                | 'function' typeIde identifier '(' functionFormals? ')';
 typeFormals     : '#' '(' typeFormal (',' typeFormal)* ')';
-typeFormal      : 'numeric'? type typeIde;
+typeFormal      : 'numeric'? 'type'? (typeIde|typeDefType)
+                | IntLiteral;// strange
 
 interfaceMemberDecl : methodProto | subinterfaceDecl;
 methodProto         : attributeInstances?
-                      'method' type identifier '(' methodProtoFormals? ')' ';';
+                      'method' type identifier ('(' methodProtoFormals? ')')? ';';
 
-methodProtoFormals  : methodProtoFormal ( ',' methodProtoFormal);
+methodProtoFormals  : methodProtoFormal ( ',' methodProtoFormal)*;
 methodProtoFormal   : attributeInstances? type identifier;
 
 // Subinterfaces
 subinterfaceDecl    : attributeInstances?
-                      'interface' typeDefType ';';
+                      'interface' typeDefType identifier';';//strange
 
 // Module definition
 
 moduleDef   : attributeInstances?
               moduleProto
-              (moduleStmt)*
-              'endmodule' (':' identifier);
+              (moduleStmt)*//strange
+              'endmodule' (':' identifier)?;
 
 moduleProto : 'module' ('[' type ']')? identifier
               moduleFormalParams? '(' moduleFormalArgs? ')' provisos? ';';
 
 moduleFormalParams  : '#' '(' moduleFormalParam (',' moduleFormalParam)* ')' ;
-moduleFormalParam   : attributeInstances? 'parameter'? type identifier;
+moduleFormalParam   : attributeInstances? 'parameter'? (type identifier|'function' type identifier'(' (type identifier (',' type identifier)*)? ')'); // strange hack for function
 moduleFormalArgs    : attributeInstances? type
-                    | attributeInstances? type identifier
-                      ( ','  attributeInstances? type identifier);
+                    | attributeInstances? (type identifier '[]'?|'function' type identifier'(' (type identifier (',' type identifier)*)? ')')
+                      ( ','  attributeInstances? (type identifier '[]'?|'function' type identifier'(' (type identifier (',' type identifier)*)? ')'))*;
 
 moduleStmt  : moduleInst
             | methodDef
             | subinterfaceDef
             | r_rule
             | (varDo | varDeclDo)
-            | functionCall
+            | functionCall ';'
             | systemTaskStmt
-            | '(' expression ')'
+            | expression? ';'
             | returnStmt
             | varDecl | varAssign
             | functionDef
@@ -320,7 +341,7 @@ moduleInst      : attributeInstances?
                   moduleApp2 identifier '(' moduleActualArgs? ')' ';' ;
 
 moduleApp       : identifier
-                  '(' (moduleActualParamArg ( ',' moduleActualParamArg)*)* ')';
+                  '(' (moduleActualParamArg ( ',' moduleActualParamArg)*)? ')';
 
 moduleActualParamArg    : expression
                         | 'clocked_by' expression
@@ -334,16 +355,16 @@ moduleActualArg     : expression
                     | 'reset_by' expression;
 
 // Interface
-methodDef           : 'method' type? identifier '(' methodProtoFormals ')' implicitCond? ';'
+methodDef           : 'method' type? identifier ('(' methodFormals? ')')? implicitCond? ';'
                       functionBody
-                      'endmethod' (':' identifier)
-                    | 'method' 'Action' identifier '(' methodFormals ')' implicitCond? ';'
+                      'endmethod' (':' identifier)?
+                    | 'method' 'Action' identifier ('(' methodFormals? ')')? implicitCond? ';'
                       actionStmt*
-                      'endmethod' (':' identifier)
-                    | 'method' 'ActionValue' '#' '(' type ')' identifier  '(' methodFormals ')' (implicitCond ';')?
+                      'endmethod' (':' identifier)?
+                    | 'method' 'ActionValue' '#' '(' type ')' identifier?  ('(' methodFormals? ')')? (implicitCond)? ';'
                       actionValueStmt*
-                      'endmethod' (':' identifier)
-                    | 'method' type? identifier '(' methodFormals ')' implicitCond?
+                      'endmethod' (':' identifier)?
+                    | 'method' type? identifier ('(' methodFormals? ')')? implicitCond?
                         '=' expression ';' ;
 
 implicitCond        : 'if' '(' condPredicate ')' ;
@@ -351,9 +372,9 @@ methodFormals       : methodFormal (',' methodFormal)*;
 methodFormal        : type? identifier;
 
 // subinterfaces
-subinterfaceDef     : 'interface' Identifier identifier
+subinterfaceDef     : 'interface' identifier_type identifier ';'
                       interfaceStmt*
-                      'endinterface' (':' identifier)
+                      'endinterface' (':' identifier)?
                     | 'interface' type? identifier '=' expression ';' ;
 
 interfaceStmt       : methodDef
@@ -376,7 +397,7 @@ r_rule              : attributeInstances?
                         ruleBody
                       'endrule' ( ':' identifier)? ;
 
-ruleCond            : '(' condPredicate ')';
+ruleCond            : 'if'? '(' condPredicate ')';
 ruleBody            : actionStmt*;
 
 // User-defined types
@@ -387,11 +408,11 @@ typeDef             : typedefSynonym
                     | typedefTaggedUnion;
 
 typedefSynonym      : 'typedef' type typeDefType ';';
-typedefEnum         : 'typedef' 'enum' '{' typedefEnumElements '}' Identifier derives? ';' ;
+typedefEnum         : 'typedef' 'enum' '{' typedefEnumElements '}' identifier_type derives? ';' ;
 typedefEnumElements : typedefEnumElement (',' typedefEnumElement)*;
-typedefEnumElement  : Identifier ('=' intLiteral)?
-                    | Identifier '[' intLiteral ']' ('=' intLiteral)?
-                    | Identifier '[' intLiteral ':' intLiteral ']' ('=' intLiteral)?;
+typedefEnumElement  : identifier_type ('=' IntLiteral)?
+                    | identifier_type '[' IntLiteral ']' ('=' IntLiteral)?
+                    | identifier_type '[' IntLiteral ':' IntLiteral ']' ('=' IntLiteral)?;
 
 typedefStruct       : 'typedef' 'struct' '{'
                         structMember*
@@ -404,10 +425,10 @@ typedefTaggedUnion  : 'typedef' 'union' 'tagged' '{'
 structMember        : type identifier ';'
                     | subUnion identifier ';';
 
-unionMember         : type Identifier ';'
-                    | subStruct Identifier ';'
-                    | subUnion Identifier ';'
-                    | 'void' Identifier ';';
+unionMember         : type identifier_type ';'
+                    | subStruct identifier_type ';'
+                    | subUnion identifier_type ';'
+                    | 'void' identifier_type ';';
 
 subStruct           : 'struct' '{'
                         structMember*
@@ -428,17 +449,19 @@ subUnion            : 'union' 'tagged' '{'
 //                     | rule
 //                     | actionBlock;
 
-varDecl             : type varInit ( ',' varInit) ';'
-                    | 'let' identifier '=' expression ';';
-varInit             : identifier arrayDims? ( '=' expression )?;
-arrayDims           : '[' expression ']' ('[' expression ']');
+varDecl             : attributeInstances? type varInit ( ',' varInit)* ';'
+                    | attributeInstances? 'let' lValue '=' expression ';'; // undoc
+varInit             : attributeInstances? identifier arrayDims? ( '=' expression )?;
+arrayDims           : '[' expression ']' ('[' expression ']')*;
 
 
-varAssign           : lValue '=' expression ';'
-                    | 'let' identifier '<-' expression ';'
-                    | 'match' pattern '=' expression ';';
+varAssign           : attributeInstances? lValue '=' expression ';'
+                    | attributeInstances? 'let'? lValue '<-' expression ';' // undoc
+                    | attributeInstances? 'match' pattern '=' expression ';'
+                    | attributeInstances? 'match' pattern '<-' expression ';';// undocumented
 
 lValue              : identifier
+                    | '{' identifier (',' identifier)* '}' // undocumented
                     | lValue '.' identifier
                     | lValue '[' expression ']'
                     | lValue '[' expression ':' expression ']';
@@ -566,11 +589,11 @@ case_expressionStmt     : 'case' '(' expression ')'
 
 // caseItem[args]      : expression (',' expression) ':' stmt[args];
 
-caseItem_functionBodyStmt       : expression (',' expression) ':' functionBodyStmt;
-caseItem_actionStmt             : expression (',' expression) ':' actionStmt;
-caseItem_actionValueStmt        : expression (',' expression) ':' actionValueStmt;
-caseItem_moduleStmt             : expression (',' expression) ':' moduleStmt;
-caseItem_expressionStmt         : expression (',' expression) ':' expressionStmt;
+caseItem_functionBodyStmt       : expression (',' expression)* ':' functionBodyStmt;
+caseItem_actionStmt             : expression (',' expression)* ':' actionStmt;
+caseItem_actionValueStmt        : expression (',' expression)* ':' actionValueStmt;
+caseItem_moduleStmt             : expression (',' expression)* ':' moduleStmt;
+caseItem_expressionStmt         : expression (',' expression)* ':' expressionStmt;
 
 // defaultItem[args]   : 'default' ':'? stmt[args];
 defaultItem_functionBodyStmt    : 'default' ':'? functionBodyStmt;
@@ -620,7 +643,7 @@ for_expressionStmt              : 'for' '(' forInit ';' forTest ';' forIncr ')'
 forInit             : forOldInit | forNewInit;
 forOldInit          : simpleVarAssign (',' simpleVarAssign)*;
 simpleVarAssign     : identifier '=' identifier;
-forNewInit          : type identifier '=' expression (',' simpleVarDeclAssign)*;
+forNewInit          : type? identifier '=' expression (',' simpleVarDeclAssign)*;
 simpleVarDeclAssign : type? identifier '=' expression;
 forTest             : expression;
 forIncr             : varIncr (',' varIncr)*;
@@ -630,12 +653,13 @@ varIncr             : identifier '=' expression;
 functionDef         : attributeInstances?
                       functionProto
                         functionBody
-                      'endfunction' (':' identifier);
+                      'endfunction' (':' identifier)?
+                    | 'function' type? identifier '(' functionFormals? ')' provisos? '=' expression ';';//strange
 
-functionProto       : 'function' type identifier '(' functionFormals? ')' provisos? ';'
-                    | 'function' type identifier '(' functionFormals? ')' provisos? '=' expression ';';
-functionFormals     : functionFormal (',' functionFormal);
-functionFormal      : type identifier;
+functionProto       : 'function' type? identifier ('(' functionFormals? ')')? provisos? ';'; // too strange
+                   
+functionFormals     : functionFormal (',' functionFormal)*;
+functionFormal      : type? identifier ('(' functionFormals? ')')?; // strange
 
 functionBody        : actionBlock
                     | actionValueBlock
@@ -669,8 +693,8 @@ expression:
 exprPrimary         : 'valueof' '(' type ')'
                     | 'valueOf' '(' type ')'
                     | identifier
-                    | intLiteral
-                    | realLiteral
+                    | IntLiteral
+                    | RealLiteral
                     | stringLiteral
                     | systemFunctionCall
                     | '(' expression ')'
@@ -684,11 +708,15 @@ exprPrimary         : 'valueof' '(' type ')'
                     | exprPrimary '.' identifier ( '(' ( expression (',' expression)*)? ')')// methodCall - we must add () for lexer
                     | typeAssertion
                     | structExpr
+                    | case_functionBodyStmt // strange
                     | exprPrimary '.' identifier
                     | taggedUnionExpr
                     | interfaceExpr
                     | ruleExpr
                     | seqFsmStmt | parFsmStmt
+                    | moduleApp
+                    | taggedUnionPattern
+                    | '?'
                     ;
 
 condExpr            : condPredicate '?' expression ':' expression;
@@ -715,6 +743,7 @@ unop                : '+'
                     | '~^';
 
 binop               : '*'
+                    | '**'
                     | '/'
                     | '%'
                     | '+'
@@ -750,9 +779,10 @@ actionBlock         : 'action' (':' identifier)?
 
 actionStmt          : regWrite
                     | varDo | varDeclDo
-                    | functionCall
+                    | functionCall ';'
                     | systemTaskStmt
-                    | '(' expression ')'
+                    | expression? ';'
+                    | actionBlock // strange
                     | varDecl | varAssign
                     | functionDef
                     | moduleDef
@@ -767,9 +797,11 @@ actionValueBlock    : 'actionvalue'  (':' identifier)?
                       'endactionvalue'  (':' identifier)?;
 actionValueStmt     : regWrite
                     | varDo | varDeclDo
-                    | functionCall
-                    | systemFunctionCall
-                    | '(' expression ')'
+                    | functionCall ';'
+                    | systemTaskStmt  // strange
+                    | actionValueBlock // strange
+                    | expression? ';' // strange
+                    | returnStmt
                     | varDecl | varAssign
                     | functionDef
                     | moduleDef
@@ -779,32 +811,32 @@ actionValueStmt     : regWrite
                     | for_actionValueStmt
                     | while_actionValueStmt;
 
-varDeclDo           : type identifier '<-' expression ';';
-varDo               : identifier '<-' expression ';';
+varDeclDo           : attributeInstances? type identifier '<-' expression ';';
+varDo               : attributeInstances? identifier '<-' expression ';';
 
 
 functionCall        : exprPrimary ('(' ( expression (',' expression)* )? ')')?;
 methodCall          : exprPrimary '.' identifier ('(' ( expression (',' expression)* )? ')')?;
 
-typeAssertion       : 'type' '\'' bitConcat
-                    | 'type' '\'' '(' expression ')' ;
+typeAssertion       : type '\'' bitConcat
+                    | type '\'' '(' expression ')' ;
 
-structExpr          : Identifier '{' memberBind (',' memberBind)* '}';
+structExpr          : identifier_type '{' (memberBind (',' memberBind)*)? '}'; // undoc
 memberBind          : identifier ':' expression;
 
 
-taggedUnionExpr     : 'tagged' Identifier '{' memberBind (',' memberBind) '}'
-                    | 'tagged' Identifier exprPrimary;
+taggedUnionExpr     : 'tagged' identifier_type '{' memberBind (',' memberBind) '}'
+                    | 'tagged' identifier_type exprPrimary;
 
 
-interfaceExpr       : 'interface' Identifier ';'
+interfaceExpr       : 'interface' type ';'?
                       interfaceStmt*
-                      'endinterface' (: Identifier) ;
+                      'endinterface' (':' identifier_type)? ;
 
 ruleExpr            : attributeInstances?
                       'rules' (':' identifier)?
-                         ruleStmt
-                      'endrule' (':' identifier)?;
+                         ruleStmt*      // strange why
+                      'endrules' (':' identifier)?;
 
 ruleStmt            : r_rule | expressionStmt;
 
@@ -814,15 +846,16 @@ ruleStmt            : r_rule | expressionStmt;
                     | constantPattern
                     | taggedUnionPattern
                     | structPattern
-                    | tuplePattern;
+                    | tuplePattern
+                    | '(' pattern ')'; //undoc
 
-constantPattern     : intLiteral
-                    | realLiteral
+constantPattern     : IntLiteral
+                    | RealLiteral
                     | stringLiteral
-                    | Identifier;
+                    | identifier_type;
 
-taggedUnionPattern  : 'tagged' Identifier pattern?;
-structPattern       : 'tagged' Identifier '{' identifier ':' pattern (',' identifier ':' pattern)* '}';
+taggedUnionPattern  : 'tagged' identifier_type pattern?;
+structPattern       : 'tagged' identifier_type '{' identifier ':' pattern (',' identifier ':' pattern)* '}';
 tuplePattern        : '{' pattern (',' pattern)* '}';
 
 
@@ -843,10 +876,7 @@ caseExprItem        : pattern ('&&&' expression)? ':' expression
 // System tasks and functions
 systemTaskStmt      : systemTaskCall ';'
                     | displayTaskName '(' (expression (',' expression)*)? ')' ';'
-                    | '$format' '(' (expression (',' expression)*)? ')' ';'
-                    | '$fopen' '(' expression (',' expression)? ')' ';'
                     | stringTaskName '(' identifier ( ',' expression (',' expression)? )? ')' ';'
-                    | 'fgetc' '(' identifier ')' ';'
                     | '$ungetc' '(' expression ',' identifier ')' ';'
                     | '$fflush' '(' identifier? ')' ';'
                     | '$finish' ('(' expression ')')? ';'
@@ -873,29 +903,40 @@ stringTaskName      : '$swrite'
                     | '$sformat';
 
 systemFunctionCall  : '$time'
-                    | '$stime';
+                    | '$stime'
+                    | systemTaskCall ;
 
 systemTaskCall      : '$realtobits' '(' expression ')'
                     | '$bitstoreal' '(' expression ')'
-                    | '$test$plusargs' '(' expression ')';
+                    | '$test$plusargs' '(' expression ')'
+                    | '$format' '(' (expression (',' expression)*)? ')'
+                    | '$fopen' '(' expression (',' expression)? ')'
+                    | stringAVTaskName '(' (expression  (',' expression)*)? ')'
+                    | 'fgetc' '(' identifier ')';
+
+stringAVTaskName    : '$swriteAV' 
+                    | '$swritebAV' 
+                    | '$swriteoAV' 
+                    | '$swritehAV' 
+                    | '$sformatAV';
 
 // attributes
 attributeInstances  : attributeInstance attributeInstance*;
 attributeInstance   : '(*' attrSpec (',' attrSpec)* '*)';
 attrSpec            : attrName ('=' expression)?;
-attrName            : identifier | Identifier;
+attrName            : identifier | identifier_type;
 
 // Type classes (overloading groups) and provisos
 provisos            : 'provisos' '(' proviso (',' proviso)* ')';
-proviso             : Identifier '#' '(' type (',' type)* ')';
+proviso             : identifier_type '#' '(' type (',' type)* ')';
 
 
 typeclassDef        : 'typeclass' typeclassIde typeFormals provisos?
                       typedepends? ';'
                         overloadedDef*
-                      'endtypeclass' (':' Identifier);
+                      'endtypeclass' (':' identifier_type)?;
 
-typeclassIde        : Identifier;
+typeclassIde        : identifier_type;
 typelist            : typeIde
                     | '(' typeIde (',' typeIde )* ')';
 
@@ -903,10 +944,13 @@ typedepends         : 'dependencies' '(' typedepend (',' typedepend)* ')';
 typedepend          : typelist 'determines' typelist;
 
 overloadedDef       : functionProto
-                    | varDecl;
+                    | varDecl 
+                    | moduleProto// strange
+                    | moduleDef//strange
+                    | functionDef;// strange
 
 typeclassInstanceDef    : 'instance' typeclassIde '#' '(' type (',' type)* ')' provisos? ';'
-                            ( varAssign ';'  | functionDef | moduleDef )*
+                            ( varAssign  | functionDef | moduleDef )*
                           'endinstance' (':' typeclassIde)?;
 
 derives             : 'deriving' '(' typeclassIde (',' typeclassIde)* ')';
@@ -916,7 +960,7 @@ derives             : 'deriving' '(' typeclassIde (',' typeclassIde)* ')';
 externModuleImport  : 'import' '"BVI"' (identifier '=')? moduleProto
                          moduleStmt*
                          importBVIStmt*
-                      'endmodule' (':' identifier);
+                      'endmodule' (':' identifier)?;
 
 importBVIStmt       : parameterBVIStmt
                     | methodBVIStmt
@@ -935,49 +979,50 @@ importBVIStmt       : parameterBVIStmt
                     | interfaceBVIStmt
                     | inoutBVIStmt;
 
+enabled_sel         :('enable' '(' portId ')');
+ready_sel           :('ready' '(' portId ')');
+clocked_by_sel      :('clocked_by' '(' clockId ')');
+reset_by_sel        :('reset_by' '(' resetId ')');
+
 parameterBVIStmt    : 'parameter' identifier '=' expression ';';
-methodBVIStmt       : 'method' portId? identifier ('(' portId (',' portId)* ')')?
-                        ('enable' '(' portId ')')? ('ready' '(' portId ')')?
-                        ('clocked_by' '(' clockId ')')? ('reset_by' '(' resetId ')')? ';' ;
-portBVIStmt         : 'port' identifier ('clocked_by' '(' clockId ')')?
-                        ('reset_by' '(' resetId ')' )? '=' expression ';' ;
+methodBVIStmt       : 'method' portId? identifier ('(' (portId (',' portId)*)? ')')?
+                        (enabled_sel|ready_sel|clocked_by_sel|reset_by_sel)* ';' ;
+portBVIStmt         : 'port' identifier (clocked_by_sel|reset_by_sel)* '=' expression ';' ;
 
 inputClockBVIStmt   : 'input_clock' identifier? '(' portsDef? ')' '=' expression ';' ;
 portsDef            : portId (',' attributeInstances? portId)?;
-portId              : identifier;
+portId              : attributeInstance? identifier;
 
-defaultClockBVIStmt : 'default_clock' identifier;
+defaultClockBVIStmt : 'default_clock' identifier? ('(' portsDef? ')')? ('=' expression)? ';' ;
 outputClockBVIStmt  : 'output_clock' identifier '(' portsDef? ')' ';';
 
-inputResetBVIStmt   : 'input_reset' identifier? ('(' portId ')')? ('clocked_by' '(' clockId ')')?
+inputResetBVIStmt   : 'input_reset' identifier? ('(' portId? ')')? clocked_by_sel?
                         '=' expression ';' ;
 clockId             : identifier;
 defaultResetBVIStmt : 'default_reset' identifier ';'
-                    | 'default_reset' identifier? ('(' portId ')')? ('clocked_by' '(' clockId ')')?
+                    | 'default_reset' identifier? ('(' portId? ')')? clocked_by_sel?
                         ('=' expression)? ';';
 
-outputResetBVIStmt  : 'output_reset' identifier ('(' portId ')')? ('clocked_by' '(' clockId ')')? ';';
+outputResetBVIStmt  : 'output_reset' identifier ('(' portId? ')')? clocked_by_sel?';';
 ancestorBVIStmt     : 'ancestor' '(' clockId ',' clockId ')' ';' ;
 sameFamilyBVIStmt   : 'same_family' '(' clockId ',' clockId ')' ';' ;
-scheduleBVIStmt     : 'schedule' '(' identifier (',' identifier)* ')' operatorId
-                        '(' identifier (',' identifier)* ')' ';';
+scheduleBVIStmt     : 'schedule' ('(' identifier (',' identifier)* ')'|identifier) operatorId
+                        ('(' identifier (',' identifier)* ')'|identifier) ';';
 operatorId          : 'CF'
                     | 'SB'
                     | 'SBR'
                     | 'C';
 
 pathBVIStmt         : 'path' '(' portId ',' portId ')' ';';
-interfaceBVIStmt    : 'interface' typeDefType ';'
+interfaceBVIStmt    : 'interface' typeDefType typeIde?';'//strange
                         interfaceBVIMembDecl*
                       'endinterface' (':' typeIde)? ;
 
 interfaceBVIMembDecl    : methodBVIStmt
                         | interfaceBVIStmt;
 
-inoutBVIStmt        : 'inout' portId ('clocked_by' '(' clockId ')')?
-                         ('reset_by' '(' resetId ')')?  '=' expression ';'
-                    | 'ifc_inout' identifier '(' portId ')' ('clocked_by' '(' clockId ')')?
-                         ('reset_by' '(' resetId ')')?  ';';
+inoutBVIStmt        : 'inout' portId (clocked_by_sel|reset_by_sel)*  '=' expression ';'
+                    | 'ifc_inout' identifier '(' portId ')' (clocked_by_sel|reset_by_sel)*  ';';
 
 resetId             : identifier;
 noResetBVIStmt      : 'no_reset' ';' ;

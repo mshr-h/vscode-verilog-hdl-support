@@ -14,6 +14,9 @@ import { VerilogHoverProvider, BsvHoverProvider } from "./providers/HoverProvide
 import { VerilogDefinitionProvider, BsvDefinitionProvider } from "./providers/DefinitionProvider";
 import { VerilogCompletionItemProvider, BsvCompletionItemProvider } from "./providers/CompletionItemProvider";
 
+
+import { BsvInfoProviderManger } from "./BsvProvider" 
+
 // Commands
 import * as ModuleInstantiation from "./commands/ModuleInstantiation"
 
@@ -36,6 +39,13 @@ let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
     console.log(extensionID + ' is now active!');
+    
+    BsvInfoProviderManger.getInstance().onWorkspace();
+    workspace.onDidChangeWorkspaceFolders(
+        (e) => {
+            BsvInfoProviderManger.getInstance().onWorkspace();
+        }
+    )
 
     // document selector
     let systemverilogSelector: DocumentSelector = { scheme: 'file', language: 'systemverilog' };
