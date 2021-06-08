@@ -1,4 +1,6 @@
+import { resolve } from 'url';
 import { DocumentSymbolProvider, CancellationToken, TextDocument, SymbolKind, DocumentSymbol, window, ProviderResult, SymbolInformation } from 'vscode'
+import { BsvInfoProviderManger } from '../BsvProvider';
 import { Ctags, CtagsManager, Symbol } from '../ctags';
 import { Logger, Log_Severity } from '../Logger';
 
@@ -118,7 +120,16 @@ export class BsvDocumentSymbolProvider implements DocumentSymbolProvider {
     }
 
     provideDocumentSymbols(document: TextDocument, token: CancellationToken): ProviderResult<DocumentSymbol[] | SymbolInformation[]> {
-        throw new Error('Method not implemented.');
+        // return new Promise((resolve)=>{
+        //     const provider = BsvInfoProviderManger.getInstance().getProvider();
+        //     var info = provider.getSymbol(document);
+    
+        //     resolve(info);
+        // })
+        const provider = BsvInfoProviderManger.getInstance().getProvider();
+        var info = provider.getSymbol(document);
+
+        return info;
     }
 
 }

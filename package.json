@@ -22,10 +22,7 @@
   ],
   "icon": "images/icon.png",
   "activationEvents": [
-    "onLanguage:verilog",
-    "onLanguage:systemverilog",
-    "onLanguage:bsv",
-    "*"
+    "onStartupFinished"
   ],
   "main": "./out/src/extension",
   "contributes": {
