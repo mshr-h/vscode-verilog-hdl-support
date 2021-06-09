@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Unreleased - 2021-06-09
+
+### Added
+
+- Add Bluespec Verilog Syntax Support [#162](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/162)
+
 ## [1.4.5] - 2021-05-15
 
 ### Fixed
