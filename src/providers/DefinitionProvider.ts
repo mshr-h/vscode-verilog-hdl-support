@@ -1,4 +1,5 @@
 import { DefinitionProvider, TextDocument, CancellationToken, Position, ProviderResult, DefinitionLink, Range, Definition, LocationLink } from 'vscode';
+import { BsvInfoProviderManger } from '../BsvProvider';
 import { Ctags, CtagsManager, Symbol } from '../ctags';
 import { Logger } from '../Logger';
 
@@ -42,6 +43,7 @@ export class VerilogDefinitionProvider implements DefinitionProvider {
 
 export class BsvDefinitionProvider implements DefinitionProvider {
     provideDefinition(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<LocationLink[] | Definition> {
-        return [];
+        const provider = BsvInfoProviderManger.getInstance().getProvider();
+        return provider.provideDefinition(document, position);
     }
 }

@@ -87,7 +87,7 @@ export function activate(context: ExtensionContext) {
     let defProvider = new VerilogDefinitionProvider(logger);
     context.subscriptions.push(languages.registerDefinitionProvider(systemverilogSelector, defProvider));
     context.subscriptions.push(languages.registerDefinitionProvider(verilogSelector, defProvider));
-    let bsvdefProvider = new VerilogDefinitionProvider(logger);
+    let bsvdefProvider = new BsvDefinitionProvider();
     context.subscriptions.push(languages.registerDefinitionProvider(bsvSelector, bsvdefProvider));
 
     // Configure command to instantiate a module

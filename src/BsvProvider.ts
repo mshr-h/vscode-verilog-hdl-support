@@ -13,7 +13,6 @@ import { extensionID } from './extension'
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { readdirSync } from 'fs';
-import { LocationLink, LocationLink } from 'vscode-languageserver-types';
 
 export interface BsvInfoProvider {
     getSymbol(doc: TextDocument): Promise<SymbolInformation[]> | Promise<DocumentSymbol[]>;
