@@ -1,5 +1,6 @@
 // import * as vscode from 'vscode';
 import { HoverProvider, TextDocument, Position, CancellationToken, Hover, window, Range, MarkdownString, ProviderResult } from 'vscode';
+import { BsvInfoProviderManger } from '../BsvProvider';
 import { Ctags, CtagsManager, Symbol } from '../ctags';
 import { Logger, Log_Severity } from '../Logger';
 
@@ -46,7 +47,9 @@ export class BsvHoverProvider implements HoverProvider {
     }
 
     provideHover(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Hover> {
-        throw new Error('Method not implemented.');
+        const provider = BsvInfoProviderManger.getInstance().getProvider();
+        var hover = provider.getHover(document, position);
+        return hover;
     }
 
 }

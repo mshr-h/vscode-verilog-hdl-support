@@ -2,15 +2,20 @@ import { ANTLRInputStream, CommonTokenStream } from 'antlr4ts';
 import { bsvLexer } from "../src/bsvjs/bsvLexer"
 import { ActionBlockContext, ActionStmtContext, ActionValueBlockContext, ActionValueStmtContext, AncestorBVIStmtContext, ArrayDimsContext, ArrayIndexesContext, AttributeInstanceContext, AttributeInstancesContext, AttrNameContext, AttrSpecContext, BeginEndExprContext, BeginEndStmt_actionStmtContext, BeginEndStmt_actionValueStmtContext, BeginEndStmt_expressionStmtContext, BeginEndStmt_functionBodyStmtContext, BeginEndStmt_moduleStmtContext, BinopContext, BitConcatContext, bsvParser, CaseExprContext, CaseExprItemContext, CaseItem_actionStmtContext, CaseItem_actionValueStmtContext, CaseItem_expressionStmtContext, CaseItem_functionBodyStmtContext, CaseItem_moduleStmtContext, CasePatItem_actionStmtContext, CasePatItem_actionValueStmtContext, CasePatItem_expressionStmtContext, CasePatItem_functionBodyStmtContext, CasePatItem_moduleStmtContext, Case_actionStmtContext, Case_actionValueStmtContext, Case_expressionStmtContext, Case_functionBodyStmtContext, Case_moduleStmtContext, CFuncArgContext, CFuncArgsContext, Clocked_by_selContext, ClockIdContext, CondExprContext, CondPredicateContext, ConstantPatternContext, DefaultClockBVIStmtContext, DefaultItem_actionStmtContext, DefaultItem_actionValueStmtContext, DefaultItem_expressionStmtContext, DefaultItem_functionBodyStmtContext, DefaultItem_moduleStmtContext, DefaultResetBVIStmtContext, DerivesContext, DisplayTaskNameContext, Enabled_selContext, ExportDeclContext, ExportItemContext, ExpressionContext, ExpressionStmtContext, ExprFsmStmtContext, ExprOrCondPatternContext, ExprPrimaryContext, ExternCImportContext, ExternModuleImportContext, ForFsmStmtContext, ForIncrContext, ForInitContext, ForNewInitContext, ForOldInitContext, ForTestContext, For_actionStmtContext, For_actionValueStmtContext, For_expressionStmtContext, For_functionBodyStmtContext, For_moduleStmtContext, FsmStmtContext, FunctionBodyContext, FunctionBodyStmtContext, FunctionCallContext, FunctionDefContext, FunctionFormalContext, FunctionFormalsContext, FunctionProtoContext, IdentifierContext, Identifier_typeContext, IfFsmStmtContext, If_actionStmtContext, If_actionValueStmtContext, If_expressionStmtContext, If_functionBodyStmtContext, If_moduleStmtContext, ImplicitCondContext, ImportBVIStmtContext, ImportDeclContext, ImportItemContext, InoutBVIStmtContext, InputClockBVIStmtContext, InputResetBVIStmtContext, InterfaceBVIMembDeclContext, InterfaceBVIStmtContext, InterfaceDeclContext, InterfaceExprContext, InterfaceMemberDeclContext, InterfaceStmtContext, LoopBodyFsmStmtContext, LValueContext, MemberBindContext, MethodBVIStmtContext, MethodCallContext, MethodDefContext, MethodFormalContext, MethodFormalsContext, MethodProtoContext, MethodProtoFormalContext, MethodProtoFormalsContext, ModuleActualArgContext, ModuleActualArgsContext, ModuleActualParamArgContext, ModuleActualParamContext, ModuleApp2Context, ModuleAppContext, ModuleDefContext, ModuleFormalArgsContext, ModuleFormalParamContext, ModuleFormalParamsContext, ModuleInstContext, ModuleProtoContext, ModuleStmtContext, Non_packageContext, NoResetBVIStmtContext, OperatorExprContext, OperatorIdContext, OutputClockBVIStmtContext, OutputResetBVIStmtContext, OverloadedDefContext, PackageIdeContext, PackageStmtContext, ParameterBVIStmtContext, ParFsmStmtContext, PathBVIStmtContext, PatternContext, PortBVIStmtContext, PortIdContext, PortsDefContext, ProvisoContext, ProvisosContext, Ready_selContext, RegWriteContext, RepeatFsmStmtContext, ResetIdContext, Reset_by_selContext, ReturnFsmStmtContext, ReturnStmtContext, RuleBodyContext, RuleCondContext, RuleExprContext, RuleStmtContext, R_packageContext, R_ruleContext, SameFamilyBVIStmtContext, ScheduleBVIStmtContext, SeqFsmStmtContext, SimpleVarAssignContext, SimpleVarDeclAssignContext, StringAVTaskNameContext, StringLiteralContext, StringTaskNameContext, StructExprContext, StructMemberContext, StructPatternContext, SubinterfaceDeclContext, SubinterfaceDefContext, SubStructContext, SubUnionContext, SystemFunctionCallContext, SystemTaskCallContext, SystemTaskStmtContext, TaggedUnionExprContext, TaggedUnionPatternContext, TopContext, TuplePatternContext, TypeAssertionContext, TypeclassDefContext, TypeclassIdeContext, TypeclassInstanceDefContext, TypeContext, TypeDefContext, TypedefEnumContext, TypedefEnumElementContext, TypedefEnumElementsContext, TypedefStructContext, TypedefSynonymContext, TypedefTaggedUnionContext, TypeDefTypeContext, TypedependContext, TypedependsContext, TypeFormalContext, TypeFormalsContext, TypeIdeContext, TypelistContext, TypeNatContext, TypePrimaryContext, UnionMemberContext, UnopContext, VarAssignContext, VarDeclContext, VarDeclDoContext, VarDoContext, VarIncrContext, VarInitContext, WhileFsmStmtContext, While_actionStmtContext, While_actionValueStmtContext, While_expressionStmtContext, While_functionBodyStmtContext, While_moduleStmtContext } from "../src/bsvjs/bsvParser"
 
-import { SymbolInformation, DocumentSymbol, TextDocument, Uri, window, workspace, SymbolKind, Range, Position, Location } from 'vscode';
+import { SymbolInformation, DocumentSymbol, TextDocument, Uri, window, workspace, SymbolKind, Range, Position, Location, Hover } from 'vscode';
 import { bsvVisitor } from './bsvjs/bsvVisitor';
 import { ErrorNode } from 'antlr4ts/tree/ErrorNode';
 import { ParseTree } from 'antlr4ts/tree/ParseTree';
 import { RuleNode } from 'antlr4ts/tree/RuleNode';
 import { TerminalNode } from 'antlr4ts/tree/TerminalNode';
+import { assert } from 'console';
 
 export interface BsvInfoProvider {
+
+
     getSymbol(doc: TextDocument): SymbolInformation[] | DocumentSymbol[];
+
+    getHover(document: TextDocument, position: Position): Hover;
 }
 
 const internalInfo = {
@@ -1583,10 +1588,13 @@ const internalInfo = {
             "wset": {
                 "proto": `method Action wset(element_type datain) ;`,
                 "info": `writes a value and sets the valid signal`,
+                "type": "method",
+
             },
             "wget": {
                 "proto": `method Maybe#(element_type) wget();`,
                 "info": `returns the value and the valid signal`,
+                "type": "method",
             },
         },
         "package": "Prelude",
@@ -1813,7 +1821,8 @@ const internalInfo = {
     "unsignedMul": {
         "type": "function",
         "info": `Performs full precision multiplication on two unsigned UInt#(n) operands of different sizes.`,
-        "proto": `function UInt#(m) unsignedMul(UInt#(n) x, UInt#(k) y) provisos (Add#(n,k,m));`
+        "proto": `function UInt#(m) unsignedMul(UInt#(n) x, UInt#(k) y) provisos (Add#(n,k,m));`,
+        "package": "Prelude",
     },
     "signedQuot": {
         "type": "function",
@@ -2131,11 +2140,12 @@ class BsvSymbolVisior implements bsvVisitor<Boolean>{
     visitTypeNat?: (ctx: TypeNatContext) => Boolean;
     visitInterfaceDecl(ctx: InterfaceDeclContext): Boolean {
         const name = ctx.typeDefType().typeIde().text;
+        const scope = this.scope_name[this.scope_name.length - 1];
         this.scope_name.push(name);
         this.symbol_list.push(new SymbolInformation(
             name,
             SymbolKind.Interface,
-            this.scope_name[this.scope_name.length - 1],
+            scope,
             new Location(
                 this.thisDoc,
                 new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
@@ -2152,10 +2162,11 @@ class BsvSymbolVisior implements bsvVisitor<Boolean>{
     visitInterfaceMemberDecl?: (ctx: InterfaceMemberDeclContext) => Boolean;
     visitMethodProto(ctx: MethodProtoContext): Boolean {
         const name = ctx.identifier().text;
+        const scope = this.scope_name[this.scope_name.length - 1];
         this.symbol_list.push(new SymbolInformation(
             name,
             SymbolKind.Method,
-            this.scope_name[this.scope_name.length - 1],
+            scope,
             new Location(
                 this.thisDoc,
                 new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
@@ -2169,11 +2180,12 @@ class BsvSymbolVisior implements bsvVisitor<Boolean>{
     visitMethodProtoFormal?: (ctx: MethodProtoFormalContext) => Boolean;
     visitSubinterfaceDecl(ctx: SubinterfaceDeclContext): Boolean {
         const name = ctx.typeDefType().typeIde().text;
+        const scope = this.scope_name[this.scope_name.length - 1];
         this.scope_name.push(name);
         this.symbol_list.push(new SymbolInformation(
             name,
             SymbolKind.Interface,
-            this.scope_name[this.scope_name.length - 1],
+            scope,
             new Location(
                 this.thisDoc,
                 new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
@@ -2186,11 +2198,12 @@ class BsvSymbolVisior implements bsvVisitor<Boolean>{
     };
     visitModuleDef(ctx: ModuleDefContext): Boolean {
         const name = ctx.moduleProto().identifier().text;
+        const scope = this.scope_name[this.scope_name.length - 1];
         this.scope_name.push(name);
         this.symbol_list.push(new SymbolInformation(
             name,
             SymbolKind.Module,
-            this.scope_name[this.scope_name.length - 1],
+            scope,
             new Location(
                 this.thisDoc,
                 new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
@@ -2206,7 +2219,24 @@ class BsvSymbolVisior implements bsvVisitor<Boolean>{
     visitModuleFormalParam?: (ctx: ModuleFormalParamContext) => Boolean;
     visitModuleFormalArgs?: (ctx: ModuleFormalArgsContext) => Boolean;
     visitModuleStmt?: (ctx: ModuleStmtContext) => Boolean;
-    visitModuleInst?: (ctx: ModuleInstContext) => Boolean;
+    visitModuleInst(ctx: ModuleInstContext): Boolean {
+        const name = ctx.identifier(0).text;
+        const scope = this.scope_name[this.scope_name.length - 1];
+        this.scope_name.push(name);
+        this.symbol_list.push(new SymbolInformation(
+            name,
+            SymbolKind.Object,
+            scope,
+            new Location(
+                this.thisDoc,
+                new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
+            )
+        ))
+
+        const res = this.visitChildren(ctx);
+        this.scope_name.pop()
+        return res;
+    };
     visitModuleApp?: (ctx: ModuleAppContext) => Boolean;
     visitModuleActualParamArg?: (ctx: ModuleActualParamArgContext) => Boolean;
     visitModuleApp2?: (ctx: ModuleApp2Context) => Boolean;
@@ -2215,11 +2245,12 @@ class BsvSymbolVisior implements bsvVisitor<Boolean>{
     visitModuleActualArg?: (ctx: ModuleActualArgContext) => Boolean;
     visitMethodDef(ctx: MethodDefContext): Boolean {
         const name = ctx.identifier(0).text;
+        const scope = this.scope_name[this.scope_name.length - 1];
         this.scope_name.push(name);
         this.symbol_list.push(new SymbolInformation(
             name,
             SymbolKind.Method,
-            this.scope_name[this.scope_name.length - 1],
+            scope,
             new Location(
                 this.thisDoc,
                 new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
@@ -2235,11 +2266,12 @@ class BsvSymbolVisior implements bsvVisitor<Boolean>{
     visitMethodFormal?: (ctx: MethodFormalContext) => Boolean;
     visitSubinterfaceDef(ctx: SubinterfaceDefContext): Boolean {
         const name = ctx.identifier(0).text;
+        const scope = this.scope_name[this.scope_name.length - 1];
         this.scope_name.push(name);
         this.symbol_list.push(new SymbolInformation(
             name,
             SymbolKind.Interface,
-            this.scope_name[this.scope_name.length - 1],
+            scope,
             new Location(
                 this.thisDoc,
                 new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
@@ -2252,7 +2284,24 @@ class BsvSymbolVisior implements bsvVisitor<Boolean>{
     };;
     visitInterfaceStmt?: (ctx: InterfaceStmtContext) => Boolean;
     visitExpressionStmt?: (ctx: ExpressionStmtContext) => Boolean;
-    visitR_rule?: (ctx: R_ruleContext) => Boolean;
+    visitR_rule(ctx: R_ruleContext): Boolean {
+        const name = ctx.identifier(0).text;
+        const scope = this.scope_name[this.scope_name.length - 1];
+        this.scope_name.push(name);
+        this.symbol_list.push(new SymbolInformation(
+            name,
+            SymbolKind.Function,
+            scope,
+            new Location(
+                this.thisDoc,
+                new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
+            )
+        ))
+
+        const res = this.visitChildren(ctx);
+        this.scope_name.pop()
+        return res;
+    };
     visitRuleCond?: (ctx: RuleCondContext) => Boolean;
     visitRuleBody?: (ctx: RuleBodyContext) => Boolean;
     visitTypeDef?: (ctx: TypeDefContext) => Boolean;
@@ -2273,11 +2322,12 @@ class BsvSymbolVisior implements bsvVisitor<Boolean>{
     };
     visitTypedefEnum(ctx: TypedefEnumContext): Boolean {
         const name = ctx.identifier_type().text;
+        const scope = this.scope_name[this.scope_name.length - 1];
         this.scope_name.push(name);
         this.symbol_list.push(new SymbolInformation(
             name,
             SymbolKind.TypeParameter,
-            this.scope_name[this.scope_name.length - 1],
+            scope,
             new Location(
                 this.thisDoc,
                 new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
@@ -2291,10 +2341,11 @@ class BsvSymbolVisior implements bsvVisitor<Boolean>{
     visitTypedefEnumElements?: (ctx: TypedefEnumElementsContext) => Boolean;
     visitTypedefEnumElement(ctx: TypedefEnumElementContext): Boolean {
         const name = ctx.identifier_type().text;
+        const scope = this.scope_name[this.scope_name.length - 1];
         this.symbol_list.push(new SymbolInformation(
             name,
             SymbolKind.TypeParameter,
-            this.scope_name[this.scope_name.length - 1],
+            scope,
             new Location(
                 this.thisDoc,
                 new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
@@ -2306,11 +2357,12 @@ class BsvSymbolVisior implements bsvVisitor<Boolean>{
     };
     visitTypedefStruct(ctx: TypedefStructContext): Boolean {
         const name = ctx.typeDefType().text;
+        const scope = this.scope_name[this.scope_name.length - 1];
         this.scope_name.push(name);
         this.symbol_list.push(new SymbolInformation(
             name,
             SymbolKind.Variable,
-            this.scope_name[this.scope_name.length - 1],
+            scope,
             new Location(
                 this.thisDoc,
                 new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
@@ -2323,11 +2375,12 @@ class BsvSymbolVisior implements bsvVisitor<Boolean>{
     };
     visitTypedefTaggedUnion(ctx: TypedefTaggedUnionContext): Boolean {
         const name = ctx.typeDefType().text;
+        const scope = this.scope_name[this.scope_name.length - 1];
         this.scope_name.push(name);
         this.symbol_list.push(new SymbolInformation(
             name,
             SymbolKind.Variable,
-            this.scope_name[this.scope_name.length - 1],
+            scope,
             new Location(
                 this.thisDoc,
                 new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
@@ -2340,11 +2393,12 @@ class BsvSymbolVisior implements bsvVisitor<Boolean>{
     };
     visitStructMember(ctx: StructMemberContext): Boolean {
         const name = ctx.identifier().text;
+        const scope = this.scope_name[this.scope_name.length - 1];
         this.scope_name.push(name);
         this.symbol_list.push(new SymbolInformation(
             name,
             SymbolKind.Variable,
-            this.scope_name[this.scope_name.length - 1],
+            scope,
             new Location(
                 this.thisDoc,
                 new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
@@ -2357,11 +2411,12 @@ class BsvSymbolVisior implements bsvVisitor<Boolean>{
     };;
     visitUnionMember(ctx: UnionMemberContext): Boolean {
         const name = ctx.identifier_type().text;
+        const scope = this.scope_name[this.scope_name.length - 1];
         this.scope_name.push(name);
         this.symbol_list.push(new SymbolInformation(
             name,
             SymbolKind.Variable,
-            this.scope_name[this.scope_name.length - 1],
+            scope,
             new Location(
                 this.thisDoc,
                 new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
@@ -2377,11 +2432,12 @@ class BsvSymbolVisior implements bsvVisitor<Boolean>{
     visitVarDecl(ctx: VarDeclContext): Boolean {
         if (ctx.varInit.length > 0) {
             const name = ctx.varInit(0).identifier().text;
+            const scope = this.scope_name[this.scope_name.length - 1];
             this.scope_name.push(name);
             this.symbol_list.push(new SymbolInformation(
                 name,
                 SymbolKind.Variable,
-                this.scope_name[this.scope_name.length - 1],
+                scope,
                 new Location(
                     this.thisDoc,
                     new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
@@ -2554,19 +2610,115 @@ class BsvSymbolVisior implements bsvVisitor<Boolean>{
     visitOverloadedDef?: (ctx: OverloadedDefContext) => Boolean;
     visitTypeclassInstanceDef?: (ctx: TypeclassInstanceDefContext) => Boolean;
     visitDerives?: (ctx: DerivesContext) => Boolean;
-    visitExternModuleImport?: (ctx: ExternModuleImportContext) => Boolean;
+    visitExternModuleImport(ctx: ExternModuleImportContext): Boolean {
+        const name = ctx.identifier(0).text;
+        this.scope_name.push(name);
+        this.symbol_list.push(new SymbolInformation(
+            name,
+            SymbolKind.Interface,
+            this.scope_name[this.scope_name.length - 1],
+            new Location(
+                this.thisDoc,
+                new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
+            )
+        ))
+
+        const res = this.visitChildren(ctx);
+        this.scope_name.pop()
+        return res;
+    };;
     visitImportBVIStmt?: (ctx: ImportBVIStmtContext) => Boolean;
     visitEnabled_sel?: (ctx: Enabled_selContext) => Boolean;
     visitReady_sel?: (ctx: Ready_selContext) => Boolean;
     visitClocked_by_sel?: (ctx: Clocked_by_selContext) => Boolean;
     visitReset_by_sel?: (ctx: Reset_by_selContext) => Boolean;
-    visitParameterBVIStmt?: (ctx: ParameterBVIStmtContext) => Boolean;
-    visitMethodBVIStmt?: (ctx: MethodBVIStmtContext) => Boolean;
-    visitPortBVIStmt?: (ctx: PortBVIStmtContext) => Boolean;
-    visitInputClockBVIStmt?: (ctx: InputClockBVIStmtContext) => Boolean;
+    visitParameterBVIStmt(ctx: ParameterBVIStmtContext): Boolean {
+        const name = ctx.identifier().text;
+        this.scope_name.push(name);
+        this.symbol_list.push(new SymbolInformation(
+            name,
+            SymbolKind.Property,
+            this.scope_name[this.scope_name.length - 1],
+            new Location(
+                this.thisDoc,
+                new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
+            )
+        ))
+
+        const res = this.visitChildren(ctx);
+        this.scope_name.pop()
+        return res;
+    };
+    visitMethodBVIStmt(ctx: MethodBVIStmtContext): Boolean {
+        const name = ctx.identifier().text;
+        this.scope_name.push(name);
+        this.symbol_list.push(new SymbolInformation(
+            name,
+            SymbolKind.Method,
+            this.scope_name[this.scope_name.length - 1],
+            new Location(
+                this.thisDoc,
+                new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
+            )
+        ))
+
+        const res = this.visitChildren(ctx);
+        this.scope_name.pop()
+        return res;
+    };
+    visitPortBVIStmt(ctx: PortBVIStmtContext): Boolean {
+        const name = ctx.identifier().text;
+        this.scope_name.push(name);
+        this.symbol_list.push(new SymbolInformation(
+            name,
+            SymbolKind.Object,
+            this.scope_name[this.scope_name.length - 1],
+            new Location(
+                this.thisDoc,
+                new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
+            )
+        ))
+
+        const res = this.visitChildren(ctx);
+        this.scope_name.pop()
+        return res;
+    };
+    visitInputClockBVIStmt(ctx: InputClockBVIStmtContext): Boolean {
+        const name = ctx.identifier().text;
+        this.scope_name.push(name);
+        this.symbol_list.push(new SymbolInformation(
+            name,
+            SymbolKind.Object,
+            this.scope_name[this.scope_name.length - 1],
+            new Location(
+                this.thisDoc,
+                new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
+            )
+        ))
+
+        const res = this.visitChildren(ctx);
+        this.scope_name.pop()
+        return res;
+    };
     visitPortsDef?: (ctx: PortsDefContext) => Boolean;
     visitPortId?: (ctx: PortIdContext) => Boolean;
-    visitDefaultClockBVIStmt?: (ctx: DefaultClockBVIStmtContext) => Boolean;
+    visitDefaultClockBVIStmt(ctx: DefaultClockBVIStmtContext): Boolean {
+        const name = ctx.identifier().text;
+        this.scope_name.push(name);
+        this.symbol_list.push(new SymbolInformation(
+            name,
+            SymbolKind.Property,
+            this.scope_name[this.scope_name.length - 1],
+            new Location(
+                this.thisDoc,
+                new Range(new Position(ctx.start.line - 1, ctx.start.charPositionInLine), new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine))
+            )
+        ))
+
+        const res = this.visitChildren(ctx);
+        this.scope_name.pop()
+        return res;
+    };
     visitOutputClockBVIStmt?: (ctx: OutputClockBVIStmtContext) => Boolean;
     visitInputResetBVIStmt?: (ctx: InputResetBVIStmtContext) => Boolean;
     visitClockId?: (ctx: ClockIdContext) => Boolean;
@@ -2608,7 +2760,6 @@ class BsvSymbolVisior implements bsvVisitor<Boolean>{
         return res;
     }
     visitTerminal(node: TerminalNode): Boolean {
-        console.log(node.toString());
         return true;
     }
     visitErrorNode(node: ErrorNode): Boolean {
@@ -2625,17 +2776,222 @@ class BsvSymbolVisior implements bsvVisitor<Boolean>{
     }
 }
 
+class FunctionInfo {
+    proto: String;
+    info: String;
+
+    constructor(ele) {
+        assert(Object.prototype.hasOwnProperty.call(ele, "info"));
+        assert(Object.prototype.hasOwnProperty.call(ele, "proto"));
+        this.proto = ele.proto;
+        this.info = ele.info;
+    }
+
+    toString() {
+        return this.proto + "\n" + this.info + "\n";
+    }
+}
+
+class MethodInfo {
+    proto: String;
+    info: String;
+
+    constructor(ele) {
+        assert(Object.prototype.hasOwnProperty.call(ele, "info"));
+        assert(Object.prototype.hasOwnProperty.call(ele, "proto"));
+        this.proto = ele.proto;
+        this.info = ele.info;
+    }
+
+    toString() {
+        return this.proto + "\n" + this.info + "\n";
+    }
+}
+
+class ModuleInfo {
+    proto: String;
+    info: String;
+
+    constructor(ele) {
+        assert(Object.prototype.hasOwnProperty.call(ele, "info"));
+        assert(Object.prototype.hasOwnProperty.call(ele, "proto"));
+        this.proto = ele.proto;
+        this.info = ele.info;
+    }
+
+    toString() {
+        return this.proto + "\n" + this.info + "\n";
+    }
+}
+
+class ClassInfo {
+    proto: String;
+    info: String;
+    methods: Map<String, MethodInfo> = new Map();
+    functions: Map<String, FunctionInfo> = new Map();
+    modules: Map<String, ModuleInfo> = new Map();
+
+    constructor(ele) {
+        assert(Object.prototype.hasOwnProperty.call(ele, "proto"));
+        assert(Object.prototype.hasOwnProperty.call(ele, "info"));
+        assert(Object.prototype.hasOwnProperty.call(ele, "methods"));
+        this.proto = ele.proto;
+        this.info = ele.info;
+        for (const key in ele.methods) {
+            if (Object.prototype.hasOwnProperty.call(ele.methods, key)) {
+                const element = ele.methods[key];
+                assert(element.type);
+                const type: String = element.type;
+                switch (type) {
+                    case "method":
+                        {
+                            const name: String = key;
+                            this.methods.set(name, new MethodInfo(element));
+                        }
+                        break;
+                    case "function":
+                        {
+                            const name: String = key;
+                            this.functions.set(name, new FunctionInfo(element));
+                        }
+                        break;
+                    case "module":
+                        {
+                            const name: String = key;
+                            this.modules.set(name, new ModuleInfo(element));
+                        }
+                        break;
+                    default:
+                        debugger;
+                        break;
+                }
+            }
+        }
+    }
+
+
+}
+
+
+
+class BsvStdLibProvider {
+    functions: Map<String, FunctionInfo> = new Map();
+    modules: Map<String, ModuleInfo> = new Map();
+    classes: Map<String, ClassInfo> = new Map();
+
+    constructor() {
+        this.loadPackage("Prelude");
+    }
+
+    loadPackage(p: String): void {
+        for (const key in internalInfo) {
+            if (Object.prototype.hasOwnProperty.call(internalInfo, key)) {
+                const element = internalInfo[key];
+                const pp: String = element.package;
+                if (element.package != p)
+                    continue;
+                const type: String = element.type;
+                switch (type) {
+                    case "typeclass":
+                    case "class":
+                        {
+                            const classInfo = new ClassInfo(element);
+                            this.classes.set(key, classInfo);
+                            this.functions = new Map([...this.functions.entries(), ...classInfo.functions.entries()])
+                            this.modules = new Map([...this.modules.entries(), ...classInfo.modules.entries()])
+                        }
+                        break;
+
+                    case "module":
+                        {
+                            const moduleInfo = new ModuleInfo(element);
+                            this.modules.set(key, moduleInfo);
+                        }
+                        break;
+                    case "function":
+                        {
+                            const functionInfo = new FunctionInfo(element);
+                            this.functions.set(key, functionInfo);
+                        }
+                        break;
+                    default:
+                        debugger;
+                        break;
+                }
+            }
+        }
+    }
+
+    getSymbol(s: String): String | void {
+        if (this.classes.has(s)) {
+            return this.classes.get(s).toString();
+        }
+        if (this.modules.has(s)) {
+            return this.modules.get(s).toString();
+        }
+        if (this.functions.has(s)) {
+            return this.functions.get(s).toString();
+        }
+        for (let [key, value] of this.classes) {
+            if (value.methods.has(s)) {
+                return value.methods.get(s).toString();
+            }
+        }
+
+        return;
+    }
+};
+
 class BsvWorkspaceInfoProvider implements BsvInfoProvider {
+    stdProvider: BsvStdLibProvider = new BsvStdLibProvider();
+
     constructor(path: Uri) {
 
     }
 
-    getSymbol(doc: TextDocument): SymbolInformation[] {
+    getHover(document: TextDocument, position: Position): Hover {
         throw new Error('Method not implemented.');
     }
+
+    getSymbol(doc: TextDocument): SymbolInformation[] {
+        // TODO workspace support
+        const chars = new ANTLRInputStream(doc.getText());
+        const lexer = new bsvLexer(chars);
+        const tokens = new CommonTokenStream(lexer);
+        const parser = new bsvParser(tokens);
+
+        try {
+            let top = parser.top();
+            const visitor = new BsvSymbolVisior(doc.uri);
+            const res = top.accept(visitor)
+            return visitor.symbol_list;
+        } catch (error) {
+
+            debugger
+        }
+
+        throw new Error('Method not implemented.');
+    }
+
 }
 
 class BsvSingleFileInfoProvider implements BsvInfoProvider {
+    stdProvider: BsvStdLibProvider = new BsvStdLibProvider();
+
+    getHover(document: TextDocument, position: Position): Hover {
+        if (document.getWordRangeAtPosition(position) ){
+            let res = this.stdProvider.getSymbol(
+                document.getText(document.getWordRangeAtPosition(position))
+            );
+
+            if (res) {
+                return new Hover(res.toString());
+            } else {
+                return;
+            }
+        }
+    }
+
     getSymbol(doc: TextDocument): SymbolInformation[] {
         const chars = new ANTLRInputStream(doc.getText());
         const lexer = new bsvLexer(chars);

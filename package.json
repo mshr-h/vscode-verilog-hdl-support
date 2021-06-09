@@ -152,6 +152,10 @@
       {
         "language": "systemverilog",
         "path": "./snippets/systemverilog.json"
+      },
+      {
+        "language": "bsv",
+        "path": "./snippets/bsv.json"
       }
     ],
     "configuration": {

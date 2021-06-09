@@ -1,0 +1,46 @@
+{
+    "package": {
+        "prefix": "package",
+        "body": [
+            "package $0",
+            "endpackage : $0"
+        ],
+        "description": "package"
+    },
+    "rule": {
+        "prefix": "rule",
+        "body": [
+            "rule $0 ( $1 );",
+            "endrule : $0"
+        ],
+    },
+    "import": {
+        "prefix": "import",
+        "body": [
+            "import $0 :: *;"
+        ],
+        "description": "import"
+    },
+    "interface": {
+        "prefix": "interface",
+        "body": [
+            "interface $IfcCounter #($type $t);",
+            "method $t readCounter;",
+            "endinterface"
+        ],
+        "description": "interface"
+    },
+    "example module": {
+        "prefix": "module ex",
+        "body": [
+            "module ${0:mkExample}(${1:Empty});",
+            "",
+            "   rule ${2:rl_print_answer};",
+            "      \\$display (\"Deep Thought says: Hello, World! The answer is 42.\");",
+            "      \\$finish;",
+            "   endrule",
+            "endmodule"
+        ],
+        "description": "example module"
+    }
+}

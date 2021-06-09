@@ -42,6 +42,6 @@ export class VerilogDefinitionProvider implements DefinitionProvider {
 
 export class BsvDefinitionProvider implements DefinitionProvider {
     provideDefinition(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<LocationLink[] | Definition> {
-        throw new Error('Method not implemented.');
+        return [];
     }
 }

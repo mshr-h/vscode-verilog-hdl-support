@@ -68,10 +68,10 @@ export class BsvCompletionItemProvider implements CompletionItemProvider {
     }
     
     provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext): ProviderResult<CompletionItem[] | CompletionList<CompletionItem>> {
-        throw new Error("Method not implemented.");
+        return [];
     }
     resolveCompletionItem?(item: CompletionItem, token: CancellationToken): ProviderResult<CompletionItem> {
-        throw new Error("Method not implemented.");
+        return ;
     }
 
 }
