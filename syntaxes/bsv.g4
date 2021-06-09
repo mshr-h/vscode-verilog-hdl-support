@@ -225,10 +225,7 @@ SubstText       : .*?;
 // Packages and the outermost structure of a BSV design
 
 
-top           :  exportDecl*
-              |  importDecl*
-              |  packageStmt*
-              |  r_package*;
+top           :  (exportDecl| importDecl| packageStmt| r_package)*;
 r_package     : 'package' packageIde ';'
               (exportDecl|importDecl|packageStmt)*
               'endpackage' (':'packageIde)? ;

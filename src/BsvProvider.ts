@@ -2,7 +2,7 @@ import { ANTLRInputStream, CommonTokenStream } from 'antlr4ts';
 import { bsvLexer } from "../src/bsvjs/bsvLexer"
 import { ActionBlockContext, ActionStmtContext, ActionValueBlockContext, ActionValueStmtContext, AncestorBVIStmtContext, ArrayDimsContext, ArrayIndexesContext, AttributeInstanceContext, AttributeInstancesContext, AttrNameContext, AttrSpecContext, BeginEndExprContext, BeginEndStmt_actionStmtContext, BeginEndStmt_actionValueStmtContext, BeginEndStmt_expressionStmtContext, BeginEndStmt_functionBodyStmtContext, BeginEndStmt_moduleStmtContext, BinopContext, BitConcatContext, bsvParser, CaseExprContext, CaseExprItemContext, CaseItem_actionStmtContext, CaseItem_actionValueStmtContext, CaseItem_expressionStmtContext, CaseItem_functionBodyStmtContext, CaseItem_moduleStmtContext, CasePatItem_actionStmtContext, CasePatItem_actionValueStmtContext, CasePatItem_expressionStmtContext, CasePatItem_functionBodyStmtContext, CasePatItem_moduleStmtContext, Case_actionStmtContext, Case_actionValueStmtContext, Case_expressionStmtContext, Case_functionBodyStmtContext, Case_moduleStmtContext, CFuncArgContext, CFuncArgsContext, Clocked_by_selContext, ClockIdContext, CondExprContext, CondPredicateContext, ConstantPatternContext, DefaultClockBVIStmtContext, DefaultItem_actionStmtContext, DefaultItem_actionValueStmtContext, DefaultItem_expressionStmtContext, DefaultItem_functionBodyStmtContext, DefaultItem_moduleStmtContext, DefaultResetBVIStmtContext, DerivesContext, DisplayTaskNameContext, Enabled_selContext, ExportDeclContext, ExportItemContext, ExpressionContext, ExpressionStmtContext, ExprFsmStmtContext, ExprOrCondPatternContext, ExprPrimaryContext, ExternCImportContext, ExternModuleImportContext, ForFsmStmtContext, ForIncrContext, ForInitContext, ForNewInitContext, ForOldInitContext, ForTestContext, For_actionStmtContext, For_actionValueStmtContext, For_expressionStmtContext, For_functionBodyStmtContext, For_moduleStmtContext, FsmStmtContext, FunctionBodyContext, FunctionBodyStmtContext, FunctionCallContext, FunctionDefContext, FunctionFormalContext, FunctionFormalsContext, FunctionProtoContext, IdentifierContext, Identifier_typeContext, IfFsmStmtContext, If_actionStmtContext, If_actionValueStmtContext, If_expressionStmtContext, If_functionBodyStmtContext, If_moduleStmtContext, ImplicitCondContext, ImportBVIStmtContext, ImportDeclContext, ImportItemContext, InoutBVIStmtContext, InputClockBVIStmtContext, InputResetBVIStmtContext, InterfaceBVIMembDeclContext, InterfaceBVIStmtContext, InterfaceDeclContext, InterfaceExprContext, InterfaceMemberDeclContext, InterfaceStmtContext, LoopBodyFsmStmtContext, LValueContext, MemberBindContext, MethodBVIStmtContext, MethodCallContext, MethodDefContext, MethodFormalContext, MethodFormalsContext, MethodProtoContext, MethodProtoFormalContext, MethodProtoFormalsContext, ModuleActualArgContext, ModuleActualArgsContext, ModuleActualParamArgContext, ModuleActualParamContext, ModuleApp2Context, ModuleAppContext, ModuleDefContext, ModuleFormalArgsContext, ModuleFormalParamContext, ModuleFormalParamsContext, ModuleInstContext, ModuleProtoContext, ModuleStmtContext, Non_packageContext, NoResetBVIStmtContext, OperatorExprContext, OperatorIdContext, OutputClockBVIStmtContext, OutputResetBVIStmtContext, OverloadedDefContext, PackageIdeContext, PackageStmtContext, ParameterBVIStmtContext, ParFsmStmtContext, PathBVIStmtContext, PatternContext, PortBVIStmtContext, PortIdContext, PortsDefContext, ProvisoContext, ProvisosContext, Ready_selContext, RegWriteContext, RepeatFsmStmtContext, ResetIdContext, Reset_by_selContext, ReturnFsmStmtContext, ReturnStmtContext, RuleBodyContext, RuleCondContext, RuleExprContext, RuleStmtContext, R_packageContext, R_ruleContext, SameFamilyBVIStmtContext, ScheduleBVIStmtContext, SeqFsmStmtContext, SimpleVarAssignContext, SimpleVarDeclAssignContext, StringAVTaskNameContext, StringLiteralContext, StringTaskNameContext, StructExprContext, StructMemberContext, StructPatternContext, SubinterfaceDeclContext, SubinterfaceDefContext, SubStructContext, SubUnionContext, SystemFunctionCallContext, SystemTaskCallContext, SystemTaskStmtContext, TaggedUnionExprContext, TaggedUnionPatternContext, TopContext, TuplePatternContext, TypeAssertionContext, TypeclassDefContext, TypeclassIdeContext, TypeclassInstanceDefContext, TypeContext, TypeDefContext, TypedefEnumContext, TypedefEnumElementContext, TypedefEnumElementsContext, TypedefStructContext, TypedefSynonymContext, TypedefTaggedUnionContext, TypeDefTypeContext, TypedependContext, TypedependsContext, TypeFormalContext, TypeFormalsContext, TypeIdeContext, TypelistContext, TypeNatContext, TypePrimaryContext, UnionMemberContext, UnopContext, VarAssignContext, VarDeclContext, VarDeclDoContext, VarDoContext, VarIncrContext, VarInitContext, WhileFsmStmtContext, While_actionStmtContext, While_actionValueStmtContext, While_expressionStmtContext, While_functionBodyStmtContext, While_moduleStmtContext } from "../src/bsvjs/bsvParser"
 
-import { SymbolInformation, DocumentSymbol, TextDocument, Uri, window, workspace, SymbolKind, Range, Position, Location, Hover, extensions, FileSystem } from 'vscode';
+import { SymbolInformation, DocumentSymbol, TextDocument, Uri, window, workspace, SymbolKind, Range, Position, Location, Hover, extensions, FileSystem, CompletionItem, LocationLink } from 'vscode';
 import { bsvVisitor } from './bsvjs/bsvVisitor';
 import { ErrorNode } from 'antlr4ts/tree/ErrorNode';
 import { ParseTree } from 'antlr4ts/tree/ParseTree';
@@ -13,13 +13,16 @@ import { extensionID } from './extension'
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { readdirSync } from 'fs';
+import { LocationLink, LocationLink } from 'vscode-languageserver-types';
 
 export interface BsvInfoProvider {
+    getSymbol(doc: TextDocument): Promise<SymbolInformation[]> | Promise<DocumentSymbol[]>;
 
+    getHover(document: TextDocument, position: Position): Promise<Hover>;
 
-    getSymbol(doc: TextDocument): SymbolInformation[] | DocumentSymbol[];
+    lint(document: TextDocument, position: Position): Promise<CompletionItem[]>;
 
-    getHover(document: TextDocument, position: Position): Hover;
+    provideDefinition(document: TextDocument, position: Position): Promise<LocationLink[]>;
 }
 
 const internalInfo = {
@@ -2951,6 +2954,7 @@ class BsvBaseInfoProvider {
     stdProvider: BsvStdLibProvider = new BsvStdLibProvider();
 
     parserCache: Map<Uri, TopContext> = new Map();
+    docSymbolCache: Map<Uri, SymbolInformation[]> = new Map();
 
     resolveStdLib() {
         var self = extensions.getExtension(extensionID);
@@ -2968,6 +2972,7 @@ class BsvBaseInfoProvider {
                     const tree = parser.top();
 
                     this.parserCache.set(Uri.file(fname), tree);
+                    this.updateSymbol(Uri.file(fname));
                 } catch (error) {
 
                 }
@@ -2975,7 +2980,17 @@ class BsvBaseInfoProvider {
         }
     }
 
-    
+    updateSymbol(u: Uri) {
+        if (this.parserCache.has(u)) {
+            let p = this.parserCache.get(u);
+            const visitor = new BsvSymbolVisior(u);
+            const res = p.accept(visitor)
+            this.docSymbolCache.set(u, visitor.symbol_list);
+        }
+
+    }
+
+
     async addFileCache(file: Thenable<TextDocument>) {
         const text = (await file).getText();
         const uri = (await file).uri;
@@ -2987,6 +3002,7 @@ class BsvBaseInfoProvider {
             const tree = parser.top();
 
             this.parserCache.set(uri, tree);
+            this.updateSymbol(uri);
 
             console.log('cache ' + uri)
         } catch (error) {
@@ -2996,6 +3012,7 @@ class BsvBaseInfoProvider {
     async removeFileCache(file: Thenable<Uri>) {
         const uri = await file;
         this.parserCache.delete(uri)
+        this.docSymbolCache.delete(uri)
     }
 
     async renameFileCache(o: Thenable<Uri>, n: Thenable<Uri>) {
@@ -3003,8 +3020,48 @@ class BsvBaseInfoProvider {
         const new_uri = await n;
         this.parserCache.set(new_uri, this.parserCache.get(old));
         this.parserCache.delete(old);
+
+        this.updateSymbol(new_uri);
     }
 
+    findDocumentSymbol(id: String, perferUri: Uri): SymbolInformation | void {
+        if (this.docSymbolCache.has(perferUri)) {
+            for (const iterator of this.docSymbolCache.get(perferUri)) {
+                if (iterator.name == id) {
+                    return iterator;
+                }
+            }
+        }
+
+        for (let [k, v] of this.docSymbolCache) {
+            for (const iterator of v) {
+                if (iterator.name == id) {
+                    return iterator;
+                }
+            }
+        }
+    }
+
+    getAllSymbol(): SymbolInformation[] {
+        let res = new Array();
+        for (let [k, v] of this.docSymbolCache) {
+            res = res.concat(v)
+        }
+        return res;
+    }
+
+}
+
+class SymbolLink implements LocationLink {
+    originSelectionRange?: Range;
+    targetUri: Uri;
+    targetRange: Range;
+    targetSelectionRange?: Range;
+
+    constructor(uri: Uri, range: Range) {
+        this.targetUri = uri;
+        this.targetRange = range;
+    }
 }
 
 class BsvWorkspaceInfoProvider extends BsvBaseInfoProvider implements BsvInfoProvider {
@@ -3014,7 +3071,7 @@ class BsvWorkspaceInfoProvider extends BsvBaseInfoProvider implements BsvInfoPro
         super();
         this.updateWorkspace()
         workspace.onDidCreateFiles(async (e) => {
-            for await(const file of e.files) {
+            for await (const file of e.files) {
                 this.addFileCache(workspace.openTextDocument(file));
             }
             this.initFinished = true;
@@ -3028,7 +3085,7 @@ class BsvWorkspaceInfoProvider extends BsvBaseInfoProvider implements BsvInfoPro
             }
         });
 
-        workspace.onWillDeleteFiles(e=>{
+        workspace.onWillDeleteFiles(e => {
             for (const file of e.files) {
                 this.removeFileCache(Promise.resolve(file))
             }
@@ -3037,19 +3094,49 @@ class BsvWorkspaceInfoProvider extends BsvBaseInfoProvider implements BsvInfoPro
 
     async updateWorkspace() {
         const bsvList = await workspace.findFiles("**/*.bsv");
-        for (const file of bsvList ) {
+        for (const file of bsvList) {
             this.addFileCache(workspace.openTextDocument(file));
         }
     }
 
 
-    getHover(document: TextDocument, position: Position): Hover {
-        throw new Error('Method not implemented.');
+    async getHover(document: TextDocument, position: Position): Promise<Hover> {
+        if (document.getWordRangeAtPosition(position)) {
+            // try to find in stdlib
+            const id = document.getText(document.getWordRangeAtPosition(position));
+            let res = this.stdProvider.getSymbol(id);
+
+            if (res) {
+                return new Hover(res.toString());
+            }
+
+
+            // try to find in symbol
+            let resSym = this.findDocumentSymbol(id, document.uri);
+            if (resSym) {
+                return new Hover(resSym.name);
+            }
+        }
     }
 
-    getSymbol(doc: TextDocument): SymbolInformation[] {
+    async lint(document: TextDocument, position: Position): Promise<CompletionItem[]> {
+        // we do return all symbols
+        let res = this.getAllSymbol();
+        if (res) {
+            return res.map((i) => {
+                return new CompletionItem(i.name)
+            });
+        }
+        return [];
+    }
+
+    async getSymbol(doc: TextDocument): Promise<SymbolInformation[]> {
         try {
-            this.addFileCache(Promise.resolve(doc));
+            if (!this.parserCache.has(doc.uri)) {
+                await this.addFileCache(Promise.resolve(doc));
+            } else {
+                this.addFileCache(Promise.resolve(doc));
+            }
             const visitor = new BsvSymbolVisior(doc.uri);
             const res = this.parserCache.get(doc.uri).accept(visitor)
             return visitor.symbol_list;
@@ -3061,11 +3148,26 @@ class BsvWorkspaceInfoProvider extends BsvBaseInfoProvider implements BsvInfoPro
         throw new Error('Method not implemented.');
     }
 
+
+    async provideDefinition(document: TextDocument, position: Position): Promise<LocationLink[]> {
+        let id = document.getText(document.getWordRangeAtPosition(position));
+        let res = this.getAllSymbol();
+        if (res) {
+            return res.filter((v) => {
+                return v.name == id;
+            }).map((i) => {
+                return new SymbolLink(i.location.uri, i.location.range);
+            });
+
+        }
+    }
+
+
 }
 
 class BsvSingleFileInfoProvider extends BsvBaseInfoProvider implements BsvInfoProvider {
 
-    getHover(document: TextDocument, position: Position): Hover {
+    async getHover(document: TextDocument, position: Position): Promise<Hover> {
         if (document.getWordRangeAtPosition(position)) {
             let res = this.stdProvider.getSymbol(
                 document.getText(document.getWordRangeAtPosition(position))
@@ -3079,7 +3181,7 @@ class BsvSingleFileInfoProvider extends BsvBaseInfoProvider implements BsvInfoPr
         }
     }
 
-    getSymbol(doc: TextDocument): SymbolInformation[] {
+    async getSymbol(doc: TextDocument): Promise<SymbolInformation[]> {
         const chars = new ANTLRInputStream(doc.getText());
         const lexer = new bsvLexer(chars);
         const tokens = new CommonTokenStream(lexer);
@@ -3096,6 +3198,30 @@ class BsvSingleFileInfoProvider extends BsvBaseInfoProvider implements BsvInfoPr
         }
 
         throw new Error('Method not implemented.');
+    }
+
+    async lint(document: TextDocument, position: Position): Promise<CompletionItem[]> {
+        // we do return all symbols
+        let res = this.getAllSymbol();
+        if (res) {
+            return res.map((i) => {
+                return new CompletionItem(i.name)
+            })
+        }
+        return [];
+    }
+
+    async provideDefinition(document: TextDocument, position: Position): Promise<LocationLink[]> {
+        let id = document.getText(document.getWordRangeAtPosition(position));
+        let res = this.getAllSymbol();
+        if (res) {
+            return res.filter((v) => {
+                return v.name == id;
+            }).map((i) => {
+                return new SymbolLink(i.location.uri, i.location.range);
+            });
+
+        }
     }
 
     constructor() {

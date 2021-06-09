@@ -1,4 +1,5 @@
 import { CompletionItemProvider, CompletionItem, TextDocument, Position, CancellationToken, CompletionContext, ProviderResult, CompletionItemKind, CompletionTriggerKind, Range, MarkdownString, CompletionList } from "vscode";
+import { BsvInfoProviderManger } from "../BsvProvider";
 import { Ctags, CtagsManager, Symbol } from '../ctags';
 import { Logger } from "../Logger";
 
@@ -66,12 +67,10 @@ export class BsvCompletionItemProvider implements CompletionItemProvider {
     constructor(logger: Logger) {
         this.logger = logger
     }
-    
+
     provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext): ProviderResult<CompletionItem[] | CompletionList<CompletionItem>> {
-        return [];
-    }
-    resolveCompletionItem?(item: CompletionItem, token: CancellationToken): ProviderResult<CompletionItem> {
-        return ;
+        const provider = BsvInfoProviderManger.getInstance().getProvider();
+        return provider.lint(document, position);
     }
 
 }
