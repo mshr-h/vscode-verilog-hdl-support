@@ -34,7 +34,7 @@ import { Logger } from "./Logger"
 let lintManager: LintManager;
 let logger: Logger = new Logger();
 export let ctagsManager: CtagsManager = new CtagsManager(logger);
-var extensionID: string = "mshr-h.veriloghdl";
+export var extensionID: string = "mshr-h.veriloghdl";
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {

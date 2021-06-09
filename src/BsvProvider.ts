@@ -2,13 +2,17 @@ import { ANTLRInputStream, CommonTokenStream } from 'antlr4ts';
 import { bsvLexer } from "../src/bsvjs/bsvLexer"
 import { ActionBlockContext, ActionStmtContext, ActionValueBlockContext, ActionValueStmtContext, AncestorBVIStmtContext, ArrayDimsContext, ArrayIndexesContext, AttributeInstanceContext, AttributeInstancesContext, AttrNameContext, AttrSpecContext, BeginEndExprContext, BeginEndStmt_actionStmtContext, BeginEndStmt_actionValueStmtContext, BeginEndStmt_expressionStmtContext, BeginEndStmt_functionBodyStmtContext, BeginEndStmt_moduleStmtContext, BinopContext, BitConcatContext, bsvParser, CaseExprContext, CaseExprItemContext, CaseItem_actionStmtContext, CaseItem_actionValueStmtContext, CaseItem_expressionStmtContext, CaseItem_functionBodyStmtContext, CaseItem_moduleStmtContext, CasePatItem_actionStmtContext, CasePatItem_actionValueStmtContext, CasePatItem_expressionStmtContext, CasePatItem_functionBodyStmtContext, CasePatItem_moduleStmtContext, Case_actionStmtContext, Case_actionValueStmtContext, Case_expressionStmtContext, Case_functionBodyStmtContext, Case_moduleStmtContext, CFuncArgContext, CFuncArgsContext, Clocked_by_selContext, ClockIdContext, CondExprContext, CondPredicateContext, ConstantPatternContext, DefaultClockBVIStmtContext, DefaultItem_actionStmtContext, DefaultItem_actionValueStmtContext, DefaultItem_expressionStmtContext, DefaultItem_functionBodyStmtContext, DefaultItem_moduleStmtContext, DefaultResetBVIStmtContext, DerivesContext, DisplayTaskNameContext, Enabled_selContext, ExportDeclContext, ExportItemContext, ExpressionContext, ExpressionStmtContext, ExprFsmStmtContext, ExprOrCondPatternContext, ExprPrimaryContext, ExternCImportContext, ExternModuleImportContext, ForFsmStmtContext, ForIncrContext, ForInitContext, ForNewInitContext, ForOldInitContext, ForTestContext, For_actionStmtContext, For_actionValueStmtContext, For_expressionStmtContext, For_functionBodyStmtContext, For_moduleStmtContext, FsmStmtContext, FunctionBodyContext, FunctionBodyStmtContext, FunctionCallContext, FunctionDefContext, FunctionFormalContext, FunctionFormalsContext, FunctionProtoContext, IdentifierContext, Identifier_typeContext, IfFsmStmtContext, If_actionStmtContext, If_actionValueStmtContext, If_expressionStmtContext, If_functionBodyStmtContext, If_moduleStmtContext, ImplicitCondContext, ImportBVIStmtContext, ImportDeclContext, ImportItemContext, InoutBVIStmtContext, InputClockBVIStmtContext, InputResetBVIStmtContext, InterfaceBVIMembDeclContext, InterfaceBVIStmtContext, InterfaceDeclContext, InterfaceExprContext, InterfaceMemberDeclContext, InterfaceStmtContext, LoopBodyFsmStmtContext, LValueContext, MemberBindContext, MethodBVIStmtContext, MethodCallContext, MethodDefContext, MethodFormalContext, MethodFormalsContext, MethodProtoContext, MethodProtoFormalContext, MethodProtoFormalsContext, ModuleActualArgContext, ModuleActualArgsContext, ModuleActualParamArgContext, ModuleActualParamContext, ModuleApp2Context, ModuleAppContext, ModuleDefContext, ModuleFormalArgsContext, ModuleFormalParamContext, ModuleFormalParamsContext, ModuleInstContext, ModuleProtoContext, ModuleStmtContext, Non_packageContext, NoResetBVIStmtContext, OperatorExprContext, OperatorIdContext, OutputClockBVIStmtContext, OutputResetBVIStmtContext, OverloadedDefContext, PackageIdeContext, PackageStmtContext, ParameterBVIStmtContext, ParFsmStmtContext, PathBVIStmtContext, PatternContext, PortBVIStmtContext, PortIdContext, PortsDefContext, ProvisoContext, ProvisosContext, Ready_selContext, RegWriteContext, RepeatFsmStmtContext, ResetIdContext, Reset_by_selContext, ReturnFsmStmtContext, ReturnStmtContext, RuleBodyContext, RuleCondContext, RuleExprContext, RuleStmtContext, R_packageContext, R_ruleContext, SameFamilyBVIStmtContext, ScheduleBVIStmtContext, SeqFsmStmtContext, SimpleVarAssignContext, SimpleVarDeclAssignContext, StringAVTaskNameContext, StringLiteralContext, StringTaskNameContext, StructExprContext, StructMemberContext, StructPatternContext, SubinterfaceDeclContext, SubinterfaceDefContext, SubStructContext, SubUnionContext, SystemFunctionCallContext, SystemTaskCallContext, SystemTaskStmtContext, TaggedUnionExprContext, TaggedUnionPatternContext, TopContext, TuplePatternContext, TypeAssertionContext, TypeclassDefContext, TypeclassIdeContext, TypeclassInstanceDefContext, TypeContext, TypeDefContext, TypedefEnumContext, TypedefEnumElementContext, TypedefEnumElementsContext, TypedefStructContext, TypedefSynonymContext, TypedefTaggedUnionContext, TypeDefTypeContext, TypedependContext, TypedependsContext, TypeFormalContext, TypeFormalsContext, TypeIdeContext, TypelistContext, TypeNatContext, TypePrimaryContext, UnionMemberContext, UnopContext, VarAssignContext, VarDeclContext, VarDeclDoContext, VarDoContext, VarIncrContext, VarInitContext, WhileFsmStmtContext, While_actionStmtContext, While_actionValueStmtContext, While_expressionStmtContext, While_functionBodyStmtContext, While_moduleStmtContext } from "../src/bsvjs/bsvParser"
 
-import { SymbolInformation, DocumentSymbol, TextDocument, Uri, window, workspace, SymbolKind, Range, Position, Location, Hover } from 'vscode';
+import { SymbolInformation, DocumentSymbol, TextDocument, Uri, window, workspace, SymbolKind, Range, Position, Location, Hover, extensions, FileSystem } from 'vscode';
 import { bsvVisitor } from './bsvjs/bsvVisitor';
 import { ErrorNode } from 'antlr4ts/tree/ErrorNode';
 import { ParseTree } from 'antlr4ts/tree/ParseTree';
 import { RuleNode } from 'antlr4ts/tree/RuleNode';
 import { TerminalNode } from 'antlr4ts/tree/TerminalNode';
 import { assert } from 'console';
+import { extensionID } from './extension'
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import { readdirSync } from 'fs';
 
 export interface BsvInfoProvider {
 
@@ -2942,28 +2946,112 @@ class BsvStdLibProvider {
     }
 };
 
-class BsvWorkspaceInfoProvider implements BsvInfoProvider {
+
+class BsvBaseInfoProvider {
     stdProvider: BsvStdLibProvider = new BsvStdLibProvider();
 
-    constructor(path: Uri) {
+    parserCache: Map<Uri, TopContext> = new Map();
 
+    resolveStdLib() {
+        var self = extensions.getExtension(extensionID);
+        var dir = readdirSync(join(self.extensionPath, "syntaxes", "bsc-lib"));
+
+        for (const iterator of dir) {
+            if (iterator.endsWith('.bsc')) {
+                const fname = join(self.extensionPath, "syntaxes", "bsc-lib", iterator);
+                try {
+                    const s = readFileSync(fname);
+                    const chars = new ANTLRInputStream(s.toString());
+                    const lexer = new bsvLexer(chars);
+                    const tokens = new CommonTokenStream(lexer);
+                    const parser = new bsvParser(tokens);
+                    const tree = parser.top();
+
+                    this.parserCache.set(Uri.file(fname), tree);
+                } catch (error) {
+
+                }
+            }
+        }
     }
+
+    
+    async addFileCache(file: Thenable<TextDocument>) {
+        const text = (await file).getText();
+        const uri = (await file).uri;
+        try {
+            const chars = new ANTLRInputStream(text);
+            const lexer = new bsvLexer(chars);
+            const tokens = new CommonTokenStream(lexer);
+            const parser = new bsvParser(tokens);
+            const tree = parser.top();
+
+            this.parserCache.set(uri, tree);
+
+            console.log('cache ' + uri)
+        } catch (error) {
+        }
+    }
+
+    async removeFileCache(file: Thenable<Uri>) {
+        const uri = await file;
+        this.parserCache.delete(uri)
+    }
+
+    async renameFileCache(o: Thenable<Uri>, n: Thenable<Uri>) {
+        const old = await o;
+        const new_uri = await n;
+        this.parserCache.set(new_uri, this.parserCache.get(old));
+        this.parserCache.delete(old);
+    }
+
+}
+
+class BsvWorkspaceInfoProvider extends BsvBaseInfoProvider implements BsvInfoProvider {
+    initFinished = false;
+
+    constructor(path: Uri) {
+        super();
+        this.updateWorkspace()
+        workspace.onDidCreateFiles(async (e) => {
+            for await(const file of e.files) {
+                this.addFileCache(workspace.openTextDocument(file));
+            }
+            this.initFinished = true;
+        });
+        workspace.onDidRenameFiles(e => {
+            for (const file of e.files) {
+                this.renameFileCache(
+                    Promise.resolve(file.oldUri),
+                    Promise.resolve(file.oldUri)
+                );
+            }
+        });
+
+        workspace.onWillDeleteFiles(e=>{
+            for (const file of e.files) {
+                this.removeFileCache(Promise.resolve(file))
+            }
+        })
+    }
+
+    async updateWorkspace() {
+        const bsvList = await workspace.findFiles("**/*.bsv");
+        for (const file of bsvList ) {
+            this.addFileCache(workspace.openTextDocument(file));
+        }
+    }
+
 
     getHover(document: TextDocument, position: Position): Hover {
         throw new Error('Method not implemented.');
     }
 
     getSymbol(doc: TextDocument): SymbolInformation[] {
-        // TODO workspace support
-        const chars = new ANTLRInputStream(doc.getText());
-        const lexer = new bsvLexer(chars);
-        const tokens = new CommonTokenStream(lexer);
-        const parser = new bsvParser(tokens);
-
         try {
-            let top = parser.top();
+            this.addFileCache(Promise.resolve(doc));
             const visitor = new BsvSymbolVisior(doc.uri);
-            const res = top.accept(visitor)
+            const res = this.parserCache.get(doc.uri).accept(visitor)
             return visitor.symbol_list;
         } catch (error) {
 
@@ -2975,11 +3063,10 @@ class BsvWorkspaceInfoProvider implements BsvInfoProvider {
 
 }
 
-class BsvSingleFileInfoProvider implements BsvInfoProvider {
-    stdProvider: BsvStdLibProvider = new BsvStdLibProvider();
+class BsvSingleFileInfoProvider extends BsvBaseInfoProvider implements BsvInfoProvider {
 
     getHover(document: TextDocument, position: Position): Hover {
-        if (document.getWordRangeAtPosition(position) ){
+        if (document.getWordRangeAtPosition(position)) {
             let res = this.stdProvider.getSymbol(
                 document.getText(document.getWordRangeAtPosition(position))
             );
@@ -3009,6 +3096,10 @@ class BsvSingleFileInfoProvider implements BsvInfoProvider {
         }
 
         throw new Error('Method not implemented.');
+    }
+
+    constructor() {
+        super();
     }
 
 }
