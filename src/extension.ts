@@ -9,10 +9,13 @@ import LintManager from "./linter/LintManager";
 import { CtagsManager } from "./ctags";
 
 // Providers
-import VerilogDocumentSymbolProvider from "./providers/DocumentSymbolProvider";
-import VerilogHoverProvider from "./providers/HoverProvider";
-import VerilogDefinitionProvider from "./providers/DefinitionProvider";
-import VerilogCompletionItemProvider from "./providers/CompletionItemProvider";
+import { VerilogDocumentSymbolProvider, BsvDocumentSymbolProvider } from "./providers/DocumentSymbolProvider";
+import { VerilogHoverProvider, BsvHoverProvider } from "./providers/HoverProvider";
+import { VerilogDefinitionProvider, BsvDefinitionProvider } from "./providers/DefinitionProvider";
+import { VerilogCompletionItemProvider, BsvCompletionItemProvider } from "./providers/CompletionItemProvider";
+
+
+import { BsvInfoProviderManger } from "./BsvProvider" 
 
 // Commands
 import * as ModuleInstantiation from "./commands/ModuleInstantiation"
@@ -31,15 +34,23 @@ import { Logger } from "./Logger"
 let lintManager: LintManager;
 let logger: Logger = new Logger();
 export let ctagsManager: CtagsManager = new CtagsManager(logger);
-var extensionID: string = "mshr-h.veriloghdl";
+export var extensionID: string = "mshr-h.veriloghdl";
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
     console.log(extensionID + ' is now active!');
+    
+    BsvInfoProviderManger.getInstance().onWorkspace();
+    workspace.onDidChangeWorkspaceFolders(
+        (e) => {
+            BsvInfoProviderManger.getInstance().onWorkspace();
+        }
+    )
 
     // document selector
     let systemverilogSelector: DocumentSelector = { scheme: 'file', language: 'systemverilog' };
     let verilogSelector: DocumentSelector = { scheme: 'file', language: 'verilog' };
+    let bsvSelector: DocumentSelector = { scheme: 'file', language: 'bsv' };
 
     // Check if the Extension was updated recently
     checkIfUpdated(context);
@@ -54,22 +65,30 @@ export function activate(context: ExtensionContext) {
     let docProvider = new VerilogDocumentSymbolProvider(logger);
     context.subscriptions.push(languages.registerDocumentSymbolProvider(systemverilogSelector, docProvider));
     context.subscriptions.push(languages.registerDocumentSymbolProvider(verilogSelector, docProvider));
+    let bsvdocProvider = new BsvDocumentSymbolProvider(logger);
+    context.subscriptions.push(languages.registerDocumentSymbolProvider(bsvSelector, bsvdocProvider));
 
     // Configure Completion Item Provider
     // Trigger on ".", "(", "="
     let compItemProvider = new VerilogCompletionItemProvider(logger);
     context.subscriptions.push(languages.registerCompletionItemProvider(verilogSelector, compItemProvider, ".", "(", "="));
     context.subscriptions.push(languages.registerCompletionItemProvider(systemverilogSelector, compItemProvider, ".", "(", "="));
+    let bsvcompItemProvider = new BsvCompletionItemProvider(logger);
+    context.subscriptions.push(languages.registerCompletionItemProvider(bsvSelector, bsvcompItemProvider, ".", "(", "="));
 
     // Configure Hover Providers
     let hoverProvider = new VerilogHoverProvider(logger);
     context.subscriptions.push(languages.registerHoverProvider(systemverilogSelector, hoverProvider));
     context.subscriptions.push(languages.registerHoverProvider(verilogSelector, hoverProvider));
+    let bsvhoverProvider = new BsvHoverProvider(logger);
+    context.subscriptions.push(languages.registerHoverProvider(bsvSelector, bsvhoverProvider));
 
     // Configure Definition Providers
     let defProvider = new VerilogDefinitionProvider(logger);
     context.subscriptions.push(languages.registerDefinitionProvider(systemverilogSelector, defProvider));
     context.subscriptions.push(languages.registerDefinitionProvider(verilogSelector, defProvider));
+    let bsvdefProvider = new BsvDefinitionProvider();
+    context.subscriptions.push(languages.registerDefinitionProvider(bsvSelector, bsvdefProvider));
 
     // Configure command to instantiate a module
     commands.registerCommand("verilog.instantiateModule", ModuleInstantiation.instantiateModuleInteract);

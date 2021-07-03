@@ -1,8 +1,9 @@
-import { CompletionItemProvider, CompletionItem, TextDocument, Position, CancellationToken, CompletionContext, ProviderResult, CompletionItemKind, CompletionTriggerKind, Range, MarkdownString } from "vscode";
+import { CompletionItemProvider, CompletionItem, TextDocument, Position, CancellationToken, CompletionContext, ProviderResult, CompletionItemKind, CompletionTriggerKind, Range, MarkdownString, CompletionList } from "vscode";
+import { BsvInfoProviderManger } from "../BsvProvider";
 import { Ctags, CtagsManager, Symbol } from '../ctags';
 import { Logger } from "../Logger";
 
-export default class VerilogCompletionItemProvider implements CompletionItemProvider {
+export class VerilogCompletionItemProvider implements CompletionItemProvider {
 
     private logger: Logger;
 
@@ -57,6 +58,19 @@ export default class VerilogCompletionItemProvider implements CompletionItemProv
             case 'typedef': return CompletionItemKind.TypeParameter;
             default: return CompletionItemKind.Variable;
         }
+    }
+
+}
+
+export class BsvCompletionItemProvider implements CompletionItemProvider {
+    private logger: Logger;
+    constructor(logger: Logger) {
+        this.logger = logger
+    }
+
+    provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext): ProviderResult<CompletionItem[] | CompletionList<CompletionItem>> {
+        const provider = BsvInfoProviderManger.getInstance().getProvider();
+        return provider.lint(document, position);
     }
 
 }

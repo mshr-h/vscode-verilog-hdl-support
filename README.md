@@ -26,6 +26,8 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - Vivado Logical Simulation - `xvlog`
   - Modelsim - `modelsim`
   - Verilator - `verilator`
+- Linting support
+  - Bluespec SystemVerilog
 - Ctags Integration
   - Autocomplete
   - Document Symbols Outline

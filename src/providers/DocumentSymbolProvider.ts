@@ -1,8 +1,11 @@
-import { DocumentSymbolProvider, CancellationToken, TextDocument, SymbolKind, DocumentSymbol, window } from 'vscode'
+import { resolve } from 'url';
+import { DocumentSymbolProvider, CancellationToken, TextDocument, SymbolKind, DocumentSymbol, window, ProviderResult, SymbolInformation } from 'vscode'
+import { BsvInfoProviderManger } from '../BsvProvider';
 import { Ctags, CtagsManager, Symbol } from '../ctags';
 import { Logger, Log_Severity } from '../Logger';
 
-export default class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
+
+export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
 
     public docSymbols: DocumentSymbol[] = [];
 
@@ -105,6 +108,28 @@ export default class VerilogDocumentSymbolProvider implements DocumentSymbolProv
         }
 
         return list;
+    }
+
+}
+
+
+export class BsvDocumentSymbolProvider implements DocumentSymbolProvider {
+    private logger: Logger;
+    constructor(logger: Logger) {
+        this.logger = logger
+    }
+
+    provideDocumentSymbols(document: TextDocument, token: CancellationToken): ProviderResult<DocumentSymbol[] | SymbolInformation[]> {
+        // return new Promise((resolve)=>{
+        //     const provider = BsvInfoProviderManger.getInstance().getProvider();
+        //     var info = provider.getSymbol(document);
+    
+        //     resolve(info);
+        // })
+        const provider = BsvInfoProviderManger.getInstance().getProvider();
+        var info = provider.getSymbol(document);
+
+        return info;
     }
 
 }
