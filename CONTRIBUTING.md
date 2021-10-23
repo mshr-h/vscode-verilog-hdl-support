@@ -16,11 +16,29 @@ Or, any other contribution is also welcome! (fixing typo, refactoring, documenta
 4.  Make your changes
 5.  Add your changes to **CHANGELOG** under "Unreleased"
 6.  Edit the **README**
-    - List of Configuration Settings
-    - Table of Compatability
-    - Add References/Thanks
-    - anything else...
+    -   List of Configuration Settings
+    -   Table of Compatability
+    -   Add References/Thanks
+    -   anything else...
 7.  Commit your changes
 8.  Push to the branch
 9.  Create a new Pull Request
 10. And wait patiently :smile:
+
+## Developpers guide
+
+### VSCode formatting seetings
+
+For those of who using VSCode, install [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) and [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) and then put the below setting into VSCode settings.
+
+```json
+{
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    }
+}
+```
