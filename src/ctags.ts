@@ -1,4 +1,15 @@
-import { TextDocument, Position, SymbolKind, Range, DocumentSymbol, workspace, window, TextEditor, commands, Uri } from 'vscode'
+import {
+    TextDocument,
+    Position,
+    SymbolKind,
+    Range,
+    DocumentSymbol,
+    workspace,
+    window,
+    TextEditor,
+    commands,
+    Uri,
+} from 'vscode';
 import * as child from 'child_process';
 import { Logger, Log_Severity } from './Logger';
 
@@ -12,7 +23,16 @@ export class Symbol {
     parentScope: string;
     parentType: string;
     isValid: boolean;
-    constructor(name: string, type: string, pattern: string, startLine: number, parentScope: string, parentType: string, endLine?: number, isValid?: boolean) {
+    constructor(
+        name: string,
+        type: string,
+        pattern: string,
+        startLine: number,
+        parentScope: string,
+        parentType: string,
+        endLine?: number,
+        isValid?: boolean
+    ) {
         this.name = name;
         this.type = type;
         this.pattern = pattern;
@@ -30,7 +50,13 @@ export class Symbol {
 
     getDocumentSymbol(): DocumentSymbol {
         let range = new Range(this.startPosition, this.endPosition);
-        return new DocumentSymbol(this.name, this.type, Symbol.getSymbolKind(this.type), range, range);
+        return new DocumentSymbol(
+            this.name,
+            this.type,
+            Symbol.getSymbolKind(this.type),
+            range,
+            range
+        );
     }
 
     static isContainer(type: string): boolean {
@@ -65,36 +91,57 @@ export class Symbol {
     // taken from https://github.com/universal-ctags/ctags/blob/master/parsers/verilog.c
     static getSymbolKind(name: String): SymbolKind {
         switch (name) {
-            case 'constant': return SymbolKind.Constant;
-            case 'event': return SymbolKind.Event;
-            case 'function': return SymbolKind.Function;
-            case 'module': return SymbolKind.Module;
-            case 'net': return SymbolKind.Variable;
+            case 'constant':
+                return SymbolKind.Constant;
+            case 'event':
+                return SymbolKind.Event;
+            case 'function':
+                return SymbolKind.Function;
+            case 'module':
+                return SymbolKind.Module;
+            case 'net':
+                return SymbolKind.Variable;
             // Boolean uses a double headed arrow as symbol (kinda looks like a port)
-            case 'port': return SymbolKind.Boolean;
-            case 'register': return SymbolKind.Variable;
-            case 'task': return SymbolKind.Function;
-            case 'block': return SymbolKind.Module;
-            case 'assert': return SymbolKind.Variable;   // No idea what to use
-            case 'class': return SymbolKind.Class;
-            case 'covergroup': return SymbolKind.Class;  // No idea what to use
-            case 'enum': return SymbolKind.Enum;
-            case 'interface': return SymbolKind.Interface;
-            case 'modport': return SymbolKind.Boolean;    // same as ports
-            case 'package': return SymbolKind.Package;
-            case 'program': return SymbolKind.Module;
-            case 'prototype': return SymbolKind.Function;
-            case 'property': return SymbolKind.Property;
-            case 'struct': return SymbolKind.Struct;
-            case 'typedef': return SymbolKind.TypeParameter;
-            default: return SymbolKind.Variable;
+            case 'port':
+                return SymbolKind.Boolean;
+            case 'register':
+                return SymbolKind.Variable;
+            case 'task':
+                return SymbolKind.Function;
+            case 'block':
+                return SymbolKind.Module;
+            case 'assert':
+                return SymbolKind.Variable; // No idea what to use
+            case 'class':
+                return SymbolKind.Class;
+            case 'covergroup':
+                return SymbolKind.Class; // No idea what to use
+            case 'enum':
+                return SymbolKind.Enum;
+            case 'interface':
+                return SymbolKind.Interface;
+            case 'modport':
+                return SymbolKind.Boolean; // same as ports
+            case 'package':
+                return SymbolKind.Package;
+            case 'program':
+                return SymbolKind.Module;
+            case 'prototype':
+                return SymbolKind.Function;
+            case 'property':
+                return SymbolKind.Property;
+            case 'struct':
+                return SymbolKind.Struct;
+            case 'typedef':
+                return SymbolKind.TypeParameter;
+            default:
+                return SymbolKind.Variable;
         }
     }
 }
 
 // TODO: add a user setting to enable/disable all ctags based operations
 export class Ctags {
-
     symbols: Symbol[];
     doc: TextDocument;
     isDirty: boolean;
@@ -121,17 +168,23 @@ export class Ctags {
     }
 
     execCtags(filepath: string): Thenable<string> {
-        console.log("executing ctags");
+        console.log('executing ctags');
 
-        let ctags: string = <string>workspace.getConfiguration().get('verilog.ctags.path');
-        let command: string = ctags + ' -f - --fields=+K --sort=no --excmd=n "' + filepath + '"';
+        let ctags: string = <string>(
+            workspace.getConfiguration().get('verilog.ctags.path')
+        );
+        let command: string =
+            ctags + ' -f - --fields=+K --sort=no --excmd=n "' + filepath + '"';
         console.log(command);
-        this.logger.log(command, Log_Severity.Command)
+        this.logger.log(command, Log_Severity.Command);
         return new Promise((resolve, reject) => {
-            child.exec(command, (error: Error, stdout: string, stderr: string) => {
-                resolve(stdout);
-            })
-        })
+            child.exec(
+                command,
+                (error: Error, stdout: string, stderr: string) => {
+                    resolve(stdout);
+                }
+            );
+        });
     }
 
     parseTagLine(line: string): Symbol {
@@ -147,35 +200,41 @@ export class Ctags {
                 scope = parts[4].split(':');
                 parentType = scope[0];
                 parentScope = scope[1];
-            }
-            else {
+            } else {
                 parentScope = '';
                 parentType = '';
             }
             lineNoStr = parts[2];
             lineNo = Number(lineNoStr.slice(0, -2)) - 1;
-            return new Symbol(name, type, pattern, lineNo, parentScope, parentType, lineNo, false);
-        }
-        catch (e) {
-            console.log(e)
-            this.logger.log('Ctags Line Parser: ' + e, Log_Severity.Error)
-            this.logger.log('Line: ' + line, Log_Severity.Error)
+            return new Symbol(
+                name,
+                type,
+                pattern,
+                lineNo,
+                parentScope,
+                parentType,
+                lineNo,
+                false
+            );
+        } catch (e) {
+            console.log(e);
+            this.logger.log('Ctags Line Parser: ' + e, Log_Severity.Error);
+            this.logger.log('Line: ' + line, Log_Severity.Error);
         }
     }
 
     buildSymbolsList(tags: string): Thenable<void> {
         try {
-            if(this.isDirty) {
-                console.log("building symbols");
+            if (this.isDirty) {
+                console.log('building symbols');
                 if (tags === '') {
-                    console.log("No output from ctags");
+                    console.log('No output from ctags');
                     return;
                 }
                 // Parse ctags output
                 let lines: string[] = tags.split(/\r?\n/);
-                lines.forEach(line => {
-                    if (line !== '')
-                        this.symbols.push(this.parseTagLine(line));
+                lines.forEach((line) => {
+                    if (line !== '') this.symbols.push(this.parseTagLine(line));
                 });
 
                 // end tags are not supported yet in ctags. So, using regex
@@ -183,20 +242,37 @@ export class Ctags {
                 let endPosition;
                 let text = this.doc.getText();
                 let eRegex: RegExp = /^(?![\r\n])\s*end(\w*)*[\s:]?/gm;
-                while (match = eRegex.exec(text)) {
+                while ((match = eRegex.exec(text))) {
                     if (match && typeof match[1] !== 'undefined') {
-                        endPosition = this.doc.positionAt(match.index + match[0].length - 1);
+                        endPosition = this.doc.positionAt(
+                            match.index + match[0].length - 1
+                        );
                         // get the starting symbols of the same type
                         // doesn't check for begin...end blocks
-                        let s = this.symbols.filter(i => i.type === match[1] && i.startPosition.isBefore(endPosition) && !i.isValid);
+                        let s = this.symbols.filter(
+                            (i) =>
+                                i.type === match[1] &&
+                                i.startPosition.isBefore(endPosition) &&
+                                !i.isValid
+                        );
                         if (s.length > 0) {
                             // get the symbol nearest to the end tag
                             let max: Symbol = s[0];
                             for (let i = 0; i < s.length; i++) {
-                                max = s[i].startPosition.isAfter(max.startPosition) ? s[i] : max;
+                                max = s[i].startPosition.isAfter(
+                                    max.startPosition
+                                )
+                                    ? s[i]
+                                    : max;
                             }
                             for (let i of this.symbols) {
-                                if (i.name === max.name && i.startPosition.isEqual(max.startPosition) && i.type === max.type) {
+                                if (
+                                    i.name === max.name &&
+                                    i.startPosition.isEqual(
+                                        max.startPosition
+                                    ) &&
+                                    i.type === max.type
+                                ) {
                                     i.setEndPosition(endPosition.line);
                                     break;
                                 }
@@ -207,19 +283,20 @@ export class Ctags {
                 console.log(this.symbols);
                 this.isDirty = false;
             }
-            return Promise.resolve()
-        } catch (e) { console.log(e) }
+            return Promise.resolve();
+        } catch (e) {
+            console.log(e);
+        }
     }
 
     index(): Thenable<void> {
-        console.log("indexing...");
+        console.log('indexing...');
         return new Promise((resolve, reject) => {
             this.execCtags(this.doc.uri.fsPath)
-                .then(output => this.buildSymbolsList(output))
+                .then((output) => this.buildSymbolsList(output))
                 .then(() => resolve());
-        })
+        });
     }
-
 }
 
 export class CtagsManager {
@@ -232,21 +309,27 @@ export class CtagsManager {
     }
 
     configure() {
-        console.log("ctags manager configure");
+        console.log('ctags manager configure');
         workspace.onDidSaveTextDocument(this.onSave.bind(this));
     }
 
     onSave(doc: TextDocument) {
-        console.log("on save");
+        console.log('on save');
         let ctags: Ctags = CtagsManager.ctags;
-        if (ctags.doc === undefined || ctags.doc.uri.fsPath === doc.uri.fsPath) {
+        if (
+            ctags.doc === undefined ||
+            ctags.doc.uri.fsPath === doc.uri.fsPath
+        ) {
             CtagsManager.ctags.clearSymbols();
         }
     }
 
     static async getSymbols(doc: TextDocument): Promise<Symbol[]> {
         let ctags: Ctags = CtagsManager.ctags;
-        if (ctags.doc === undefined || ctags.doc.uri.fsPath !== doc.uri.fsPath) {
+        if (
+            ctags.doc === undefined ||
+            ctags.doc.uri.fsPath !== doc.uri.fsPath
+        ) {
             ctags.setDocument(doc);
         }
         // If dirty, re index and then build symbols
@@ -255,5 +338,4 @@ export class CtagsManager {
         }
         return ctags.symbols;
     }
-
 }
