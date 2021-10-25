@@ -118,8 +118,9 @@ export default class VerilatorLinter extends BaseLinter {
             ' ' +
             svArgs +
             ' --lint-only -I' +
+            '"' +
             docFolder +
-            ' ' +
+            '" ' +
             this.verilatorArgs +
             ' "' +
             docUri +
