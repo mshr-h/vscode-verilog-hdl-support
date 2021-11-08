@@ -45,8 +45,7 @@ import {
     LanguageClient,
     LanguageClientOptions,
     ServerOptions,
-    TransportKind,
-} from 'vscode-languageclient';
+} from 'vscode-languageclient/node';
 
 // Logger
 import { Logger } from './Logger';
