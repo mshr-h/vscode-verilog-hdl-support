@@ -8,7 +8,7 @@ Verilog-HDL, SystemVerilog and Bluespec SystemVerilog support for VS Code with S
 
 ## Installation
 
-Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items/mshr-h.VerilogHDL)
+Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items/mshr-h.VerilogHDL) or [Open VSX Registry](https://open-vsx.org/extension/mshr-h/veriloghdl)
 
 ## Features
 
