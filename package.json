@@ -48,6 +48,7 @@
         ],
         "extensions": [
           ".sv",
+          ".svh",
           ".SV"
         ],
         "configuration": "./systemverilog.configuration.json"
