@@ -631,6 +631,25 @@
                 <string>meta.define.systemverilog</string>
             </dict>
             <dict>
+                <key>captures</key>
+                <dict>
+                    <key>1</key>
+                    <dict>
+                        <key>name</key>
+                        <string>constant.other.undef.systemverilog</string>
+                    </dict>
+                    <key>2</key>
+                    <dict>
+                        <key>name</key>
+                        <string>entity.name.type.undef.systemverilog</string>
+                    </dict>
+                </dict>
+                <key>match</key>
+                <string>^\s*(`undef)\s+([a-zA-Z_][a-zA-Z0-9_]*)</string>
+                <key>name</key>
+                <string>meta.undef.systemverilog</string>
+            </dict>
+            <dict>
                 <key>include</key>
                 <string>#comments</string>
             </dict>
