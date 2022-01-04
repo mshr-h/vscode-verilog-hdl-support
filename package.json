@@ -270,7 +270,7 @@
   "dependencies": {
     "antlr4": "^4.9.3",
     "antlr4ts": "^0.5.0-alpha.4",
-    "vsce": "^2.5.1",
+    "vsce": "^2.6.3",
     "vscode-languageclient": "^7.0.0"
   },
   "devDependencies": {
