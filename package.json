@@ -268,7 +268,7 @@
     "makeBsv": "antlr4ts -visitor syntaxes/bsv.g4 -o src/bsvjs"
   },
   "dependencies": {
-    "antlr4": "^4.9.3",
+    "antlr4": "^4.10.0",
     "antlr4ts": "^0.5.0-alpha.4",
     "vsce": "^2.7.0",
     "vscode-languageclient": "^7.0.0"
