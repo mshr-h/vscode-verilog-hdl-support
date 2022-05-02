@@ -276,7 +276,7 @@
   "devDependencies": {
     "@types/antlr4": "^4.7.2",
     "@types/mocha": "^9.1.1",
-    "@types/node": "^17.0.30",
+    "@types/node": "^17.0.31",
     "@types/vscode": "^1.60.0",
     "antlr4ts-cli": "^0.5.0-alpha.4",
     "eslint": "^7.32.0",
