@@ -12,6 +12,7 @@ import BaseLinter from './BaseLinter';
 import { Logger, Log_Severity } from '../Logger';
 
 export default class XvlogLinter extends BaseLinter {
+    private xvlogPath: string;
     private xvlogArgs: string;
 
     constructor(diagnostic_collection: DiagnosticCollection, logger: Logger) {
@@ -23,6 +24,9 @@ export default class XvlogLinter extends BaseLinter {
     }
 
     private getConfig() {
+        this.xvlogPath = <string>(
+            workspace.getConfiguration().get('verilog.linting.path')
+        );
         this.xvlogArgs = <string>(
             workspace.getConfiguration().get('verilog.linting.xvlog.arguments')
         );
@@ -32,6 +36,7 @@ export default class XvlogLinter extends BaseLinter {
         this.logger.log('xvlog lint requested');
         let svArgs: string = doc.languageId == 'systemverilog' ? '-sv' : ''; //Systemverilog args
         let command =
+            this.xvlogPath + 
             'xvlog ' +
             svArgs +
             ' -nolog ' +
