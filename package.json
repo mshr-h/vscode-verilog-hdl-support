@@ -284,7 +284,7 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.0.0",
-    "typescript": "^4.6.4",
+    "typescript": "^4.7.3",
     "vscode-test": "^1.4.0"
   },
   "__metadata": {
