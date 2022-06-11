@@ -232,7 +232,7 @@
         "verilog.ctags.path": {
           "scope": "window",
           "type": "string",
-          "default": "ctags",
+          "default": "none",
           "description": "A path to the installation of Universal Ctags."
         },
         "verilog.languageServer": {

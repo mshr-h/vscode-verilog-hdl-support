@@ -171,20 +171,23 @@ export class Ctags {
         console.log('executing ctags');
 
         let ctags: string = <string>(
-            workspace.getConfiguration().get('verilog.ctags.path')
+            workspace.getConfiguration().get('verilog.ctags.path', 'none')
         );
-        let command: string =
-            ctags + ' -f - --fields=+K --sort=no --excmd=n "' + filepath + '"';
-        console.log(command);
-        this.logger.log(command, Log_Severity.Command);
-        return new Promise((resolve, reject) => {
-            child.exec(
-                command,
-                (error: Error, stdout: string, stderr: string) => {
-                    resolve(stdout);
-                }
-            );
-        });
+        if(ctags != 'none')
+        {
+            let command: string =
+                ctags + ' -f - --fields=+K --sort=no --excmd=n "' + filepath + '"';
+            console.log(command);
+            this.logger.log(command, Log_Severity.Command);
+            return new Promise((resolve, reject) => {
+                child.exec(
+                    command,
+                    (error: Error, stdout: string, stderr: string) => {
+                        resolve(stdout);
+                    }
+                );
+            });
+        }
     }
 
     parseTagLine(line: string): Symbol {
