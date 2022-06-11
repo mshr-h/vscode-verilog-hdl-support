@@ -16,6 +16,7 @@ import { Logger, Log_Severity } from '../Logger';
 var isWindows = process.platform === 'win32';
 
 export default class ModelsimLinter extends BaseLinter {
+    private modelsimPath: string;
     private modelsimArgs: string;
     private modelsimWork: string;
     private runAtFileLocation: boolean;
@@ -29,6 +30,11 @@ export default class ModelsimLinter extends BaseLinter {
     }
 
     private getConfig() {
+        this.modelsimPath = <string>(
+            workspace
+                .getConfiguration()
+                .get('verilog.linting.path')
+        );
         //get custom arguments
         this.modelsimArgs = <string>(
             workspace
@@ -57,6 +63,7 @@ export default class ModelsimLinter extends BaseLinter {
             this.runAtFileLocation == true ? docFolder : workspace.rootPath; //choose correct location to run
         // no change needed for systemverilog
         let command: string =
+            this.modelsimPath +
             'vlog -nologo -work ' +
             this.modelsimWork +
             ' "' +

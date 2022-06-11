@@ -17,6 +17,7 @@ import { Logger, Log_Severity } from '../Logger';
 var isWindows = process.platform === 'win32';
 
 export default class VerilatorLinter extends BaseLinter {
+    private verilatorPath: string;
     private verilatorArgs: string;
     private runAtFileLocation: boolean;
     private useWSL: boolean;
@@ -31,6 +32,11 @@ export default class VerilatorLinter extends BaseLinter {
     }
 
     private getConfig() {
+        this.verilatorPath = <string>(
+            workspace
+                .getConfiguration()
+                .get('verilog.linting.path', '')
+        );
         this.verilatorArgs = <string>(
             workspace
                 .getConfiguration()
@@ -114,6 +120,7 @@ export default class VerilatorLinter extends BaseLinter {
             }
         }
         let command: string =
+            this.verilatorPath +
             verilator +
             ' ' +
             svArgs +

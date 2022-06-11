@@ -162,6 +162,12 @@
     "configuration": {
       "title": "Verilog configuration",
       "properties": {
+        "verilog.linting.path": {
+					"scope": "window",
+					"type": "string",
+					"default": "",
+					"description": "A path to the installation of linter."
+				},
         "verilog.linting.linter": {
           "scope": "window",
           "type": "string",

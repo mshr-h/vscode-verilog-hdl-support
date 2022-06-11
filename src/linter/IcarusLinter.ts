@@ -16,6 +16,7 @@ import { Logger, Log_Severity } from '../Logger';
 var isWindows = process.platform === 'win32';
 
 export default class IcarusLinter extends BaseLinter {
+    private iverilogPath: string;
     private iverilogArgs: string;
     private runAtFileLocation: boolean;
 
@@ -28,6 +29,11 @@ export default class IcarusLinter extends BaseLinter {
     }
 
     private getConfig() {
+        this.iverilogPath = <string>(
+            workspace
+                .getConfiguration()
+                .get('verilog.linting.path')
+        );
         this.iverilogArgs = <string>(
             workspace
                 .getConfiguration()
@@ -52,6 +58,7 @@ export default class IcarusLinter extends BaseLinter {
             this.runAtFileLocation == true ? docFolder : workspace.rootPath; //choose correct location to run
         let svArgs: string = doc.languageId == 'systemverilog' ? '-g2012' : ''; //SystemVerilog args
         let command: string =
+            this.iverilogPath +
             'iverilog ' +
             svArgs +
             ' -t null ' +
