@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.5.4] - 2022-06-11
+
+- Added the ability to disable Ctag [#281](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/281)
+- Added the ability to specify PATH for linter [#282](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/282)
+- Update dependent packages
+
 ## [1.5.3] - 2021-12-17
 
 - Support `undef` keyword [#127](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/127)
