@@ -13,7 +13,7 @@
     "url": "https://github.com/mshr-h/vscode-verilog-hdl-support/issues"
   },
   "engines": {
-    "vscode": "^1.60.0"
+    "vscode": "^1.67.0"
   },
   "categories": [
     "Programming Languages",
@@ -277,13 +277,13 @@
     "antlr4": "^4.10.1",
     "antlr4ts": "^0.5.0-alpha.4",
     "vsce": "^2.9.1",
-    "vscode-languageclient": "^7.0.0"
+    "vscode-languageclient": "^8.0.0"
   },
   "devDependencies": {
     "@types/antlr4": "^4.7.2",
     "@types/mocha": "^9.1.1",
     "@types/node": "^18.0.0",
-    "@types/vscode": "^1.68.0",
+    "@types/vscode": "^1.67.0",
     "antlr4ts-cli": "^0.5.0-alpha.4",
     "eslint": "^7.32.0",
     "eslint-config-standard": "^16.0.3",
