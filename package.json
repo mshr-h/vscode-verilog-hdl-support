@@ -163,11 +163,11 @@
       "title": "Verilog configuration",
       "properties": {
         "verilog.linting.path": {
-					"scope": "window",
-					"type": "string",
-					"default": "",
-					"description": "A path to the installation of linter."
-				},
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "A path to the installation of linter."
+        },
         "verilog.linting.linter": {
           "scope": "window",
           "type": "string",
@@ -277,7 +277,7 @@
     "antlr4": "^4.10.1",
     "antlr4ts": "^0.5.0-alpha.4",
     "vsce": "^2.9.2",
-    "vscode-languageclient": "^7.0.0"
+    "vscode-languageclient": "^8.0.1"
   },
   "devDependencies": {
     "@types/antlr4": "^4.7.2",
@@ -285,12 +285,12 @@
     "@types/node": "^18.0.0",
     "@types/vscode": "^1.60.0",
     "antlr4ts-cli": "^0.5.0-alpha.4",
-    "eslint": "^7.32.0",
-    "eslint-config-standard": "^16.0.3",
+    "eslint": "^8.18.0",
+    "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.0.0",
-    "typescript": "^4.6.4",
+    "typescript": "^4.7.4",
     "vscode-test": "^1.4.0"
   },
   "__metadata": {
