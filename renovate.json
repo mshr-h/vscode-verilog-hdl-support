@@ -1,12 +1,26 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:base",
+    ":timezone(Asia/Tokyo)"
+    ":separateMinorPatch"
   ],
-  "timezone": "Asia/Tokyo",
   "ignoreDeps": [
     "@types/vscode"
   ],
-  "npm": [
-  ]
+  "major": {
+    "automerge": false
+  },
+  "minor": {
+    "automerge": true,
+    "groupName": "Minor updates",
+    "stabilityDays": 7,
+    "prCreation": "not-pending"
+  },
+  "patch": {
+    "automerge": true,
+    "groupName": "Patch updates",
+    "stabilityDays": 7,
+    "prCreation": "not-pending"
+  } 
 }
