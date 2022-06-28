@@ -31,6 +31,6 @@ jobs:
       - name: Build vsix package
         run: vsce package
       - name: Upload vsix package
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: veriloghdl-*.vsix
