@@ -12,7 +12,7 @@
         "body": [
             "rule $0 ( $1 );",
             "endrule : $0"
-        ],
+        ]
     },
     "import": {
         "prefix": "import",
@@ -24,8 +24,8 @@
     "interface": {
         "prefix": "interface",
         "body": [
-            "interface $IfcCounter #($type $t);",
-            "method $t readCounter;",
+            "interface ${1:IfcCounter} #(${2:type} $3);",
+            "method ${4:type} ${5:readCounter};",
             "endinterface"
         ],
         "description": "interface"
