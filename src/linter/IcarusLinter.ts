@@ -12,6 +12,7 @@ import {
 import * as child from 'child_process';
 import BaseLinter from './BaseLinter';
 import { Logger, Log_Severity } from '../Logger';
+import * as path from 'path';
 
 var isWindows = process.platform === 'win32';
 
@@ -54,8 +55,17 @@ export default class IcarusLinter extends BaseLinter {
                 ? docUri.lastIndexOf('\\')
                 : docUri.lastIndexOf('/');
         let docFolder = docUri.substr(0, lastIndex); //folder of current doc
+
+        let activeEditorPath = window.activeTextEditor.document.uri.path;
+        let activeWorkspace = workspace.workspaceFolders?.find((wsFolder) => {
+            const relative = path.relative(wsFolder.uri.fsPath, activeEditorPath);
+            return (
+                relative && !relative.startsWith('..') && !path.isAbsolute(relative)
+            );
+        });
+
         let runLocation: string =
-            this.runAtFileLocation == true ? docFolder : workspace.rootPath; //choose correct location to run
+            this.runAtFileLocation == true ? docFolder : activeWorkspace.uri.path; //choose correct location to run
         let svArgs: string = doc.languageId == 'systemverilog' ? '-g2012' : ''; //SystemVerilog args
         let command: string =
             this.iverilogPath +

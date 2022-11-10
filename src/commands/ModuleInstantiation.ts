@@ -1,12 +1,18 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Ctags, Symbol } from '../ctags';
-import { window, QuickPickItem, workspace, SnippetString } from 'vscode';
+import { window, QuickPickItem, workspace, SnippetString, Uri } from 'vscode';
 import { Logger } from '../Logger';
 
 export function instantiateModuleInteract() {
-    let filePath = path.dirname(window.activeTextEditor.document.fileName);
-    selectFile(filePath).then((srcpath) => {
+    let activeEditorPath = window.activeTextEditor.document.uri.path;
+    let activeWorkspace = workspace.workspaceFolders?.find(
+        (wsFolder) => {
+            const relative = path.relative(wsFolder.uri.fsPath, activeEditorPath);
+            return relative && !relative.startsWith('..') && !path.isAbsolute(relative);
+        }
+    );
+    selectFile(activeWorkspace.uri.fsPath).then((srcpath) => {
         instantiateModule(srcpath).then((inst) => {
             window.activeTextEditor.insertSnippet(inst);
         });
@@ -35,7 +41,7 @@ function instantiateModule(srcpath: string): Thenable<SnippetString> {
                 // No modules found
                 if (modules.length <= 0) {
                     window.showErrorMessage(
-                        'Verilog-HDL/SystemVerilog: No modules found in the file'
+                        'Verilog-HDL/SystemVerilog: No modules found in ' + srcpath
                     );
                     return;
                 }
@@ -113,32 +119,28 @@ function instantiatePort(ports: string[]): string {
     return port;
 }
 
-function selectFile(currentDir?: string): Thenable<string> {
-    currentDir = currentDir || workspace.rootPath;
-
-    let dirs = getDirectories(currentDir);
-    // if is subdirectory, add '../'
-    if (currentDir !== workspace.rootPath) {
-        dirs.unshift('..');
-    }
-    // all files ends with '.sv'
-    let files = getFiles(currentDir).filter(
-        (file) => file.endsWith('.v') || file.endsWith('.sv')
-    );
-
+function selectFile(workspacePath: string): Thenable<string> {
     // available quick pick items
-    // Indicate folders in the Quick pick
     let items: QuickPickItem[] = [];
-    dirs.forEach((dir) => {
-        items.push({
-            label: dir,
-            description: 'folder',
-        });
+
+    // retrieve files and directories
+    let paths = fs.readdirSync(workspacePath);
+
+    // directories
+    paths.filter((file) => fs.statSync(path.join(workspacePath, file)).isDirectory())
+    .forEach((filename) => {
+            items.push({
+                label: filename,
+                description: "directory",
+            });
     });
-    files.forEach((file) => {
-        items.push({
-            label: file,
-        });
+
+    // Verilog and SystemVerilog files
+    paths.filter((file) => file.endsWith(".v") || file.endsWith(".sv"))
+    .forEach((filename) => {
+            items.push({
+                label: filename,
+            });
     });
 
     return window
@@ -151,7 +153,7 @@ function selectFile(currentDir?: string): Thenable<string> {
             }
 
             // if is a directory
-            let location = path.join(currentDir, selected.label);
+            let location = path.join(workspacePath, selected.label);
             if (fs.statSync(location).isDirectory()) {
                 return selectFile(location);
             }
@@ -159,18 +161,6 @@ function selectFile(currentDir?: string): Thenable<string> {
             // return file path
             return location;
         });
-}
-
-function getDirectories(srcpath: string): string[] {
-    return fs
-        .readdirSync(srcpath)
-        .filter((file) => fs.statSync(path.join(srcpath, file)).isDirectory());
-}
-
-function getFiles(srcpath: string): string[] {
-    return fs
-        .readdirSync(srcpath)
-        .filter((file) => fs.statSync(path.join(srcpath, file)).isFile());
 }
 
 class moduleTags extends Ctags {
