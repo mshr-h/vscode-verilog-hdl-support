@@ -1,21 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Ctags, Symbol } from '../ctags';
-import { window, SnippetString, OpenDialogOptions } from 'vscode';
+import { window, QuickPickItem, workspace, SnippetString } from 'vscode';
 import { Logger } from '../Logger';
 
 export function instantiateModuleInteract() {
-    const options: OpenDialogOptions = {
-        canSelectMany: false,
-        canSelectFiles: true,
-        canSelectFolders: false,
-        filters: {
-            "Verilog": ["v", "vh"],
-            "SystemVerilog": ["sv", "svh"],
-        }
-    }
-    window.showOpenDialog(options).then((fileUris) => {
-        instantiateModule(fileUris[0].fsPath).then((inst) => {
+    let filePath = path.dirname(window.activeTextEditor.document.fileName);
+    selectFile(filePath).then((srcpath) => {
+        instantiateModule(srcpath).then((inst) => {
             window.activeTextEditor.insertSnippet(inst);
         });
     });
@@ -119,6 +111,66 @@ function instantiatePort(ports: string[]): string {
         port += '\n';
     }
     return port;
+}
+
+function selectFile(currentDir?: string): Thenable<string> {
+    currentDir = currentDir || workspace.rootPath;
+
+    let dirs = getDirectories(currentDir);
+    // if is subdirectory, add '../'
+    if (currentDir !== workspace.rootPath) {
+        dirs.unshift('..');
+    }
+    // all files ends with '.sv'
+    let files = getFiles(currentDir).filter(
+        (file) => file.endsWith('.v') || file.endsWith('.sv')
+    );
+
+    // available quick pick items
+    // Indicate folders in the Quick pick
+    let items: QuickPickItem[] = [];
+    dirs.forEach((dir) => {
+        items.push({
+            label: dir,
+            description: 'folder',
+        });
+    });
+    files.forEach((file) => {
+        items.push({
+            label: file,
+        });
+    });
+
+    return window
+        .showQuickPick(items, {
+            placeHolder: 'Choose the module file',
+        })
+        .then((selected) => {
+            if (!selected) {
+                return;
+            }
+
+            // if is a directory
+            let location = path.join(currentDir, selected.label);
+            if (fs.statSync(location).isDirectory()) {
+                return selectFile(location);
+            }
+
+            // return file path
+            return location;
+        });
+}
+
+function getDirectories(srcpath: string): string[] {
+    return fs
+        .readdirSync(srcpath)
+        .filter((file) => fs.statSync(path.join(srcpath, file)).isDirectory());
+}
+
+function getFiles(srcpath: string): string[] {
+    return fs
+        .readdirSync(srcpath)
+        .filter((file) => fs.statSync(path.join(srcpath, file)).isFile());
 }
 
 class moduleTags extends Ctags {
