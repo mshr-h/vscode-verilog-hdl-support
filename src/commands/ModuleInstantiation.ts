@@ -43,7 +43,7 @@ function instantiateModule(srcpath: string): Thenable<SnippetString> {
                 // No modules found
                 if (modules.length <= 0) {
                     window.showErrorMessage(
-                        'Verilog-HDL/SystemVerilog: No modules found in the file'
+                        'Verilog-HDL/SystemVerilog: No modules found in ' + srcpath
                     );
                     return;
                 }
