@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.5.7] - 2022-11-11
+
+- Add toggle option for Language Server in config.
+- Add binary path option for Language Server in config.
+- Add selector option for Language Server in config.
+
 ## [1.5.6] - 2022-11-11
 
 - Fix [#326](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/326)
