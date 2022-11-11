@@ -3739,16 +3739,14 @@ export class BsvInfoProviderManger {
     protected refreshWorkspace() {
         if (!workspace.workspaceFolders) {
             this.provider = new BsvSingleFileInfoProvider();
-        } else if (workspace.workspaceFolders.length > 1) {
-            window.showInformationMessage(
-                'bsv only support one opened workspace now'
-            );
+        } else if (workspace.workspaceFolders.length == 0) {
+            this.provider = new BsvSingleFileInfoProvider();
         } else if (workspace.workspaceFolders.length == 1) {
             this.provider = new BsvWorkspaceInfoProvider(
                 workspace.workspaceFolders[0].uri
             );
-        } else if (workspace.workspaceFolders.length == 0) {
-            this.provider = new BsvSingleFileInfoProvider();
+        } else {
+            console.log('bsv only support one opened workspace now');
         }
     }
 }
