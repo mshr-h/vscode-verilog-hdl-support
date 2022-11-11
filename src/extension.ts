@@ -177,14 +177,28 @@ export function activate(context: ExtensionContext) {
 }
 
 function configLanguageServer() {
-    let langserver: string = <string>(
-        workspace.getConfiguration().get('verilog.languageServer', 'none')
+    let verilogconfig = workspace.getConfiguration('verilog');
+    let enabled: boolean = <boolean>(
+        verilogconfig.get('languageServer.enabled', false)
     );
-    switch (langserver) {
+
+    if (!enabled) {
+        console.log('Language server is disabled by the config');
+        return;
+    }
+
+    let name: string = <string>(
+        verilogconfig.get('languageServer.name', 'none')
+    );
+    let bin_path: string = <string>(
+        verilogconfig.get('languageServer.path', 'svls')
+    );
+
+    switch (name) {
         case 'svls':
             let serverOptions: ServerOptions = {
-                run: { command: 'svls' },
-                debug: { command: 'svls', args: ['--debug'] },
+                run: { command: bin_path},
+                debug: { command: bin_path, args: ['--debug'] },
             };
 
             let clientOptions: LanguageClientOptions = {
@@ -200,7 +214,7 @@ function configLanguageServer() {
                 clientOptions
             );
             client.start();
-            console.log('Language server svls started.');
+            console.log('Language server "' + bin_path + '" started.');
             break;
         default:
             console.log('Invalid language server name.');

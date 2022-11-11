@@ -246,11 +246,24 @@
           "default": "none",
           "description": "A path to the installation of Universal Ctags."
         },
-        "verilog.languageServer": {
+        "verilog.languageServer.name": {
           "scope": "window",
           "type": "string",
-          "default": "none",
+          "enum": ["svls"],
+          "default": "svls",
           "description": "Select the Language Server. Currently supports `svls`."
+        },
+        "verilog.languageServer.path": {
+          "scope": "window",
+          "type": "string",
+          "default": "svls",
+          "description": "A path to the Language Server binary."
+        },
+        "verilog.languageServer.enabled": {
+          "scope": "window",
+          "type": "boolean",
+          "default": "false",
+          "description": "Enable Language Server."
         },
         "verilog.logging.enabled": {
           "scope": "window",

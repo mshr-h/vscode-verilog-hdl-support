@@ -104,10 +104,19 @@ Use the following settings to configure the extension to your needs
 
   Path to your installation of Ctags if it isn't already present in your `PATH` environment variable.
 
-- `verilog.languageServer` (Default: `none` )
+- `verilog.languageServer.enabled` (Default: `false` )
+
+  Enable the Language Server.
+  Experimental support.
+
+- `verilog.languageServer.name` (Default: `svls` )
 
   Select the Language Server. Currently supports [svls](https://github.com/dalance/svls) .
-  Make sure `svls` is in your`$PATH` environmental variable.
+  Experimental support.
+
+- `verilog.languageServer.path` (Default: `svls` )
+
+  Path or name of the Language Server binary file.
   Experimental support.
 
 - `verilog.logging.enabled` (Default: `false` )
