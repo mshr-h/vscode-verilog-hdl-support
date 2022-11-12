@@ -262,7 +262,7 @@
         "verilog.languageServer.enabled": {
           "scope": "window",
           "type": "boolean",
-          "default": "false",
+          "default": false,
           "description": "Enable Language Server."
         },
         "verilog.logging.enabled": {
