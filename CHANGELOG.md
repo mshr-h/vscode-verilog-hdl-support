@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.5.9] - 2022-11-12
+
+- Revert [#331](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/331) because instantiate module function was broken.
+
 ## [1.5.8] - 2022-11-12
 
 - Fix [#332](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/332)
