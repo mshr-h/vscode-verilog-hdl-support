@@ -40,5 +40,13 @@
 		{"open":"[", "close":"]"},
 		{"open":"{", "close":"}"},
 		{"open":"\"", "close":"\"", "notIn":["string"]}
-	]
+	],
+
+	"folding": {
+		"offSide": true,
+		"markers": {
+			"start": "^\\s*[//]*BLOCK_BEGIN",
+			"end": "^\\s*[//]*BLOCK_END"
+		}
+	}
 }
