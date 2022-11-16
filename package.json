@@ -256,11 +256,17 @@
           "default": "svls",
           "description": "Select the Language Server."
         },
-        "verilog.languageServer.path": {
+        "verilog.languageServer.pathSvls": {
           "scope": "window",
           "type": "string",
           "default": "svls",
-          "description": "A path to the Language Server binary."
+          "description": "A path to the Svls Language Server binary."
+        },
+        "verilog.languageServer.pathVeridian": {
+          "scope": "window",
+          "type": "string",
+          "default": "veridian",
+          "description": "A path to the Veridian Language Server binary."
         },
         "verilog.languageServer.enabled": {
           "scope": "window",

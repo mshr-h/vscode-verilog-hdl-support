@@ -189,31 +189,43 @@ function configLanguageServer() {
         return;
     }
 
-    let name: string = <string>(
-        verilogconfig.get('languageServer.name', 'none')
-    );
-    let bin_path: string = <string>(
-        verilogconfig.get('languageServer.path', 'svls')
-    );
+    let name: string = <string>verilogconfig.get('languageServer.name', 'none');
+    var bin_path: string;
 
-    var serverOptions: ServerOptions = {
-        run: { command: bin_path },
-        debug: { command: bin_path },
-    };
-    var clientOptions: LanguageClientOptions = {
-        documentSelector: [
-            { scheme: 'file', language: 'systemverilog' },
-        ],
-    };
+    var serverOptions: ServerOptions;
+    var clientOptions: LanguageClientOptions;
 
     switch (name) {
         case 'svls':
-            serverOptions["debug"] = { command: bin_path, args: ['--debug'] };
+            bin_path = <string>(
+                verilogconfig.get('languageServer.pathSvls', 'svls')
+            );
+            serverOptions = {
+                'run': { command: bin_path },
+                'debug': { command: bin_path, args: ['--debug'] },
+            };
+            clientOptions = {
+                documentSelector: [
+                    { scheme: 'file', language: 'systemverilog' },
+                ],
+            };
             break;
         case 'veridian':
+            bin_path = <string>(
+                verilogconfig.get('languageServer.pathVeridian', 'veridian')
+            );
+            serverOptions = {
+                'run': { command: bin_path },
+                'debug': { command: bin_path },
+            };
+            clientOptions = {
+                documentSelector: [
+                    { scheme: 'file', language: 'systemverilog' },
+                ],
+            };
             break;
         default:
-            console.log('Invalid language server name.');
+            console.log('Invalid language server name: ' + name);
             client = null;
             return;
     }

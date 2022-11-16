@@ -61,7 +61,7 @@ Use the following settings to configure the extension to your needs
 
 - `verilog.linting.linter` (Default: `none` )
 
-  Choose the linter for you. Possible values are
+    Choose the linter for you. Possible values are
 
   - `iverilog`
   - `xvlog`
@@ -71,72 +71,82 @@ Use the following settings to configure the extension to your needs
 
 - `verilog.linting.iverilog.arguments` (Default: nothing)
 
-  Add custom arguments to Icarus Verilog for linting, like `-Wall` . The argument `-t null` will be added by the linter automatically.
+    Add custom arguments to Icarus Verilog for linting, like `-Wall` . The argument `-t null` will be added by the linter automatically.
 
 - `verilog.linting.iverilog.runAtFileLocation` (Default: `false` )
 
-  By default, the linter will be run at the workspace directory. Enable this option to run at the file location. If enabled, `` `include`` directives should contain file paths relative to the current file.
+    By default, the linter will be run at the workspace directory. Enable this option to run at the file location. If enabled, `` ` include`` directives should contain file paths relative to the current file.
 
 - `verilog.linting.modelsim.arguments` (Default: nothing)
 
-  Add custom arguments to Modelsim for linting.
+    Add custom arguments to Modelsim for linting.
 
 - `verilog.linting.modelsim.work` (Default: nothing)
 
-  Add custom work library to Modelsim for linting.
+    Add custom work library to Modelsim for linting.
 
 - `verilog.linting.verilator.arguments` (Default: nothing)
 
-  Add custom arguments to Verilator for linting, like `-Wall` . The argument `--lint-only -I<document folder>` will be added by the linter automatically.
+    Add custom arguments to Verilator for linting, like `-Wall` . The argument `--lint-only -I<document folder>` will be added by the linter automatically.
 
 - `verilog.linting.verilator.runAtFileLocation` (Default: `false` )
 
-  By default, the linter will be run at the workspace directory. Enable this option to run at the file location. If enabled, `` `include`` directives should contain file paths relative to the current file.
+    By default, the linter will be run at the workspace directory. Enable this option to run at the file location. If enabled, `` ` include`` directives should contain file paths relative to the current file.
 
 - `verilog.linting.verilator.useWSL` (Default: `false` )
 
-  Run verilator under WSL (use `apg-get install verilator` to install). Paths generated automatically by the
-  extension (the path to the Verilog file as well as the auto-generated document folder for `-I` ) are translated
-  to WSL paths using the `wslpath` program. Any other paths you specify in `verilog.linting.verilator.arguments`
-  must be manually converted.
+    Run verilator under WSL (use `apg-get install verilator` to install). Paths generated automatically by the
+    extension (the path to the Verilog file as well as the auto-generated document folder for `-I` ) are translated
+    to WSL paths using the `wslpath` program. Any other paths you specify in `verilog.linting.verilator.arguments`
+
+    must be manually converted.
 
 - `verilog.ctags.path` (Default: `ctags` )
 
-  Path to your installation of Ctags if it isn't already present in your `PATH` environment variable.
+    Path to your installation of Ctags if it isn't already present in your `PATH` environment variable.
 
 - `verilog.languageServer.enabled` (Default: `false` )
 
-  Enable the Language Server.
-  Experimental support.
+    Enable the Language Server.
+    Experimental support.
 
 - `verilog.languageServer.name` (Default: `svls` )
 
-  Select the Language Server. Currently supports [svls](https://github.com/dalance/svls) .
-  Experimental support.
+    Select the Language Server. See the [Language Servers](#language-servers) section for more details.
+    Experimental support.
 
 - `verilog.languageServer.path` (Default: `svls` )
 
-  Path or name of the Language Server binary file.
-  Experimental support.
+    Path or name of the Language Server binary file.
+    Experimental support.
 
 - `verilog.logging.enabled` (Default: `false` )
 
-  Enable logging for this extension. Open the **Output** pane in VS Code and choose _Verilog_ in the drop-down menu to view the log.
+    Enable logging for this extension. Open the **Output** pane in VS Code and choose _Verilog_ in the drop-down menu to view the log.
 
 ## Commands
 
 - **Rerun lint tool**
 
-  Choose a lint tool from the list and run it manually. Useful if the code was changed by an external script or version control system.
+    Choose a lint tool from the list and run it manually. Useful if the code was changed by an external script or version control system.
 
 - **Instantiate Module**
 
-  Choose a module present in your workspace to instantiate it in the current file.
+    Choose a module present in your workspace to instantiate it in the current file.
 
 ## Usage Instructions
 
 - All linters expect the executable binary ( `iverilog` , `verilator` ...) to be present in the `PATH` environment variable, unless otherwise specified.
-- While using `` `include`` directives, the path to the files should be relative to the workspace directory, unless` runAtFileLocation` is enabled (not supported by all linters)
+- While using `` `include`` directives, the path to the files should be relative to the workspace directory, unless`runAtFileLocation` is enabled (not supported by all linters)
+
+## Language Servers
+
+We currently supoort the following Language Servers and enabled for Verilog-HDL/SystemVerilog.
+
+| Language Server                   | Verilog HDL | SystemVerilog |
+| --------------------------------- | :---------: | :-----------: |
+| [svls](https://github.com/dalance/svls) | not supported|  enabled |
+| [veridian](https://github.com/vivekmalneedi/veridian) | enabled | enabled  |
 
 ## Compatability
 
