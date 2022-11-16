@@ -224,6 +224,21 @@ function configLanguageServer() {
                 ],
             };
             break;
+        case 'hdl_checker':
+            bin_path = <string>(
+                verilogconfig.get('languageServer.pathHdlChecker', 'hdl_checker')
+            );
+            serverOptions = {
+                'run': { command: bin_path },
+                'debug': { command: bin_path },
+            };
+            clientOptions = {
+                documentSelector: [
+                    { scheme: 'file', language: 'verilog' },
+                    { scheme: 'file', language: 'systemverilog' },
+                ],
+            };
+            break;
         default:
             console.log('Invalid language server name: ' + name);
             client = null;

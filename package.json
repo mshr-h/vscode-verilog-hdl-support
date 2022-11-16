@@ -251,7 +251,8 @@
           "type": "string",
           "enum": [
             "svls",
-            "veridian"
+            "veridian",
+            "hdl_checker"
           ],
           "default": "svls",
           "description": "Select the Language Server."
@@ -267,6 +268,12 @@
           "type": "string",
           "default": "veridian",
           "description": "A path to the Veridian Language Server binary."
+        },
+        "verilog.languageServer.pathHdlChecker": {
+          "scope": "window",
+          "type": "string",
+          "default": "hdl_checker",
+          "description": "A path to the HDL Checker Language Server binary."
         },
         "verilog.languageServer.enabled": {
           "scope": "window",

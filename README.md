@@ -146,7 +146,8 @@ We currently supoort the following Language Servers and enabled for Verilog-HDL/
 | Language Server                   | Verilog HDL | SystemVerilog |
 | --------------------------------- | :---------: | :-----------: |
 | [svls](https://github.com/dalance/svls) | not supported|  enabled |
-| [veridian](https://github.com/vivekmalneedi/veridian) | enabled | enabled  |
+| [veridian](https://github.com/vivekmalneedi/veridian) | not supported | enabled  |
+| [HDL Checker](https://github.com/suoto/hdl_checker) | enabled | enabled  |
 
 ## Compatability
 
