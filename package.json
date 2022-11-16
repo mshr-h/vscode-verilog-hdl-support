@@ -305,7 +305,9 @@
     "compile": "tsc -p ./",
     "watch": "tsc -w -p ./",
     "update-vscode": "vscode-install",
-    "makeBsv": "antlr4ts -visitor syntaxes/bsv.g4 -o src/bsvjs"
+    "makeBsv": "antlr4ts -visitor syntaxes/bsv.g4 -o src/bsvjs",
+    "pretest": "npm run compile",
+    "test": "node ./out/tests/bsv.js"
   },
   "dependencies": {
     "antlr4": "^4.10.1",
