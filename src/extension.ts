@@ -49,6 +49,8 @@ import {
 
 // Logger
 import { Logger } from './Logger';
+import { Server } from 'http';
+import { start } from 'repl';
 
 let lintManager: LintManager;
 let logger: Logger = new Logger();
@@ -194,33 +196,36 @@ function configLanguageServer() {
         verilogconfig.get('languageServer.path', 'svls')
     );
 
+    var serverOptions: ServerOptions = {
+        run: { command: bin_path },
+        debug: { command: bin_path },
+    };
+    var clientOptions: LanguageClientOptions = {
+        documentSelector: [
+            { scheme: 'file', language: 'systemverilog' },
+        ],
+    };
+
     switch (name) {
         case 'svls':
-            let serverOptions: ServerOptions = {
-                run: { command: bin_path},
-                debug: { command: bin_path, args: ['--debug'] },
-            };
-
-            let clientOptions: LanguageClientOptions = {
-                documentSelector: [
-                    { scheme: 'file', language: 'systemverilog' },
-                ],
-            };
-
-            client = new LanguageClient(
-                'svls',
-                'SystemVerilog language server',
-                serverOptions,
-                clientOptions
-            );
-            client.start();
-            console.log('Language server "' + bin_path + '" started.');
+            serverOptions["debug"] = { command: bin_path, args: ['--debug'] };
+            break;
+        case 'veridian':
             break;
         default:
             console.log('Invalid language server name.');
             client = null;
-            break;
+            return;
     }
+
+    client = new LanguageClient(
+        name,
+        name + ' language server',
+        serverOptions,
+        clientOptions
+    );
+    client.start();
+    console.log('Language server "' + bin_path + '" started.');
 }
 
 function checkIfUpdated(context: ExtensionContext) {

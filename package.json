@@ -249,9 +249,12 @@
         "verilog.languageServer.name": {
           "scope": "window",
           "type": "string",
-          "enum": ["svls"],
+          "enum": [
+            "svls",
+            "veridian"
+          ],
           "default": "svls",
-          "description": "Select the Language Server. Currently supports `svls`."
+          "description": "Select the Language Server."
         },
         "verilog.languageServer.path": {
           "scope": "window",
