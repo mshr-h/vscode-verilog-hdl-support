@@ -249,15 +249,31 @@
         "verilog.languageServer.name": {
           "scope": "window",
           "type": "string",
-          "enum": ["svls"],
+          "enum": [
+            "svls",
+            "veridian",
+            "hdl_checker"
+          ],
           "default": "svls",
-          "description": "Select the Language Server. Currently supports `svls`."
+          "description": "Select the Language Server."
         },
-        "verilog.languageServer.path": {
+        "verilog.languageServer.pathSvls": {
           "scope": "window",
           "type": "string",
           "default": "svls",
-          "description": "A path to the Language Server binary."
+          "description": "A path to the Svls Language Server binary."
+        },
+        "verilog.languageServer.pathVeridian": {
+          "scope": "window",
+          "type": "string",
+          "default": "veridian",
+          "description": "A path to the Veridian Language Server binary."
+        },
+        "verilog.languageServer.pathHdlChecker": {
+          "scope": "window",
+          "type": "string",
+          "default": "hdl_checker",
+          "description": "A path to the HDL Checker Language Server binary."
         },
         "verilog.languageServer.enabled": {
           "scope": "window",
@@ -289,11 +305,17 @@
     "compile": "tsc -p ./",
     "watch": "tsc -w -p ./",
     "update-vscode": "vscode-install",
-    "makeBsv": "antlr4ts -visitor syntaxes/bsv.g4 -o src/bsvjs"
+    "makeBsv": "antlr4ts -visitor syntaxes/bsv.g4 -o src/bsvjs",
+    "pretest": "npm run compile",
+    "test": "node ./out/tests/bsv.js"
   },
   "dependencies": {
     "antlr4": "^4.10.1",
     "antlr4ts": "^0.5.0-alpha.4",
+    "npm": "^9.1.2",
+    "set-value": "^4.1.0",
+    "to": "^0.2.9",
+    "update": "^0.7.4",
     "vsce": "^2.14.0",
     "vscode-languageclient": "^8.0.1"
   },

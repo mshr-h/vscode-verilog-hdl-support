@@ -49,6 +49,8 @@ import {
 
 // Logger
 import { Logger } from './Logger';
+import { Server } from 'http';
+import { start } from 'repl';
 
 let lintManager: LintManager;
 let logger: Logger = new Logger();
@@ -187,40 +189,70 @@ function configLanguageServer() {
         return;
     }
 
-    let name: string = <string>(
-        verilogconfig.get('languageServer.name', 'none')
-    );
-    let bin_path: string = <string>(
-        verilogconfig.get('languageServer.path', 'svls')
-    );
+    let name: string = <string>verilogconfig.get('languageServer.name', 'none');
+    var bin_path: string;
+
+    var serverOptions: ServerOptions;
+    var clientOptions: LanguageClientOptions;
 
     switch (name) {
         case 'svls':
-            let serverOptions: ServerOptions = {
-                run: { command: bin_path},
-                debug: { command: bin_path, args: ['--debug'] },
+            bin_path = <string>(
+                verilogconfig.get('languageServer.pathSvls', 'svls')
+            );
+            serverOptions = {
+                'run': { command: bin_path },
+                'debug': { command: bin_path, args: ['--debug'] },
             };
-
-            let clientOptions: LanguageClientOptions = {
+            clientOptions = {
                 documentSelector: [
                     { scheme: 'file', language: 'systemverilog' },
                 ],
             };
-
-            client = new LanguageClient(
-                'svls',
-                'SystemVerilog language server',
-                serverOptions,
-                clientOptions
+            break;
+        case 'veridian':
+            bin_path = <string>(
+                verilogconfig.get('languageServer.pathVeridian', 'veridian')
             );
-            client.start();
-            console.log('Language server "' + bin_path + '" started.');
+            serverOptions = {
+                'run': { command: bin_path },
+                'debug': { command: bin_path },
+            };
+            clientOptions = {
+                documentSelector: [
+                    { scheme: 'file', language: 'systemverilog' },
+                ],
+            };
+            break;
+        case 'hdl_checker':
+            bin_path = <string>(
+                verilogconfig.get('languageServer.pathHdlChecker', 'hdl_checker')
+            );
+            serverOptions = {
+                'run': { command: bin_path },
+                'debug': { command: bin_path },
+            };
+            clientOptions = {
+                documentSelector: [
+                    { scheme: 'file', language: 'verilog' },
+                    { scheme: 'file', language: 'systemverilog' },
+                ],
+            };
             break;
         default:
-            console.log('Invalid language server name.');
+            console.log('Invalid language server name: ' + name);
             client = null;
-            break;
+            return;
     }
+
+    client = new LanguageClient(
+        name,
+        name + ' language server',
+        serverOptions,
+        clientOptions
+    );
+    client.start();
+    console.log('Language server "' + bin_path + '" started.');
 }
 
 function checkIfUpdated(context: ExtensionContext) {
