@@ -273,6 +273,11 @@
             "veridian",
             "hdl_checker"
           ],
+          "enumDescriptions": [
+            "svls supports SystemVerilog",
+            "veridian supports SystemVerilog",
+            "hdl_checker supports Verilog-HDL, SystemVerilog and VHDL"
+          ],
           "default": "svls",
           "description": "Select the Language Server."
         },
