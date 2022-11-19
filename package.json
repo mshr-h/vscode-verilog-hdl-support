@@ -25,6 +25,7 @@
     "onLanguage:verilog",
     "onLanguage:systemverilog",
     "onLanguage:bsv",
+    "onLanguage:vhdl",
     "onLanguage:ucf",
     "onLanguage:sdc",
     "onLanguage:xdc"
@@ -71,6 +72,19 @@
         ],
         "configuration": "./BSV.configuration.json"
       },
+      {
+			  "id": "vhdl",
+			  "aliases": [
+          "VHDL",
+          "vhdl"
+        ],
+			  "extensions": [
+          ".vhd",
+          ".vhdl",
+          ".vho"
+        ],
+			  "configuration": "./vhdl.configuration.json"
+		  },
       {
         "id": "ucf",
         "aliases": [
@@ -119,6 +133,11 @@
         "scopeName": "source.bsv",
         "path": "./syntaxes/BSV.tmLanguage"
       },
+      {
+			  "language": "vhdl",
+			  "scopeName": "source.vhdl",
+			  "path": "./syntaxes/vhdl.tmLanguage"
+		  },
       {
         "language": "ucf",
         "scopeName": "source.ucfconstraints",
@@ -253,6 +272,11 @@
             "svls",
             "veridian",
             "hdl_checker"
+          ],
+          "enumDescriptions": [
+            "svls supports SystemVerilog",
+            "veridian supports SystemVerilog",
+            "hdl_checker supports Verilog-HDL, SystemVerilog and VHDL"
           ],
           "default": "svls",
           "description": "Select the Language Server."
