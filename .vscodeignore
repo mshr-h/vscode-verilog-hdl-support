@@ -1,11 +1,11 @@
-.vscode/**
-test/**
+.vscode/
+test/
 .gitignore
 tsconfig.json
-src/**
+src/
 *.vsix
 build.sh
-**/tsconfig.json
+tsconfig.json
 **/tslint.json
 **/*.map
 **/*.ts
