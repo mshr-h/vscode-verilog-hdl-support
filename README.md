@@ -1,6 +1,6 @@
-# Verilog-HDL/SystemVerilog/Bluespec SystemVerilog support for VS Code
+# HDL support for VS Code
 
-Verilog-HDL, SystemVerilog and Bluespec SystemVerilog support for VS Code with Syntax Highlighting, Snippets, Linting and much more!
+HDL support for VS Code with Syntax Highlighting, Snippets, Linting and much more!
 
 [![Build Status](https://github.com/mshr-h/vscode-verilog-hdl-support/workflows/.github/workflows/ci.yml/badge.svg?branch=master&event=push)](https://github.com/mshr-h/vscode-verilog-hdl-support/actions?query=workflow%3A.github%2Fworkflows%2Fci.yml)
 
@@ -18,6 +18,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - Verilog-HDL
   - SystemVerilog
   - Bluespec SystemVerilog
+  - VHDL
   - Vivado UCF constraints
   - Synopsys Design Constraints
 - Simple Snippets
@@ -40,6 +41,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 - Language Server support
   - Currently only supports [svls](https://github.com/dalance/svls)
 - Improvements in the newly added features
+- Migrate VHDL support from [mshr-h/vscode-vhdl-support](https://github.com/mshr-h/vscode-vhdl-support)
 
 [Take a look at our list of planned features](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/25)
 
@@ -172,5 +174,5 @@ If you have tested the linters in new platforms or have issues with them, feel f
 - [SublimeLinter-contrib-iverilog](https://github.com/jfcherng/SublimeLinter-contrib-iverilog)
 - [SublimeLinter-contrib-vlog](https://github.com/dave2pi/SublimeLinter-contrib-vlog)
 - [Sublime Text Bluespec SystemVerilog](https://github.com/thotypous/sublime-bsv)
-- [svls](https://github.com/dalance/svls)
+- [yangsu/sublime-vhdl](https://github.com/yangsu/sublime-vhdl)
 - [Sublime EDA](https://github.com/tschinz/sublime_eda)
