@@ -1,11 +1,9 @@
 .vscode/
-test/
-.gitignore
-tsconfig.json
+tests/
 src/
+out/
+node_modules/
 *.vsix
+.gitignore
 build.sh
 tsconfig.json
-**/tslint.json
-**/*.map
-**/*.ts

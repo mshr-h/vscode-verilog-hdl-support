@@ -30,7 +30,7 @@
     "onLanguage:sdc",
     "onLanguage:xdc"
   ],
-  "main": "./out/src/extension",
+  "main": "./dist/main",
   "contributes": {
     "languages": [
       {
@@ -73,18 +73,18 @@
         "configuration": "./BSV.configuration.json"
       },
       {
-			  "id": "vhdl",
-			  "aliases": [
+        "id": "vhdl",
+        "aliases": [
           "VHDL",
           "vhdl"
         ],
-			  "extensions": [
+        "extensions": [
           ".vhd",
           ".vhdl",
           ".vho"
         ],
-			  "configuration": "./vhdl.configuration.json"
-		  },
+        "configuration": "./vhdl.configuration.json"
+      },
       {
         "id": "ucf",
         "aliases": [
@@ -134,10 +134,10 @@
         "path": "./syntaxes/BSV.tmLanguage"
       },
       {
-			  "language": "vhdl",
-			  "scopeName": "source.vhdl",
-			  "path": "./syntaxes/vhdl.tmLanguage"
-		  },
+        "language": "vhdl",
+        "scopeName": "source.vhdl",
+        "path": "./syntaxes/vhdl.tmLanguage"
+      },
       {
         "language": "ucf",
         "scopeName": "source.ucfconstraints",
@@ -325,7 +325,11 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run esbuild-base -- --minify",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/main.js --external:vscode --format=cjs --platform=node",
+    "esbuild": "npm run esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+    "test-compile": "tsc -p ./",
     "compile": "tsc -p ./",
     "watch": "tsc -w -p ./",
     "update-vscode": "vscode-install",
@@ -349,6 +353,7 @@
     "@types/node": "18.11.9",
     "@types/vscode": "^1.60.0",
     "antlr4ts-cli": "0.5.0-alpha.4",
+    "esbuild": "^0.15.14",
     "eslint": "8.27.0",
     "eslint-config-standard": "17.0.0",
     "eslint-plugin-import": "2.26.0",
