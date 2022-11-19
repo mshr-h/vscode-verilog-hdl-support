@@ -145,13 +145,13 @@ Use the following settings to configure the extension to your needs
 
 ## Language Servers
 
-We currently supoort the following Language Servers and enabled for Verilog-HDL/SystemVerilog.
+We currently supoort the following Language Servers and enabled for Verilog-HDL, SystemVerilog and VHDL.
 
-| Language Server                                       | Verilog HDL   | SystemVerilog |
-| ----------------------------------------------------- | :-----------: | :-----------: |
-| [svls](https://github.com/dalance/svls)               | not supported | enabled       |
-| [veridian](https://github.com/vivekmalneedi/veridian) | not supported | enabled       |
-| [HDL Checker](https://github.com/suoto/hdl_checker)   | enabled       | enabled       |
+| Language Server                                       | Verilog-HDL   | SystemVerilog | VHDL          |
+| ----------------------------------------------------- | :-----------: | :-----------: | :-----------: |
+| [svls](https://github.com/dalance/svls)               | not supported | enabled       | not supported |
+| [veridian](https://github.com/vivekmalneedi/veridian) | not supported | enabled       | not supported |
+| [HDL Checker](https://github.com/suoto/hdl_checker)   | enabled       | enabled       | enabled       |
 
 ## Compatability
 
