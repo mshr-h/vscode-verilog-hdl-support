@@ -236,6 +236,7 @@ function configLanguageServer() {
                 documentSelector: [
                     { scheme: 'file', language: 'verilog' },
                     { scheme: 'file', language: 'systemverilog' },
+                    { scheme: "file", language: "vhdl" },
                 ],
             };
             break;
