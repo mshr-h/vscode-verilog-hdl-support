@@ -39,7 +39,9 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 ### In Progress / Future
 
 - Language Server support
-  - Currently only supports [svls](https://github.com/dalance/svls)
+  - [svls](https://github.com/dalance/svls)
+  - [veridian](https://github.com/vivekmalneedi/veridian)
+  - [HDL Checker](https://github.com/suoto/hdl_checker)
 - Improvements in the newly added features
 - Migrate VHDL support from [mshr-h/vscode-vhdl-support](https://github.com/mshr-h/vscode-vhdl-support)
 
@@ -145,11 +147,11 @@ Use the following settings to configure the extension to your needs
 
 We currently supoort the following Language Servers and enabled for Verilog-HDL/SystemVerilog.
 
-| Language Server                   | Verilog HDL | SystemVerilog |
-| --------------------------------- | :---------: | :-----------: |
-| [svls](https://github.com/dalance/svls) | not supported|  enabled |
-| [veridian](https://github.com/vivekmalneedi/veridian) | not supported | enabled  |
-| [HDL Checker](https://github.com/suoto/hdl_checker) | enabled | enabled  |
+| Language Server                                       | Verilog HDL   | SystemVerilog |
+| ----------------------------------------------------- | :-----------: | :-----------: |
+| [svls](https://github.com/dalance/svls)               | not supported | enabled       |
+| [veridian](https://github.com/vivekmalneedi/veridian) | not supported | enabled       |
+| [HDL Checker](https://github.com/suoto/hdl_checker)   | enabled       | enabled       |
 
 ## Compatability
 
@@ -176,3 +178,6 @@ If you have tested the linters in new platforms or have issues with them, feel f
 - [Sublime Text Bluespec SystemVerilog](https://github.com/thotypous/sublime-bsv)
 - [yangsu/sublime-vhdl](https://github.com/yangsu/sublime-vhdl)
 - [Sublime EDA](https://github.com/tschinz/sublime_eda)
+- [svls](https://github.com/dalance/svls)
+- [veridian](https://github.com/vivekmalneedi/veridian)
+- [HDL Checker](https://github.com/suoto/hdl_checker)
