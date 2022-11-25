@@ -44,7 +44,7 @@
           ".vh",
           ".vl"
         ],
-        "configuration": "./verilog.configuration.json"
+        "configuration": "./configs/verilog.configuration.json"
       },
       {
         "id": "systemverilog",
@@ -57,7 +57,7 @@
           ".svh",
           ".SV"
         ],
-        "configuration": "./systemverilog.configuration.json"
+        "configuration": "./configs/systemverilog.configuration.json"
       },
       {
         "id": "bsv",
@@ -70,7 +70,7 @@
           ".bsv",
           ".BSV"
         ],
-        "configuration": "./BSV.configuration.json"
+        "configuration": "./configs/BSV.configuration.json"
       },
       {
         "id": "vhdl",
@@ -83,7 +83,7 @@
           ".vhdl",
           ".vho"
         ],
-        "configuration": "./vhdl.configuration.json"
+        "configuration": "./configs/vhdl.configuration.json"
       },
       {
         "id": "ucf",
@@ -94,7 +94,7 @@
         "extensions": [
           ".ucf"
         ],
-        "configuration": "./ucfconstraints.configuration.json"
+        "configuration": "./configs/ucfconstraints.configuration.json"
       },
       {
         "id": "sdc",
@@ -104,7 +104,7 @@
         "extensions": [
           ".sdc"
         ],
-        "configuration": "./sdc.configuration.json"
+        "configuration": "./configs/sdc.configuration.json"
       },
       {
         "id": "xdc",
@@ -114,7 +114,7 @@
         "extensions": [
           ".xdc"
         ],
-        "configuration": "./sdc.configuration.json"
+        "configuration": "./configs/sdc.configuration.json"
       }
     ],
     "grammars": [
