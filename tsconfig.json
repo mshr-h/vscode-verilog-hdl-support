@@ -1,14 +1,17 @@
 {
 	"compilerOptions": {
 		"module": "commonjs",
-		"target": "es6",
+		"target": "ES2020",
 		"outDir": "out",
 		"lib": [
-            "es6"
+            "ES2020"
         ],
 		"sourceMap": true,
-		"rootDir": ".",
-		"moduleResolution": "node"
+		"rootDir": "."
+		//"strict": true,   /* enable all strict type-checking options */
+		//"noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
+		//"noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
+		//"noUnusedParameters": true,  /* Report errors on unused parameters. */
 	},
 	"exclude": [
 		"node_modules"
