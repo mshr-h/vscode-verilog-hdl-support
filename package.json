@@ -121,27 +121,27 @@
       {
         "language": "verilog",
         "scopeName": "source.verilog",
-        "path": "./syntaxes/verilog.tmLanguage"
+        "path": "./syntaxes/verilog.tmLanguage.json"
       },
       {
         "language": "systemverilog",
         "scopeName": "source.systemverilog",
-        "path": "./syntaxes/systemverilog.tmLanguage"
+        "path": "./syntaxes/systemverilog.tmLanguage.json"
       },
       {
         "language": "bsv",
         "scopeName": "source.bsv",
-        "path": "./syntaxes/BSV.tmLanguage"
+        "path": "./syntaxes/BSV.tmLanguage.json"
       },
       {
         "language": "vhdl",
         "scopeName": "source.vhdl",
-        "path": "./syntaxes/vhdl.tmLanguage"
+        "path": "./syntaxes/vhdl.tmLanguage.json"
       },
       {
         "language": "ucf",
         "scopeName": "source.ucfconstraints",
-        "path": "./syntaxes/ucf.tmLanguage"
+        "path": "./syntaxes/ucf.tmLanguage.json"
       },
       {
         "language": "sdc",

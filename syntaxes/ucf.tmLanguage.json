@@ -1,0 +1,23 @@
+{
+  "fileTypes": [
+    "ucf",
+    "UCF"
+  ],
+  "name": "ucfconstraints",
+  "patterns": [
+    {
+      "name": "keyword.other",
+      "match": "\\b(NET|TIMESPEC|TIMEGRP|INST|AREA_GROUP|RANGE|LOC|TNM|TIG|TNM_NET)\\b"
+    },
+    {
+      "match": "(#).*$\\n?",
+      "name": "comment.line"
+    },
+    {
+      "match": "(=)",
+      "name": "keyword.other"
+    }
+  ],
+  "scopeName": "source.ucfconstraints",
+  "uuid": "443130c7-cdc8-4a90-836c-a530d3b17266"
+}
