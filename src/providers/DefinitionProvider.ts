@@ -27,7 +27,7 @@ export class VerilogDefinitionProvider implements DefinitionProvider {
         this.logger.log('Definitions Requested: ' + document.uri);
         // get word start and end
         let textRange = document.getWordRangeAtPosition(position);
-        if (!textRange || textRange.isEmpty) return;
+        if (!textRange || textRange.isEmpty) {return undefined;}
         // hover word
         let targetText = document.getText(textRange);
         let symbols: Symbol[] = await CtagsManager.getSymbols(document);

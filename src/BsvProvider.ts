@@ -3362,7 +3362,7 @@ class BsvStdLibProvider {
             if (Object.prototype.hasOwnProperty.call(internalInfo, key)) {
                 const element = internalInfo[key];
                 const pp: String = element.package;
-                if (element.package != p) continue;
+                if (element.package != p) {continue;}
                 const type: String = element.type;
                 switch (type) {
                     case 'typeclass':
@@ -3590,6 +3590,7 @@ class BsvWorkspaceInfoProvider
                 return new Hover(resSym.name);
             }
         }
+        return undefined;
     }
 
     async lint(
@@ -3638,6 +3639,7 @@ class BsvWorkspaceInfoProvider
                     return new SymbolLink(i.location.uri, i.location.range);
                 });
         }
+        return undefined;
     }
 }
 
@@ -3653,10 +3655,9 @@ class BsvSingleFileInfoProvider
 
             if (res) {
                 return new Hover(res.toString());
-            } else {
-                return;
             }
         }
+        return undefined;
     }
 
     async getSymbol(doc: TextDocument): Promise<SymbolInformation[]> {
@@ -3706,6 +3707,7 @@ class BsvSingleFileInfoProvider
                     return new SymbolLink(i.location.uri, i.location.range);
                 });
         }
+        return undefined;
     }
 
     constructor() {

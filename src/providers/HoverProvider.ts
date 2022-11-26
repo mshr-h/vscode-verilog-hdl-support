@@ -30,7 +30,7 @@ export class VerilogHoverProvider implements HoverProvider {
         this.logger.log('Hover requested');
         // get word start and end
         let textRange = document.getWordRangeAtPosition(position);
-        if (!textRange || textRange.isEmpty) return;
+        if (!textRange || textRange.isEmpty) {return undefined;}
         // hover word
         let targetText = document.getText(textRange);
         let symbols: Symbol[] = await CtagsManager.getSymbols(document);
@@ -51,7 +51,7 @@ export class VerilogHoverProvider implements HoverProvider {
             }
         }
         this.logger.log('Hover object not found', Log_Severity.Warn);
-        return;
+        return undefined;
     }
 }
 

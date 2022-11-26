@@ -40,7 +40,7 @@ function instantiateModule(srcpath: string): Thenable<SnippetString> {
                     return;
                 }
                 // Only one module found
-                else if (modules.length == 1) module = modules[0];
+                else if (modules.length == 1) {module = modules[0];}
                 // many modules found
                 else if (modules.length > 1) {
                     moduleName = await window.showQuickPick(
@@ -51,7 +51,7 @@ function instantiateModule(srcpath: string): Thenable<SnippetString> {
                             placeHolder: 'Choose a module to instantiate',
                         }
                     );
-                    if (moduleName === undefined) return;
+                    if (moduleName === undefined) {return;}
                     module = modules.filter(
                         (tag) => tag.name === moduleName
                     )[0];
@@ -97,7 +97,7 @@ function instantiatePort(ports: string[]): string {
     let port = '';
     let max_len = 0;
     for (let i = 0; i < ports.length; i++) {
-        if (ports[i].length > max_len) max_len = ports[i].length;
+        if (ports[i].length > max_len) {max_len = ports[i].length;}
     }
     // .NAME(NAME)
     for (let i = 0; i < ports.length; i++) {
@@ -147,7 +147,7 @@ function selectFile(currentDir?: string): Thenable<string> {
         })
         .then((selected) => {
             if (!selected) {
-                return;
+                return undefined;
             }
 
             // if is a directory
@@ -178,7 +178,7 @@ class moduleTags extends Ctags {
         console.log('building symbols');
         if (tags === '') {
             console.log('No output from ctags');
-            return;
+            return undefined;
         }
         // Parse ctags output
         let lines: string[] = tags.split(/\r?\n/);
@@ -191,10 +191,11 @@ class moduleTags extends Ctags {
                     tag.type === 'port' ||
                     tag.type === 'constant'
                 )
-                    this.symbols.push(tag);
+                    {this.symbols.push(tag);}
             }
         });
         // skip finding end tags
         console.log(this.symbols);
+        return undefined;
     }
 }

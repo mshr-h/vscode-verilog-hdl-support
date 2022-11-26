@@ -304,4 +304,5 @@ export function deactivate() {
         return client.stop();
     }
     logger.log('Deactivated');
+    return undefined;
 }

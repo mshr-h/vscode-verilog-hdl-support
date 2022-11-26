@@ -85,6 +85,7 @@ export class Symbol {
             case 'struct':
                 return true;
         }
+        return false;
     }
 
     // types used by ctags
@@ -188,6 +189,7 @@ export class Ctags {
                 );
             });
         }
+        return undefined;
     }
 
     parseTagLine(line: string): Symbol {
@@ -224,6 +226,7 @@ export class Ctags {
             this.logger.log('Ctags Line Parser: ' + e, Log_Severity.Error);
             this.logger.log('Line: ' + line, Log_Severity.Error);
         }
+        return undefined;
     }
 
     buildSymbolsList(tags: string): Thenable<void> {
@@ -232,12 +235,12 @@ export class Ctags {
                 console.log('building symbols');
                 if (tags === '') {
                     console.log('No output from ctags');
-                    return;
+                    return undefined;
                 }
                 // Parse ctags output
                 let lines: string[] = tags.split(/\r?\n/);
                 lines.forEach((line) => {
-                    if (line !== '') this.symbols.push(this.parseTagLine(line));
+                    if (line !== '') {this.symbols.push(this.parseTagLine(line));}
                 });
 
                 // end tags are not supported yet in ctags. So, using regex
@@ -290,6 +293,7 @@ export class Ctags {
         } catch (e) {
             console.log(e);
         }
+        return undefined;
     }
 
     index(): Thenable<void> {
