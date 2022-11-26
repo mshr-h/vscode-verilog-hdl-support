@@ -137,12 +137,12 @@ export default class VerilatorLinter extends BaseLinter {
         var foo: child.ChildProcess = child.exec(
             command,
             { cwd: runLocation },
-            (error: Error, stdout: string, stderr: string) => {
+            (_error: Error, _stdout: string, stderr: string) => {
                 let diagnostics: Diagnostic[] = [];
                 let lines = stderr.split(/\r?\n/g);
 
                 // Parse output lines
-                lines.forEach((line, i) => {
+                lines.forEach((line, _) => {
                     // Error for our file
                     if (line.startsWith('%') && line.indexOf(docUri) > 0) {
                         let rex = line.match(

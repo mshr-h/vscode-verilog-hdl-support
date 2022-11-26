@@ -14,7 +14,7 @@ export function instantiateModuleInteract() {
 }
 
 function instantiateModule(srcpath: string): Thenable<SnippetString> {
-    return new Promise<SnippetString>((resolve, reject) => {
+    return new Promise<SnippetString>((resolve, _reject) => {
         // Using Ctags to get all the modules in the file
         let moduleName: string = '';
         let portsName: string[] = [];

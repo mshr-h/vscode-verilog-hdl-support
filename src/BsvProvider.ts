@@ -3227,7 +3227,7 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
     visitRepeatFsmStmt?: (ctx: RepeatFsmStmtContext) => Boolean;
     visitLoopBodyFsmStmt?: (ctx: LoopBodyFsmStmtContext) => Boolean;
 
-    visit(tree: ParseTree): Boolean {
+    visit(_tree: ParseTree): Boolean {
         throw new Error('Method not implemented.');
     }
     visitChildren(node: RuleNode): Boolean {
@@ -3238,10 +3238,10 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         }
         return res;
     }
-    visitTerminal(node: TerminalNode): Boolean {
+    visitTerminal(_node: TerminalNode): Boolean {
         return true;
     }
-    visitErrorNode(node: ErrorNode): Boolean {
+    visitErrorNode(_node: ErrorNode): Boolean {
         return false;
     }
 
@@ -3540,7 +3540,7 @@ class BsvWorkspaceInfoProvider
 {
     initFinished = false;
 
-    constructor(path: Uri) {
+    constructor(_path: Uri) {
         super();
         this.updateWorkspace();
         workspace.onDidCreateFiles(async (e) => {
@@ -3594,8 +3594,8 @@ class BsvWorkspaceInfoProvider
     }
 
     async lint(
-        document: TextDocument,
-        position: Position
+        _document: TextDocument,
+        _position: Position
     ): Promise<CompletionItem[]> {
         // we do return all symbols
         let res = this.getAllSymbol();
@@ -3679,8 +3679,8 @@ class BsvSingleFileInfoProvider
     }
 
     async lint(
-        document: TextDocument,
-        position: Position
+        _document: TextDocument,
+        _position: Position
     ): Promise<CompletionItem[]> {
         // we do return all symbols
         let res = this.getAllSymbol();

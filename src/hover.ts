@@ -14,7 +14,7 @@ export class HoverProvider implements vscode.HoverProvider {
     public provideHover(
         document: vscode.TextDocument,
         position: vscode.Position,
-        token: vscode.CancellationToken
+        _token: vscode.CancellationToken
     ): vscode.Hover {
         // get word start and end
         let textRange = document.getWordRangeAtPosition(position);

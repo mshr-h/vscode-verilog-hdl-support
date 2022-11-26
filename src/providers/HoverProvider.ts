@@ -25,7 +25,7 @@ export class VerilogHoverProvider implements HoverProvider {
     public async provideHover(
         document: TextDocument,
         position: Position,
-        token: CancellationToken
+        _token: CancellationToken
     ): Promise<Hover | undefined> {
         this.logger.log('Hover requested');
         // get word start and end
@@ -65,7 +65,7 @@ export class BsvHoverProvider implements HoverProvider {
     provideHover(
         document: TextDocument,
         position: Position,
-        token: CancellationToken
+        _token: CancellationToken
     ): ProviderResult<Hover> {
         const provider = BsvInfoProviderManger.getInstance().getProvider();
         var hover = provider.getHover(document, position);

@@ -98,11 +98,11 @@ export default class LintManager {
             this.linter != null &&
             (lang === 'verilog' || lang === 'systemverilog')
         )
-            this.linter.startLint(doc);
+            {this.linter.startLint(doc);}
     }
 
     removeFileDiagnostics(doc: TextDocument) {
-        if (this.linter != null) this.linter.removeFileDiagnostics(doc);
+        if (this.linter != null) {this.linter.removeFileDiagnostics(doc);}
     }
 
     async RunLintTool() {
@@ -112,9 +112,9 @@ export default class LintManager {
             window.activeTextEditor === undefined ||
             (lang !== 'verilog' && lang !== 'systemverilog')
         )
-            window.showErrorMessage(
+            {window.showErrorMessage(
                 'Verilog-HDL/SystemVerilog: No document opened'
-            );
+            );}
         // else if(window.activeTextEditor.document.languageId !== "verilog")
         // window.showErrorMessage("Verilog-HDL/SystemVerilog: No Verilog document opened");
         else {
@@ -143,7 +143,7 @@ export default class LintManager {
                     placeHolder: 'Choose a linter to run',
                 }
             );
-            if (linterStr === undefined) return;
+            if (linterStr === undefined) {return;}
             // Create and run the linter with progress bar
             let tempLinter: BaseLinter;
             switch (linterStr.label) {
@@ -179,7 +179,7 @@ export default class LintManager {
                     location: ProgressLocation.Notification,
                     title: 'Verilog-HDL/SystemVerilog: Running lint tool...',
                 },
-                async (progress, token) => {
+                async (_progress, _token) => {
                     tempLinter.removeFileDiagnostics(
                         window.activeTextEditor.document
                     );

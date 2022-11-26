@@ -62,7 +62,7 @@ export function activate(context: ExtensionContext) {
     console.log(extensionID + ' is now active!');
 
     BsvInfoProviderManger.getInstance().onWorkspace();
-    workspace.onDidChangeWorkspaceFolders((e) => {
+    workspace.onDidChangeWorkspaceFolders((_e) => {
         BsvInfoProviderManger.getInstance().onWorkspace();
     });
 

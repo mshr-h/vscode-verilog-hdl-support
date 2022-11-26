@@ -22,7 +22,7 @@ export class VerilogDefinitionProvider implements DefinitionProvider {
     async provideDefinition(
         document: TextDocument,
         position: Position,
-        token: CancellationToken
+        _token: CancellationToken
     ): Promise<DefinitionLink[] | undefined> {
         this.logger.log('Definitions Requested: ' + document.uri);
         // get word start and end
@@ -58,7 +58,7 @@ export class BsvDefinitionProvider implements DefinitionProvider {
     provideDefinition(
         document: TextDocument,
         position: Position,
-        token: CancellationToken
+        _token: CancellationToken
     ): ProviderResult<LocationLink[] | Definition> {
         const provider = BsvInfoProviderManger.getInstance().getProvider();
         return provider.provideDefinition(document, position);

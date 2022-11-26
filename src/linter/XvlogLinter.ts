@@ -48,7 +48,7 @@ export default class XvlogLinter extends BaseLinter {
 
         let process: ChildProcess = exec(
             command,
-            (error: Error, stdout: string, stderr: string) => {
+            (_error: Error, stdout: string, _stderr: string) => {
                 let diagnostics: Diagnostic[] = [];
 
                 let lines = stdout.split(/\r?\n/g);

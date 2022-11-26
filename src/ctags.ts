@@ -180,10 +180,10 @@ export class Ctags {
                 ctags + ' -f - --fields=+K --sort=no --excmd=n "' + filepath + '"';
             console.log(command);
             this.logger.log(command, Log_Severity.Command);
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve, _reject) => {
                 child.exec(
                     command,
-                    (error: Error, stdout: string, stderr: string) => {
+                    (_error: Error, stdout: string, _stderr: string) => {
                         resolve(stdout);
                     }
                 );
@@ -298,7 +298,7 @@ export class Ctags {
 
     index(): Thenable<void> {
         console.log('indexing...');
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             this.execCtags(this.doc.uri.fsPath)
                 .then((output) => this.buildSymbolsList(output))
                 .then(() => resolve());

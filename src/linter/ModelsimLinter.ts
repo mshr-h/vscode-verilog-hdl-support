@@ -73,7 +73,7 @@ export default class ModelsimLinter extends BaseLinter {
         var process: child.ChildProcess = child.exec(
             command,
             { cwd: runLocation },
-            (error: Error, stdout: string, stderr: string) => {
+            (_error: Error, stdout: string, _stderr: string) => {
                 let diagnostics: Diagnostic[] = [];
                 let lines = stdout.split(/\r?\n/g);
 
@@ -82,12 +82,12 @@ export default class ModelsimLinter extends BaseLinter {
                 let regexExp =
                     '^\\*\\* (((Error)|(Warning))( \\(suppressible\\))?: )(\\([a-z]+-[0-9]+\\) )?([^\\(]*)\\(([0-9]+)\\): (\\([a-z]+-[0-9]+\\) )?((((near|Unknown identifier|Undefined variable):? )?["\']([\\w:;\\.]+)["\'][ :.]*)?.*)';
                 // Parse output lines
-                lines.forEach((line, i) => {
+                lines.forEach((line, _) => {
                     let sev: DiagnosticSeverity;
                     if (line.startsWith('**')) {
                         let m = line.match(regexExp);
                         try {
-                            if (m[7] != doc.fileName) return;
+                            if (m[7] != doc.fileName) {return;}
                             switch (m[2]) {
                                 case 'Error':
                                     sev = DiagnosticSeverity.Error;

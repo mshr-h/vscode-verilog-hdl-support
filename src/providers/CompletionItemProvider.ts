@@ -26,9 +26,9 @@ export class VerilogCompletionItemProvider implements CompletionItemProvider {
     //TODO: Better context based completion items
     async provideCompletionItems(
         document: TextDocument,
-        position: Position,
-        token: CancellationToken,
-        context: CompletionContext
+        _position: Position,
+        _token: CancellationToken,
+        _context: CompletionContext
     ): Promise<CompletionItem[]> {
         this.logger.log('Completion items requested');
         let items: CompletionItem[] = [];
@@ -47,7 +47,7 @@ export class VerilogCompletionItemProvider implements CompletionItemProvider {
             newItem.detail = symbol.type;
             let doc: string = '```systemverilog\n' + code + '\n```';
             if (symbol.parentScope !== undefined && symbol.parentScope !== '')
-                doc += '\nHeirarchial Scope: ' + symbol.parentScope;
+                {doc += '\nHeirarchial Scope: ' + symbol.parentScope;}
             newItem.documentation = new MarkdownString(doc);
             items.push(newItem);
         });
@@ -114,8 +114,8 @@ export class BsvCompletionItemProvider implements CompletionItemProvider {
     provideCompletionItems(
         document: TextDocument,
         position: Position,
-        token: CancellationToken,
-        context: CompletionContext
+        _token: CancellationToken,
+        _context: CompletionContext
     ): ProviderResult<CompletionItem[] | CompletionList<CompletionItem>> {
         const provider = BsvInfoProviderManger.getInstance().getProvider();
         return provider.lint(document, position);

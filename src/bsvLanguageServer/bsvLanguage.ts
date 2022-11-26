@@ -10,7 +10,7 @@ type Merge<TTrait extends Constructor, TTarget extends Constructor> = (new (
   Pick<TTrait, keyof TTrait>;
 
 const trait =
-  <TTrait extends Constructor>(Orig: TTrait) =>
+  <TTrait extends Constructor>(_Orig: TTrait) =>
   <TTarget extends Constructor>(Tgt: TTarget): Merge<TTrait, TTarget> => {
     // perform patching
     return Tgt as any; // assertion required
@@ -28,13 +28,13 @@ const BsvMethodMixin = trait(BsvScope)(trait(BsvIdentifier)(class {}));
 const BsvModuleMixin = trait(BsvScope)(trait(BsvIdentifier)(class {}));
 
 export class BsvPackage extends BsvPackageMixin {
-  constructor(id: String) {
+  constructor(_id: String) {
     super();
   }
 }
 
 export class BsvFunction extends BsvFunctionMixin {
-  constructor(id: String) {
+  constructor(_id: String) {
     super();
   }
 }

@@ -23,7 +23,7 @@ export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
 
     async provideDocumentSymbols(
         document: TextDocument,
-        token: CancellationToken
+        _token: CancellationToken
     ): Promise<DocumentSymbol[]> {
         this.logger.log('Symbols Requested: ' + document.uri);
         console.log('symbol provider');
@@ -134,7 +134,7 @@ export class BsvDocumentSymbolProvider implements DocumentSymbolProvider {
 
     provideDocumentSymbols(
         document: TextDocument,
-        token: CancellationToken
+        _token: CancellationToken
     ): ProviderResult<DocumentSymbol[] | SymbolInformation[]> {
         // return new Promise((resolve)=>{
         //     const provider = BsvInfoProviderManger.getInstance().getProvider();
