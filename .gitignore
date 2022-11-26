@@ -1,7 +1,5 @@
 /*.vsix
 /node_modules
 /out
-/.vscode
-!/.vscode/launch.json
 /syntaxes/.antlr/*
 /dist
