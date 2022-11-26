@@ -16307,8 +16307,8 @@ export class Identifier_typeContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitIdentifier_type) {
-			return visitor.visitIdentifier_type(this);
+		if (visitor.visitIdentifierType) {
+			return visitor.visitIdentifierType(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -16467,8 +16467,8 @@ export class R_packageContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitR_package) {
-			return visitor.visitR_package(this);
+		if (visitor.visitRPackage) {
+			return visitor.visitRPackage(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -16523,8 +16523,8 @@ export class Non_packageContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitNon_package) {
-			return visitor.visitNon_package(this);
+		if (visitor.visitNonPackage) {
+			return visitor.visitNonPackage(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -18243,8 +18243,8 @@ export class R_ruleContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitR_rule) {
-			return visitor.visitR_rule(this);
+		if (visitor.visitRRule) {
+			return visitor.visitRRule(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19101,8 +19101,8 @@ export class BeginEndStmt_functionBodyStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitBeginEndStmt_functionBodyStmt) {
-			return visitor.visitBeginEndStmt_functionBodyStmt(this);
+		if (visitor.visitBeginEndStmtFunctionBodyStmt) {
+			return visitor.visitBeginEndStmtFunctionBodyStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19148,8 +19148,8 @@ export class BeginEndStmt_actionStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitBeginEndStmt_actionStmt) {
-			return visitor.visitBeginEndStmt_actionStmt(this);
+		if (visitor.visitBeginEndStmtActionStmt) {
+			return visitor.visitBeginEndStmtActionStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19195,8 +19195,8 @@ export class BeginEndStmt_actionValueStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitBeginEndStmt_actionValueStmt) {
-			return visitor.visitBeginEndStmt_actionValueStmt(this);
+		if (visitor.visitBeginEndStmtActionValueStmt) {
+			return visitor.visitBeginEndStmtActionValueStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19242,8 +19242,8 @@ export class BeginEndStmt_moduleStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitBeginEndStmt_moduleStmt) {
-			return visitor.visitBeginEndStmt_moduleStmt(this);
+		if (visitor.visitBeginEndStmtModuleStmt) {
+			return visitor.visitBeginEndStmtModuleStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19289,8 +19289,8 @@ export class BeginEndStmt_expressionStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitBeginEndStmt_expressionStmt) {
-			return visitor.visitBeginEndStmt_expressionStmt(this);
+		if (visitor.visitBeginEndStmtExpressionStmt) {
+			return visitor.visitBeginEndStmtExpressionStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19330,8 +19330,8 @@ export class If_functionBodyStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitIf_functionBodyStmt) {
-			return visitor.visitIf_functionBodyStmt(this);
+		if (visitor.visitIfFunctionBodyStmt) {
+			return visitor.visitIfFunctionBodyStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19371,8 +19371,8 @@ export class If_actionStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitIf_actionStmt) {
-			return visitor.visitIf_actionStmt(this);
+		if (visitor.visitIfActionStmt) {
+			return visitor.visitIfActionStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19412,8 +19412,8 @@ export class If_actionValueStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitIf_actionValueStmt) {
-			return visitor.visitIf_actionValueStmt(this);
+		if (visitor.visitIfActionValueStmt) {
+			return visitor.visitIfActionValueStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19453,8 +19453,8 @@ export class If_moduleStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitIf_moduleStmt) {
-			return visitor.visitIf_moduleStmt(this);
+		if (visitor.visitIfModuleStmt) {
+			return visitor.visitIfModuleStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19494,8 +19494,8 @@ export class If_expressionStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitIf_expressionStmt) {
-			return visitor.visitIf_expressionStmt(this);
+		if (visitor.visitIfExpressionStmt) {
+			return visitor.visitIfExpressionStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19547,8 +19547,8 @@ export class Case_functionBodyStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitCase_functionBodyStmt) {
-			return visitor.visitCase_functionBodyStmt(this);
+		if (visitor.visitCaseFunctionBodyStmt) {
+			return visitor.visitCaseFunctionBodyStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19600,8 +19600,8 @@ export class Case_actionStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitCase_actionStmt) {
-			return visitor.visitCase_actionStmt(this);
+		if (visitor.visitCaseActionStmt) {
+			return visitor.visitCaseActionStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19653,8 +19653,8 @@ export class Case_actionValueStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitCase_actionValueStmt) {
-			return visitor.visitCase_actionValueStmt(this);
+		if (visitor.visitCaseActionValueStmt) {
+			return visitor.visitCaseActionValueStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19706,8 +19706,8 @@ export class Case_moduleStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitCase_moduleStmt) {
-			return visitor.visitCase_moduleStmt(this);
+		if (visitor.visitCaseModuleStmt) {
+			return visitor.visitCaseModuleStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19759,8 +19759,8 @@ export class Case_expressionStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitCase_expressionStmt) {
-			return visitor.visitCase_expressionStmt(this);
+		if (visitor.visitCaseExpressionStmt) {
+			return visitor.visitCaseExpressionStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19800,8 +19800,8 @@ export class CaseItem_functionBodyStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitCaseItem_functionBodyStmt) {
-			return visitor.visitCaseItem_functionBodyStmt(this);
+		if (visitor.visitCaseItemFunctionBodyStmt) {
+			return visitor.visitCaseItemFunctionBodyStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19841,8 +19841,8 @@ export class CaseItem_actionStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitCaseItem_actionStmt) {
-			return visitor.visitCaseItem_actionStmt(this);
+		if (visitor.visitCaseItemActionStmt) {
+			return visitor.visitCaseItemActionStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19882,8 +19882,8 @@ export class CaseItem_actionValueStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitCaseItem_actionValueStmt) {
-			return visitor.visitCaseItem_actionValueStmt(this);
+		if (visitor.visitCaseItemActionValueStmt) {
+			return visitor.visitCaseItemActionValueStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19923,8 +19923,8 @@ export class CaseItem_moduleStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitCaseItem_moduleStmt) {
-			return visitor.visitCaseItem_moduleStmt(this);
+		if (visitor.visitCaseItemModuleStmt) {
+			return visitor.visitCaseItemModuleStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19964,8 +19964,8 @@ export class CaseItem_expressionStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitCaseItem_expressionStmt) {
-			return visitor.visitCaseItem_expressionStmt(this);
+		if (visitor.visitCaseItemExpressionStmt) {
+			return visitor.visitCaseItemExpressionStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -19996,8 +19996,8 @@ export class DefaultItem_functionBodyStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitDefaultItem_functionBodyStmt) {
-			return visitor.visitDefaultItem_functionBodyStmt(this);
+		if (visitor.visitDefaultItemFunctionBodyStmt) {
+			return visitor.visitDefaultItemFunctionBodyStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -20028,8 +20028,8 @@ export class DefaultItem_actionStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitDefaultItem_actionStmt) {
-			return visitor.visitDefaultItem_actionStmt(this);
+		if (visitor.visitDefaultItemActionStmt) {
+			return visitor.visitDefaultItemActionStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -20060,8 +20060,8 @@ export class DefaultItem_actionValueStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitDefaultItem_actionValueStmt) {
-			return visitor.visitDefaultItem_actionValueStmt(this);
+		if (visitor.visitDefaultItemActionValueStmt) {
+			return visitor.visitDefaultItemActionValueStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -20092,8 +20092,8 @@ export class DefaultItem_moduleStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitDefaultItem_moduleStmt) {
-			return visitor.visitDefaultItem_moduleStmt(this);
+		if (visitor.visitDefaultItemModuleStmt) {
+			return visitor.visitDefaultItemModuleStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -20124,8 +20124,8 @@ export class DefaultItem_expressionStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitDefaultItem_expressionStmt) {
-			return visitor.visitDefaultItem_expressionStmt(this);
+		if (visitor.visitDefaultItemExpressionStmt) {
+			return visitor.visitDefaultItemExpressionStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -20159,8 +20159,8 @@ export class While_functionBodyStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitWhile_functionBodyStmt) {
-			return visitor.visitWhile_functionBodyStmt(this);
+		if (visitor.visitWhileFunctionBodyStmt) {
+			return visitor.visitWhileFunctionBodyStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -20194,8 +20194,8 @@ export class While_actionStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitWhile_actionStmt) {
-			return visitor.visitWhile_actionStmt(this);
+		if (visitor.visitWhileActionStmt) {
+			return visitor.visitWhileActionStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -20229,8 +20229,8 @@ export class While_actionValueStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitWhile_actionValueStmt) {
-			return visitor.visitWhile_actionValueStmt(this);
+		if (visitor.visitWhileActionValueStmt) {
+			return visitor.visitWhileActionValueStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -20264,8 +20264,8 @@ export class While_moduleStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitWhile_moduleStmt) {
-			return visitor.visitWhile_moduleStmt(this);
+		if (visitor.visitWhileModuleStmt) {
+			return visitor.visitWhileModuleStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -20299,8 +20299,8 @@ export class While_expressionStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitWhile_expressionStmt) {
-			return visitor.visitWhile_expressionStmt(this);
+		if (visitor.visitWhileExpressionStmt) {
+			return visitor.visitWhileExpressionStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -20340,8 +20340,8 @@ export class For_functionBodyStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitFor_functionBodyStmt) {
-			return visitor.visitFor_functionBodyStmt(this);
+		if (visitor.visitForFunctionBodyStmt) {
+			return visitor.visitForFunctionBodyStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -20381,8 +20381,8 @@ export class For_actionStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitFor_actionStmt) {
-			return visitor.visitFor_actionStmt(this);
+		if (visitor.visitForActionStmt) {
+			return visitor.visitForActionStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -20422,8 +20422,8 @@ export class For_actionValueStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitFor_actionValueStmt) {
-			return visitor.visitFor_actionValueStmt(this);
+		if (visitor.visitForActionValueStmt) {
+			return visitor.visitForActionValueStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -20463,8 +20463,8 @@ export class For_moduleStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitFor_moduleStmt) {
-			return visitor.visitFor_moduleStmt(this);
+		if (visitor.visitForModuleStmt) {
+			return visitor.visitForModuleStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -20504,8 +20504,8 @@ export class For_expressionStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitFor_expressionStmt) {
-			return visitor.visitFor_expressionStmt(this);
+		if (visitor.visitForExpressionStmt) {
+			return visitor.visitForExpressionStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -22523,8 +22523,8 @@ export class CasePatItem_functionBodyStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitCasePatItem_functionBodyStmt) {
-			return visitor.visitCasePatItem_functionBodyStmt(this);
+		if (visitor.visitCasePatItemFunctionBodyStmt) {
+			return visitor.visitCasePatItemFunctionBodyStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -22561,8 +22561,8 @@ export class CasePatItem_actionStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitCasePatItem_actionStmt) {
-			return visitor.visitCasePatItem_actionStmt(this);
+		if (visitor.visitCasePatItemActionStmt) {
+			return visitor.visitCasePatItemActionStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -22599,8 +22599,8 @@ export class CasePatItem_actionValueStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitCasePatItem_actionValueStmt) {
-			return visitor.visitCasePatItem_actionValueStmt(this);
+		if (visitor.visitCasePatItemActionValueStmt) {
+			return visitor.visitCasePatItemActionValueStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -22637,8 +22637,8 @@ export class CasePatItem_moduleStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitCasePatItem_moduleStmt) {
-			return visitor.visitCasePatItem_moduleStmt(this);
+		if (visitor.visitCasePatItemModuleStmt) {
+			return visitor.visitCasePatItemModuleStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -22675,8 +22675,8 @@ export class CasePatItem_expressionStmtContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitCasePatItem_expressionStmt) {
-			return visitor.visitCasePatItem_expressionStmt(this);
+		if (visitor.visitCasePatItemExpressionStmt) {
+			return visitor.visitCasePatItemExpressionStmt(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -23721,8 +23721,8 @@ export class Enabled_selContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitEnabled_sel) {
-			return visitor.visitEnabled_sel(this);
+		if (visitor.visitEnabledSel) {
+			return visitor.visitEnabledSel(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -23753,8 +23753,8 @@ export class Ready_selContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitReady_sel) {
-			return visitor.visitReady_sel(this);
+		if (visitor.visitReadySel) {
+			return visitor.visitReadySel(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -23785,8 +23785,8 @@ export class Clocked_by_selContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitClocked_by_sel) {
-			return visitor.visitClocked_by_sel(this);
+		if (visitor.visitClockedBySel) {
+			return visitor.visitClockedBySel(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -23817,8 +23817,8 @@ export class Reset_by_selContext extends ParserRuleContext {
 	}
 	// @Override
 	public accept<Result>(visitor: bsvVisitor<Result>): Result {
-		if (visitor.visitReset_by_sel) {
-			return visitor.visitReset_by_sel(this);
+		if (visitor.visitResetBySel) {
+			return visitor.visitResetBySel(this);
 		} else {
 			return visitor.visitChildren(this);
 		}

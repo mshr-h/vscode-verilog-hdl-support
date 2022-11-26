@@ -239,7 +239,7 @@ export interface bsvVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitIdentifier_type?: (ctx: Identifier_typeContext) => Result;
+	visitIdentifierType?: (ctx: Identifier_typeContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.stringLiteral`.
@@ -260,14 +260,14 @@ export interface bsvVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitR_package?: (ctx: R_packageContext) => Result;
+	visitRPackage?: (ctx: R_packageContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.non_package`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitNon_package?: (ctx: Non_packageContext) => Result;
+	visitNonPackage?: (ctx: Non_packageContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.exportDecl`.
@@ -547,7 +547,7 @@ export interface bsvVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitR_rule?: (ctx: R_ruleContext) => Result;
+	visitRRule?: (ctx: R_ruleContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.ruleCond`.
@@ -694,245 +694,245 @@ export interface bsvVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitBeginEndStmt_functionBodyStmt?: (ctx: BeginEndStmt_functionBodyStmtContext) => Result;
+	visitBeginEndStmtFunctionBodyStmt?: (ctx: BeginEndStmt_functionBodyStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.beginEndStmt_actionStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitBeginEndStmt_actionStmt?: (ctx: BeginEndStmt_actionStmtContext) => Result;
+	visitBeginEndStmtActionStmt?: (ctx: BeginEndStmt_actionStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.beginEndStmt_actionValueStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitBeginEndStmt_actionValueStmt?: (ctx: BeginEndStmt_actionValueStmtContext) => Result;
+	visitBeginEndStmtActionValueStmt?: (ctx: BeginEndStmt_actionValueStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.beginEndStmt_moduleStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitBeginEndStmt_moduleStmt?: (ctx: BeginEndStmt_moduleStmtContext) => Result;
+	visitBeginEndStmtModuleStmt?: (ctx: BeginEndStmt_moduleStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.beginEndStmt_expressionStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitBeginEndStmt_expressionStmt?: (ctx: BeginEndStmt_expressionStmtContext) => Result;
+	visitBeginEndStmtExpressionStmt?: (ctx: BeginEndStmt_expressionStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.if_functionBodyStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitIf_functionBodyStmt?: (ctx: If_functionBodyStmtContext) => Result;
+	visitIfFunctionBodyStmt?: (ctx: If_functionBodyStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.if_actionStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitIf_actionStmt?: (ctx: If_actionStmtContext) => Result;
+	visitIfActionStmt?: (ctx: If_actionStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.if_actionValueStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitIf_actionValueStmt?: (ctx: If_actionValueStmtContext) => Result;
+	visitIfActionValueStmt?: (ctx: If_actionValueStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.if_moduleStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitIf_moduleStmt?: (ctx: If_moduleStmtContext) => Result;
+	visitIfModuleStmt?: (ctx: If_moduleStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.if_expressionStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitIf_expressionStmt?: (ctx: If_expressionStmtContext) => Result;
+	visitIfExpressionStmt?: (ctx: If_expressionStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.case_functionBodyStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitCase_functionBodyStmt?: (ctx: Case_functionBodyStmtContext) => Result;
+	visitCaseFunctionBodyStmt?: (ctx: Case_functionBodyStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.case_actionStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitCase_actionStmt?: (ctx: Case_actionStmtContext) => Result;
+	visitCaseActionStmt?: (ctx: Case_actionStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.case_actionValueStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitCase_actionValueStmt?: (ctx: Case_actionValueStmtContext) => Result;
+	visitCaseActionValueStmt?: (ctx: Case_actionValueStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.case_moduleStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitCase_moduleStmt?: (ctx: Case_moduleStmtContext) => Result;
+	visitCaseModuleStmt?: (ctx: Case_moduleStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.case_expressionStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitCase_expressionStmt?: (ctx: Case_expressionStmtContext) => Result;
+	visitCaseExpressionStmt?: (ctx: Case_expressionStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.caseItem_functionBodyStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitCaseItem_functionBodyStmt?: (ctx: CaseItem_functionBodyStmtContext) => Result;
+	visitCaseItemFunctionBodyStmt?: (ctx: CaseItem_functionBodyStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.caseItem_actionStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitCaseItem_actionStmt?: (ctx: CaseItem_actionStmtContext) => Result;
+	visitCaseItemActionStmt?: (ctx: CaseItem_actionStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.caseItem_actionValueStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitCaseItem_actionValueStmt?: (ctx: CaseItem_actionValueStmtContext) => Result;
+	visitCaseItemActionValueStmt?: (ctx: CaseItem_actionValueStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.caseItem_moduleStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitCaseItem_moduleStmt?: (ctx: CaseItem_moduleStmtContext) => Result;
+	visitCaseItemModuleStmt?: (ctx: CaseItem_moduleStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.caseItem_expressionStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitCaseItem_expressionStmt?: (ctx: CaseItem_expressionStmtContext) => Result;
+	visitCaseItemExpressionStmt?: (ctx: CaseItem_expressionStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.defaultItem_functionBodyStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitDefaultItem_functionBodyStmt?: (ctx: DefaultItem_functionBodyStmtContext) => Result;
+	visitDefaultItemFunctionBodyStmt?: (ctx: DefaultItem_functionBodyStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.defaultItem_actionStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitDefaultItem_actionStmt?: (ctx: DefaultItem_actionStmtContext) => Result;
+	visitDefaultItemActionStmt?: (ctx: DefaultItem_actionStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.defaultItem_actionValueStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitDefaultItem_actionValueStmt?: (ctx: DefaultItem_actionValueStmtContext) => Result;
+	visitDefaultItemActionValueStmt?: (ctx: DefaultItem_actionValueStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.defaultItem_moduleStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitDefaultItem_moduleStmt?: (ctx: DefaultItem_moduleStmtContext) => Result;
+	visitDefaultItemModuleStmt?: (ctx: DefaultItem_moduleStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.defaultItem_expressionStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitDefaultItem_expressionStmt?: (ctx: DefaultItem_expressionStmtContext) => Result;
+	visitDefaultItemExpressionStmt?: (ctx: DefaultItem_expressionStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.while_functionBodyStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitWhile_functionBodyStmt?: (ctx: While_functionBodyStmtContext) => Result;
+	visitWhileFunctionBodyStmt?: (ctx: While_functionBodyStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.while_actionStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitWhile_actionStmt?: (ctx: While_actionStmtContext) => Result;
+	visitWhileActionStmt?: (ctx: While_actionStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.while_actionValueStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitWhile_actionValueStmt?: (ctx: While_actionValueStmtContext) => Result;
+	visitWhileActionValueStmt?: (ctx: While_actionValueStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.while_moduleStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitWhile_moduleStmt?: (ctx: While_moduleStmtContext) => Result;
+	visitWhileModuleStmt?: (ctx: While_moduleStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.while_expressionStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitWhile_expressionStmt?: (ctx: While_expressionStmtContext) => Result;
+	visitWhileExpressionStmt?: (ctx: While_expressionStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.for_functionBodyStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitFor_functionBodyStmt?: (ctx: For_functionBodyStmtContext) => Result;
+	visitForFunctionBodyStmt?: (ctx: For_functionBodyStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.for_actionStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitFor_actionStmt?: (ctx: For_actionStmtContext) => Result;
+	visitForActionStmt?: (ctx: For_actionStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.for_actionValueStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitFor_actionValueStmt?: (ctx: For_actionValueStmtContext) => Result;
+	visitForActionValueStmt?: (ctx: For_actionValueStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.for_moduleStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitFor_moduleStmt?: (ctx: For_moduleStmtContext) => Result;
+	visitForModuleStmt?: (ctx: For_moduleStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.for_expressionStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitFor_expressionStmt?: (ctx: For_expressionStmtContext) => Result;
+	visitForExpressionStmt?: (ctx: For_expressionStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.forInit`.
@@ -1254,35 +1254,35 @@ export interface bsvVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitCasePatItem_functionBodyStmt?: (ctx: CasePatItem_functionBodyStmtContext) => Result;
+	visitCasePatItemFunctionBodyStmt?: (ctx: CasePatItem_functionBodyStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.casePatItem_actionStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitCasePatItem_actionStmt?: (ctx: CasePatItem_actionStmtContext) => Result;
+	visitCasePatItemActionStmt?: (ctx: CasePatItem_actionStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.casePatItem_actionValueStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitCasePatItem_actionValueStmt?: (ctx: CasePatItem_actionValueStmtContext) => Result;
+	visitCasePatItemActionValueStmt?: (ctx: CasePatItem_actionValueStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.casePatItem_moduleStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitCasePatItem_moduleStmt?: (ctx: CasePatItem_moduleStmtContext) => Result;
+	visitCasePatItemModuleStmt?: (ctx: CasePatItem_moduleStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.casePatItem_expressionStmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitCasePatItem_expressionStmt?: (ctx: CasePatItem_expressionStmtContext) => Result;
+	visitCasePatItemExpressionStmt?: (ctx: CasePatItem_expressionStmtContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.caseExpr`.
@@ -1457,28 +1457,28 @@ export interface bsvVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitEnabled_sel?: (ctx: Enabled_selContext) => Result;
+	visitEnabledSel?: (ctx: Enabled_selContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.ready_sel`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitReady_sel?: (ctx: Ready_selContext) => Result;
+	visitReadySel?: (ctx: Ready_selContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.clocked_by_sel`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitClocked_by_sel?: (ctx: Clocked_by_selContext) => Result;
+	visitClockedBySel?: (ctx: Clocked_by_selContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.reset_by_sel`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitReset_by_sel?: (ctx: Reset_by_selContext) => Result;
+	visitResetBySel?: (ctx: Reset_by_selContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `bsvParser.parameterBVIStmt`.

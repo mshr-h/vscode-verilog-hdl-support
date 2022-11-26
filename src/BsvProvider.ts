@@ -296,6 +296,7 @@ const internalInfo = {
         "proto" : ``
     },
     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Bits: {
         type: 'typeclass',
         info: `Bits defines the class of types that can be converted to bit vectors and back. Membership in this
@@ -319,16 +320,19 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Eq: {
         type: 'typeclass',
         info: `Eq defines the class of types whose values can be compared for equality. Instances of the Eq class are often automatically derived using the deriving statement.`,
         proto: `Eq #(type data_t);`,
         methods: {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '==': {
                 type: `function`,
                 proto: `function Bool \== (data_t x, data_t y,);`,
                 info: `Returns True if x is equal to y.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '/=': {
                 type: `function`,
                 proto: `function Bool \/= (data_t x, data_t y,);`,
@@ -338,6 +342,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Literal: {
         type: 'typeclass',
         info: `Literal defines the class of types which can be created from integer literals.`,
@@ -357,6 +362,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     RealLiteral: {
         type: 'typeclass',
         info: `RealLiteral defines the class of types which can be created from real literals.`,
@@ -371,6 +377,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     SizedLiteral: {
         type: 'typeclass',
         info: `SizedLiteral defines the class of types which can be created from integer literals with a specified size.`,
@@ -385,17 +392,20 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Arith: {
         type: 'typeclass',
         info: `Arith defines the class of types on which arithmetic operations are dened.`,
         proto: `Arith #(type data_t)`,
         methods: {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '+': {
                 type: `function`,
                 proto: `function data_t \+ (data_t x, data_t y);`,
                 info: `Element x is added to element y.`,
                 package: 'Prelude',
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '-': {
                 type: `function`,
                 proto: `function data_t \- (data_t x, data_t y);`,
@@ -408,18 +418,21 @@ const internalInfo = {
                 info: `Change the sign of the number. When using the function the Verilog negate operator, -, may be used.`,
                 package: 'Prelude',
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '*': {
                 type: `function`,
                 proto: `function data_t \* (data_t x, data_t y);`,
                 info: `Element x is multiplied by y.`,
                 package: 'Prelude',
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '/': {
                 type: `function`,
                 proto: `function data_t \/ (data_t x, data_t y);`,
                 info: `Element x is divided by y. The definition depends on the type - many types truncate the remainder . Note: may not be synthesizable with downstream tools.`,
                 package: 'Prelude',
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '%': {
                 type: `function`,
                 proto: `function data_t \% (data_t x, data_t y);`,
@@ -438,6 +451,7 @@ const internalInfo = {
                 info: `Returns a unit value with the same sign as x, such that abs(x)*signum(x) = x. signum(12) returns 1 and signum(-12) returns -1.`,
                 package: 'Prelude',
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '**': {
                 type: `function`,
                 proto: `function data_t \** (data_t x, data_t y);`,
@@ -450,6 +464,7 @@ const internalInfo = {
                 info: `Returns the base 2 logarithm of x (log 2x).`,
                 package: 'Prelude',
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             exp_e: {
                 type: `function`,
                 proto: `function data_t exp_e (data_t x);`,
@@ -476,29 +491,34 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Ord: {
         type: 'typeclass',
         info: `Ord defines the class of types for which an order is defined, allowing comparison operations. A complete definition of an instance of Ord requires dening either <= or compare.`,
         proto: `Ord #(type data_t);`,
         methods: {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '<': {
                 type: `function`,
                 proto: `function Bool \< (data_t x, data_t y);`,
                 info: `Returns True if x is less than y.`,
                 package: 'Prelude',
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '<=': {
                 type: `function`,
                 proto: `function Bool \<= (data_t x, data_t y);`,
                 info: `Returns True if x is less than or equal to y.`,
                 package: 'Prelude',
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '>': {
                 type: `function`,
                 proto: `function Bool \> (data_t x, data_t y);`,
                 info: `Returns True if x is greater than y.`,
                 package: 'Prelude',
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '>=': {
                 type: `function`,
                 proto: `function Bool \>= (data_t x, data_t y);`,
@@ -526,6 +546,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Bounded: {
         type: 'typeclass',
         info: `Bounded defines the class of types with a finite range and provides functions to define the range.`,
@@ -546,35 +567,41 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Bitwise: {
         type: 'typeclass',
         info: `Bitwise defines the class of types on which bitwise operations are defined.`,
         proto: `Bitwise #(type data_t);`,
         methods: {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '&': {
                 type: `function`,
                 proto: `function data_t \& (data_t x1, data_t x2);`,
                 info: `Performs an and operation on each bit in x1 and x2 to calculate the result.`,
                 package: 'Prelude',
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '|': {
                 type: `function`,
                 proto: `function data_t \| (data_t x1, data_t x2);`,
                 info: `Performs an or operation on each bit in x1 and x2 to calculate the result.`,
                 package: 'Prelude',
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '^': {
                 type: `function`,
                 proto: `function data_t \^ (data_t x1, data_t x2);`,
                 info: `Performs an exclusive or operation on each bit in x1 and x2 to calculate the result.`,
                 package: 'Prelude',
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '~^': {
                 type: `function`,
                 proto: `function data_t \~^ (data_t x1, data_t x2);`,
                 info: `Performs an exclusive nor operation on each bit in x1 and x2 to calculate the result.`,
                 package: 'Prelude',
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '^~': {
                 type: `function`,
                 proto: `function data_t \^~ (data_t x1, data_t x2);`,
@@ -587,18 +614,21 @@ const internalInfo = {
                 info: `Performs a unary negation operation on each bit in x1. When using this function, the corresponding Verilog operator, ~, may be used.`,
                 package: 'Prelude',
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '~': {
                 type: `function`,
                 proto: `function data_t invert (data_t x1);`,
                 info: `Performs a unary negation operation on each bit in x1. When using this function, the corresponding Verilog operator, ~, may be used.`,
                 package: 'Prelude',
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '<<': {
                 type: `function`,
                 proto: `function data_t \<< (data_t x1, x2);`,
                 info: `Performs a left shift operation of x1 by the number of bit positions given by x2. x2 must be of an acceptable index type (Integer, Bit#(n), Int#(n) or UInt#(n)).`,
                 package: 'Prelude',
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '>>': {
                 type: `function`,
                 proto: `function data_t \>> (data_t x1, x2);`,
@@ -620,6 +650,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     BitReduction: {
         type: 'typeclass',
         info: `BitReduction defines the class of types on which the Verilog bit reduction operations are defined.`,
@@ -663,6 +694,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     BitExtend: {
         type: 'typeclass',
         info: `BitExtend defines types on which bit extension operations are defined.`,
@@ -695,6 +727,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     SaturatingArith: {
         type: 'typeclass',
         info: `The SaturatingArith typeclass contains modified addition and subtraction functions which saturate to the values defined by maxBound or minBound when the operation would otherwise over ow or wrap-around`,
@@ -727,6 +760,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Alias: {
         type: 'typeclass',
         info: `Alias specifies that two types can be used interchangeably, providing a way to introduce local names for types within a module. They are used in Provisos.`,
@@ -734,6 +768,7 @@ const internalInfo = {
         methods: {},
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     NumAlias: {
         type: 'typeclass',
         info: `Alias specifies that two types can be used interchangeably, providing a way to introduce local names for types within a module. They are used in Provisos.`,
@@ -741,6 +776,7 @@ const internalInfo = {
         methods: {},
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     FShow: {
         type: 'typeclass',
         info: `The FShow typeclass defines the types to which the function fshow can be applied. The function converts a value to an associated Fmt representation for use with the $display family of system tasks. Instances of the FShow class can often be automatically derived using the deriving statement`,
@@ -755,6 +791,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     StringLiteral: {
         type: 'typeclass',
         info: `StringLiteral defines the class of types which can be created from strings.`,
@@ -771,6 +808,7 @@ const internalInfo = {
     },
 
     // type define
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Bit: {
         type: 'class',
         info: ``,
@@ -801,6 +839,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     UInt: {
         type: 'class',
         info: `The UInt type is an unsigned fixed width representation of an integer value`,
@@ -819,6 +858,7 @@ const internalInfo = {
         methods: {},
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Int: {
         type: 'class',
         info: `The Int type is a signed fixed width representation of an integer value.`,
@@ -837,6 +877,7 @@ const internalInfo = {
         methods: {},
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Integer: {
         type: 'class',
         info: `The Integer type is a data type used for integer values and functions. Because Integer is not part of the Bits typeclass, the Integer type is used for static elaboration only; all values must be resolved at compile time.`,
@@ -870,6 +911,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Bool: {
         type: 'class',
         info: `The Bool type is defined to have two values, True and False.`,
@@ -882,11 +924,13 @@ const internalInfo = {
                 info: `Returns True if x is false, returns False if x is true.`,
                 package: 'Prelude',
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '&&': {
                 type: `function`,
                 proto: `function Bool \&& (Bool x, Bool y);`,
                 info: `Returns True if x and y are true, else it returns False.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             '||': {
                 type: `function`,
                 proto: `function Bool \|| (Bool x, Bool y);`,
@@ -895,6 +939,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Real: {
         type: 'class',
         info: `The Real type is a data type used for real values and functions.`,
@@ -916,6 +961,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     String: {
         type: 'class',
         info: `Strings are mostly used in system tasks (such as $display). The String type belongs to the Eq type class; strings can be tested for equality and inequality using the == and != operators. The String type is also part of the Arith class, but only the addition (+) operator is defined. All other Arith operators will produce an error message.`,
@@ -985,6 +1031,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Char: {
         type: 'class',
         info: `The Char data type is used mostly in system tasks (such as $display). The Char type provides the ability to traverse the characters of a string. The Char type belongs to the Eq type class; chars can be tested for equality and inequality using the == and != operators.`,
@@ -1120,6 +1167,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Fmt: {
         type: 'class',
         info: `The Fmt primitive type provides a representation of arguments to the $display family of system tasks that can be manipulated in BSV code. Fmt representations of data objects can be written hierarchically and applied to polymorphic types.`,
@@ -1128,6 +1176,7 @@ const internalInfo = {
         methods: {},
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Void: {
         type: 'class',
         info: `The Void type is a type which has one literal ? used for constructing concrete values of the type void . The Void type is part of the Bits and Literal typeclasses.`,
@@ -1136,6 +1185,7 @@ const internalInfo = {
         methods: {},
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Maybe: {
         type: 'class',
         info: `The Maybe type is used for tagging values as either Valid or Invalid. If the value is Valid, the value contains a datatype data_t.`,
@@ -1156,6 +1206,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Tuple2: {
         type: 'class',
         info: `Tuples are predefined structures which group a small number of values together. The following pseudo code explains the structure of the tuples. You cannot define your own tuples, but must use the seven predefined tuples, Tuple2 through Tuple8. As shown, Tuple2 groups two items together, Tuple3 groups three items together, up through Tuple8 which groups eight items together.`,
@@ -1167,11 +1218,13 @@ const internalInfo = {
                 proto: `function Tuple2 tuple2 (e1, e2)`,
                 info: `Creates a variable of type Tuple2 with component values e1 and e2.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_1: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the first field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_2: {
                 type: `function`,
                 proto: ``,
@@ -1180,6 +1233,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Tuple3: {
         type: 'class',
         info: `Tuples are predefined structures which group a small number of values together. The following pseudo code explains the structure of the tuples. You cannot define your own tuples, but must use the seven predefined tuples, Tuple2 through Tuple8. As shown, Tuple2 groups two items together, Tuple3 groups three items together, up through Tuple8 which groups eight items together.`,
@@ -1191,16 +1245,19 @@ const internalInfo = {
                 proto: `function Tuple3 tuple3 (e1, e2, e3)`,
                 info: `Creates a variable of type Tuple3 with component values e1 e2 and e3.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_1: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the first field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_2: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the second field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_3: {
                 type: `function`,
                 proto: ``,
@@ -1209,6 +1266,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Tuple4: {
         type: 'class',
         info: `Tuples are predefined structures which group a small number of values together. The following pseudo code explains the structure of the tuples. You cannot define your own tuples, but must use the seven predefined tuples, Tuple2 through Tuple8. As shown, Tuple2 groups two items together, Tuple3 groups three items together, up through Tuple8 which groups eight items together.`,
@@ -1220,21 +1278,25 @@ const internalInfo = {
                 proto: `function Tuple4 tuple4 (e1, e2, e3, e4)`,
                 info: `Creates a variable of type Tuple4 with component values e1 e2 e3 and e4.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_1: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the first field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_2: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the second field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_3: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the third field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_4: {
                 type: `function`,
                 proto: ``,
@@ -1243,6 +1305,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Tuple5: {
         type: 'class',
         info: `Tuples are predefined structures which group a small number of values together. The following pseudo code explains the structure of the tuples. You cannot define your own tuples, but must use the seven predefined tuples, Tuple2 through Tuple8. As shown, Tuple2 groups two items together, Tuple3 groups three items together, up through Tuple8 which groups eight items together.`,
@@ -1254,26 +1317,31 @@ const internalInfo = {
                 proto: `function Tuple5 tuple5 (e1, e2, e3, e4, e5)`,
                 info: `Creates a variable of type Tuple5 with component values e1 e2 e3 e4 and e5.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_1: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the first field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_2: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the second field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_3: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the third field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_4: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the fourth field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_5: {
                 type: `function`,
                 proto: ``,
@@ -1282,6 +1350,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Tuple6: {
         type: 'class',
         info: `Tuples are predefined structures which group a small number of values together. The following pseudo code explains the structure of the tuples. You cannot define your own tuples, but must use the seven predefined tuples, Tuple2 through Tuple8. As shown, Tuple2 groups two items together, Tuple3 groups three items together, up through Tuple8 which groups eight items together.`,
@@ -1293,31 +1362,37 @@ const internalInfo = {
                 proto: `function Tuple6 tuple6 (e1, e2, e3, e4, e5, e6)`,
                 info: `Creates a variable of type Tuple6 with component values e1 e2 e3 e4 e5 and e6.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_1: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the first field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_2: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the second field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_3: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the third field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_4: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the fourth field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_5: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the fifth field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_6: {
                 type: `function`,
                 proto: ``,
@@ -1326,6 +1401,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Tuple7: {
         type: 'class',
         info: `Tuples are predefined structures which group a small number of values together. The following pseudo code explains the structure of the tuples. You cannot define your own tuples, but must use the seven predefined tuples, Tuple2 through Tuple8. As shown, Tuple2 groups two items together, Tuple3 groups three items together, up through Tuple8 which groups eight items together.`,
@@ -1337,36 +1413,43 @@ const internalInfo = {
                 proto: `function Tuple7 tuple7 (e1, e2, e3, e4, e5, e6, e7)`,
                 info: `Creates a variable of type Tuple7 with component values e1 e2 e3 e4 e5 e6 and e7.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_1: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the first field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_2: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the second field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_3: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the third field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_4: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the fourth field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_5: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the fifth field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_6: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the sixth field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_7: {
                 type: `function`,
                 proto: ``,
@@ -1375,6 +1458,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Tuple8: {
         type: 'class',
         info: `Tuples are predefined structures which group a small number of values together. The following pseudo code explains the structure of the tuples. You cannot define your own tuples, but must use the seven predefined tuples, Tuple2 through Tuple8. As shown, Tuple2 groups two items together, Tuple3 groups three items together, up through Tuple8 which groups eight items together.`,
@@ -1386,41 +1470,49 @@ const internalInfo = {
                 proto: `function Tuple8 tuple8 (e1, e2, e3, e4, e5, e6, e7, e8)`,
                 info: `Creates a variable of type Tuple8 with component values e1 e2 e3 e4 e5 e6 e7 and e8.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_1: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the first field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_2: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the second field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_3: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the third field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_4: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the fourth field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_5: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the fifth field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_6: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the sixth field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_7: {
                 type: `function`,
                 proto: ``,
                 info: `Extracts the seventh field of x from a Tuple.`,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             tpl_8: {
                 type: `function`,
                 proto: ``,
@@ -1429,6 +1521,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Array: {
         type: 'class',
         info: `Array variables are generally declared anonymously, using the bracket syntax. However, the type of such variables can be expressed with the type constructor Array, when an explicit type is needed.`,
@@ -1437,6 +1530,7 @@ const internalInfo = {
         methods: {},
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Ordering: {
         type: 'class',
         info: `The Ordering type is used as the return type for the result of generic comparators, including the compare function defined in the Ord (Section 2.1.7) type class. The valid values of Ordering are: LT, GT, and EQ.`,
@@ -1450,6 +1544,7 @@ const internalInfo = {
         methods: {},
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     File: {
         type: 'class',
         info: `File is a defined type in BSV which is defined as:`,
@@ -1463,6 +1558,7 @@ const internalInfo = {
         methods: {},
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Clock: {
         type: 'class',
         info: `Clock is an abstract type of two components: a single Bit oscillator and a Bool gate.`,
@@ -1471,6 +1567,7 @@ const internalInfo = {
         methods: {},
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Reset: {
         type: 'class',
         info: `Reset is an abstract type.`,
@@ -1479,6 +1576,7 @@ const internalInfo = {
         methods: {},
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Inout: {
         type: 'class',
         info: `An Inout type is a first class type that is used to pass Verilog inouts through a BSV module. It takes an argument which is the type of the underlying signal`,
@@ -1487,6 +1585,7 @@ const internalInfo = {
         methods: {},
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Action: {
         type: 'class',
         info: `The Action type is a special case of the more general type ActionValue where nothing is returned. That is, the returns type is (void)`,
@@ -1501,6 +1600,7 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Rules: {
         type: 'class',
         info: `A rule expression has type Rules and consists of a collection of individual rule constructs. Rules are first class objects, hence variables of type Rules may be created and manipulated. Rules values must eventually be added to a module in order to appear in synthesized hardware.`,
@@ -1557,48 +1657,56 @@ const internalInfo = {
         },
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     TAdd: {
         type: 'function',
         info: 'Calculate n1 + n2',
         proto: 'function TAdd#(n1,n2)',
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     TSub: {
         type: 'function',
         info: 'Calculate n1 - n2',
         proto: 'function TSub#(n1,n2)',
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     TMul: {
         type: 'function',
         info: 'Calculate n1 * n2',
         proto: 'function TSub#(n1,n2)',
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     TDiv: {
         type: 'function',
         info: 'Calculate ceiling n1/n2',
         proto: 'function TDiv#(n1,n2)',
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     TLog: {
         type: 'function',
         info: 'Calculate ceiling log2(n1)',
         proto: 'function TLog#(n1)',
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     TExp: {
         type: 'function',
         info: 'Calculate 2^n1',
         proto: 'function TExp#(n1)',
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     TMax: {
         type: 'function',
         info: 'Calculate max(n1; n2)',
         proto: 'function TMax#(n1,n2)',
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     TMin: {
         type: 'function',
         info: 'Calculate min(n1; n2)',
@@ -1619,6 +1727,7 @@ const internalInfo = {
         proto: 'function Integer valueof (t) ;',
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     SizeOf: {
         type: 'function',
         info: 'Converts a type into a numeric type representing its bit size.',
@@ -1627,12 +1736,13 @@ const internalInfo = {
     },
 
     // reg and wires
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Reg: {
         type: 'class',
         info: `The most elementary module available in BSV is the register, which has a Reg interface. Registers
         are polymorphic, i.e., in principle they can hold a value of any type but, of course, ultimately registers
         store bits. Thus, the provisos on register modules indicate that the type of the value stored in the
-        register must be in the Bits type class, i.e., the operations pack and unpack are dened on the type
+        register must be in the Bits type class, i.e., the operations pack and unpack are defined on the type
         to convert into bits and back.`,
         proto: `
         interface Reg #(type a_type);
@@ -1719,6 +1829,7 @@ const internalInfo = {
         package: 'Prelude',
     },
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     RWire: {
         type: 'class',
         info: `An RWire is a primitive stateless module whose purpose is to allow data transfer between methods and rules without the cycle latency of a register. That is, a RWire may be written in a cycle and that value can be read out in the same cycle; values are not stored across clock cycles.`,
@@ -1762,6 +1873,7 @@ const internalInfo = {
         package: 'Prelude',
     },
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     Wire: {
         type: 'class',
         info: `The Wire interface and module are similar to RWire, but the valid bit is hidden from the user and the validity of the read is considered an implicit condition. The Wire interface works like the Reg interface, so mentioning the name of the wire gets (reads) its contents whenever they're valid, and using <= writes the wire. Wire is an RWire that is designed to be interchangeable with Reg. You can replace a Reg with a Wire without changing the syntax.`,
@@ -1813,6 +1925,7 @@ const internalInfo = {
         package: 'Prelude',
     },
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     PulseWire: {
         type: 'class',
         info: `The PulseWire interface is an RWire without any data. It is useful within rules and action methods to signal other methods or rules in the same clock cycle. Note that because the read method is called _read, the register shorthand can be used to get its value without mentioning the method _read (it is implicitly added).`,
@@ -1861,6 +1974,7 @@ const internalInfo = {
         package: 'Prelude',
     },
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     ReadOnly: {
         type: 'class',
         info: `ReadOnly is an interface which provides a value. The _read shorthand can be used to read the value.`,
@@ -1895,6 +2009,7 @@ const internalInfo = {
         proto: `function a_type readReadOnly(ReadOnly#(a_type) r);`,
         package: 'Prelude',
     },
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     WriteOnly: {
         type: 'class',
         info: `WriteOnly is an interface which writes a value. The _write shorthand is used to write the value.`,
@@ -2214,15 +2329,15 @@ const internalInfo = {
 
 class BsvSymbolVisior implements bsvVisitor<Boolean> {
     visitIdentifier?: (ctx: IdentifierContext) => Boolean;
-    visitIdentifier_type?: (ctx: Identifier_typeContext) => Boolean;
+    visitIdentifierType?: (ctx: Identifier_typeContext) => Boolean;
     visitStringLiteral?: (ctx: StringLiteralContext) => Boolean;
     visitTop?: (ctx: TopContext) => Boolean;
-    visitR_package(ctx: R_packageContext): Boolean {
+    visitRPackage(ctx: R_packageContext): Boolean {
         const name = ctx.packageIde(0).text;
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
-                this.scope_name[this.scope_name.length - 1],
+                this.scopeName[this.scopeName.length - 1],
                 SymbolKind.Package,
                 this.thisDoc.toString(),
                 new Location(
@@ -2242,16 +2357,16 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
-    visitNon_package?: (ctx: Non_packageContext) => Boolean;
+    visitNonPackage?: (ctx: Non_packageContext) => Boolean;
     visitExportDecl(ctx: ExportDeclContext): Boolean {
-        this.symbol_list.push(
+        this.symbolList.push(
             new SymbolInformation(
                 ctx.getChild(1).text,
                 SymbolKind.Namespace,
-                this.scope_name[this.scope_name.length - 1],
+                this.scopeName[this.scopeName.length - 1],
                 new Location(
                     this.thisDoc,
                     new Range(
@@ -2274,11 +2389,11 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
 
     visitExportItem?: (ctx: ExportItemContext) => Boolean;
     visitImportDecl(ctx: ImportDeclContext): Boolean {
-        this.symbol_list.push(
+        this.symbolList.push(
             new SymbolInformation(
                 ctx.getChild(1).text,
                 SymbolKind.Package,
-                this.scope_name[this.scope_name.length - 1],
+                this.scopeName[this.scopeName.length - 1],
                 new Location(
                     this.thisDoc,
                     new Range(
@@ -2307,9 +2422,9 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
     visitTypeNat?: (ctx: TypeNatContext) => Boolean;
     visitInterfaceDecl(ctx: InterfaceDeclContext): Boolean {
         const name = ctx.typeDefType().typeIde().text;
-        const scope = this.scope_name[this.scope_name.length - 1];
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        const scope = this.scopeName[this.scopeName.length - 1];
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Interface,
@@ -2331,7 +2446,7 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitTypeDefType?: (ctx: TypeDefTypeContext) => Boolean;
@@ -2340,8 +2455,8 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
     visitInterfaceMemberDecl?: (ctx: InterfaceMemberDeclContext) => Boolean;
     visitMethodProto(ctx: MethodProtoContext): Boolean {
         const name = ctx.identifier().text;
-        const scope = this.scope_name[this.scope_name.length - 1];
-        this.symbol_list.push(
+        const scope = this.scopeName[this.scopeName.length - 1];
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Method,
@@ -2369,9 +2484,9 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
     visitMethodProtoFormal?: (ctx: MethodProtoFormalContext) => Boolean;
     visitSubinterfaceDecl(ctx: SubinterfaceDeclContext): Boolean {
         const name = ctx.typeDefType().typeIde().text;
-        const scope = this.scope_name[this.scope_name.length - 1];
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        const scope = this.scopeName[this.scopeName.length - 1];
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Interface,
@@ -2393,14 +2508,14 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitModuleDef(ctx: ModuleDefContext): Boolean {
         const name = ctx.moduleProto().identifier().text;
-        const scope = this.scope_name[this.scope_name.length - 1];
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        const scope = this.scopeName[this.scopeName.length - 1];
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Module,
@@ -2422,7 +2537,7 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitModuleProto?: (ctx: ModuleProtoContext) => Boolean;
@@ -2432,9 +2547,9 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
     visitModuleStmt?: (ctx: ModuleStmtContext) => Boolean;
     visitModuleInst(ctx: ModuleInstContext): Boolean {
         const name = ctx.identifier(0).text;
-        const scope = this.scope_name[this.scope_name.length - 1];
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        const scope = this.scopeName[this.scopeName.length - 1];
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Object,
@@ -2456,7 +2571,7 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitModuleApp?: (ctx: ModuleAppContext) => Boolean;
@@ -2467,9 +2582,9 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
     visitModuleActualArg?: (ctx: ModuleActualArgContext) => Boolean;
     visitMethodDef(ctx: MethodDefContext): Boolean {
         const name = ctx.identifier(0).text;
-        const scope = this.scope_name[this.scope_name.length - 1];
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        const scope = this.scopeName[this.scopeName.length - 1];
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Method,
@@ -2491,7 +2606,7 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitImplicitCond?: (ctx: ImplicitCondContext) => Boolean;
@@ -2499,9 +2614,9 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
     visitMethodFormal?: (ctx: MethodFormalContext) => Boolean;
     visitSubinterfaceDef(ctx: SubinterfaceDefContext): Boolean {
         const name = ctx.identifier(0).text;
-        const scope = this.scope_name[this.scope_name.length - 1];
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        const scope = this.scopeName[this.scopeName.length - 1];
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Interface,
@@ -2523,16 +2638,16 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitInterfaceStmt?: (ctx: InterfaceStmtContext) => Boolean;
     visitExpressionStmt?: (ctx: ExpressionStmtContext) => Boolean;
-    visitR_rule(ctx: R_ruleContext): Boolean {
+    visitRRule(ctx: R_ruleContext): Boolean {
         const name = ctx.identifier(0).text;
-        const scope = this.scope_name[this.scope_name.length - 1];
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        const scope = this.scopeName[this.scopeName.length - 1];
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Function,
@@ -2554,7 +2669,7 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitRuleCond?: (ctx: RuleCondContext) => Boolean;
@@ -2562,11 +2677,11 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
     visitTypeDef?: (ctx: TypeDefContext) => Boolean;
     visitTypedefSynonym(ctx: TypedefSynonymContext): Boolean {
         const name = ctx.typeDefType().text;
-        this.symbol_list.push(
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.TypeParameter,
-                this.scope_name[this.scope_name.length - 1],
+                this.scopeName[this.scopeName.length - 1],
                 new Location(
                     this.thisDoc,
                     new Range(
@@ -2588,9 +2703,9 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
     }
     visitTypedefEnum(ctx: TypedefEnumContext): Boolean {
         const name = ctx.identifier_type().text;
-        const scope = this.scope_name[this.scope_name.length - 1];
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        const scope = this.scopeName[this.scopeName.length - 1];
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.TypeParameter,
@@ -2612,14 +2727,14 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitTypedefEnumElements?: (ctx: TypedefEnumElementsContext) => Boolean;
     visitTypedefEnumElement(ctx: TypedefEnumElementContext): Boolean {
         const name = ctx.identifier_type().text;
-        const scope = this.scope_name[this.scope_name.length - 1];
-        this.symbol_list.push(
+        const scope = this.scopeName[this.scopeName.length - 1];
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.TypeParameter,
@@ -2645,9 +2760,9 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
     }
     visitTypedefStruct(ctx: TypedefStructContext): Boolean {
         const name = ctx.typeDefType().text;
-        const scope = this.scope_name[this.scope_name.length - 1];
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        const scope = this.scopeName[this.scopeName.length - 1];
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Variable,
@@ -2669,14 +2784,14 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitTypedefTaggedUnion(ctx: TypedefTaggedUnionContext): Boolean {
         const name = ctx.typeDefType().text;
-        const scope = this.scope_name[this.scope_name.length - 1];
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        const scope = this.scopeName[this.scopeName.length - 1];
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Variable,
@@ -2698,14 +2813,14 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitStructMember(ctx: StructMemberContext): Boolean {
         const name = ctx.identifier().text;
-        const scope = this.scope_name[this.scope_name.length - 1];
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        const scope = this.scopeName[this.scopeName.length - 1];
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Variable,
@@ -2727,14 +2842,14 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitUnionMember(ctx: UnionMemberContext): Boolean {
         const name = ctx.identifier_type().text;
-        const scope = this.scope_name[this.scope_name.length - 1];
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        const scope = this.scopeName[this.scopeName.length - 1];
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Variable,
@@ -2756,7 +2871,7 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitSubStruct?: (ctx: SubStructContext) => Boolean;
@@ -2764,9 +2879,9 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
     visitVarDecl(ctx: VarDeclContext): Boolean {
         if (ctx.varInit.length > 0) {
             const name = ctx.varInit(0).identifier().text;
-            const scope = this.scope_name[this.scope_name.length - 1];
-            this.scope_name.push(name);
-            this.symbol_list.push(
+            const scope = this.scopeName[this.scopeName.length - 1];
+            this.scopeName.push(name);
+            this.symbolList.push(
                 new SymbolInformation(
                     name,
                     SymbolKind.Variable,
@@ -2788,17 +2903,17 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
             );
 
             const res = this.visitChildren(ctx);
-            this.scope_name.pop();
+            this.scopeName.pop();
             return res;
         } else {
             const lvalue = ctx.lValue();
             for (const id of lvalue.identifier()) {
                 const name = id.text;
-                this.symbol_list.push(
+                this.symbolList.push(
                     new SymbolInformation(
                         name,
                         SymbolKind.Variable,
-                        this.scope_name[this.scope_name.length - 1],
+                        this.scopeName[this.scopeName.length - 1],
                         new Location(
                             this.thisDoc,
                             new Range(
@@ -2824,69 +2939,69 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
     visitLValue?: (ctx: LValueContext) => Boolean;
     visitRegWrite?: (ctx: RegWriteContext) => Boolean;
     visitArrayIndexes?: (ctx: ArrayIndexesContext) => Boolean;
-    visitBeginEndStmt_functionBodyStmt?: (
+    visitBeginEndStmtFunctionBodyStmt?: (
         ctx: BeginEndStmt_functionBodyStmtContext
     ) => Boolean;
-    visitBeginEndStmt_actionStmt?: (
+    visitBeginEndStmtActionStmt?: (
         ctx: BeginEndStmt_actionStmtContext
     ) => Boolean;
-    visitBeginEndStmt_actionValueStmt?: (
+    visitBeginEndStmtActionValueStmt?: (
         ctx: BeginEndStmt_actionValueStmtContext
     ) => Boolean;
-    visitBeginEndStmt_moduleStmt?: (
+    visitBeginEndStmtModuleStmt?: (
         ctx: BeginEndStmt_moduleStmtContext
     ) => Boolean;
-    visitBeginEndStmt_expressionStmt?: (
+    visitBeginEndStmtExpressionStmt?: (
         ctx: BeginEndStmt_expressionStmtContext
     ) => Boolean;
-    visitIf_functionBodyStmt?: (ctx: If_functionBodyStmtContext) => Boolean;
-    visitIf_actionStmt?: (ctx: If_actionStmtContext) => Boolean;
-    visitIf_actionValueStmt?: (ctx: If_actionValueStmtContext) => Boolean;
-    visitIf_moduleStmt?: (ctx: If_moduleStmtContext) => Boolean;
-    visitIf_expressionStmt?: (ctx: If_expressionStmtContext) => Boolean;
-    visitCase_functionBodyStmt?: (ctx: Case_functionBodyStmtContext) => Boolean;
-    visitCase_actionStmt?: (ctx: Case_actionStmtContext) => Boolean;
-    visitCase_actionValueStmt?: (ctx: Case_actionValueStmtContext) => Boolean;
-    visitCase_moduleStmt?: (ctx: Case_moduleStmtContext) => Boolean;
-    visitCase_expressionStmt?: (ctx: Case_expressionStmtContext) => Boolean;
-    visitCaseItem_functionBodyStmt?: (
+    visitIfFunctionBodyStmt?: (ctx: If_functionBodyStmtContext) => Boolean;
+    visitIfActionStmt?: (ctx: If_actionStmtContext) => Boolean;
+    visitIfActionValueStmt?: (ctx: If_actionValueStmtContext) => Boolean;
+    visitIfModuleStmt?: (ctx: If_moduleStmtContext) => Boolean;
+    visitIfExpressionStmt?: (ctx: If_expressionStmtContext) => Boolean;
+    visitCaseFunctionBodyStmt?: (ctx: Case_functionBodyStmtContext) => Boolean;
+    visitCaseActionStmt?: (ctx: Case_actionStmtContext) => Boolean;
+    visitCaseActionValueStmt?: (ctx: Case_actionValueStmtContext) => Boolean;
+    visitCaseModuleStmt?: (ctx: Case_moduleStmtContext) => Boolean;
+    visitCaseExpressionStmt?: (ctx: Case_expressionStmtContext) => Boolean;
+    visitCaseItemFunctionBodyStmt?: (
         ctx: CaseItem_functionBodyStmtContext
     ) => Boolean;
-    visitCaseItem_actionStmt?: (ctx: CaseItem_actionStmtContext) => Boolean;
-    visitCaseItem_actionValueStmt?: (
+    visitCaseItemActionStmt?: (ctx: CaseItem_actionStmtContext) => Boolean;
+    visitCaseItemActionValueStmt?: (
         ctx: CaseItem_actionValueStmtContext
     ) => Boolean;
-    visitCaseItem_moduleStmt?: (ctx: CaseItem_moduleStmtContext) => Boolean;
-    visitCaseItem_expressionStmt?: (
+    visitCaseItemModuleStmt?: (ctx: CaseItem_moduleStmtContext) => Boolean;
+    visitCaseItemExpressionStmt?: (
         ctx: CaseItem_expressionStmtContext
     ) => Boolean;
-    visitDefaultItem_functionBodyStmt?: (
+    visitDefaultItemFunctionBodyStmt?: (
         ctx: DefaultItem_functionBodyStmtContext
     ) => Boolean;
-    visitDefaultItem_actionStmt?: (
+    visitDefaultItemActionStmt?: (
         ctx: DefaultItem_actionStmtContext
     ) => Boolean;
-    visitDefaultItem_actionValueStmt?: (
+    visitDefaultItemActionValueStmt?: (
         ctx: DefaultItem_actionValueStmtContext
     ) => Boolean;
-    visitDefaultItem_moduleStmt?: (
+    visitDefaultItemModuleStmt?: (
         ctx: DefaultItem_moduleStmtContext
     ) => Boolean;
-    visitDefaultItem_expressionStmt?: (
+    visitDefaultItemExpressionStmt?: (
         ctx: DefaultItem_expressionStmtContext
     ) => Boolean;
-    visitWhile_functionBodyStmt?: (
+    visitWhileFunctionBodyStmt?: (
         ctx: While_functionBodyStmtContext
     ) => Boolean;
-    visitWhile_actionStmt?: (ctx: While_actionStmtContext) => Boolean;
-    visitWhile_actionValueStmt?: (ctx: While_actionValueStmtContext) => Boolean;
-    visitWhile_moduleStmt?: (ctx: While_moduleStmtContext) => Boolean;
-    visitWhile_expressionStmt?: (ctx: While_expressionStmtContext) => Boolean;
-    visitFor_functionBodyStmt?: (ctx: For_functionBodyStmtContext) => Boolean;
-    visitFor_actionStmt?: (ctx: For_actionStmtContext) => Boolean;
-    visitFor_actionValueStmt?: (ctx: For_actionValueStmtContext) => Boolean;
-    visitFor_moduleStmt?: (ctx: For_moduleStmtContext) => Boolean;
-    visitFor_expressionStmt?: (ctx: For_expressionStmtContext) => Boolean;
+    visitWhileActionStmt?: (ctx: While_actionStmtContext) => Boolean;
+    visitWhileActionValueStmt?: (ctx: While_actionValueStmtContext) => Boolean;
+    visitWhileModuleStmt?: (ctx: While_moduleStmtContext) => Boolean;
+    visitWhileExpressionStmt?: (ctx: While_expressionStmtContext) => Boolean;
+    visitForFunctionBodyStmt?: (ctx: For_functionBodyStmtContext) => Boolean;
+    visitForActionStmt?: (ctx: For_actionStmtContext) => Boolean;
+    visitForActionValueStmt?: (ctx: For_actionValueStmtContext) => Boolean;
+    visitForModuleStmt?: (ctx: For_moduleStmtContext) => Boolean;
+    visitForExpressionStmt?: (ctx: For_expressionStmtContext) => Boolean;
     visitForInit?: (ctx: ForInitContext) => Boolean;
     visitForOldInit?: (ctx: ForOldInitContext) => Boolean;
     visitSimpleVarAssign?: (ctx: SimpleVarAssignContext) => Boolean;
@@ -2897,12 +3012,12 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
     visitVarIncr?: (ctx: VarIncrContext) => Boolean;
     visitFunctionDef(ctx: FunctionDefContext): Boolean {
         const name = ctx.functionProto().identifier().text;
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Function,
-                this.scope_name[this.scope_name.length - 1],
+                this.scopeName[this.scopeName.length - 1],
                 new Location(
                     this.thisDoc,
                     new Range(
@@ -2920,7 +3035,7 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitFunctionProto?: (ctx: FunctionProtoContext) => Boolean;
@@ -2953,12 +3068,12 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
     visitTaggedUnionExpr?: (ctx: TaggedUnionExprContext) => Boolean;
     visitInterfaceExpr(ctx: InterfaceExprContext): Boolean {
         const name = ctx.type().text;
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Function,
-                this.scope_name[this.scope_name.length - 1],
+                this.scopeName[this.scopeName.length - 1],
                 new Location(
                     this.thisDoc,
                     new Range(
@@ -2976,7 +3091,7 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitRuleExpr?: (ctx: RuleExprContext) => Boolean;
@@ -2986,19 +3101,19 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
     visitTaggedUnionPattern?: (ctx: TaggedUnionPatternContext) => Boolean;
     visitStructPattern?: (ctx: StructPatternContext) => Boolean;
     visitTuplePattern?: (ctx: TuplePatternContext) => Boolean;
-    visitCasePatItem_functionBodyStmt?: (
+    visitCasePatItemFunctionBodyStmt?: (
         ctx: CasePatItem_functionBodyStmtContext
     ) => Boolean;
-    visitCasePatItem_actionStmt?: (
+    visitCasePatItemActionStmt?: (
         ctx: CasePatItem_actionStmtContext
     ) => Boolean;
-    visitCasePatItem_actionValueStmt?: (
+    visitCasePatItemActionValueStmt?: (
         ctx: CasePatItem_actionValueStmtContext
     ) => Boolean;
-    visitCasePatItem_moduleStmt?: (
+    visitCasePatItemModuleStmt?: (
         ctx: CasePatItem_moduleStmtContext
     ) => Boolean;
-    visitCasePatItem_expressionStmt?: (
+    visitCasePatItemExpressionStmt?: (
         ctx: CasePatItem_expressionStmtContext
     ) => Boolean;
     visitCaseExpr?: (ctx: CaseExprContext) => Boolean;
@@ -3025,12 +3140,12 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
     visitDerives?: (ctx: DerivesContext) => Boolean;
     visitExternModuleImport(ctx: ExternModuleImportContext): Boolean {
         const name = ctx.identifier(0).text;
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Interface,
-                this.scope_name[this.scope_name.length - 1],
+                this.scopeName[this.scopeName.length - 1],
                 new Location(
                     this.thisDoc,
                     new Range(
@@ -3048,22 +3163,22 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitImportBVIStmt?: (ctx: ImportBVIStmtContext) => Boolean;
-    visitEnabled_sel?: (ctx: Enabled_selContext) => Boolean;
-    visitReady_sel?: (ctx: Ready_selContext) => Boolean;
-    visitClocked_by_sel?: (ctx: Clocked_by_selContext) => Boolean;
-    visitReset_by_sel?: (ctx: Reset_by_selContext) => Boolean;
+    visitEnabledSel?: (ctx: Enabled_selContext) => Boolean;
+    visitReadySel?: (ctx: Ready_selContext) => Boolean;
+    visitClockedBySel?: (ctx: Clocked_by_selContext) => Boolean;
+    visitResetBySel?: (ctx: Reset_by_selContext) => Boolean;
     visitParameterBVIStmt(ctx: ParameterBVIStmtContext): Boolean {
         const name = ctx.identifier().text;
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Property,
-                this.scope_name[this.scope_name.length - 1],
+                this.scopeName[this.scopeName.length - 1],
                 new Location(
                     this.thisDoc,
                     new Range(
@@ -3081,17 +3196,17 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitMethodBVIStmt(ctx: MethodBVIStmtContext): Boolean {
         const name = ctx.identifier().text;
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Method,
-                this.scope_name[this.scope_name.length - 1],
+                this.scopeName[this.scopeName.length - 1],
                 new Location(
                     this.thisDoc,
                     new Range(
@@ -3109,17 +3224,17 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitPortBVIStmt(ctx: PortBVIStmtContext): Boolean {
         const name = ctx.identifier().text;
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Object,
-                this.scope_name[this.scope_name.length - 1],
+                this.scopeName[this.scopeName.length - 1],
                 new Location(
                     this.thisDoc,
                     new Range(
@@ -3137,17 +3252,17 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitInputClockBVIStmt(ctx: InputClockBVIStmtContext): Boolean {
         const name = ctx.identifier().text;
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Object,
-                this.scope_name[this.scope_name.length - 1],
+                this.scopeName[this.scopeName.length - 1],
                 new Location(
                     this.thisDoc,
                     new Range(
@@ -3165,19 +3280,19 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitPortsDef?: (ctx: PortsDefContext) => Boolean;
     visitPortId?: (ctx: PortIdContext) => Boolean;
     visitDefaultClockBVIStmt(ctx: DefaultClockBVIStmtContext): Boolean {
         const name = ctx.identifier().text;
-        this.scope_name.push(name);
-        this.symbol_list.push(
+        this.scopeName.push(name);
+        this.symbolList.push(
             new SymbolInformation(
                 name,
                 SymbolKind.Property,
-                this.scope_name[this.scope_name.length - 1],
+                this.scopeName[this.scopeName.length - 1],
                 new Location(
                     this.thisDoc,
                     new Range(
@@ -3195,7 +3310,7 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         );
 
         const res = this.visitChildren(ctx);
-        this.scope_name.pop();
+        this.scopeName.pop();
         return res;
     }
     visitOutputClockBVIStmt?: (ctx: OutputClockBVIStmtContext) => Boolean;
@@ -3245,9 +3360,9 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         return false;
     }
 
-    symbol_list: SymbolInformation[] = new Array<SymbolInformation>();
+    symbolList: SymbolInformation[] = new Array<SymbolInformation>();
     thisDoc: Uri;
-    scope_name = new Array<string>();
+    scopeName = new Array<string>();
 
     constructor(uri: Uri) {
         this.thisDoc = uri;
@@ -3362,7 +3477,7 @@ class BsvStdLibProvider {
             if (Object.prototype.hasOwnProperty.call(internalInfo, key)) {
                 const element = internalInfo[key];
                 const pp: String = element.package;
-                if (element.package !== p) {continue;}
+                if (element.package !== p) { continue; }
                 const type: String = element.type;
                 switch (type) {
                     case 'typeclass':
@@ -3449,7 +3564,7 @@ class BsvBaseInfoProvider {
 
                     this.parserCache.set(Uri.file(fname), tree);
                     this.updateSymbol(Uri.file(fname));
-                } catch (error) {}
+                } catch (error) { }
             }
         }
     }
@@ -3459,7 +3574,7 @@ class BsvBaseInfoProvider {
             let p = this.parserCache.get(u);
             const visitor = new BsvSymbolVisior(u);
             const res = p.accept(visitor);
-            this.docSymbolCache.set(u, visitor.symbol_list);
+            this.docSymbolCache.set(u, visitor.symbolList);
         }
     }
 
@@ -3477,7 +3592,7 @@ class BsvBaseInfoProvider {
             this.updateSymbol(uri);
 
             console.log('cache ' + uri);
-        } catch (error) {}
+        } catch (error) { }
     }
 
     async removeFileCache(file: Thenable<Uri>) {
@@ -3488,11 +3603,11 @@ class BsvBaseInfoProvider {
 
     async renameFileCache(o: Thenable<Uri>, n: Thenable<Uri>) {
         const old = await o;
-        const new_uri = await n;
-        this.parserCache.set(new_uri, this.parserCache.get(old));
+        const newUri = await n;
+        this.parserCache.set(newUri, this.parserCache.get(old));
         this.parserCache.delete(old);
 
-        this.updateSymbol(new_uri);
+        this.updateSymbol(newUri);
     }
 
     findDocumentSymbol(id: String, perferUri: Uri): SymbolInformation | void {
@@ -3536,8 +3651,7 @@ class SymbolLink implements LocationLink {
 
 class BsvWorkspaceInfoProvider
     extends BsvBaseInfoProvider
-    implements BsvInfoProvider
-{
+    implements BsvInfoProvider {
     initFinished = false;
 
     constructor(_path: Uri) {
@@ -3616,7 +3730,7 @@ class BsvWorkspaceInfoProvider
             }
             const visitor = new BsvSymbolVisior(doc.uri);
             const res = this.parserCache.get(doc.uri).accept(visitor);
-            return visitor.symbol_list;
+            return visitor.symbolList;
         } catch (error) {
             debugger;
         }
@@ -3645,8 +3759,7 @@ class BsvWorkspaceInfoProvider
 
 class BsvSingleFileInfoProvider
     extends BsvBaseInfoProvider
-    implements BsvInfoProvider
-{
+    implements BsvInfoProvider {
     async getHover(document: TextDocument, position: Position): Promise<Hover> {
         if (document.getWordRangeAtPosition(position)) {
             let res = this.stdProvider.getSymbol(
@@ -3670,7 +3783,7 @@ class BsvSingleFileInfoProvider
             let top = parser.top();
             const visitor = new BsvSymbolVisior(doc.uri);
             const res = top.accept(visitor);
-            return visitor.symbol_list;
+            return visitor.symbolList;
         } catch (error) {
             debugger;
         }
