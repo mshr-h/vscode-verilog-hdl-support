@@ -1,5 +1,5 @@
 import { CharStreams, CommonTokenStream } from 'antlr4ts';
-import { bsvLexer } from '../src/bsvjs/bsvLexer';
+import { bsvLexer } from '../src/bsvjs/syntaxes/bsvLexer';
 import {
     ActionBlockContext,
     ActionStmtContext,
@@ -216,7 +216,7 @@ import {
     While_expressionStmtContext,
     While_functionBodyStmtContext,
     While_moduleStmtContext,
-} from '../src/bsvjs/bsvParser';
+} from '../src/bsvjs/syntaxes/bsvParser';
 
 import {
     SymbolInformation,
@@ -235,7 +235,7 @@ import {
     CompletionItem,
     LocationLink,
 } from 'vscode';
-import { bsvVisitor } from './bsvjs/bsvVisitor';
+import { bsvVisitor } from './bsvjs/syntaxes/bsvVisitor';
 import { ErrorNode } from 'antlr4ts/tree/ErrorNode';
 import { ParseTree } from 'antlr4ts/tree/ParseTree';
 import { RuleNode } from 'antlr4ts/tree/RuleNode';
