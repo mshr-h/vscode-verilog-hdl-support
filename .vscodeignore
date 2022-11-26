@@ -8,8 +8,7 @@ src/**
 .gitignore
 .github/**
 .yarnrc
-webpack.config.js
-vsc-extension-quickstart.md
+renovate.json
 **/tsconfig.json
 **/.eslintrc.json
 **/*.map
