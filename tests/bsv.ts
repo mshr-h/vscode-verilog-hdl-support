@@ -9,13 +9,13 @@ import * as path from 'path';
 
 async function main() {
     fs.readdir(testFolder, (err, files) => {
-        if (err) throw err;
+        if (err) {throw err;}
 
         files.forEach((file) => {
             console.log(file);
             var data: Buffer = fs.readFileSync(path.join(testFolder, file));
 
-            if (err) throw err;
+            if (err) {throw err;}
 
             const chars = CharStreams.fromString(data.toString());
             const lexer = new bsvLexer(chars);
