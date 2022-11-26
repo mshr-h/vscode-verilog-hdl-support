@@ -1,4 +1,4 @@
-import { ANTLRInputStream, CommonTokenStream } from 'antlr4ts';
+import { CharStreams, CommonTokenStream } from 'antlr4ts';
 import { bsvLexer } from '../src/bsvjs/bsvLexer';
 import {
     ActionBlockContext,
@@ -3441,7 +3441,7 @@ class BsvBaseInfoProvider {
                 );
                 try {
                     const s = readFileSync(fname);
-                    const chars = new ANTLRInputStream(s.toString());
+                    const chars = CharStreams.fromString(s.toString());
                     const lexer = new bsvLexer(chars);
                     const tokens = new CommonTokenStream(lexer);
                     const parser = new bsvParser(tokens);
@@ -3467,7 +3467,7 @@ class BsvBaseInfoProvider {
         const text = (await file).getText();
         const uri = (await file).uri;
         try {
-            const chars = new ANTLRInputStream(text);
+            const chars = CharStreams.fromString(text);
             const lexer = new bsvLexer(chars);
             const tokens = new CommonTokenStream(lexer);
             const parser = new bsvParser(tokens);
@@ -3660,7 +3660,7 @@ class BsvSingleFileInfoProvider
     }
 
     async getSymbol(doc: TextDocument): Promise<SymbolInformation[]> {
-        const chars = new ANTLRInputStream(doc.getText());
+        const chars = CharStreams.fromString(doc.getText());
         const lexer = new bsvLexer(chars);
         const tokens = new CommonTokenStream(lexer);
         const parser = new bsvParser(tokens);
