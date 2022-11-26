@@ -325,6 +325,9 @@
     ]
   },
   "scripts": {
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "lint": "eslint src --ext ts",
     "vscode:prepublish": "npm run esbuild-base -- --minify",
     "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/main.js --external:vscode --format=cjs --platform=node",
     "esbuild": "npm run esbuild-base -- --sourcemap",
@@ -332,9 +335,8 @@
     "test-compile": "tsc -p ./",
     "compile": "tsc -p ./",
     "watch": "tsc -w -p ./",
-    "update-vscode": "vscode-install",
     "makeBsv": "antlr4ts -visitor syntaxes/bsv.g4 -o src/bsvjs",
-    "pretest": "npm run compile",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "test": "node ./out/tests/bsv.js"
   },
   "dependencies": {
