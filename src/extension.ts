@@ -168,7 +168,7 @@ export function activate(context: ExtensionContext) {
     // Register command for manual linting
     commands.registerCommand(
         'verilog.lint',
-        lintManager.RunLintTool,
+        lintManager.runLintTool,
         lintManager
     );
 
@@ -190,19 +190,19 @@ function configLanguageServer() {
     }
 
     let name: string = <string>verilogconfig.get('languageServer.name', 'none');
-    var bin_path: string;
+    var binPath: string;
 
     var serverOptions: ServerOptions;
     var clientOptions: LanguageClientOptions;
 
     switch (name) {
         case 'svls':
-            bin_path = <string>(
+            binPath = <string>(
                 verilogconfig.get('languageServer.pathSvls', 'svls')
             );
             serverOptions = {
-                'run': { command: bin_path },
-                'debug': { command: bin_path, args: ['--debug'] },
+                'run': { command: binPath },
+                'debug': { command: binPath, args: ['--debug'] },
             };
             clientOptions = {
                 documentSelector: [
@@ -211,12 +211,12 @@ function configLanguageServer() {
             };
             break;
         case 'veridian':
-            bin_path = <string>(
+            binPath = <string>(
                 verilogconfig.get('languageServer.pathVeridian', 'veridian')
             );
             serverOptions = {
-                'run': { command: bin_path },
-                'debug': { command: bin_path },
+                'run': { command: binPath },
+                'debug': { command: binPath },
             };
             clientOptions = {
                 documentSelector: [
@@ -225,12 +225,12 @@ function configLanguageServer() {
             };
             break;
         case 'hdl_checker':
-            bin_path = <string>(
+            binPath = <string>(
                 verilogconfig.get('languageServer.pathHdlChecker', 'hdl_checker')
             );
             serverOptions = {
-                'run': { command: bin_path },
-                'debug': { command: bin_path },
+                'run': { command: binPath },
+                'debug': { command: binPath },
             };
             clientOptions = {
                 documentSelector: [
@@ -253,7 +253,7 @@ function configLanguageServer() {
         clientOptions
     );
     client.start();
-    console.log('Language server "' + bin_path + '" started.');
+    console.log('Language server "' + binPath + '" started.');
 }
 
 function checkIfUpdated(context: ExtensionContext) {

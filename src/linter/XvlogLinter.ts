@@ -9,14 +9,14 @@ import {
 } from 'vscode';
 import { ChildProcess, exec } from 'child_process';
 import BaseLinter from './BaseLinter';
-import { Logger, Log_Severity } from '../Logger';
+import { Logger, LogSeverity } from '../Logger';
 
 export default class XvlogLinter extends BaseLinter {
     private xvlogPath: string;
     private xvlogArgs: string;
 
-    constructor(diagnostic_collection: DiagnosticCollection, logger: Logger) {
-        super('xvlog', diagnostic_collection, logger);
+    constructor(diagnosticCollection: DiagnosticCollection, logger: Logger) {
+        super('xvlog', diagnosticCollection, logger);
         workspace.onDidChangeConfiguration(() => {
             this.getConfig();
         });
@@ -44,7 +44,7 @@ export default class XvlogLinter extends BaseLinter {
             ' "' +
             doc.fileName +
             '"';
-        this.logger.log(command, Log_Severity.Command);
+        this.logger.log(command, LogSeverity.command);
 
         let process: ChildProcess = exec(
             command,
@@ -67,8 +67,8 @@ export default class XvlogLinter extends BaseLinter {
 
                     // Get filename and line number
                     let filename = match[4];
-                    let lineno_str = match[5];
-                    let lineno = parseInt(lineno_str) - 1;
+                    let linenoStr = match[5];
+                    let lineno = parseInt(linenoStr) - 1;
 
                     // if (filename != doc.fileName) // Check that filename matches
                     //     return;
@@ -86,7 +86,7 @@ export default class XvlogLinter extends BaseLinter {
                 this.logger.log(
                     diagnostics.length + ' errors/warnings returned'
                 );
-                this.diagnostic_collection.set(doc.uri, diagnostics);
+                this.diagnosticCollection.set(doc.uri, diagnostics);
             }
         );
     }

@@ -10,10 +10,10 @@ type Merge<TTrait extends Constructor, TTarget extends Constructor> = (new (
   Pick<TTrait, keyof TTrait>;
 
 const trait =
-  <TTrait extends Constructor>(_Orig: TTrait) =>
-  <TTarget extends Constructor>(Tgt: TTarget): Merge<TTrait, TTarget> => {
+  <TTrait extends Constructor>(_orig: TTrait) =>
+  <TTarget extends Constructor>(tgt: TTarget): Merge<TTrait, TTarget> => {
     // perform patching
-    return Tgt as any; // assertion required
+    return tgt as any; // assertion required
   };
 
 class BsvScope {}
@@ -22,18 +22,18 @@ class BsvIdentifier {
   identifier: String;
 }
 
-const BsvPackageMixin = trait(BsvScope)(trait(BsvIdentifier)(class {}));
-const BsvFunctionMixin = trait(BsvScope)(trait(BsvIdentifier)(class {}));
-const BsvMethodMixin = trait(BsvScope)(trait(BsvIdentifier)(class {}));
-const BsvModuleMixin = trait(BsvScope)(trait(BsvIdentifier)(class {}));
+const bsvPackageMixin = trait(BsvScope)(trait(BsvIdentifier)(class {}));
+const bsvFunctionMixin = trait(BsvScope)(trait(BsvIdentifier)(class {}));
+const bsvMethodMixin = trait(BsvScope)(trait(BsvIdentifier)(class {}));
+const bsvModuleMixin = trait(BsvScope)(trait(BsvIdentifier)(class {}));
 
-export class BsvPackage extends BsvPackageMixin {
+export class BsvPackage extends bsvPackageMixin {
   constructor(_id: String) {
     super();
   }
 }
 
-export class BsvFunction extends BsvFunctionMixin {
+export class BsvFunction extends bsvFunctionMixin {
   constructor(_id: String) {
     super();
   }

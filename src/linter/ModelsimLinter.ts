@@ -11,7 +11,7 @@ import {
 } from 'vscode';
 import * as child from 'child_process';
 import BaseLinter from './BaseLinter';
-import { Logger, Log_Severity } from '../Logger';
+import { Logger, LogSeverity } from '../Logger';
 
 var isWindows = process.platform === 'win32';
 
@@ -21,8 +21,8 @@ export default class ModelsimLinter extends BaseLinter {
     private modelsimWork: string;
     private runAtFileLocation: boolean;
 
-    constructor(diagnostic_collection: DiagnosticCollection, logger: Logger) {
-        super('modelsim', diagnostic_collection, logger);
+    constructor(diagnosticCollection: DiagnosticCollection, logger: Logger) {
+        super('modelsim', diagnosticCollection, logger);
         workspace.onDidChangeConfiguration(() => {
             this.getConfig();
         });
@@ -127,7 +127,7 @@ export default class ModelsimLinter extends BaseLinter {
                 this.logger.log(
                     diagnostics.length + ' errors/warnings returned'
                 );
-                this.diagnostic_collection.set(doc.uri, diagnostics);
+                this.diagnosticCollection.set(doc.uri, diagnostics);
             }
         );
     }

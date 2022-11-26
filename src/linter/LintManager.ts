@@ -20,11 +20,11 @@ export default class LintManager {
     private subscriptions: Disposable[];
 
     private linter: BaseLinter;
-    private diagnostic_collection: DiagnosticCollection;
+    private diagnosticCollection: DiagnosticCollection;
     private logger: Logger;
 
     constructor(logger: Logger) {
-        this.diagnostic_collection = languages.createDiagnosticCollection();
+        this.diagnosticCollection = languages.createDiagnosticCollection();
         this.logger = logger;
         workspace.onDidOpenTextDocument(this.lint, this, this.subscriptions);
         workspace.onDidSaveTextDocument(this.lint, this, this.subscriptions);
@@ -48,34 +48,34 @@ export default class LintManager {
     }
 
     configLinter() {
-        let linter_name;
-        linter_name = workspace
+        let linterName;
+        linterName = workspace
             .getConfiguration('verilog.linting')
             .get<string>('linter');
 
-        if (this.linter == null || this.linter.name != linter_name) {
-            switch (linter_name) {
+        if (this.linter == null || this.linter.name != linterName) {
+            switch (linterName) {
                 case 'iverilog':
                     this.linter = new IcarusLinter(
-                        this.diagnostic_collection,
+                        this.diagnosticCollection,
                         this.logger
                     );
                     break;
                 case 'xvlog':
                     this.linter = new XvlogLinter(
-                        this.diagnostic_collection,
+                        this.diagnosticCollection,
                         this.logger
                     );
                     break;
                 case 'modelsim':
                     this.linter = new ModelsimLinter(
-                        this.diagnostic_collection,
+                        this.diagnosticCollection,
                         this.logger
                     );
                     break;
                 case 'verilator':
                     this.linter = new VerilatorLinter(
-                        this.diagnostic_collection,
+                        this.diagnosticCollection,
                         this.logger
                     );
                     break;
@@ -105,7 +105,7 @@ export default class LintManager {
         if (this.linter != null) {this.linter.removeFileDiagnostics(doc);}
     }
 
-    async RunLintTool() {
+    async runLintTool() {
         // Check for language id
         let lang: string = window.activeTextEditor.document.languageId;
         if (
@@ -149,25 +149,25 @@ export default class LintManager {
             switch (linterStr.label) {
                 case 'iverilog':
                     tempLinter = new IcarusLinter(
-                        this.diagnostic_collection,
+                        this.diagnosticCollection,
                         this.logger
                     );
                     break;
                 case 'xvlog':
                     tempLinter = new XvlogLinter(
-                        this.diagnostic_collection,
+                        this.diagnosticCollection,
                         this.logger
                     );
                     break;
                 case 'modelsim':
                     tempLinter = new ModelsimLinter(
-                        this.diagnostic_collection,
+                        this.diagnosticCollection,
                         this.logger
                     );
                     break;
                 case 'verilator':
                     tempLinter = new VerilatorLinter(
-                        this.diagnostic_collection,
+                        this.diagnosticCollection,
                         this.logger
                     );
                     break;

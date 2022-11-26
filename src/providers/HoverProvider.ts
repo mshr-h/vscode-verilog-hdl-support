@@ -12,7 +12,7 @@ import {
 } from 'vscode';
 import { BsvInfoProviderManger } from '../BsvProvider';
 import { Ctags, CtagsManager, Symbol } from '../ctags';
-import { Logger, Log_Severity } from '../Logger';
+import { Logger, LogSeverity } from '../Logger';
 
 export class VerilogHoverProvider implements HoverProvider {
     // lang: verilog / systemverilog
@@ -50,7 +50,7 @@ export class VerilogHoverProvider implements HoverProvider {
                 return new Hover(hoverText);
             }
         }
-        this.logger.log('Hover object not found', Log_Severity.Warn);
+        this.logger.log('Hover object not found', LogSeverity.warn);
         return undefined;
     }
 }

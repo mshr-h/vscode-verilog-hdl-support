@@ -11,7 +11,7 @@ import {
 } from 'vscode';
 import { BsvInfoProviderManger } from '../BsvProvider';
 import { Ctags, CtagsManager, Symbol } from '../ctags';
-import { Logger, Log_Severity } from '../Logger';
+import { Logger, LogSeverity } from '../Logger';
 
 export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
     public docSymbols: DocumentSymbol[] = [];
@@ -32,7 +32,7 @@ export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
         this.docSymbols = this.buildDocumentSymbolList(symbols);
         this.logger.log(
             this.docSymbols.length + ' top-level symbols returned',
-            this.docSymbols.length > 0 ? Log_Severity.Info : Log_Severity.Warn
+            this.docSymbols.length > 0 ? LogSeverity.info : LogSeverity.warn
         );
         return this.docSymbols;
     }

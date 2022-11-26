@@ -9,16 +9,16 @@ import {
 import { Logger } from '../Logger';
 
 export default abstract class BaseLinter {
-    protected diagnostic_collection: DiagnosticCollection;
+    protected diagnosticCollection: DiagnosticCollection;
     name: string;
     protected logger: Logger;
 
     constructor(
         name: string,
-        diagnostic_collection: DiagnosticCollection,
+        diagnosticCollection: DiagnosticCollection,
         logger: Logger
     ) {
-        this.diagnostic_collection = diagnostic_collection;
+        this.diagnosticCollection = diagnosticCollection;
         this.name = name;
         this.logger = logger;
     }
@@ -28,7 +28,7 @@ export default abstract class BaseLinter {
     }
 
     public removeFileDiagnostics(doc: TextDocument) {
-        this.diagnostic_collection.delete(doc.uri);
+        this.diagnosticCollection.delete(doc.uri);
     }
 
     protected abstract lint(doc: TextDocument);

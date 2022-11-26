@@ -12,7 +12,7 @@ import {
 import * as child from 'child_process';
 import BaseLinter from './BaseLinter';
 import { join } from 'path';
-import { Logger, Log_Severity } from '../Logger';
+import { Logger, LogSeverity } from '../Logger';
 
 var isWindows = process.platform === 'win32';
 
@@ -22,8 +22,8 @@ export default class VerilatorLinter extends BaseLinter {
     private runAtFileLocation: boolean;
     private useWSL: boolean;
 
-    constructor(diagnostic_collection: DiagnosticCollection, logger: Logger) {
-        super('verilator', diagnostic_collection, logger);
+    constructor(diagnosticCollection: DiagnosticCollection, logger: Logger) {
+        super('verilator', diagnosticCollection, logger);
 
         workspace.onDidChangeConfiguration(() => {
             this.getConfig();
@@ -94,24 +94,24 @@ export default class VerilatorLinter extends BaseLinter {
         if (isWindows) {
             if (this.useWSL == true) {
                 verilator = `wsl ${verilator}`;
-                let docUri_cmd: string = `wsl wslpath '${docUri}'`;
+                let docUriCmd: string = `wsl wslpath '${docUri}'`;
                 docUri = child
-                    .execSync(docUri_cmd, {})
+                    .execSync(docUriCmd, {})
                     .toString()
                     .replace(/\r?\n/g, '');
                 this.logger.log(
                     `Rewrote docUri to ${docUri} for WSL`,
-                    Log_Severity.Info
+                    LogSeverity.info
                 );
 
-                let docFolder_cmd: string = `wsl wslpath '${docFolder}'`;
+                let docFolderCmd: string = `wsl wslpath '${docFolder}'`;
                 docFolder = child
-                    .execSync(docFolder_cmd, {})
+                    .execSync(docFolderCmd, {})
                     .toString()
                     .replace(/\r?\n/g, '');
                 this.logger.log(
                     `Rewrote docFolder to ${docFolder} for WSL`,
-                    Log_Severity.Info
+                    LogSeverity.info
                 );
             } else {
                 verilator = verilator + '_bin.exe';
@@ -132,7 +132,7 @@ export default class VerilatorLinter extends BaseLinter {
             ' "' +
             docUri +
             '"'; //command to execute
-        this.logger.log(command, Log_Severity.Command);
+        this.logger.log(command, LogSeverity.command);
 
         var foo: child.ChildProcess = child.exec(
             command,
@@ -178,7 +178,7 @@ export default class VerilatorLinter extends BaseLinter {
                         } else {
                             this.logger.log(
                                 'failed to parse error: ' + line,
-                                Log_Severity.Warn
+                                LogSeverity.warn
                             );
                         }
                     }
@@ -186,7 +186,7 @@ export default class VerilatorLinter extends BaseLinter {
                 this.logger.log(
                     diagnostics.length + ' errors/warnings returned'
                 );
-                this.diagnostic_collection.set(doc.uri, diagnostics);
+                this.diagnosticCollection.set(doc.uri, diagnostics);
             }
         );
     }

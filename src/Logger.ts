@@ -2,11 +2,11 @@ import { OutputChannel, workspace, window } from 'vscode';
 
 const logChannel: OutputChannel = window.createOutputChannel('Verilog');
 
-export enum Log_Severity {
-    Info,
-    Warn,
-    Error,
-    Command,
+export enum LogSeverity {
+    info,
+    warn,
+    error,
+    command,
 }
 
 export class Logger {
@@ -15,25 +15,25 @@ export class Logger {
     constructor() {
         // Register for any changes to logging
         workspace.onDidChangeConfiguration(() => {
-            this.CheckIfEnabled();
+            this.checkIfEnabled();
         });
-        this.CheckIfEnabled();
+        this.checkIfEnabled();
     }
 
-    CheckIfEnabled() {
+    checkIfEnabled() {
         this.isEnabled = <boolean>(
             workspace.getConfiguration().get('verilog.logging.enabled')
         );
     }
 
-    log(msg: string, severity: Log_Severity = Log_Severity.Info) {
+    log(msg: string, severity: LogSeverity = LogSeverity.info) {
         if (this.isEnabled) {
-            if (severity == Log_Severity.Command)
-                logChannel.appendLine('> ' + msg);
+            if (severity == LogSeverity.command)
+                {logChannel.appendLine('> ' + msg);}
             else
-                logChannel.appendLine(
-                    '[' + Log_Severity[severity] + '] ' + msg
-                );
+                {logChannel.appendLine(
+                    '[' + LogSeverity[severity] + '] ' + msg
+                );}
         }
     }
 }

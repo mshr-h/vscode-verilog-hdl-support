@@ -11,7 +11,7 @@ import {
 } from 'vscode';
 import * as child from 'child_process';
 import BaseLinter from './BaseLinter';
-import { Logger, Log_Severity } from '../Logger';
+import { Logger, LogSeverity } from '../Logger';
 
 var isWindows = process.platform === 'win32';
 
@@ -20,8 +20,8 @@ export default class IcarusLinter extends BaseLinter {
     private iverilogArgs: string;
     private runAtFileLocation: boolean;
 
-    constructor(diagnostic_collection: DiagnosticCollection, logger: Logger) {
-        super('iverilog', diagnostic_collection, logger);
+    constructor(diagnosticCollection: DiagnosticCollection, logger: Logger) {
+        super('iverilog', diagnosticCollection, logger);
         workspace.onDidChangeConfiguration(() => {
             this.getConfig();
         });
@@ -66,7 +66,7 @@ export default class IcarusLinter extends BaseLinter {
             ' "' +
             doc.fileName +
             '"'; //command to execute
-        this.logger.log(command, Log_Severity.Command);
+        this.logger.log(command, LogSeverity.command);
 
         var foo: child.ChildProcess = child.exec(
             command,
@@ -119,7 +119,7 @@ export default class IcarusLinter extends BaseLinter {
                 this.logger.log(
                     diagnostics.length + ' errors/warnings returned'
                 );
-                this.diagnostic_collection.set(doc.uri, diagnostics);
+                this.diagnosticCollection.set(doc.uri, diagnostics);
             }
         );
     }

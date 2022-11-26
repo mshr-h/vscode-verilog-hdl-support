@@ -20,7 +20,7 @@ function instantiateModule(srcpath: string): Thenable<SnippetString> {
         let portsName: string[] = [];
         let parametersName: string[] = [];
         let logger: Logger = new Logger();
-        let ctags: moduleTags = new moduleTags(logger);
+        let ctags: ModuleTags = new ModuleTags(logger);
         console.log('Executing ctags for module instantiation');
         ctags
             .execCtags(srcpath)
@@ -95,14 +95,14 @@ function instantiateModule(srcpath: string): Thenable<SnippetString> {
 
 function instantiatePort(ports: string[]): string {
     let port = '';
-    let max_len = 0;
+    let maxLen = 0;
     for (let i = 0; i < ports.length; i++) {
-        if (ports[i].length > max_len) {max_len = ports[i].length;}
+        if (ports[i].length > maxLen) {maxLen = ports[i].length;}
     }
     // .NAME(NAME)
     for (let i = 0; i < ports.length; i++) {
         let element = ports[i];
-        let padding = max_len - element.length + 1;
+        let padding = maxLen - element.length + 1;
         element = element + ' '.repeat(padding);
         port += `\t.${element}(${element})`;
         if (i !== ports.length - 1) {
@@ -173,7 +173,7 @@ function getFiles(srcpath: string): string[] {
         .filter((file) => fs.statSync(path.join(srcpath, file)).isFile());
 }
 
-class moduleTags extends Ctags {
+class ModuleTags extends Ctags {
     buildSymbolsList(tags: string): Thenable<void> {
         console.log('building symbols');
         if (tags === '') {

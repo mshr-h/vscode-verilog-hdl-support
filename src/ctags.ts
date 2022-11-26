@@ -11,7 +11,7 @@ import {
     Uri,
 } from 'vscode';
 import * as child from 'child_process';
-import { Logger, Log_Severity } from './Logger';
+import { Logger, LogSeverity } from './Logger';
 
 // Internal representation of a symbol
 export class Symbol {
@@ -179,7 +179,7 @@ export class Ctags {
             let command: string =
                 ctags + ' -f - --fields=+K --sort=no --excmd=n "' + filepath + '"';
             console.log(command);
-            this.logger.log(command, Log_Severity.Command);
+            this.logger.log(command, LogSeverity.command);
             return new Promise((resolve, _reject) => {
                 child.exec(
                     command,
@@ -223,8 +223,8 @@ export class Ctags {
             );
         } catch (e) {
             console.log(e);
-            this.logger.log('Ctags Line Parser: ' + e, Log_Severity.Error);
-            this.logger.log('Line: ' + line, Log_Severity.Error);
+            this.logger.log('Ctags Line Parser: ' + e, LogSeverity.error);
+            this.logger.log('Line: ' + line, LogSeverity.error);
         }
         return undefined;
     }
