@@ -174,7 +174,7 @@ export class Ctags {
         let ctags: string = <string>(
             workspace.getConfiguration().get('verilog.ctags.path', 'none')
         );
-        if(ctags != 'none')
+        if(ctags !== 'none')
         {
             let command: string =
                 ctags + ' -f - --fields=+K --sort=no --excmd=n "' + filepath + '"';
@@ -201,7 +201,7 @@ export class Ctags {
             name = parts[0];
             // pattern = parts[2];
             type = parts[3];
-            if (parts.length == 5) {
+            if (parts.length === 5) {
                 scope = parts[4].split(':');
                 parentType = scope[0];
                 parentScope = scope[1];

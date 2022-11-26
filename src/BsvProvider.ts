@@ -3362,7 +3362,7 @@ class BsvStdLibProvider {
             if (Object.prototype.hasOwnProperty.call(internalInfo, key)) {
                 const element = internalInfo[key];
                 const pp: String = element.package;
-                if (element.package != p) {continue;}
+                if (element.package !== p) {continue;}
                 const type: String = element.type;
                 switch (type) {
                     case 'typeclass':
@@ -3498,7 +3498,7 @@ class BsvBaseInfoProvider {
     findDocumentSymbol(id: String, perferUri: Uri): SymbolInformation | void {
         if (this.docSymbolCache.has(perferUri)) {
             for (const iterator of this.docSymbolCache.get(perferUri)) {
-                if (iterator.name == id) {
+                if (iterator.name === id) {
                     return iterator;
                 }
             }
@@ -3506,7 +3506,7 @@ class BsvBaseInfoProvider {
 
         for (let [k, v] of this.docSymbolCache) {
             for (const iterator of v) {
-                if (iterator.name == id) {
+                if (iterator.name === id) {
                     return iterator;
                 }
             }
@@ -3633,7 +3633,7 @@ class BsvWorkspaceInfoProvider
         if (res) {
             return res
                 .filter((v) => {
-                    return v.name == id;
+                    return v.name === id;
                 })
                 .map((i) => {
                     return new SymbolLink(i.location.uri, i.location.range);
@@ -3701,7 +3701,7 @@ class BsvSingleFileInfoProvider
         if (res) {
             return res
                 .filter((v) => {
-                    return v.name == id;
+                    return v.name === id;
                 })
                 .map((i) => {
                     return new SymbolLink(i.location.uri, i.location.range);
@@ -3741,9 +3741,9 @@ export class BsvInfoProviderManger {
     protected refreshWorkspace() {
         if (!workspace.workspaceFolders) {
             this.provider = new BsvSingleFileInfoProvider();
-        } else if (workspace.workspaceFolders.length == 0) {
+        } else if (workspace.workspaceFolders.length === 0) {
             this.provider = new BsvSingleFileInfoProvider();
-        } else if (workspace.workspaceFolders.length == 1) {
+        } else if (workspace.workspaceFolders.length === 1) {
             this.provider = new BsvWorkspaceInfoProvider(
                 workspace.workspaceFolders[0].uri
             );

@@ -34,7 +34,7 @@ export default class XvlogLinter extends BaseLinter {
 
     protected lint(doc: TextDocument) {
         this.logger.log('xvlog lint requested');
-        let svArgs: string = doc.languageId == 'systemverilog' ? '-sv' : ''; //Systemverilog args
+        let svArgs: string = doc.languageId === 'systemverilog' ? '-sv' : ''; //Systemverilog args
         let command =
             this.xvlogPath + 
             'xvlog ' +

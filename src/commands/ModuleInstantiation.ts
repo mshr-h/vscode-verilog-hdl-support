@@ -40,7 +40,7 @@ function instantiateModule(srcpath: string): Thenable<SnippetString> {
                     return;
                 }
                 // Only one module found
-                else if (modules.length == 1) {module = modules[0];}
+                else if (modules.length === 1) {module = modules[0];}
                 // many modules found
                 else if (modules.length > 1) {
                     moduleName = await window.showQuickPick(
@@ -57,7 +57,7 @@ function instantiateModule(srcpath: string): Thenable<SnippetString> {
                     )[0];
                 }
                 let scope =
-                    module.parentScope != ''
+                    module.parentScope !== ''
                         ? module.parentScope + '.' + module.name
                         : module.name;
                 let ports: Symbol[] = ctags.symbols.filter(

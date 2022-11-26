@@ -56,7 +56,7 @@ export default class VerilatorLinter extends BaseLinter {
         let terms = line.split(':');
 
         for (var i = 0; i < terms.length; i++) {
-            if (terms[i] == ' ') {
+            if (terms[i] === ' ') {
                 terms.splice(i, 1);
                 i--;
             } else {
@@ -83,16 +83,16 @@ export default class VerilatorLinter extends BaseLinter {
         this.logger.log('verilator lint requested');
         let docUri: string = doc.uri.fsPath; //path of current doc
         let lastIndex: number =
-            isWindows == true
+            isWindows
                 ? docUri.lastIndexOf('\\')
                 : docUri.lastIndexOf('/');
         let docFolder = docUri.substr(0, lastIndex); //folder of current doc
         let runLocation: string =
-            this.runAtFileLocation == true ? docFolder : workspace.rootPath; //choose correct location to run
-        let svArgs: string = doc.languageId == 'systemverilog' ? '-sv' : ''; //Systemverilog args
+            this.runAtFileLocation ? docFolder : workspace.rootPath; //choose correct location to run
+        let svArgs: string = doc.languageId === 'systemverilog' ? '-sv' : ''; //Systemverilog args
         let verilator: string = 'verilator';
         if (isWindows) {
-            if (this.useWSL == true) {
+            if (this.useWSL) {
                 verilator = `wsl ${verilator}`;
                 let docUriCmd: string = `wsl wslpath '${docUri}'`;
                 docUri = child

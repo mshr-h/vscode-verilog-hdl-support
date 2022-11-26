@@ -53,7 +53,7 @@ export default class LintManager {
             .getConfiguration('verilog.linting')
             .get<string>('linter');
 
-        if (this.linter == null || this.linter.name != linterName) {
+        if (this.linter === null || this.linter.name !== linterName) {
             switch (linterName) {
                 case 'iverilog':
                     this.linter = new IcarusLinter(
@@ -86,7 +86,7 @@ export default class LintManager {
             }
         }
 
-        if (this.linter != null) {
+        if (this.linter !== null) {
             console.log('Using linter ' + this.linter.name);
         }
     }
@@ -95,14 +95,14 @@ export default class LintManager {
         // Check for language id
         let lang: string = doc.languageId;
         if (
-            this.linter != null &&
+            this.linter !== null &&
             (lang === 'verilog' || lang === 'systemverilog')
         )
             {this.linter.startLint(doc);}
     }
 
     removeFileDiagnostics(doc: TextDocument) {
-        if (this.linter != null) {this.linter.removeFileDiagnostics(doc);}
+        if (this.linter !== null) {this.linter.removeFileDiagnostics(doc);}
     }
 
     async runLintTool() {
