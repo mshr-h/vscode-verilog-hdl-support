@@ -18,14 +18,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: latest
-      - name: clean install dependencies
+      - name: npm ci
         run: npm ci
-      - name: run vscode:prepublish
+      - name: npm run vscode:prepublish
         run: npm run vscode:prepublish
-      - name: run headless test
-        uses: GabrielBB/xvfb-action@v1.6
-        with:
-          run: npm test
+      - name: npm test
+        run: npm test
       - name: build vsix package
         run: npm run package
       - name: upload vsix package
