@@ -20,8 +20,6 @@ jobs:
           node-version: latest
       - name: clean install dependencies
         run: npm ci
-      - name: install vsce
-        run: npm install -g vsce
       - name: run vscode:prepublish
         run: npm run vscode:prepublish
       - name: run headless test
@@ -29,7 +27,7 @@ jobs:
         with:
           run: npm test
       - name: build vsix package
-        run: vsce package
+        run: npm run package
       - name: upload vsix package
         uses: actions/upload-artifact@v3
         with:
