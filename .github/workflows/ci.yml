@@ -18,19 +18,19 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: latest
-      - name: Install dependencies
+      - name: clean install dependencies
         run: npm ci
-      - name: Install vsce
+      - name: install vsce
         run: npm install -g vsce
-      - name: Run vscode:prepublish
+      - name: run vscode:prepublish
         run: npm run vscode:prepublish
-      - name: Run headless test
+      - name: run headless test
         uses: GabrielBB/xvfb-action@v1.6
         with:
           run: npm test
-      - name: Build vsix package
+      - name: build vsix package
         run: vsce package
-      - name: Upload vsix package
+      - name: upload vsix package
         uses: actions/upload-artifact@v3
         with:
           path: veriloghdl-*.vsix
