@@ -348,8 +348,8 @@
   "devDependencies": {
     "@types/antlr4": "4.11.1",
     "@types/glob": "^8.0.0",
-    "@types/mocha": "10.0.0",
-    "@types/node": "18.11.9",
+    "@types/mocha": "~10.0.0",
+    "@types/node": "~18.11.9",
     "@types/vscode": "^1.60.0",
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.42.0",
