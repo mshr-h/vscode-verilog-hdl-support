@@ -1,7 +1,7 @@
 import { CharStreams, CommonTokenStream } from 'antlr4ts';
-import { bsvLexer } from '../src/bsvjs/syntaxes/bsvLexer';
-import { bsvParser } from '../src/bsvjs/syntaxes/bsvParser';
-import { bsvListener } from '../src/bsvjs/syntaxes/bsvListener';
+import { bsvLexer } from '../../bsvjs/syntaxes/bsvLexer';
+import { bsvParser } from '../../bsvjs/syntaxes/bsvParser';
+import { bsvListener } from '../../bsvjs/syntaxes/bsvListener';
 
 const testFolder = 'syntaxes/bsc-lib';
 import * as fs from 'fs';

@@ -338,7 +338,7 @@
     "watch": "tsc -w -p ./",
     "makeBsv": "antlr4ts -visitor syntaxes/bsv.g4 -o src/bsvjs",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
-    "test": "node ./out/tests/bsv.js"
+    "test": "node ./out/src/test/bsv.js"
   },
   "dependencies": {
     "antlr4": "^4.10.1",
