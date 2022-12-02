@@ -13,6 +13,14 @@
 				"group": "watchers"
 			},
 			"group": {
+				"kind": "build"
+			}
+		},
+		{
+			"type": "npm",
+			"script": "esbuild",
+			"problemMatcher": [],
+			"group": {
 				"kind": "build",
 				"isDefault": true
 			}
