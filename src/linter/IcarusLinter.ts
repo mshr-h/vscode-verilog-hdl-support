@@ -50,13 +50,13 @@ export default class IcarusLinter extends BaseLinter {
         this.logger.log('iverilog lint requested');
         let docUri: string = doc.uri.fsPath; //path of current doc
         let lastIndex: number =
-            isWindows === true
+            isWindows == true
                 ? docUri.lastIndexOf('\\')
                 : docUri.lastIndexOf('/');
         let docFolder = docUri.substr(0, lastIndex); //folder of current doc
         let runLocation: string =
-            this.runAtFileLocation ? docFolder : workspace.rootPath; //choose correct location to run
-        let svArgs: string = doc.languageId === 'systemverilog' ? '-g2012' : ''; //SystemVerilog args
+            this.runAtFileLocation == true ? docFolder : workspace.rootPath; //choose correct location to run
+        let svArgs: string = doc.languageId == 'systemverilog' ? '-g2012' : ''; //SystemVerilog args
         let command: string =
             this.iverilogPath +
             'iverilog ' +
@@ -81,7 +81,7 @@ export default class IcarusLinter extends BaseLinter {
                         let terms = line.split(':');
                         console.log(terms[1] + ' ' + terms[2]);
                         let lineNum = parseInt(terms[1].trim()) - 1;
-                        if (terms.length === 3)
+                        if (terms.length == 3)
                             {diagnostics.push({
                                 severity: DiagnosticSeverity.Error,
                                 range: new Range(
@@ -96,9 +96,9 @@ export default class IcarusLinter extends BaseLinter {
                             });}
                         else if (terms.length >= 4) {
                             let sev: DiagnosticSeverity;
-                            if (terms[2].trim() === 'error')
+                            if (terms[2].trim() == 'error')
                                 {sev = DiagnosticSeverity.Error;}
-                            else if (terms[2].trim() === 'warning')
+                            else if (terms[2].trim() == 'warning')
                                 {sev = DiagnosticSeverity.Warning;}
                             else {sev = DiagnosticSeverity.Information;}
                             diagnostics.push({

@@ -28,7 +28,7 @@ export class Logger {
 
     log(msg: string, severity: LogSeverity = LogSeverity.info) {
         if (this.isEnabled) {
-            if (severity === LogSeverity.command)
+            if (severity == LogSeverity.command)
                 {logChannel.appendLine('> ' + msg);}
             else
                 {logChannel.appendLine(

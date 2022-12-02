@@ -55,12 +55,12 @@ export default class ModelsimLinter extends BaseLinter {
         this.logger.log('modelsim lint requested');
         let docUri: string = doc.uri.fsPath; //path of current doc
         let lastIndex: number =
-            isWindows
+            isWindows == true
                 ? docUri.lastIndexOf('\\')
                 : docUri.lastIndexOf('/');
         let docFolder = docUri.substr(0, lastIndex); //folder of current doc
         let runLocation: string =
-            this.runAtFileLocation ? docFolder : workspace.rootPath; //choose correct location to run
+            this.runAtFileLocation == true ? docFolder : workspace.rootPath; //choose correct location to run
         // no change needed for systemverilog
         let command: string =
             this.modelsimPath +
@@ -87,7 +87,7 @@ export default class ModelsimLinter extends BaseLinter {
                     if (line.startsWith('**')) {
                         let m = line.match(regexExp);
                         try {
-                            if (m[7] !== doc.fileName) {return;}
+                            if (m[7] != doc.fileName) {return;}
                             switch (m[2]) {
                                 case 'Error':
                                     sev = DiagnosticSeverity.Error;
