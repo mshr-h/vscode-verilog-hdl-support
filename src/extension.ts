@@ -228,9 +228,10 @@ function configLanguageServer() {
             binPath = <string>(
                 verilogconfig.get('languageServer.pathHdlChecker', 'hdl_checker')
             );
+            let args = ['--lsp'];
             serverOptions = {
-                'run': { command: binPath },
-                'debug': { command: binPath },
+                'run': { command: binPath, args: args },
+                'debug': { command: binPath , args: args },
             };
             clientOptions = {
                 documentSelector: [
