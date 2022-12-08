@@ -169,6 +169,10 @@ If you have tested the linters in new platforms or have issues with them, feel f
 
 ## [Guidelines for Contributing](./CONTRIBUTING.md)
 
+## Helpful links
+
+- [Verilog in VSCode With Linting (Using Modelsim) - YouTube](https://www.youtube.com/watch?v=-DTGf3Z6v_o)
+
 ## Thanks
 
 - To all our [Contributors](https://github.com/mshr-h/vscode-verilog-hdl-support/graphs/contributors)
