@@ -271,12 +271,14 @@
           "enum": [
             "svls",
             "veridian",
-            "hdl_checker"
+            "hdl_checker",
+            "verible_ls"
           ],
           "enumDescriptions": [
             "svls supports SystemVerilog",
             "veridian supports SystemVerilog",
-            "hdl_checker supports Verilog-HDL, SystemVerilog and VHDL"
+            "hdl_checker supports Verilog-HDL, SystemVerilog and VHDL",
+            "verible_ls supports SystemVerilog"
           ],
           "default": "svls",
           "description": "Select the Language Server."
@@ -298,6 +300,12 @@
           "type": "string",
           "default": "hdl_checker",
           "description": "A path to the HDL Checker Language Server binary."
+        },
+        "verilog.languageServer.pathVeribleLs": {
+          "scope": "window",
+          "type": "string",
+          "default": "verible-verilog-ls",
+          "description": "A path to the verible-verilog-ls Language Server binary."
         },
         "verilog.languageServer.enabled": {
           "scope": "window",

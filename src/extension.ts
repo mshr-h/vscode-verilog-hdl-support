@@ -241,6 +241,21 @@ function configLanguageServer() {
                 ],
             };
             break;
+        case 'verible_ls':
+            binPath = <string>(
+                verilogconfig.get('languageServer.pathVeribleLs', 'verible-verilog-ls')
+            );
+            serverOptions = {
+                'run': { command: binPath },
+                'debug': { command: binPath },
+            };
+            clientOptions = {
+                documentSelector: [
+                    { scheme: 'file', language: 'verilog' },
+                    { scheme: 'file', language: 'systemverilog' },
+                ],
+            };
+            break;
         default:
             console.log('Invalid language server name: ' + name);
             client = null;
