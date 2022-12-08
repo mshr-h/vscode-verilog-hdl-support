@@ -145,7 +145,7 @@ Use the following settings to configure the extension to your needs
 
 ## Language Servers
 
-We currently supoort the following Language Servers and enabled for Verilog-HDL, SystemVerilog and VHDL.
+We currently support the following Language Servers and enabled for Verilog-HDL, SystemVerilog and VHDL.
 
 | Language Server                                                | Verilog-HDL   | SystemVerilog | VHDL          |
 | -------------------------------------------------------------- | :-----------: | :-----------: | :-----------: |
@@ -154,9 +154,9 @@ We currently supoort the following Language Servers and enabled for Verilog-HDL,
 | [HDL Checker](https://github.com/suoto/hdl_checker)            | enabled       | enabled       | enabled       |
 | [verible-verilog-ls](https://github.com/chipsalliance/verible) | enabled       | enabled       | not supported |
 
-## Compatability
+## Compatibility
 
-| Feature                           |  Windows   |    Linux     |    MacOS    |
+| Feature                           |  Windows   |    Linux     |    macOS    |
 | --------------------------------- | :--------: | :----------: | :---------: |
 | Basics (like Syntax highlighting) | Windows 10 | Ubuntu 20.04 | macOS 10.15 |
 | Icarus Verilog                    | Windows 10 | Ubuntu 18.04 |     Yes     |
