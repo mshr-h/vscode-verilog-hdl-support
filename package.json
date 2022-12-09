@@ -373,7 +373,7 @@
     "mocha": "^10.1.0",
     "ts-loader": "^9.4.1",
     "typescript": "4.9.3",
-    "vsce": "~2.14.0"
+    "vsce": "~2.15.0"
   },
   "__metadata": {
     "id": "feb7e3b5-7d35-4f95-a3d2-61eeaa12efa5",
