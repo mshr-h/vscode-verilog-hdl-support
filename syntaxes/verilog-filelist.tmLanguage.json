@@ -1,0 +1,42 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "fileTypes": [
+        "f"
+    ],
+    "name": "verilog-filelist",
+    "scopeName": "source.verilog-filelist",
+    "patterns": [
+        {
+            "match": "^\\s*//.*$",
+            "name": "comment.line"
+        },
+        {
+            "match": "^\\s*#.*$",
+            "name": "comment.line"
+        },
+        {
+            "match": "^\\s*-f\\s",
+            "name": "keyword"
+        },
+        {
+            "match": "^\\s*-F\\s",
+            "name": "keyword"
+        },
+        {
+            "match": "\\$\\(\\w*\\)",
+            "name": "variable"
+        },
+        {
+            "match": "\\$\\{\\w*\\}",
+            "name": "variable"
+        },
+        {
+            "match": "\\+incdir\\+",
+            "name": "entity.name.function"
+        },
+        {
+            "match": "\\+define\\+",
+            "name": "entity.name.function"
+        }
+    ]
+}

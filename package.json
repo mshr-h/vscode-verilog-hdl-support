@@ -28,7 +28,8 @@
     "onLanguage:vhdl",
     "onLanguage:ucf",
     "onLanguage:sdc",
-    "onLanguage:xdc"
+    "onLanguage:xdc",
+    "onLanguage:verilog-filelist"
   ],
   "main": "./dist/main.js",
   "contributes": {
@@ -115,6 +116,17 @@
           ".xdc"
         ],
         "configuration": "./configs/sdc.configuration.json"
+      },
+      {
+        "id": "verilog-filelist",
+        "aliases": [
+          "Verilog Filelist",
+          "verilog-filelist"
+        ],
+        "extensions": [
+          ".f"
+        ],
+        "configuration": "./configs/verilog-filelist.configuration.json"
       }
     ],
     "grammars": [
@@ -163,6 +175,11 @@
           "meta.embedded.block.verilog": "source.verilog",
           "meta.embedded.block.systemverilog": "source.systemverilog"
         }
+      },
+      {
+        "language": "verilog-filelist",
+        "scopeName": "source.verilog-filelist",
+        "path": "./syntaxes/verilog-filelist.tmLanguage.json"
       }
     ],
     "snippets": [
