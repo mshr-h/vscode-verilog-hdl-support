@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [Unreleased]
+
+- Adds basic syntax highlighting for Verilog Filelists (dot-F files)
+
 ## [1.5.12] - 2022-12-04
 
 - Fix hdl_checker support.
