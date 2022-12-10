@@ -21,6 +21,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - VHDL
   - Vivado UCF constraints
   - Synopsys Design Constraints
+  - Verilog Filelists (dot-F files)
 - Simple Snippets
 - Linting support from:
   - Icarus Verilog - `iverilog`
