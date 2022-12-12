@@ -4,9 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## [Unreleased]
+## [1.5.13] - 2022-12-12
 
-- Adds basic syntax highlighting for Verilog Filelists (dot-F files)
+- Adds basic syntax highlighting for Verilog Filelists (dot-F files).
+- Add support for [verible-verilog-ls](https://github.com/chipsalliance/verible/tree/master/verilog/tools/ls) Language Server.
 
 ## [1.5.12] - 2022-12-04
 
