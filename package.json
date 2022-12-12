@@ -366,30 +366,30 @@
     "test": "node ./out/src/test/bsv.js"
   },
   "dependencies": {
-    "antlr4": "^4.10.1",
+    "antlr4": "^4.11.0",
     "antlr4ts": "^0.5.0-alpha.4",
-    "vscode-languageclient": "^8.0.1"
+    "vscode-languageclient": "^8.0.2"
   },
   "devDependencies": {
     "@types/antlr4": "4.11.2",
     "@types/glob": "^8.0.0",
-    "@types/mocha": "~10.0.0",
-    "@types/node": "~18.11.9",
+    "@types/mocha": "~10.0.1",
+    "@types/node": "~18.11.13",
     "@types/vscode": "^1.60.0",
-    "@typescript-eslint/eslint-plugin": "^5.42.0",
-    "@typescript-eslint/parser": "^5.42.0",
-    "@vscode/test-electron": "^2.2.0",
+    "@typescript-eslint/eslint-plugin": "^5.46.0",
+    "@typescript-eslint/parser": "^5.46.0",
+    "@vscode/test-electron": "^2.2.1",
     "antlr4ts-cli": "0.5.0-alpha.4",
-    "esbuild": "^0.15.14",
+    "esbuild": "^0.16.4",
     "eslint": "8.29.0",
     "eslint-config-standard": "17.0.0",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-promise": "6.1.1",
     "glob": "^8.0.3",
-    "mocha": "^10.1.0",
-    "ts-loader": "^9.4.1",
-    "typescript": "4.9.3",
+    "mocha": "^10.2.0",
+    "ts-loader": "^9.4.2",
+    "typescript": "4.9.4",
     "vsce": "~2.15.0"
   },
   "__metadata": {
