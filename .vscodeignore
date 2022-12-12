@@ -12,3 +12,4 @@ renovate.json
 **/.eslintrc.json
 **/*.map
 **/*.ts
+language_examples/**
