@@ -323,18 +323,6 @@
           "type": "string",
           "default": "hdl_checker",
           "description": "[Experimental] A path to the HDL Checker Language Server binary."
-        },
-        "verilog.languageServer.veribleLs.enabled": {
-          "scope": "window",
-          "type": "boolean",
-          "default": false,
-          "description": "[Experimental] Enable verible-verilog-ls Language Server for SystemVerilog."
-        },
-        "verilog.languageServer.veribleLs.path": {
-          "scope": "window",
-          "type": "string",
-          "default": "verible-verilog-ls",
-          "description": "[Experimental] A path to the verible-verilog-ls Language Server binary."
         }
       }
     },

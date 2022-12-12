@@ -43,7 +43,6 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - [svls](https://github.com/dalance/svls)
   - [veridian](https://github.com/vivekmalneedi/veridian)
   - [HDL Checker](https://github.com/suoto/hdl_checker)
-  - [verible-verilog-ls](https://github.com/chipsalliance/verible)
 - Improvements in the newly added features
 - Migrate VHDL support from [mshr-h/vscode-vhdl-support](https://github.com/mshr-h/vscode-vhdl-support)
 
@@ -139,14 +138,6 @@ Use the following settings to configure the extension to your needs
 
     \[Experimental\] A path to the HDL Checker Language Server binary.
 
-- `verilog.languageServer.veribleLs.enabled` (Default: `false`)
-
-    \[Experimental\] Enable verible-verilog-ls Language Server for SystemVerilog.
-
-- `verilog.languageServer.veribleLs.path` (Default: `verible-verilog-ls`)
-
-    \[Experimental\] A path to the verible-verilog-ls Language Server binary.
-
 ## Commands
 
 - **Rerun lint tool**
@@ -173,7 +164,6 @@ If you encounter any problems even if it's not related to this feature, **deleti
 | [svls](https://github.com/dalance/svls)                        | not supported | enabled       | not supported |
 | [veridian](https://github.com/vivekmalneedi/veridian)          | not supported | enabled       | not supported |
 | [HDL Checker](https://github.com/suoto/hdl_checker)            | enabled       | enabled       | enabled       |
-| [verible-verilog-ls](https://github.com/chipsalliance/verible) | enabled       | enabled       | not supported |
 
 ## Compatibility
 
