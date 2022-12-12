@@ -27,6 +27,7 @@ jobs:
       - name: build vsix package
         run: npm run package
       - name: upload vsix package
+        if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v3
         with:
           path: veriloghdl-*.vsix
