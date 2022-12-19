@@ -1,16 +1,5 @@
-import {
-    TextDocument,
-    Position,
-    SymbolKind,
-    Range,
-    DocumentSymbol,
-    workspace,
-    window,
-    TextEditor,
-    commands,
-    Uri,
-} from 'vscode';
-import * as child from 'child_process';
+import * as vscode from 'vscode';
+import * as child_process from 'child_process';
 import { Logger, LogSeverity } from './logger';
 
 // Internal representation of a symbol
@@ -18,8 +7,8 @@ export class Symbol {
     name: string;
     type: string;
     pattern: string;
-    startPosition: Position;
-    endPosition: Position;
+    startPosition: vscode.Position;
+    endPosition: vscode.Position;
     parentScope: string;
     parentType: string;
     isValid: boolean;
@@ -36,21 +25,21 @@ export class Symbol {
         this.name = name;
         this.type = type;
         this.pattern = pattern;
-        this.startPosition = new Position(startLine, 0);
+        this.startPosition = new vscode.Position(startLine, 0);
         this.parentScope = parentScope;
         this.parentType = parentType;
         this.isValid = isValid;
-        this.endPosition = new Position(endLine, Number.MAX_VALUE);
+        this.endPosition = new vscode.Position(endLine, Number.MAX_VALUE);
     }
 
     setEndPosition(endLine: number) {
-        this.endPosition = new Position(endLine, Number.MAX_VALUE);
+        this.endPosition = new vscode.Position(endLine, Number.MAX_VALUE);
         this.isValid = true;
     }
 
-    getDocumentSymbol(): DocumentSymbol {
-        let range = new Range(this.startPosition, this.endPosition);
-        return new DocumentSymbol(
+    getDocumentSymbol(): vscode.DocumentSymbol {
+        let range = new vscode.Range(this.startPosition, this.endPosition);
+        return new vscode.DocumentSymbol(
             this.name,
             this.type,
             Symbol.getSymbolKind(this.type),
@@ -90,53 +79,53 @@ export class Symbol {
 
     // types used by ctags
     // taken from https://github.com/universal-ctags/ctags/blob/master/parsers/verilog.c
-    static getSymbolKind(name: String): SymbolKind {
+    static getSymbolKind(name: String): vscode.SymbolKind {
         switch (name) {
             case 'constant':
-                return SymbolKind.Constant;
+                return vscode.SymbolKind.Constant;
             case 'event':
-                return SymbolKind.Event;
+                return vscode.SymbolKind.Event;
             case 'function':
-                return SymbolKind.Function;
+                return vscode.SymbolKind.Function;
             case 'module':
-                return SymbolKind.Module;
+                return vscode.SymbolKind.Module;
             case 'net':
-                return SymbolKind.Variable;
+                return vscode.SymbolKind.Variable;
             // Boolean uses a double headed arrow as symbol (kinda looks like a port)
             case 'port':
-                return SymbolKind.Boolean;
+                return vscode.SymbolKind.Boolean;
             case 'register':
-                return SymbolKind.Variable;
+                return vscode.SymbolKind.Variable;
             case 'task':
-                return SymbolKind.Function;
+                return vscode.SymbolKind.Function;
             case 'block':
-                return SymbolKind.Module;
+                return vscode.SymbolKind.Module;
             case 'assert':
-                return SymbolKind.Variable; // No idea what to use
+                return vscode.SymbolKind.Variable; // No idea what to use
             case 'class':
-                return SymbolKind.Class;
+                return vscode.SymbolKind.Class;
             case 'covergroup':
-                return SymbolKind.Class; // No idea what to use
+                return vscode.SymbolKind.Class; // No idea what to use
             case 'enum':
-                return SymbolKind.Enum;
+                return vscode.SymbolKind.Enum;
             case 'interface':
-                return SymbolKind.Interface;
+                return vscode.SymbolKind.Interface;
             case 'modport':
-                return SymbolKind.Boolean; // same as ports
+                return vscode.SymbolKind.Boolean; // same as ports
             case 'package':
-                return SymbolKind.Package;
+                return vscode.SymbolKind.Package;
             case 'program':
-                return SymbolKind.Module;
+                return vscode.SymbolKind.Module;
             case 'prototype':
-                return SymbolKind.Function;
+                return vscode.SymbolKind.Function;
             case 'property':
-                return SymbolKind.Property;
+                return vscode.SymbolKind.Property;
             case 'struct':
-                return SymbolKind.Struct;
+                return vscode.SymbolKind.Struct;
             case 'typedef':
-                return SymbolKind.TypeParameter;
+                return vscode.SymbolKind.TypeParameter;
             default:
-                return SymbolKind.Variable;
+                return vscode.SymbolKind.Variable;
         }
     }
 }
@@ -144,7 +133,7 @@ export class Symbol {
 // TODO: add a user setting to enable/disable all ctags based operations
 export class Ctags {
     symbols: Symbol[];
-    doc: TextDocument;
+    doc: vscode.TextDocument;
     isDirty: boolean;
     private logger: Logger;
 
@@ -154,7 +143,7 @@ export class Ctags {
         this.logger = logger;
     }
 
-    setDocument(doc: TextDocument) {
+    setDocument(doc: vscode.TextDocument) {
         this.doc = doc;
         this.clearSymbols();
     }
@@ -172,14 +161,14 @@ export class Ctags {
         this.logger.log('executing ctags');
 
         let ctags: string = <string>(
-            workspace.getConfiguration().get('verilog.ctags.path', 'none')
+            vscode.workspace.getConfiguration().get('verilog.ctags.path', 'none')
         );
-        if (ctags != 'none') {
+        if (ctags !== 'none') {
             let command: string =
                 ctags + ' -f - --fields=+K --sort=no --excmd=n "' + filepath + '"';
             this.logger.log(command, LogSeverity.command);
             return new Promise((resolve, _reject) => {
-                child.exec(
+                child_process.exec(
                     command,
                     (_error: Error, stdout: string, _stderr: string) => {
                         resolve(stdout);
@@ -314,10 +303,10 @@ export class CtagsManager {
 
     configure() {
         this.logger.log('ctags manager configure');
-        workspace.onDidSaveTextDocument(this.onSave.bind(this));
+        vscode.workspace.onDidSaveTextDocument(this.onSave.bind(this));
     }
 
-    onSave(doc: TextDocument) {
+    onSave(doc: vscode.TextDocument) {
         this.logger.log('on save');
         let ctags: Ctags = CtagsManager.ctags;
         if (
@@ -328,7 +317,7 @@ export class CtagsManager {
         }
     }
 
-    static async getSymbols(doc: TextDocument): Promise<Symbol[]> {
+    static async getSymbols(doc: vscode.TextDocument): Promise<Symbol[]> {
         let ctags: Ctags = CtagsManager.ctags;
         if (
             ctags.doc === undefined ||

@@ -223,7 +223,6 @@ import {
     DocumentSymbol,
     TextDocument,
     Uri,
-    window,
     workspace,
     SymbolKind,
     Range,
@@ -231,7 +230,6 @@ import {
     Location,
     Hover,
     extensions,
-    FileSystem,
     CompletionItem,
     LocationLink,
 } from 'vscode';
