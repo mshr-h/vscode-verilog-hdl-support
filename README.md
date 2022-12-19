@@ -113,18 +113,27 @@ Use the following settings to configure the extension to your needs
 
 - `verilog.languageServer.enabled` (Default: `false` )
 
-    Enable the Language Server.
-    Experimental support.
+    \[Experimental\]Enable the Language Server.
 
 - `verilog.languageServer.name` (Default: `svls` )
 
-    Select the Language Server. See the [Language Servers](#language-servers) section for more details.
-    Experimental support.
+    \[Experimental\]Select the Language Server. See the [Language Servers](#language-servers) section for more details.
 
-- `verilog.languageServer.path` (Default: `svls` )
+- `verilog.languageServer.pathSvls` (Default: `svls`)
 
-    Path or name of the Language Server binary file.
-    Experimental support.
+    \[Experimental\] A path to the Svls Language Server binary.
+
+- `verilog.languageServer.pathVeridian` (Default: `veridian`)
+
+    \[Experimental\] A path to the Veridian Language Server binary.
+
+- `verilog.languageServer.pathHdlChecker` (Default: `hdl_checker`)
+
+    \[Experimental\] A path to the HDL Checker Language Server binary.
+
+- `verilog.languageServer.pathVeribleLs` (Default: `verible-verilog-ls`)
+
+    \[Experimental\] A path to the verible-verilog-ls Language Server binary.
 
 - `verilog.logging.enabled` (Default: `false` )
 
