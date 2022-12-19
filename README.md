@@ -39,10 +39,11 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 
 ### In Progress / Future
 
-- Language Server support
+- \[Experimental\] Language Server support
   - [svls](https://github.com/dalance/svls)
   - [veridian](https://github.com/vivekmalneedi/veridian)
   - [HDL Checker](https://github.com/suoto/hdl_checker)
+  - [verible-verilog-ls](https://github.com/chipsalliance/verible)
 - Improvements in the newly added features
 - Migrate VHDL support from [mshr-h/vscode-vhdl-support](https://github.com/mshr-h/vscode-vhdl-support)
 
@@ -189,3 +190,4 @@ If you have tested the linters in new platforms or have issues with them, feel f
 - [svls](https://github.com/dalance/svls)
 - [veridian](https://github.com/vivekmalneedi/veridian)
 - [HDL Checker](https://github.com/suoto/hdl_checker)
+- [verible](https://github.com/chipsalliance/verible)
