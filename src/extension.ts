@@ -246,32 +246,28 @@ function checkIfUpdated(context: ExtensionContext) {
     let previousVersion = new semver.SemVer(context.globalState.get('version', '0.0.0'));
     let currentVersion = new semver.SemVer(extensions.getExtension(extensionID).packageJSON.version);
     if (previousVersion < currentVersion) {
-        showUpdatedNotification();
+        window
+            .showInformationMessage(
+                'Verilog-HDL/SystemVerilog extension has been updated',
+                'Open Changelog'
+            )
+            .then(function (str: string) {
+                if (str === 'Open Changelog') {
+                    // get path of CHANGELOG.md
+                    let changelogPath: string =
+                        extensions.getExtension(extensionID).extensionPath +
+                        '/CHANGELOG.md';
+                    let path = Uri.file(changelogPath);
+                    // open
+                    workspace.openTextDocument(path).then((doc) => {
+                        window.showTextDocument(doc);
+                    });
+                }
+            });
     }
 
     // update version value
     context.globalState.update('version', currentVersion.version);
-}
-
-function showUpdatedNotification() {
-    window
-        .showInformationMessage(
-            'Verilog-HDL/SystemVerilog extension has been updated',
-            'Open Changelog'
-        )
-        .then(function (str: string) {
-            if (str === 'Open Changelog') {
-                // get path of CHANGELOG.md
-                let changelogPath: string =
-                    extensions.getExtension(extensionID).extensionPath +
-                    '/CHANGELOG.md';
-                let path = Uri.file(changelogPath);
-                // open
-                workspace.openTextDocument(path).then((doc) => {
-                    window.showTextDocument(doc);
-                });
-            }
-        });
 }
 
 export function deactivate(): Thenable<void> {
