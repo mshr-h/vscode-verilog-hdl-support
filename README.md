@@ -111,33 +111,41 @@ Use the following settings to configure the extension to your needs
 
     Path to your installation of Ctags if it isn't already present in your `PATH` environment variable.
 
-- `verilog.languageServer.enabled` (Default: `false` )
-
-    \[Experimental\]Enable the Language Server.
-
-- `verilog.languageServer.name` (Default: `svls` )
-
-    \[Experimental\]Select the Language Server. See the [Language Servers](#language-servers) section for more details.
-
-- `verilog.languageServer.pathSvls` (Default: `svls`)
-
-    \[Experimental\] A path to the Svls Language Server binary.
-
-- `verilog.languageServer.pathVeridian` (Default: `veridian`)
-
-    \[Experimental\] A path to the Veridian Language Server binary.
-
-- `verilog.languageServer.pathHdlChecker` (Default: `hdl_checker`)
-
-    \[Experimental\] A path to the HDL Checker Language Server binary.
-
-- `verilog.languageServer.pathVeribleLs` (Default: `verible-verilog-ls`)
-
-    \[Experimental\] A path to the verible-verilog-ls Language Server binary.
-
 - `verilog.logging.enabled` (Default: `false` )
 
     Enable logging for this extension. Open the **Output** pane in VS Code and choose _Verilog_ in the drop-down menu to view the log.
+
+- `verilog.languageServer.svls.enabled` (Default: `false`)
+
+    \[Experimental\] Enable svls Language Server for SystemVerilog.
+
+- `verilog.languageServer.svls.path` (Default: `svls`)
+
+    \[Experimental\] A path to the Svls Language Server binary.
+
+- `verilog.languageServer.veridian.enabled` (Default: `false`)
+
+    \[Experimental\] Enable veridian Language Server for SystemVerilog.
+
+- `verilog.languageServer.veridian.path` (Default: `veridian`)
+
+    \[Experimental\] A path to the veridian Language Server binary.
+
+- `verilog.languageServer.hdlChecker.enabled` (Default: `false`)
+
+    \[Experimental\] Enable HDL Checker Language Server for Verilog-HDL, SystemVerilog, and VHDL.
+
+- `verilog.languageServer.hdlChecker.path` (Default: `hdl_checker`)
+
+    \[Experimental\] A path to the HDL Checker Language Server binary.
+
+- `verilog.languageServer.veribleLs.enabled` (Default: `false`)
+
+    \[Experimental\] Enable verible-verilog-ls Language Server for SystemVerilog.
+
+- `verilog.languageServer.veribleLs.path` (Default: `verible-verilog-ls`)
+
+    \[Experimental\] A path to the verible-verilog-ls Language Server binary.
 
 ## Commands
 
