@@ -14,6 +14,7 @@ import BaseLinter from './BaseLinter';
 import { Logger, LogSeverity } from '../Logger';
 
 var isWindows = process.platform === 'win32';
+let logger: Logger = new Logger();
 
 export default class IcarusLinter extends BaseLinter {
     private iverilogPath: string;
@@ -79,7 +80,7 @@ export default class IcarusLinter extends BaseLinter {
                     if (line.startsWith(doc.fileName)) {
                         line = line.replace(doc.fileName, '');
                         let terms = line.split(':');
-                        console.log(terms[1] + ' ' + terms[2]);
+                        logger.log(terms[1] + ' ' + terms[2]);
                         let lineNum = parseInt(terms[1].trim()) - 1;
                         if (terms.length == 3)
                             {diagnostics.push({

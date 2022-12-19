@@ -15,6 +15,7 @@ import VerilatorLinter from './VerilatorLinter';
 import XvlogLinter from './XvlogLinter';
 import ModelsimLinter from './ModelsimLinter';
 import { Logger } from '../Logger';
+let logger: Logger = new Logger();
 
 export default class LintManager {
     private subscriptions: Disposable[];
@@ -80,14 +81,14 @@ export default class LintManager {
                     );
                     break;
                 default:
-                    console.log('Invalid linter name.');
+                    logger.log('Invalid linter name.');
                     this.linter = null;
                     break;
             }
         }
 
         if (this.linter != null) {
-            console.log('Using linter ' + this.linter.name);
+            logger.log('Using linter ' + this.linter.name);
         }
     }
 

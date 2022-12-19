@@ -4,6 +4,8 @@ import { Ctags, Symbol } from '../ctags';
 import { window, QuickPickItem, workspace, SnippetString } from 'vscode';
 import { Logger } from '../Logger';
 
+let logger: Logger = new Logger();
+
 export function instantiateModuleInteract() {
     let filePath = path.dirname(window.activeTextEditor.document.fileName);
     selectFile(filePath).then((srcpath) => {
@@ -21,7 +23,7 @@ function instantiateModule(srcpath: string): Thenable<SnippetString> {
         let parametersName: string[] = [];
         let logger: Logger = new Logger();
         let ctags: ModuleTags = new ModuleTags(logger);
-        console.log('Executing ctags for module instantiation');
+        logger.log('Executing ctags for module instantiation');
         ctags
             .execCtags(srcpath)
             .then((output) => {
@@ -74,12 +76,12 @@ function instantiateModule(srcpath: string): Thenable<SnippetString> {
                         tag.parentScope === scope
                 );
                 parametersName = params.map((tag) => tag.name);
-                console.log(module);
+                logger.log(module.name);
                 let paramString = ``;
                 if (parametersName.length > 0) {
                     paramString = `\n#(\n${instantiatePort(parametersName)})\n`;
                 }
-                console.log(portsName);
+                logger.log(portsName.toString());
                 resolve(
                     new SnippetString()
                         .appendText(module.name + ' ')
@@ -175,9 +177,9 @@ function getFiles(srcpath: string): string[] {
 
 class ModuleTags extends Ctags {
     buildSymbolsList(tags: string): Thenable<void> {
-        console.log('building symbols');
+        logger.log('building symbols');
         if (tags === '') {
-            console.log('No output from ctags');
+            logger.log('No output from ctags');
             return undefined;
         }
         // Parse ctags output
@@ -195,7 +197,7 @@ class ModuleTags extends Ctags {
             }
         });
         // skip finding end tags
-        console.log(this.symbols);
+        logger.log(this.symbols.toString());
         return undefined;
     }
 }

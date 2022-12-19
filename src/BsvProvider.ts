@@ -245,6 +245,8 @@ import { extensionID } from './extension';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { readdirSync } from 'fs';
+import { Logger } from './Logger';
+let logger: Logger = new Logger();
 
 export interface BsvInfoProvider {
     getSymbol(
@@ -3591,7 +3593,7 @@ class BsvBaseInfoProvider {
             this.parserCache.set(uri, tree);
             this.updateSymbol(uri);
 
-            console.log('cache ' + uri);
+            logger.log('cache ' + uri);
         } catch (error) { }
     }
 
@@ -3861,7 +3863,7 @@ export class BsvInfoProviderManger {
                 workspace.workspaceFolders[0].uri
             );
         } else {
-            console.log('bsv only support one opened workspace now');
+            logger.log('bsv only support one opened workspace now');
         }
     }
 }

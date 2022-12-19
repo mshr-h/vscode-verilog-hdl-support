@@ -169,7 +169,7 @@ export class Ctags {
     }
 
     execCtags(filepath: string): Thenable<string> {
-        console.log('executing ctags');
+        this.logger.log('executing ctags');
 
         let ctags: string = <string>(
             workspace.getConfiguration().get('verilog.ctags.path', 'none')
@@ -178,7 +178,6 @@ export class Ctags {
         {
             let command: string =
                 ctags + ' -f - --fields=+K --sort=no --excmd=n "' + filepath + '"';
-            console.log(command);
             this.logger.log(command, LogSeverity.command);
             return new Promise((resolve, _reject) => {
                 child.exec(
@@ -222,7 +221,6 @@ export class Ctags {
                 false
             );
         } catch (e) {
-            console.log(e);
             this.logger.log('Ctags Line Parser: ' + e, LogSeverity.error);
             this.logger.log('Line: ' + line, LogSeverity.error);
         }
@@ -232,9 +230,9 @@ export class Ctags {
     buildSymbolsList(tags: string): Thenable<void> {
         try {
             if (this.isDirty) {
-                console.log('building symbols');
+                this.logger.log('building symbols');
                 if (tags === '') {
-                    console.log('No output from ctags');
+                    this.logger.log('No output from ctags');
                     return undefined;
                 }
                 // Parse ctags output
@@ -286,18 +284,18 @@ export class Ctags {
                         }
                     }
                 }
-                console.log(this.symbols);
+                this.logger.log(this.symbols.toString());
                 this.isDirty = false;
             }
             return Promise.resolve();
         } catch (e) {
-            console.log(e);
+            this.logger.log(e);
         }
         return undefined;
     }
 
     index(): Thenable<void> {
-        console.log('indexing...');
+        this.logger.log('indexing...');
         return new Promise((resolve, _reject) => {
             this.execCtags(this.doc.uri.fsPath)
                 .then((output) => this.buildSymbolsList(output))
@@ -316,12 +314,12 @@ export class CtagsManager {
     }
 
     configure() {
-        console.log('ctags manager configure');
+        this.logger.log('ctags manager configure');
         workspace.onDidSaveTextDocument(this.onSave.bind(this));
     }
 
     onSave(doc: TextDocument) {
-        console.log('on save');
+        this.logger.log('on save');
         let ctags: Ctags = CtagsManager.ctags;
         if (
             ctags.doc === undefined ||

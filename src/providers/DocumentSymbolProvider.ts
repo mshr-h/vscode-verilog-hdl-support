@@ -12,6 +12,7 @@ import {
 import { BsvInfoProviderManger } from '../BsvProvider';
 import { Ctags, CtagsManager, Symbol } from '../ctags';
 import { Logger, LogSeverity } from '../Logger';
+let logger: Logger = new Logger();
 
 export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
     public docSymbols: DocumentSymbol[] = [];
@@ -26,9 +27,9 @@ export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
         _token: CancellationToken
     ): Promise<DocumentSymbol[]> {
         this.logger.log('Symbols Requested: ' + document.uri);
-        console.log('symbol provider');
+        logger.log('symbol provider');
         let symbols: Symbol[] = await CtagsManager.getSymbols(document);
-        console.log(symbols);
+        logger.log(symbols.toString());
         this.docSymbols = this.buildDocumentSymbolList(symbols);
         this.logger.log(
             this.docSymbols.length + ' top-level symbols returned',
