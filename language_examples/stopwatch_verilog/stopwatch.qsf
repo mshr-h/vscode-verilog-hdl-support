@@ -1,0 +1,100 @@
+# -------------------------------------------------------------------------- #
+#
+# Copyright (C) 1991-2010 Altera Corporation
+# Your use of Altera Corporation's design tools, logic functions 
+# and other software and tools, and its AMPP partner logic 
+# functions, and any output files from any of the foregoing 
+# (including device programming or simulation files), and any 
+# associated documentation or information are expressly subject 
+# to the terms and conditions of the Altera Program License 
+# Subscription Agreement, Altera MegaCore Function License 
+# Agreement, or other applicable license agreement, including, 
+# without limitation, that your use is for the sole purpose of 
+# programming logic devices manufactured by Altera and sold by 
+# Altera or its authorized distributors.  Please refer to the 
+# applicable agreement for further details.
+#
+# -------------------------------------------------------------------------- #
+#
+# Quartus II
+# Version 9.1 Build 350 03/24/2010 Service Pack 2 SJ Web Edition
+# Date created = 17:08:20  September 29, 2015
+#
+# -------------------------------------------------------------------------- #
+#
+# Notes:
+#
+# 1) The default values for assignments are stored in the file:
+#		stopwatch_assignment_defaults.qdf
+#    If this file doesn't exist, see file:
+#		assignment_defaults.qdf
+#
+# 2) Altera recommends that you do not modify this file. This
+#    file is updated automatically by the Quartus II software
+#    and any changes you make may be lost or overwritten.
+#
+# -------------------------------------------------------------------------- #
+
+
+set_global_assignment -name FAMILY "Cyclone II"
+set_global_assignment -name DEVICE EP2C5Q208C8
+set_global_assignment -name TOP_LEVEL_ENTITY stopwatch
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION "9.1 SP2"
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "17:08:20  SEPTEMBER 29, 2015"
+set_global_assignment -name LAST_QUARTUS_VERSION "9.1 SP2"
+set_global_assignment -name USE_GENERATED_PHYSICAL_CONSTRAINTS OFF -section_id eda_blast_fpga
+set_global_assignment -name VERILOG_FILE chattering.v
+set_global_assignment -name VERILOG_FILE cnt10.v
+set_global_assignment -name VERILOG_FILE control.v
+set_global_assignment -name VERILOG_FILE divider.v
+set_global_assignment -name VERILOG_FILE seg7dec.v
+set_global_assignment -name VERILOG_FILE stopwatch.v
+set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
+set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
+set_location_assignment PIN_23 -to clk
+set_location_assignment PIN_206 -to rst_n
+set_location_assignment PIN_114 -to HEX0[7]
+set_location_assignment PIN_113 -to HEX0[6]
+set_location_assignment PIN_112 -to HEX0[5]
+set_location_assignment PIN_110 -to HEX0[4]
+set_location_assignment PIN_106 -to HEX0[3]
+set_location_assignment PIN_105 -to HEX0[2]
+set_location_assignment PIN_104 -to HEX0[1]
+set_location_assignment PIN_103 -to HEX0[0]
+set_location_assignment PIN_102 -to HEX1[7]
+set_location_assignment PIN_101 -to HEX1[6]
+set_location_assignment PIN_99 -to HEX1[5]
+set_location_assignment PIN_97 -to HEX1[4]
+set_location_assignment PIN_96 -to HEX1[3]
+set_location_assignment PIN_95 -to HEX1[2]
+set_location_assignment PIN_94 -to HEX1[1]
+set_location_assignment PIN_92 -to HEX1[0]
+set_location_assignment PIN_90 -to HEX2[7]
+set_location_assignment PIN_89 -to HEX2[6]
+set_location_assignment PIN_88 -to HEX2[5]
+set_location_assignment PIN_87 -to HEX2[4]
+set_location_assignment PIN_86 -to HEX2[3]
+set_location_assignment PIN_84 -to HEX2[2]
+set_location_assignment PIN_82 -to HEX2[1]
+set_location_assignment PIN_81 -to HEX2[0]
+set_location_assignment PIN_80 -to HEX3[7]
+set_location_assignment PIN_77 -to HEX3[6]
+set_location_assignment PIN_76 -to HEX3[5]
+set_location_assignment PIN_75 -to HEX3[4]
+set_location_assignment PIN_74 -to HEX3[3]
+set_location_assignment PIN_72 -to HEX3[2]
+set_location_assignment PIN_70 -to HEX3[1]
+set_location_assignment PIN_69 -to HEX3[0]
+set_location_assignment PIN_43 -to btn_n[0]
+set_location_assignment PIN_44 -to btn_n[1]
+
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_global_assignment -name LL_ROOT_REGION ON -section_id "Root Region"
+set_global_assignment -name LL_MEMBER_STATE LOCKED -section_id "Root Region"
+set_global_assignment -name CYCLONEII_CONFIGURATION_SCHEME "PASSIVE SERIAL"
+set_global_assignment -name USE_CONFIGURATION_DEVICE ON
+set_global_assignment -name GENERATE_RBF_FILE ON
+set_global_assignment -name RESERVE_ALL_UNUSED_PINS "AS INPUT TRI-STATED WITH WEAK PULL-UP"
+set_global_assignment -name RESERVE_ASDO_AFTER_CONFIGURATION "USE AS REGULAR IO"
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
