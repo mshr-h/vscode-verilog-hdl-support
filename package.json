@@ -282,59 +282,47 @@
           "default": "none",
           "description": "A path to the installation of Universal Ctags."
         },
-        "verilog.languageServer.name": {
-          "scope": "window",
-          "type": "string",
-          "enum": [
-            "svls",
-            "veridian",
-            "hdl_checker",
-            "verible_ls"
-          ],
-          "enumDescriptions": [
-            "svls supports SystemVerilog",
-            "veridian supports SystemVerilog",
-            "hdl_checker supports Verilog-HDL, SystemVerilog and VHDL",
-            "verible_ls supports SystemVerilog"
-          ],
-          "default": "svls",
-          "description": "[Experimental] Select the Language Server."
-        },
-        "verilog.languageServer.pathSvls": {
-          "scope": "window",
-          "type": "string",
-          "default": "svls",
-          "description": "[Experimental] A path to the Svls Language Server binary."
-        },
-        "verilog.languageServer.pathVeridian": {
-          "scope": "window",
-          "type": "string",
-          "default": "veridian",
-          "description": "[Experimental] A path to the Veridian Language Server binary."
-        },
-        "verilog.languageServer.pathHdlChecker": {
-          "scope": "window",
-          "type": "string",
-          "default": "hdl_checker",
-          "description": "[Experimental] A path to the HDL Checker Language Server binary."
-        },
-        "verilog.languageServer.pathVeribleLs": {
-          "scope": "window",
-          "type": "string",
-          "default": "verible-verilog-ls",
-          "description": "[Experimental] A path to the verible-verilog-ls Language Server binary."
-        },
-        "verilog.languageServer.enabled": {
-          "scope": "window",
-          "type": "boolean",
-          "default": false,
-          "description": "[Experimental] Enable Language Server."
-        },
         "verilog.logging.enabled": {
           "scope": "window",
           "type": "boolean",
           "default": false,
           "description": "Enable logging for this extension."
+        },
+        "verilog.languageServer.svls.enabled": {
+          "scope": "window",
+          "type": "boolean",
+          "default": false,
+          "description": "[Experimental] Enable svls Language Server for SystemVerilog."
+        },
+        "verilog.languageServer.svls.path": {
+          "scope": "window",
+          "type": "string",
+          "default": "svls",
+          "description": "[Experimental] A path to the Svls Language Server binary."
+        },
+        "verilog.languageServer.veridian.enabled": {
+          "scope": "window",
+          "type": "boolean",
+          "default": false,
+          "description": "[Experimental] Enable veridian Language Server for SystemVerilog."
+        },
+        "verilog.languageServer.veridian.path": {
+          "scope": "window",
+          "type": "string",
+          "default": "veridian",
+          "description": "[Experimental] A path to the Veridian Language Server binary."
+        },
+        "verilog.languageServer.hdlChecker.enabled": {
+          "scope": "window",
+          "type": "boolean",
+          "default": false,
+          "description": "[Experimental] Enable HDL Checker Language Server for Verilog-HDL, SystemVerilog, and VHDL."
+        },
+        "verilog.languageServer.hdlChecker.path": {
+          "scope": "window",
+          "type": "string",
+          "default": "hdl_checker",
+          "description": "[Experimental] A path to the HDL Checker Language Server binary."
         }
       }
     },

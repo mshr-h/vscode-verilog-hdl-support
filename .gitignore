@@ -4,4 +4,5 @@
 /syntaxes/.antlr/*
 /dist
 /.vscode-test/
-.hdl_checker/*
+**/.hdl_checker/*
+svls.log

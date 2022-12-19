@@ -6,9 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [1.6.0] - Unreleased
 
-- Config changes take effect immediately.
-- Experimental support for multiple Language Server [#353](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/353).
+- Changes for language server config take effect immediately.
+- Added experimental support for multiple Language Server [#353](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/353).
+  - \[Caution\] Language Server config names has changed!
   - Users may have to reset all the configs related to Language Server feature.
+  - verible-verilog-ls support is temporary dropped because it returns error when stopping.
 
 ## [1.5.13] - 2022-12-12
 

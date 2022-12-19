@@ -56,7 +56,7 @@ let lintManager: LintManager;
 let logger: Logger = new Logger();
 export let ctagsManager: CtagsManager = new CtagsManager(logger);
 export var extensionID: string = 'mshr-h.veriloghdl';
-let client: LanguageClient;
+var languageClients = new Map<string, LanguageClient>();
 
 export function activate(context: ExtensionContext) {
     logger.log(extensionID + ' is now active!');
@@ -174,104 +174,72 @@ export function activate(context: ExtensionContext) {
 
     // Configure language server
     workspace.onDidChangeConfiguration((event) => {
-        if (!event.affectsConfiguration("verilog")) {
+        if (!event.affectsConfiguration("verilog.languageServer")) {
             return;
         }
-        if (!client) {
-            return initLanguageClient();
-        }
-        client.stop().finally(() => {
-            initLanguageClient();
+        stopAllLanguageClients().finally(() => {
+            initAllLanguageClients();
         });
     });
-    initLanguageClient();
+    initAllLanguageClients();
 
     logger.log('Activation complete');
 }
 
-function initLanguageClient() {
-    let verilogconfig = workspace.getConfiguration('verilog');
-    let enabled: boolean = <boolean>(
-        verilogconfig.get('languageServer.enabled', false)
-    );
+function setupLanguageClient(name: string, defaultPath: string, serverArgs: string[], serverDebugArgs: string[], clientOptions: LanguageClientOptions) {
+    let lsConfig = workspace.getConfiguration('verilog.languageServer.' + name);
+    let enabled: boolean = <boolean>(lsConfig.get('enabled', false));
 
-    if (!enabled) {
-        logger.log('Language server is disabled by the config');
-        return;
+    let binPath = <string>(lsConfig.get('path', defaultPath));
+
+    let serverOptions = {
+        'run': { command: binPath, args: serverArgs },
+        'debug': { command: binPath, args: serverDebugArgs },
+    };
+
+    languageClients.set(name, new LanguageClient(
+        name,
+        name + ' language server',
+        serverOptions,
+        clientOptions
+    ));
+    if (!enabled) { return; }
+    languageClients.get(name).start();
+    logger.log('"' + name + '" language server started.');
+}
+
+function stopAllLanguageClients(): Promise<any> {
+    var p = [];
+    for (const [name, client] of languageClients) {
+        if (client.isRunning()) {
+            p.push(client.stop());
+            logger.log('"' + name + '" language server stopped.');
+        }
     }
+    return Promise.all(p);
+}
 
-    let name: string = <string>verilogconfig.get('languageServer.name', 'none');
-    var binPath: string;
+function initAllLanguageClients() {
+    // init svls
+    setupLanguageClient("svls", "svls", [], ["--debug"], {
+        documentSelector: [{ scheme: 'file', language: 'systemverilog' },],
+    });
 
-    var serverOptions: ServerOptions;
-    var clientOptions: LanguageClientOptions;
+    // init veridian
+    setupLanguageClient("veridian", "veridian", [], [], {
+        documentSelector: [{ scheme: 'file', language: 'systemverilog' },],
+    });
 
-    switch (name) {
-        case 'svls':
-            binPath = <string>(
-                verilogconfig.get('languageServer.pathSvls', 'svls')
-            );
-            serverOptions = {
-                'run': { command: binPath },
-                'debug': { command: binPath, args: ['--debug'] },
-            };
-            clientOptions = {
-                documentSelector: [
-                    { scheme: 'file', language: 'systemverilog' },
-                ],
-            };
-            break;
-        case 'veridian':
-            binPath = <string>(
-                verilogconfig.get('languageServer.pathVeridian', 'veridian')
-            );
-            serverOptions = {
-                'run': { command: binPath },
-                'debug': { command: binPath },
-            };
-            clientOptions = {
-                documentSelector: [
-                    { scheme: 'file', language: 'systemverilog' },
-                ],
-            };
-            break;
-        case 'hdl_checker':
-            binPath = <string>(
-                verilogconfig.get('languageServer.pathHdlChecker', 'hdl_checker')
-            );
-            let args = ['--lsp'];
-            serverOptions = {
-                'run': { command: binPath, args: args },
-                'debug': { command: binPath , args: args },
-            };
-            clientOptions = {
-                documentSelector: [
-                    { scheme: 'file', language: 'verilog' },
-                    { scheme: 'file', language: 'systemverilog' },
-                    { scheme: "file", language: "vhdl" },
-                ],
-            };
-            break;
-        case 'verible_ls':
-            binPath = <string>(
-                verilogconfig.get('languageServer.pathVeribleLs', 'verible-verilog-ls')
-            );
-            serverOptions = {
-                'run': { command: binPath },
-                'debug': { command: binPath },
-            };
-            clientOptions = {
-                documentSelector: [
-                    { scheme: 'file', language: 'verilog' },
-                    { scheme: 'file', language: 'systemverilog' },
-                ],
-            };
-            break;
-        default:
-            logger.log('Invalid language server name: ' + name);
-            client = null;
-            return;
-    }
+    // init hdlChecker
+    setupLanguageClient("hdlChecker", "hdl_checker", ["--lsp"], ["--lsp"],
+        {
+            documentSelector: [
+                { scheme: 'file', language: 'verilog' },
+                { scheme: 'file', language: 'systemverilog' },
+                { scheme: "file", language: "vhdl" },
+            ],
+        });
+}
 
     client = new LanguageClient(
         name,
@@ -326,10 +294,7 @@ function showUpdatedNotif() {
     logger.log('Update notification shown');
 }
 
-export function deactivate() {
-    if (client) {
-        return client.stop();
-    }
+export function deactivate(): Thenable<void> {
     logger.log('Deactivated');
-    return undefined;
+    return stopAllLanguageClients();
 }
