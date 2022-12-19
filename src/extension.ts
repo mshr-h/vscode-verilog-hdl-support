@@ -172,13 +172,24 @@ export function activate(context: ExtensionContext) {
         lintManager
     );
 
-    // Configure svls language server
-    configLanguageServer();
+    // Configure language server
+    workspace.onDidChangeConfiguration((event) => {
+        if (!event.affectsConfiguration("verilog")) {
+            return;
+        }
+        if (!client) {
+            return initLanguageClient();
+        }
+        client.stop().finally(() => {
+            initLanguageClient();
+        });
+    });
+    initLanguageClient();
 
     logger.log('Activation complete');
 }
 
-function configLanguageServer() {
+function initLanguageClient() {
     let verilogconfig = workspace.getConfiguration('verilog');
     let enabled: boolean = <boolean>(
         verilogconfig.get('languageServer.enabled', false)
