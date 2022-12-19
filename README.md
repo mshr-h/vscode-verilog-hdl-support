@@ -116,7 +116,7 @@ Use the following settings to configure the extension to your needs
 
 - `verilog.languageServer.svls.path` (Default: `svls`)
 
-    \[Experimental\] A path to the Svls Language Server binary.
+    \[Experimental\] A path to the svls Language Server binary.
 
 - `verilog.languageServer.veridian.enabled` (Default: `false`)
 
