@@ -10,7 +10,7 @@ import {
     languages,
     commands,
 } from 'vscode';
-import * as semver from 'semver';
+import { SemVer } from 'semver';
 
 // Linters
 import LintManager from './linter/LintManager';
@@ -50,16 +50,15 @@ import {
 
 // Logger
 import { Logger } from './Logger';
-import { Server } from 'http';
-import { start } from 'repl';
 
 let lintManager: LintManager;
-let logger: Logger = new Logger();
-export let ctagsManager: CtagsManager = new CtagsManager(logger);
+let logger: Logger;
+export let ctagsManager: CtagsManager;
 export var extensionID: string = 'mshr-h.veriloghdl';
-var languageClients = new Map<string, LanguageClient>();
+let languageClients = new Map<string, LanguageClient>();
 
 export function activate(context: ExtensionContext) {
+    logger = new Logger();
     logger.log(extensionID + ' is now active!');
 
     BsvInfoProviderManger.getInstance().onWorkspace();
@@ -82,6 +81,7 @@ export function activate(context: ExtensionContext) {
     checkIfUpdated(context);
 
     // Configure ctags
+    ctagsManager = new CtagsManager(logger);
     ctagsManager.configure();
 
     // Configure lint manager
@@ -188,12 +188,12 @@ export function activate(context: ExtensionContext) {
 }
 
 function setupLanguageClient(name: string, defaultPath: string, serverArgs: string[], serverDebugArgs: string[], clientOptions: LanguageClientOptions) {
-    let lsConfig = workspace.getConfiguration('verilog.languageServer.' + name);
-    let enabled: boolean = <boolean>(lsConfig.get('enabled', false));
+    let settings = workspace.getConfiguration('verilog.languageServer.' + name);
+    let enabled: boolean = <boolean>(settings.get('enabled', false));
 
-    let binPath = <string>(lsConfig.get('path', defaultPath));
+    let binPath = <string>(settings.get('path', defaultPath));
 
-    let serverOptions = {
+    let serverOptions: ServerOptions = {
         'run': { command: binPath, args: serverArgs },
         'debug': { command: binPath, args: serverDebugArgs },
     };
@@ -243,8 +243,8 @@ function initAllLanguageClients() {
 }
 
 function checkIfUpdated(context: ExtensionContext) {
-    let previousVersion = new semver.SemVer(context.globalState.get('version', '0.0.0'));
-    let currentVersion = new semver.SemVer(extensions.getExtension(extensionID).packageJSON.version);
+    let previousVersion = new SemVer(context.globalState.get('version', '0.0.0'));
+    let currentVersion = new SemVer(extensions.getExtension(extensionID).packageJSON.version);
     if (previousVersion < currentVersion) {
         window
             .showInformationMessage(

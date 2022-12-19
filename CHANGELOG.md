@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   - \[Caution\] Language Server config names has changed!
   - Users may have to reset all the configs related to Language Server feature.
   - verible-verilog-ls support is temporary dropped because it returns error when stopping.
+- Deprecated `verilog.logging.enabled` option.
+  - Logs are always outputted to the **Verilog** OutputChannel of VS Code in the **Output** pane.
 
 ## [1.5.13] - 2022-12-12
 

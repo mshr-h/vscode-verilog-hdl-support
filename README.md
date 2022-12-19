@@ -110,10 +110,6 @@ Use the following settings to configure the extension to your needs
 
     Path to your installation of Ctags if it isn't already present in your `PATH` environment variable.
 
-- `verilog.logging.enabled` (Default: `false` )
-
-    Enable logging for this extension. Open the **Output** pane in VS Code and choose _Verilog_ in the drop-down menu to view the log.
-
 - `verilog.languageServer.svls.enabled` (Default: `false`)
 
     \[Experimental\] Enable svls Language Server for SystemVerilog.
@@ -180,6 +176,11 @@ If you encounter any problems even if it's not related to this feature, **deleti
 If you have tested the linters in new platforms or have issues with them, feel free to file an issue.
 
 ## [Guidelines for Contributing](./CONTRIBUTING.md)
+
+## Logging
+
+Logs are outputted to OutputChannel in th VS Code.
+Open the **Output** pane in VS Code and choose _Verilog_ in the drop-down menu to view the log.
 
 ## Helpful links
 
