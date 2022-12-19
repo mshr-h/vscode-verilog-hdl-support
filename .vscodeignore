@@ -13,3 +13,4 @@ renovate.json
 **/*.map
 **/*.ts
 language_examples/**
+.hdl_checker/**
