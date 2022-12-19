@@ -246,10 +246,7 @@ function checkIfUpdated(context: ExtensionContext) {
     let previousVersion = new semver.SemVer(context.globalState.get('version', '0.0.0'));
     let currentVersion = new semver.SemVer(extensions.getExtension(extensionID).packageJSON.version);
     if (previousVersion < currentVersion) {
-        console.log("updated");
         showUpdatedNotification();
-    } else{
-        console.log("not updated");
     }
 
     // update version value
