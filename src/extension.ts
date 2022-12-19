@@ -59,7 +59,7 @@ export var extensionID: string = 'mshr-h.veriloghdl';
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
-    console.log(extensionID + ' is now active!');
+    logger.log(extensionID + ' is now active!');
 
     BsvInfoProviderManger.getInstance().onWorkspace();
     workspace.onDidChangeWorkspaceFolders((_e) => {
@@ -196,7 +196,7 @@ function initLanguageClient() {
     );
 
     if (!enabled) {
-        console.log('Language server is disabled by the config');
+        logger.log('Language server is disabled by the config');
         return;
     }
 
@@ -268,7 +268,7 @@ function initLanguageClient() {
             };
             break;
         default:
-            console.log('Invalid language server name: ' + name);
+            logger.log('Invalid language server name: ' + name);
             client = null;
             return;
     }
@@ -280,7 +280,7 @@ function initLanguageClient() {
         clientOptions
     );
     client.start();
-    console.log('Language server "' + binPath + '" started.');
+    logger.log('Language server "' + binPath + '" started.');
 }
 
 function checkIfUpdated(context: ExtensionContext) {
