@@ -147,6 +147,8 @@ Use the following settings to configure the extension to your needs
 ## Language Servers
 
 We currently support the following Language Servers and enabled for Verilog-HDL, SystemVerilog and VHDL.
+It might be pretty unstable because it's currently in the experimental support.
+If you encounter any problems even if it's not related to this feature, **deleting all the config may solve the problem**.
 
 | Language Server                                                | Verilog-HDL   | SystemVerilog | VHDL          |
 | -------------------------------------------------------------- | :-----------: | :-----------: | :-----------: |
