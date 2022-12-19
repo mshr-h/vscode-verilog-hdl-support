@@ -12,7 +12,7 @@ import {
 import * as child from 'child_process';
 import BaseLinter from './BaseLinter';
 import { join } from 'path';
-import { Logger, LogSeverity } from '../Logger';
+import { Logger, LogSeverity } from '../logger';
 
 var isWindows = process.platform === 'win32';
 let logger: Logger = new Logger();

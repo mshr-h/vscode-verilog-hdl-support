@@ -14,8 +14,7 @@ import IcarusLinter from './IcarusLinter';
 import VerilatorLinter from './VerilatorLinter';
 import XvlogLinter from './XvlogLinter';
 import ModelsimLinter from './ModelsimLinter';
-import { Logger } from '../Logger';
-let logger: Logger = new Logger();
+import { Logger } from '../logger';
 
 export default class LintManager {
     private subscriptions: Disposable[];
@@ -81,14 +80,14 @@ export default class LintManager {
                     );
                     break;
                 default:
-                    logger.log('Invalid linter name.');
+                    this.logger.log('Invalid linter name.');
                     this.linter = null;
                     break;
             }
         }
 
         if (this.linter != null) {
-            logger.log('Using linter ' + this.linter.name);
+            this.logger.log('Using linter ' + this.linter.name);
         }
     }
 
@@ -98,12 +97,11 @@ export default class LintManager {
         if (
             this.linter != null &&
             (lang === 'verilog' || lang === 'systemverilog')
-        )
-            {this.linter.startLint(doc);}
+        ) { this.linter.startLint(doc); }
     }
 
     removeFileDiagnostics(doc: TextDocument) {
-        if (this.linter != null) {this.linter.removeFileDiagnostics(doc);}
+        if (this.linter != null) { this.linter.removeFileDiagnostics(doc); }
     }
 
     async runLintTool() {
@@ -112,10 +110,11 @@ export default class LintManager {
         if (
             window.activeTextEditor === undefined ||
             (lang !== 'verilog' && lang !== 'systemverilog')
-        )
-            {window.showErrorMessage(
+        ) {
+            window.showErrorMessage(
                 'Verilog-HDL/SystemVerilog: No document opened'
-            );}
+            );
+        }
         // else if(window.activeTextEditor.document.languageId !== "verilog")
         // window.showErrorMessage("Verilog-HDL/SystemVerilog: No Verilog document opened");
         else {
@@ -144,7 +143,7 @@ export default class LintManager {
                     placeHolder: 'Choose a linter to run',
                 }
             );
-            if (linterStr === undefined) {return;}
+            if (linterStr === undefined) { return; }
             // Create and run the linter with progress bar
             let tempLinter: BaseLinter;
             switch (linterStr.label) {

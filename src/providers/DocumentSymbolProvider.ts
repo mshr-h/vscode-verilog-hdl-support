@@ -11,8 +11,7 @@ import {
 } from 'vscode';
 import { BsvInfoProviderManger } from '../BsvProvider';
 import { Ctags, CtagsManager, Symbol } from '../ctags';
-import { Logger, LogSeverity } from '../Logger';
-let logger: Logger = new Logger();
+import { Logger, LogSeverity } from '../logger';
 
 export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
     public docSymbols: DocumentSymbol[] = [];
@@ -27,9 +26,9 @@ export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
         _token: CancellationToken
     ): Promise<DocumentSymbol[]> {
         this.logger.log('Symbols Requested: ' + document.uri);
-        logger.log('symbol provider');
+        this.logger.log('symbol provider');
         let symbols: Symbol[] = await CtagsManager.getSymbols(document);
-        logger.log(symbols.toString());
+        this.logger.log(symbols.toString());
         this.docSymbols = this.buildDocumentSymbolList(symbols);
         this.logger.log(
             this.docSymbols.length + ' top-level symbols returned',
@@ -79,7 +78,7 @@ export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
         for (let i of con.children) {
             if (this.isContainer(i.kind) && i.range.contains(sym.range)) {
                 res = this.findContainer(i, sym);
-                if (res) {return true;}
+                if (res) { return true; }
             }
         }
         if (!res) {
@@ -94,8 +93,8 @@ export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
     buildDocumentSymbolList(symbolsList: Symbol[]): DocumentSymbol[] {
         let list: DocumentSymbol[] = [];
         symbolsList = symbolsList.sort((a, b): number => {
-            if (a.startPosition.isBefore(b.startPosition)) {return -1;}
-            if (a.startPosition.isAfter(b.startPosition)) {return 1;}
+            if (a.startPosition.isBefore(b.startPosition)) { return -1; }
+            if (a.startPosition.isAfter(b.startPosition)) { return 1; }
             return 0;
         });
         // Add each of the symbols in order
@@ -119,7 +118,7 @@ export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
                     }
                 }
                 // add a new top level element
-                if (!done) {list.push(sym);}
+                if (!done) { list.push(sym); }
             }
         }
 

@@ -5,14 +5,13 @@ import {
     Position,
     CancellationToken,
     Hover,
-    window,
     Range,
     MarkdownString,
     ProviderResult,
 } from 'vscode';
 import { BsvInfoProviderManger } from '../BsvProvider';
-import { Ctags, CtagsManager, Symbol } from '../ctags';
-import { Logger, LogSeverity } from '../Logger';
+import { CtagsManager, Symbol } from '../ctags';
+import { Logger, LogSeverity } from '../logger';
 
 export class VerilogHoverProvider implements HoverProvider {
     // lang: verilog / systemverilog
@@ -30,7 +29,7 @@ export class VerilogHoverProvider implements HoverProvider {
         this.logger.log('Hover requested');
         // get word start and end
         let textRange = document.getWordRangeAtPosition(position);
-        if (!textRange || textRange.isEmpty) {return undefined;}
+        if (!textRange || textRange.isEmpty) { return undefined; }
         // hover word
         let targetText = document.getText(textRange);
         let symbols: Symbol[] = await CtagsManager.getSymbols(document);

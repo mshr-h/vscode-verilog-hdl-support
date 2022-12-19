@@ -14,7 +14,7 @@ import {
 } from 'vscode';
 import { BsvInfoProviderManger } from '../BsvProvider';
 import { Ctags, CtagsManager, Symbol } from '../ctags';
-import { Logger } from '../Logger';
+import { Logger } from '../logger';
 
 export class VerilogCompletionItemProvider implements CompletionItemProvider {
     private logger: Logger;
@@ -46,8 +46,7 @@ export class VerilogCompletionItemProvider implements CompletionItemProvider {
             let code = document.getText(codeRange).trim();
             newItem.detail = symbol.type;
             let doc: string = '```systemverilog\n' + code + '\n```';
-            if (symbol.parentScope !== undefined && symbol.parentScope !== '')
-                {doc += '\nHeirarchial Scope: ' + symbol.parentScope;}
+            if (symbol.parentScope !== undefined && symbol.parentScope !== '') { doc += '\nHeirarchial Scope: ' + symbol.parentScope; }
             newItem.documentation = new MarkdownString(doc);
             items.push(newItem);
         });

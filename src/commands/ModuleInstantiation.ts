@@ -2,9 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Ctags, Symbol } from '../ctags';
 import { window, QuickPickItem, workspace, SnippetString } from 'vscode';
-import { Logger } from '../Logger';
-
-let logger: Logger = new Logger();
+import { Logger } from '../logger';
 
 export function instantiateModuleInteract() {
     let filePath = path.dirname(window.activeTextEditor.document.fileName);
@@ -23,7 +21,7 @@ function instantiateModule(srcpath: string): Thenable<SnippetString> {
         let parametersName: string[] = [];
         let logger: Logger = new Logger();
         let ctags: ModuleTags = new ModuleTags(logger);
-        logger.log('Executing ctags for module instantiation');
+        this.logger.log('Executing ctags for module instantiation');
         ctags
             .execCtags(srcpath)
             .then((output) => {
@@ -42,7 +40,7 @@ function instantiateModule(srcpath: string): Thenable<SnippetString> {
                     return;
                 }
                 // Only one module found
-                else if (modules.length == 1) {module = modules[0];}
+                else if (modules.length === 1) { module = modules[0]; }
                 // many modules found
                 else if (modules.length > 1) {
                     moduleName = await window.showQuickPick(
@@ -53,7 +51,7 @@ function instantiateModule(srcpath: string): Thenable<SnippetString> {
                             placeHolder: 'Choose a module to instantiate',
                         }
                     );
-                    if (moduleName === undefined) {return;}
+                    if (moduleName === undefined) { return; }
                     module = modules.filter(
                         (tag) => tag.name === moduleName
                     )[0];
@@ -76,12 +74,12 @@ function instantiateModule(srcpath: string): Thenable<SnippetString> {
                         tag.parentScope === scope
                 );
                 parametersName = params.map((tag) => tag.name);
-                logger.log(module.name);
+                this.logger.log(module.name);
                 let paramString = ``;
                 if (parametersName.length > 0) {
                     paramString = `\n#(\n${instantiatePort(parametersName)})\n`;
                 }
-                logger.log(portsName.toString());
+                this.logger.log(portsName.toString());
                 resolve(
                     new SnippetString()
                         .appendText(module.name + ' ')
@@ -99,7 +97,7 @@ function instantiatePort(ports: string[]): string {
     let port = '';
     let maxLen = 0;
     for (let i = 0; i < ports.length; i++) {
-        if (ports[i].length > maxLen) {maxLen = ports[i].length;}
+        if (ports[i].length > maxLen) { maxLen = ports[i].length; }
     }
     // .NAME(NAME)
     for (let i = 0; i < ports.length; i++) {
@@ -177,9 +175,7 @@ function getFiles(srcpath: string): string[] {
 
 class ModuleTags extends Ctags {
     buildSymbolsList(tags: string): Thenable<void> {
-        logger.log('building symbols');
         if (tags === '') {
-            logger.log('No output from ctags');
             return undefined;
         }
         // Parse ctags output
@@ -192,12 +188,10 @@ class ModuleTags extends Ctags {
                     tag.type === 'module' ||
                     tag.type === 'port' ||
                     tag.type === 'constant'
-                )
-                    {this.symbols.push(tag);}
+                ) { this.symbols.push(tag); }
             }
         });
         // skip finding end tags
-        logger.log(this.symbols.toString());
         return undefined;
     }
 }

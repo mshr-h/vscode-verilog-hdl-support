@@ -9,7 +9,7 @@ import {
 } from 'vscode';
 import { ChildProcess, exec } from 'child_process';
 import BaseLinter from './BaseLinter';
-import { Logger, LogSeverity } from '../Logger';
+import { Logger, LogSeverity } from '../logger';
 
 export default class XvlogLinter extends BaseLinter {
     private xvlogPath: string;
@@ -36,7 +36,7 @@ export default class XvlogLinter extends BaseLinter {
         this.logger.log('xvlog lint requested');
         let svArgs: string = doc.languageId == 'systemverilog' ? '-sv' : ''; //Systemverilog args
         let command =
-            this.xvlogPath + 
+            this.xvlogPath +
             'xvlog ' +
             svArgs +
             ' -nolog ' +

@@ -245,7 +245,7 @@ import { extensionID } from './extension';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { readdirSync } from 'fs';
-import { Logger } from './Logger';
+import { Logger } from './logger';
 let logger: Logger = new Logger();
 
 export interface BsvInfoProvider {
@@ -3479,7 +3479,7 @@ class BsvStdLibProvider {
             if (Object.prototype.hasOwnProperty.call(internalInfo, key)) {
                 const element = internalInfo[key];
                 const pp: String = element.package;
-                if (element.package != p) {continue;}
+                if (element.package != p) { continue; }
                 const type: String = element.type;
                 switch (type) {
                     case 'typeclass':

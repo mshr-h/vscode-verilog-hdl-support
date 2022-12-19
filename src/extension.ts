@@ -49,7 +49,7 @@ import {
 } from 'vscode-languageclient/node';
 
 // Logger
-import { Logger } from './Logger';
+import { Logger } from './logger';
 
 let lintManager: LintManager;
 let logger: Logger;

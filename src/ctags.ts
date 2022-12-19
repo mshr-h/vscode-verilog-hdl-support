@@ -11,7 +11,7 @@ import {
     Uri,
 } from 'vscode';
 import * as child from 'child_process';
-import { Logger, LogSeverity } from './Logger';
+import { Logger, LogSeverity } from './logger';
 
 // Internal representation of a symbol
 export class Symbol {
@@ -174,8 +174,7 @@ export class Ctags {
         let ctags: string = <string>(
             workspace.getConfiguration().get('verilog.ctags.path', 'none')
         );
-        if(ctags != 'none')
-        {
+        if (ctags != 'none') {
             let command: string =
                 ctags + ' -f - --fields=+K --sort=no --excmd=n "' + filepath + '"';
             this.logger.log(command, LogSeverity.command);
@@ -238,7 +237,7 @@ export class Ctags {
                 // Parse ctags output
                 let lines: string[] = tags.split(/\r?\n/);
                 lines.forEach((line) => {
-                    if (line !== '') {this.symbols.push(this.parseTagLine(line));}
+                    if (line !== '') { this.symbols.push(this.parseTagLine(line)); }
                 });
 
                 // end tags are not supported yet in ctags. So, using regex
