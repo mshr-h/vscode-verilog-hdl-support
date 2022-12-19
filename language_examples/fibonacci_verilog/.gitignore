@@ -1,0 +1,8 @@
+*.vcd
+*.out
+
+/fpga/*/*
+!/fpga/*/fpga_top.qpf
+!/fpga/*/fpga_top.qsf
+!/fpga/*/fpga_top.sdc
+!/fpga/*/*.v
