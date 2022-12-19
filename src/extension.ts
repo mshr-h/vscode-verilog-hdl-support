@@ -10,6 +10,7 @@ import {
     languages,
     commands,
 } from 'vscode';
+import * as semver from 'semver';
 
 // Linters
 import LintManager from './linter/LintManager';
@@ -241,38 +242,21 @@ function initAllLanguageClients() {
         });
 }
 
-    client = new LanguageClient(
-        name,
-        name + ' language server',
-        serverOptions,
-        clientOptions
-    );
-    client.start();
-    logger.log('Language server "' + binPath + '" started.');
-}
-
 function checkIfUpdated(context: ExtensionContext) {
-    // Get previous version
-    let prevVersion: string = context.globalState.get('version', '0.0.0');
-    let pv = prevVersion.split('.').map(Number);
-    // Get current version
-    let currVersion: string =
-        extensions.getExtension(extensionID).packageJSON.version;
-    logger.log(extensionID + ' v' + currVersion);
-    let cv = currVersion.split('.').map(Number);
-    // check if current version > previous version
-    for (let i = 0; i < pv.length; i++) {
-        if (pv[i] < cv[i]) {
-            showUpdatedNotif();
-            break;
-        }
+    let previousVersion = new semver.SemVer(context.globalState.get('version', '0.0.0'));
+    let currentVersion = new semver.SemVer(extensions.getExtension(extensionID).packageJSON.version);
+    if (previousVersion < currentVersion) {
+        console.log("updated");
+        showUpdatedNotification();
+    } else{
+        console.log("not updated");
     }
-    // update the value
-    context.globalState.update('version', currVersion);
+
+    // update version value
+    context.globalState.update('version', currentVersion.version);
 }
 
-function showUpdatedNotif() {
-    logger.log('Recently Updated');
+function showUpdatedNotification() {
     window
         .showInformationMessage(
             'Verilog-HDL/SystemVerilog extension has been updated',
@@ -291,7 +275,6 @@ function showUpdatedNotif() {
                 });
             }
         });
-    logger.log('Update notification shown');
 }
 
 export function deactivate(): Thenable<void> {
