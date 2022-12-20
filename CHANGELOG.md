@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## [1.6.0] - Unreleased
+## [1.6.0] - 2022-12-20
 
 - Changes for language server config take effect immediately.
 - Added experimental support for multiple Language Server [#353](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/353).
