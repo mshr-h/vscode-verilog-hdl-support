@@ -11,7 +11,7 @@ import {
 } from 'vscode';
 import * as child from 'child_process';
 import BaseLinter from './BaseLinter';
-import { Logger, LogSeverity } from '../Logger';
+import { Logger, LogSeverity } from '../logger';
 
 var isWindows = process.platform === 'win32';
 
@@ -79,10 +79,10 @@ export default class IcarusLinter extends BaseLinter {
                     if (line.startsWith(doc.fileName)) {
                         line = line.replace(doc.fileName, '');
                         let terms = line.split(':');
-                        console.log(terms[1] + ' ' + terms[2]);
+                        this.logger.log(terms[1] + ' ' + terms[2]);
                         let lineNum = parseInt(terms[1].trim()) - 1;
-                        if (terms.length == 3)
-                            {diagnostics.push({
+                        if (terms.length == 3) {
+                            diagnostics.push({
                                 severity: DiagnosticSeverity.Error,
                                 range: new Range(
                                     lineNum,
@@ -93,14 +93,13 @@ export default class IcarusLinter extends BaseLinter {
                                 message: terms[2].trim(),
                                 code: 'iverilog',
                                 source: 'iverilog',
-                            });}
+                            });
+                        }
                         else if (terms.length >= 4) {
                             let sev: DiagnosticSeverity;
-                            if (terms[2].trim() == 'error')
-                                {sev = DiagnosticSeverity.Error;}
-                            else if (terms[2].trim() == 'warning')
-                                {sev = DiagnosticSeverity.Warning;}
-                            else {sev = DiagnosticSeverity.Information;}
+                            if (terms[2].trim() == 'error') { sev = DiagnosticSeverity.Error; }
+                            else if (terms[2].trim() == 'warning') { sev = DiagnosticSeverity.Warning; }
+                            else { sev = DiagnosticSeverity.Information; }
                             diagnostics.push({
                                 severity: sev,
                                 range: new Range(

@@ -6,7 +6,7 @@ import {
     Diagnostic,
     languages,
 } from 'vscode';
-import { Logger } from '../Logger';
+import { Logger } from '../logger';
 
 export default abstract class BaseLinter {
     protected diagnosticCollection: DiagnosticCollection;

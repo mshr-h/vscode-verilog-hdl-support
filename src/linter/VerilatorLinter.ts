@@ -12,9 +12,10 @@ import {
 import * as child from 'child_process';
 import BaseLinter from './BaseLinter';
 import { join } from 'path';
-import { Logger, LogSeverity } from '../Logger';
+import { Logger, LogSeverity } from '../logger';
 
 var isWindows = process.platform === 'win32';
+let logger: Logger = new Logger();
 
 export default class VerilatorLinter extends BaseLinter {
     private verilatorPath: string;
@@ -158,7 +159,7 @@ export default class VerilatorLinter extends BaseLinter {
                             colNum = isNaN(colNum) ? 0 : colNum; // for older Verilator versions (< 4.030 ~ish)
 
                             if (!isNaN(lineNum)) {
-                                console.log(
+                                logger.log(
                                     severity + ': [' + lineNum + '] ' + message
                                 );
 
