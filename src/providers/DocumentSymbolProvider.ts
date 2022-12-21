@@ -1,16 +1,14 @@
-import { resolve } from 'url';
 import {
     DocumentSymbolProvider,
     CancellationToken,
     TextDocument,
     SymbolKind,
     DocumentSymbol,
-    window,
     ProviderResult,
     SymbolInformation,
 } from 'vscode';
 import { BsvInfoProviderManger } from '../BsvProvider';
-import { Ctags, CtagsManager, Symbol } from '../ctags';
+import { CtagsManager, Symbol } from '../ctags';
 import { Logger, LogSeverity } from '../logger';
 
 export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {

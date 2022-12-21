@@ -1,223 +1,3 @@
-import { CharStreams, CommonTokenStream } from 'antlr4ts';
-import { bsvLexer } from '../src/bsvjs/syntaxes/bsvLexer';
-import {
-    ActionBlockContext,
-    ActionStmtContext,
-    ActionValueBlockContext,
-    ActionValueStmtContext,
-    AncestorBVIStmtContext,
-    ArrayDimsContext,
-    ArrayIndexesContext,
-    AttributeInstanceContext,
-    AttributeInstancesContext,
-    AttrNameContext,
-    AttrSpecContext,
-    BeginEndExprContext,
-    BeginEndStmt_actionStmtContext,
-    BeginEndStmt_actionValueStmtContext,
-    BeginEndStmt_expressionStmtContext,
-    BeginEndStmt_functionBodyStmtContext,
-    BeginEndStmt_moduleStmtContext,
-    BinopContext,
-    BitConcatContext,
-    bsvParser,
-    CaseExprContext,
-    CaseExprItemContext,
-    CaseItem_actionStmtContext,
-    CaseItem_actionValueStmtContext,
-    CaseItem_expressionStmtContext,
-    CaseItem_functionBodyStmtContext,
-    CaseItem_moduleStmtContext,
-    CasePatItem_actionStmtContext,
-    CasePatItem_actionValueStmtContext,
-    CasePatItem_expressionStmtContext,
-    CasePatItem_functionBodyStmtContext,
-    CasePatItem_moduleStmtContext,
-    Case_actionStmtContext,
-    Case_actionValueStmtContext,
-    Case_expressionStmtContext,
-    Case_functionBodyStmtContext,
-    Case_moduleStmtContext,
-    CFuncArgContext,
-    CFuncArgsContext,
-    Clocked_by_selContext,
-    ClockIdContext,
-    CondExprContext,
-    CondPredicateContext,
-    ConstantPatternContext,
-    DefaultClockBVIStmtContext,
-    DefaultItem_actionStmtContext,
-    DefaultItem_actionValueStmtContext,
-    DefaultItem_expressionStmtContext,
-    DefaultItem_functionBodyStmtContext,
-    DefaultItem_moduleStmtContext,
-    DefaultResetBVIStmtContext,
-    DerivesContext,
-    DisplayTaskNameContext,
-    Enabled_selContext,
-    ExportDeclContext,
-    ExportItemContext,
-    ExpressionContext,
-    ExpressionStmtContext,
-    ExprFsmStmtContext,
-    ExprOrCondPatternContext,
-    ExprPrimaryContext,
-    ExternCImportContext,
-    ExternModuleImportContext,
-    ForFsmStmtContext,
-    ForIncrContext,
-    ForInitContext,
-    ForNewInitContext,
-    ForOldInitContext,
-    ForTestContext,
-    For_actionStmtContext,
-    For_actionValueStmtContext,
-    For_expressionStmtContext,
-    For_functionBodyStmtContext,
-    For_moduleStmtContext,
-    FsmStmtContext,
-    FunctionBodyContext,
-    FunctionBodyStmtContext,
-    FunctionCallContext,
-    FunctionDefContext,
-    FunctionFormalContext,
-    FunctionFormalsContext,
-    FunctionProtoContext,
-    IdentifierContext,
-    Identifier_typeContext,
-    IfFsmStmtContext,
-    If_actionStmtContext,
-    If_actionValueStmtContext,
-    If_expressionStmtContext,
-    If_functionBodyStmtContext,
-    If_moduleStmtContext,
-    ImplicitCondContext,
-    ImportBVIStmtContext,
-    ImportDeclContext,
-    ImportItemContext,
-    InoutBVIStmtContext,
-    InputClockBVIStmtContext,
-    InputResetBVIStmtContext,
-    InterfaceBVIMembDeclContext,
-    InterfaceBVIStmtContext,
-    InterfaceDeclContext,
-    InterfaceExprContext,
-    InterfaceMemberDeclContext,
-    InterfaceStmtContext,
-    LoopBodyFsmStmtContext,
-    LValueContext,
-    MemberBindContext,
-    MethodBVIStmtContext,
-    MethodCallContext,
-    MethodDefContext,
-    MethodFormalContext,
-    MethodFormalsContext,
-    MethodProtoContext,
-    MethodProtoFormalContext,
-    MethodProtoFormalsContext,
-    ModuleActualArgContext,
-    ModuleActualArgsContext,
-    ModuleActualParamArgContext,
-    ModuleActualParamContext,
-    ModuleApp2Context,
-    ModuleAppContext,
-    ModuleDefContext,
-    ModuleFormalArgsContext,
-    ModuleFormalParamContext,
-    ModuleFormalParamsContext,
-    ModuleInstContext,
-    ModuleProtoContext,
-    ModuleStmtContext,
-    Non_packageContext,
-    NoResetBVIStmtContext,
-    OperatorExprContext,
-    OperatorIdContext,
-    OutputClockBVIStmtContext,
-    OutputResetBVIStmtContext,
-    OverloadedDefContext,
-    PackageIdeContext,
-    PackageStmtContext,
-    ParameterBVIStmtContext,
-    ParFsmStmtContext,
-    PathBVIStmtContext,
-    PatternContext,
-    PortBVIStmtContext,
-    PortIdContext,
-    PortsDefContext,
-    ProvisoContext,
-    ProvisosContext,
-    Ready_selContext,
-    RegWriteContext,
-    RepeatFsmStmtContext,
-    ResetIdContext,
-    Reset_by_selContext,
-    ReturnFsmStmtContext,
-    ReturnStmtContext,
-    RuleBodyContext,
-    RuleCondContext,
-    RuleExprContext,
-    RuleStmtContext,
-    R_packageContext,
-    R_ruleContext,
-    SameFamilyBVIStmtContext,
-    ScheduleBVIStmtContext,
-    SeqFsmStmtContext,
-    SimpleVarAssignContext,
-    SimpleVarDeclAssignContext,
-    StringAVTaskNameContext,
-    StringLiteralContext,
-    StringTaskNameContext,
-    StructExprContext,
-    StructMemberContext,
-    StructPatternContext,
-    SubinterfaceDeclContext,
-    SubinterfaceDefContext,
-    SubStructContext,
-    SubUnionContext,
-    SystemFunctionCallContext,
-    SystemTaskCallContext,
-    SystemTaskStmtContext,
-    TaggedUnionExprContext,
-    TaggedUnionPatternContext,
-    TopContext,
-    TuplePatternContext,
-    TypeAssertionContext,
-    TypeclassDefContext,
-    TypeclassIdeContext,
-    TypeclassInstanceDefContext,
-    TypeContext,
-    TypeDefContext,
-    TypedefEnumContext,
-    TypedefEnumElementContext,
-    TypedefEnumElementsContext,
-    TypedefStructContext,
-    TypedefSynonymContext,
-    TypedefTaggedUnionContext,
-    TypeDefTypeContext,
-    TypedependContext,
-    TypedependsContext,
-    TypeFormalContext,
-    TypeFormalsContext,
-    TypeIdeContext,
-    TypelistContext,
-    TypeNatContext,
-    TypePrimaryContext,
-    UnionMemberContext,
-    UnopContext,
-    VarAssignContext,
-    VarDeclContext,
-    VarDeclDoContext,
-    VarDoContext,
-    VarIncrContext,
-    VarInitContext,
-    WhileFsmStmtContext,
-    While_actionStmtContext,
-    While_actionValueStmtContext,
-    While_expressionStmtContext,
-    While_functionBodyStmtContext,
-    While_moduleStmtContext,
-} from '../src/bsvjs/syntaxes/bsvParser';
-
 import {
     SymbolInformation,
     DocumentSymbol,
@@ -233,6 +13,9 @@ import {
     CompletionItem,
     LocationLink,
 } from 'vscode';
+import * as bsvSyntaxParser from '../src/bsvjs/syntaxes/bsvParser';
+import { CharStreams, CommonTokenStream } from 'antlr4ts';
+import { bsvLexer } from '../src/bsvjs/syntaxes/bsvLexer';
 import { bsvVisitor } from './bsvjs/syntaxes/bsvVisitor';
 import { ErrorNode } from 'antlr4ts/tree/ErrorNode';
 import { ParseTree } from 'antlr4ts/tree/ParseTree';
@@ -244,6 +27,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { readdirSync } from 'fs';
 import { Logger } from './logger';
+
 let logger: Logger = new Logger();
 
 export interface BsvInfoProvider {
@@ -2328,11 +2112,11 @@ const internalInfo = {
 };
 
 class BsvSymbolVisior implements bsvVisitor<Boolean> {
-    visitIdentifier?: (ctx: IdentifierContext) => Boolean;
-    visitIdentifierType?: (ctx: Identifier_typeContext) => Boolean;
-    visitStringLiteral?: (ctx: StringLiteralContext) => Boolean;
-    visitTop?: (ctx: TopContext) => Boolean;
-    visitRPackage(ctx: R_packageContext): Boolean {
+    visitIdentifier?: (ctx: bsvSyntaxParser.IdentifierContext) => Boolean;
+    visitIdentifierType?: (ctx: bsvSyntaxParser.Identifier_typeContext) => Boolean;
+    visitStringLiteral?: (ctx: bsvSyntaxParser.StringLiteralContext) => Boolean;
+    visitTop?: (ctx: bsvSyntaxParser.TopContext) => Boolean;
+    visitRPackage(ctx: bsvSyntaxParser.R_packageContext): Boolean {
         const name = ctx.packageIde(0).text;
         this.scopeName.push(name);
         this.symbolList.push(
@@ -2360,8 +2144,8 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitNonPackage?: (ctx: Non_packageContext) => Boolean;
-    visitExportDecl(ctx: ExportDeclContext): Boolean {
+    visitNonPackage?: (ctx: bsvSyntaxParser.Non_packageContext) => Boolean;
+    visitExportDecl(ctx: bsvSyntaxParser.ExportDeclContext): Boolean {
         this.symbolList.push(
             new SymbolInformation(
                 ctx.getChild(1).text,
@@ -2387,8 +2171,8 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         return res;
     }
 
-    visitExportItem?: (ctx: ExportItemContext) => Boolean;
-    visitImportDecl(ctx: ImportDeclContext): Boolean {
+    visitExportItem?: (ctx: bsvSyntaxParser.ExportItemContext) => Boolean;
+    visitImportDecl(ctx: bsvSyntaxParser.ImportDeclContext): Boolean {
         this.symbolList.push(
             new SymbolInformation(
                 ctx.getChild(1).text,
@@ -2413,14 +2197,14 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         const res = this.visitChildren(ctx);
         return res;
     }
-    visitImportItem?: (ctx: ImportItemContext) => Boolean;
-    visitPackageStmt?: (ctx: PackageStmtContext) => Boolean;
-    visitPackageIde?: (ctx: PackageIdeContext) => Boolean;
-    visitType?: (ctx: TypeContext) => Boolean;
-    visitTypePrimary?: (ctx: TypePrimaryContext) => Boolean;
-    visitTypeIde?: (ctx: TypeIdeContext) => Boolean;
-    visitTypeNat?: (ctx: TypeNatContext) => Boolean;
-    visitInterfaceDecl(ctx: InterfaceDeclContext): Boolean {
+    visitImportItem?: (ctx: bsvSyntaxParser.ImportItemContext) => Boolean;
+    visitPackageStmt?: (ctx: bsvSyntaxParser.PackageStmtContext) => Boolean;
+    visitPackageIde?: (ctx: bsvSyntaxParser.PackageIdeContext) => Boolean;
+    visitType?: (ctx: bsvSyntaxParser.TypeContext) => Boolean;
+    visitTypePrimary?: (ctx: bsvSyntaxParser.TypePrimaryContext) => Boolean;
+    visitTypeIde?: (ctx: bsvSyntaxParser.TypeIdeContext) => Boolean;
+    visitTypeNat?: (ctx: bsvSyntaxParser.TypeNatContext) => Boolean;
+    visitInterfaceDecl(ctx: bsvSyntaxParser.InterfaceDeclContext): Boolean {
         const name = ctx.typeDefType().typeIde().text;
         const scope = this.scopeName[this.scopeName.length - 1];
         this.scopeName.push(name);
@@ -2449,11 +2233,11 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitTypeDefType?: (ctx: TypeDefTypeContext) => Boolean;
-    visitTypeFormals?: (ctx: TypeFormalsContext) => Boolean;
-    visitTypeFormal?: (ctx: TypeFormalContext) => Boolean;
-    visitInterfaceMemberDecl?: (ctx: InterfaceMemberDeclContext) => Boolean;
-    visitMethodProto(ctx: MethodProtoContext): Boolean {
+    visitTypeDefType?: (ctx: bsvSyntaxParser.TypeDefTypeContext) => Boolean;
+    visitTypeFormals?: (ctx: bsvSyntaxParser.TypeFormalsContext) => Boolean;
+    visitTypeFormal?: (ctx: bsvSyntaxParser.TypeFormalContext) => Boolean;
+    visitInterfaceMemberDecl?: (ctx: bsvSyntaxParser.InterfaceMemberDeclContext) => Boolean;
+    visitMethodProto(ctx: bsvSyntaxParser.MethodProtoContext): Boolean {
         const name = ctx.identifier().text;
         const scope = this.scopeName[this.scopeName.length - 1];
         this.symbolList.push(
@@ -2480,9 +2264,9 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         const res = this.visitChildren(ctx);
         return res;
     }
-    visitMethodProtoFormals?: (ctx: MethodProtoFormalsContext) => Boolean;
-    visitMethodProtoFormal?: (ctx: MethodProtoFormalContext) => Boolean;
-    visitSubinterfaceDecl(ctx: SubinterfaceDeclContext): Boolean {
+    visitMethodProtoFormals?: (ctx: bsvSyntaxParser.MethodProtoFormalsContext) => Boolean;
+    visitMethodProtoFormal?: (ctx: bsvSyntaxParser.MethodProtoFormalContext) => Boolean;
+    visitSubinterfaceDecl(ctx: bsvSyntaxParser.SubinterfaceDeclContext): Boolean {
         const name = ctx.typeDefType().typeIde().text;
         const scope = this.scopeName[this.scopeName.length - 1];
         this.scopeName.push(name);
@@ -2511,7 +2295,7 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitModuleDef(ctx: ModuleDefContext): Boolean {
+    visitModuleDef(ctx: bsvSyntaxParser.ModuleDefContext): Boolean {
         const name = ctx.moduleProto().identifier().text;
         const scope = this.scopeName[this.scopeName.length - 1];
         this.scopeName.push(name);
@@ -2540,12 +2324,12 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitModuleProto?: (ctx: ModuleProtoContext) => Boolean;
-    visitModuleFormalParams?: (ctx: ModuleFormalParamsContext) => Boolean;
-    visitModuleFormalParam?: (ctx: ModuleFormalParamContext) => Boolean;
-    visitModuleFormalArgs?: (ctx: ModuleFormalArgsContext) => Boolean;
-    visitModuleStmt?: (ctx: ModuleStmtContext) => Boolean;
-    visitModuleInst(ctx: ModuleInstContext): Boolean {
+    visitModuleProto?: (ctx: bsvSyntaxParser.ModuleProtoContext) => Boolean;
+    visitModuleFormalParams?: (ctx: bsvSyntaxParser.ModuleFormalParamsContext) => Boolean;
+    visitModuleFormalParam?: (ctx: bsvSyntaxParser.ModuleFormalParamContext) => Boolean;
+    visitModuleFormalArgs?: (ctx: bsvSyntaxParser.ModuleFormalArgsContext) => Boolean;
+    visitModuleStmt?: (ctx: bsvSyntaxParser.ModuleStmtContext) => Boolean;
+    visitModuleInst(ctx: bsvSyntaxParser.ModuleInstContext): Boolean {
         const name = ctx.identifier(0).text;
         const scope = this.scopeName[this.scopeName.length - 1];
         this.scopeName.push(name);
@@ -2574,13 +2358,13 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitModuleApp?: (ctx: ModuleAppContext) => Boolean;
-    visitModuleActualParamArg?: (ctx: ModuleActualParamArgContext) => Boolean;
-    visitModuleApp2?: (ctx: ModuleApp2Context) => Boolean;
-    visitModuleActualParam?: (ctx: ModuleActualParamContext) => Boolean;
-    visitModuleActualArgs?: (ctx: ModuleActualArgsContext) => Boolean;
-    visitModuleActualArg?: (ctx: ModuleActualArgContext) => Boolean;
-    visitMethodDef(ctx: MethodDefContext): Boolean {
+    visitModuleApp?: (ctx: bsvSyntaxParser.ModuleAppContext) => Boolean;
+    visitModuleActualParamArg?: (ctx: bsvSyntaxParser.ModuleActualParamArgContext) => Boolean;
+    visitModuleApp2?: (ctx: bsvSyntaxParser.ModuleApp2Context) => Boolean;
+    visitModuleActualParam?: (ctx: bsvSyntaxParser.ModuleActualParamContext) => Boolean;
+    visitModuleActualArgs?: (ctx: bsvSyntaxParser.ModuleActualArgsContext) => Boolean;
+    visitModuleActualArg?: (ctx: bsvSyntaxParser.ModuleActualArgContext) => Boolean;
+    visitMethodDef(ctx: bsvSyntaxParser.MethodDefContext): Boolean {
         const name = ctx.identifier(0).text;
         const scope = this.scopeName[this.scopeName.length - 1];
         this.scopeName.push(name);
@@ -2609,10 +2393,10 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitImplicitCond?: (ctx: ImplicitCondContext) => Boolean;
-    visitMethodFormals?: (ctx: MethodFormalsContext) => Boolean;
-    visitMethodFormal?: (ctx: MethodFormalContext) => Boolean;
-    visitSubinterfaceDef(ctx: SubinterfaceDefContext): Boolean {
+    visitImplicitCond?: (ctx: bsvSyntaxParser.ImplicitCondContext) => Boolean;
+    visitMethodFormals?: (ctx: bsvSyntaxParser.MethodFormalsContext) => Boolean;
+    visitMethodFormal?: (ctx: bsvSyntaxParser.MethodFormalContext) => Boolean;
+    visitSubinterfaceDef(ctx: bsvSyntaxParser.SubinterfaceDefContext): Boolean {
         const name = ctx.identifier(0).text;
         const scope = this.scopeName[this.scopeName.length - 1];
         this.scopeName.push(name);
@@ -2641,9 +2425,9 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitInterfaceStmt?: (ctx: InterfaceStmtContext) => Boolean;
-    visitExpressionStmt?: (ctx: ExpressionStmtContext) => Boolean;
-    visitRRule(ctx: R_ruleContext): Boolean {
+    visitInterfaceStmt?: (ctx: bsvSyntaxParser.InterfaceStmtContext) => Boolean;
+    visitExpressionStmt?: (ctx: bsvSyntaxParser.ExpressionStmtContext) => Boolean;
+    visitRRule(ctx: bsvSyntaxParser.R_ruleContext): Boolean {
         const name = ctx.identifier(0).text;
         const scope = this.scopeName[this.scopeName.length - 1];
         this.scopeName.push(name);
@@ -2672,10 +2456,10 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitRuleCond?: (ctx: RuleCondContext) => Boolean;
-    visitRuleBody?: (ctx: RuleBodyContext) => Boolean;
-    visitTypeDef?: (ctx: TypeDefContext) => Boolean;
-    visitTypedefSynonym(ctx: TypedefSynonymContext): Boolean {
+    visitRuleCond?: (ctx: bsvSyntaxParser.RuleCondContext) => Boolean;
+    visitRuleBody?: (ctx: bsvSyntaxParser.RuleBodyContext) => Boolean;
+    visitTypeDef?: (ctx: bsvSyntaxParser.TypeDefContext) => Boolean;
+    visitTypedefSynonym(ctx: bsvSyntaxParser.TypedefSynonymContext): Boolean {
         const name = ctx.typeDefType().text;
         this.symbolList.push(
             new SymbolInformation(
@@ -2701,7 +2485,7 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         const res = this.visitChildren(ctx);
         return res;
     }
-    visitTypedefEnum(ctx: TypedefEnumContext): Boolean {
+    visitTypedefEnum(ctx: bsvSyntaxParser.TypedefEnumContext): Boolean {
         const name = ctx.identifier_type().text;
         const scope = this.scopeName[this.scopeName.length - 1];
         this.scopeName.push(name);
@@ -2730,8 +2514,8 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitTypedefEnumElements?: (ctx: TypedefEnumElementsContext) => Boolean;
-    visitTypedefEnumElement(ctx: TypedefEnumElementContext): Boolean {
+    visitTypedefEnumElements?: (ctx: bsvSyntaxParser.TypedefEnumElementsContext) => Boolean;
+    visitTypedefEnumElement(ctx: bsvSyntaxParser.TypedefEnumElementContext): Boolean {
         const name = ctx.identifier_type().text;
         const scope = this.scopeName[this.scopeName.length - 1];
         this.symbolList.push(
@@ -2758,7 +2542,7 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         const res = this.visitChildren(ctx);
         return res;
     }
-    visitTypedefStruct(ctx: TypedefStructContext): Boolean {
+    visitTypedefStruct(ctx: bsvSyntaxParser.TypedefStructContext): Boolean {
         const name = ctx.typeDefType().text;
         const scope = this.scopeName[this.scopeName.length - 1];
         this.scopeName.push(name);
@@ -2787,7 +2571,7 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitTypedefTaggedUnion(ctx: TypedefTaggedUnionContext): Boolean {
+    visitTypedefTaggedUnion(ctx: bsvSyntaxParser.TypedefTaggedUnionContext): Boolean {
         const name = ctx.typeDefType().text;
         const scope = this.scopeName[this.scopeName.length - 1];
         this.scopeName.push(name);
@@ -2816,7 +2600,7 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitStructMember(ctx: StructMemberContext): Boolean {
+    visitStructMember(ctx: bsvSyntaxParser.StructMemberContext): Boolean {
         const name = ctx.identifier().text;
         const scope = this.scopeName[this.scopeName.length - 1];
         this.scopeName.push(name);
@@ -2845,7 +2629,7 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitUnionMember(ctx: UnionMemberContext): Boolean {
+    visitUnionMember(ctx: bsvSyntaxParser.UnionMemberContext): Boolean {
         const name = ctx.identifier_type().text;
         const scope = this.scopeName[this.scopeName.length - 1];
         this.scopeName.push(name);
@@ -2874,9 +2658,9 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitSubStruct?: (ctx: SubStructContext) => Boolean;
-    visitSubUnion?: (ctx: SubUnionContext) => Boolean;
-    visitVarDecl(ctx: VarDeclContext): Boolean {
+    visitSubStruct?: (ctx: bsvSyntaxParser.SubStructContext) => Boolean;
+    visitSubUnion?: (ctx: bsvSyntaxParser.SubUnionContext) => Boolean;
+    visitVarDecl(ctx: bsvSyntaxParser.VarDeclContext): Boolean {
         if (ctx.varInit.length > 0) {
             const name = ctx.varInit(0).identifier().text;
             const scope = this.scopeName[this.scopeName.length - 1];
@@ -2933,84 +2717,84 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
             return true;
         }
     }
-    visitVarInit?: (ctx: VarInitContext) => Boolean;
-    visitArrayDims?: (ctx: ArrayDimsContext) => Boolean;
-    visitVarAssign?: (ctx: VarAssignContext) => Boolean;
-    visitLValue?: (ctx: LValueContext) => Boolean;
-    visitRegWrite?: (ctx: RegWriteContext) => Boolean;
-    visitArrayIndexes?: (ctx: ArrayIndexesContext) => Boolean;
+    visitVarInit?: (ctx: bsvSyntaxParser.VarInitContext) => Boolean;
+    visitArrayDims?: (ctx: bsvSyntaxParser.ArrayDimsContext) => Boolean;
+    visitVarAssign?: (ctx: bsvSyntaxParser.VarAssignContext) => Boolean;
+    visitLValue?: (ctx: bsvSyntaxParser.LValueContext) => Boolean;
+    visitRegWrite?: (ctx: bsvSyntaxParser.RegWriteContext) => Boolean;
+    visitArrayIndexes?: (ctx: bsvSyntaxParser.ArrayIndexesContext) => Boolean;
     visitBeginEndStmtFunctionBodyStmt?: (
-        ctx: BeginEndStmt_functionBodyStmtContext
+        ctx: bsvSyntaxParser.BeginEndStmt_functionBodyStmtContext
     ) => Boolean;
     visitBeginEndStmtActionStmt?: (
-        ctx: BeginEndStmt_actionStmtContext
+        ctx: bsvSyntaxParser.BeginEndStmt_actionStmtContext
     ) => Boolean;
     visitBeginEndStmtActionValueStmt?: (
-        ctx: BeginEndStmt_actionValueStmtContext
+        ctx: bsvSyntaxParser.BeginEndStmt_actionValueStmtContext
     ) => Boolean;
     visitBeginEndStmtModuleStmt?: (
-        ctx: BeginEndStmt_moduleStmtContext
+        ctx: bsvSyntaxParser.BeginEndStmt_moduleStmtContext
     ) => Boolean;
     visitBeginEndStmtExpressionStmt?: (
-        ctx: BeginEndStmt_expressionStmtContext
+        ctx: bsvSyntaxParser.BeginEndStmt_expressionStmtContext
     ) => Boolean;
-    visitIfFunctionBodyStmt?: (ctx: If_functionBodyStmtContext) => Boolean;
-    visitIfActionStmt?: (ctx: If_actionStmtContext) => Boolean;
-    visitIfActionValueStmt?: (ctx: If_actionValueStmtContext) => Boolean;
-    visitIfModuleStmt?: (ctx: If_moduleStmtContext) => Boolean;
-    visitIfExpressionStmt?: (ctx: If_expressionStmtContext) => Boolean;
-    visitCaseFunctionBodyStmt?: (ctx: Case_functionBodyStmtContext) => Boolean;
-    visitCaseActionStmt?: (ctx: Case_actionStmtContext) => Boolean;
-    visitCaseActionValueStmt?: (ctx: Case_actionValueStmtContext) => Boolean;
-    visitCaseModuleStmt?: (ctx: Case_moduleStmtContext) => Boolean;
-    visitCaseExpressionStmt?: (ctx: Case_expressionStmtContext) => Boolean;
+    visitIfFunctionBodyStmt?: (ctx: bsvSyntaxParser.If_functionBodyStmtContext) => Boolean;
+    visitIfActionStmt?: (ctx: bsvSyntaxParser.If_actionStmtContext) => Boolean;
+    visitIfActionValueStmt?: (ctx: bsvSyntaxParser.If_actionValueStmtContext) => Boolean;
+    visitIfModuleStmt?: (ctx: bsvSyntaxParser.If_moduleStmtContext) => Boolean;
+    visitIfExpressionStmt?: (ctx: bsvSyntaxParser.If_expressionStmtContext) => Boolean;
+    visitCaseFunctionBodyStmt?: (ctx: bsvSyntaxParser.Case_functionBodyStmtContext) => Boolean;
+    visitCaseActionStmt?: (ctx: bsvSyntaxParser.Case_actionStmtContext) => Boolean;
+    visitCaseActionValueStmt?: (ctx: bsvSyntaxParser.Case_actionValueStmtContext) => Boolean;
+    visitCaseModuleStmt?: (ctx: bsvSyntaxParser.Case_moduleStmtContext) => Boolean;
+    visitCaseExpressionStmt?: (ctx: bsvSyntaxParser.Case_expressionStmtContext) => Boolean;
     visitCaseItemFunctionBodyStmt?: (
-        ctx: CaseItem_functionBodyStmtContext
+        ctx: bsvSyntaxParser.CaseItem_functionBodyStmtContext
     ) => Boolean;
-    visitCaseItemActionStmt?: (ctx: CaseItem_actionStmtContext) => Boolean;
+    visitCaseItemActionStmt?: (ctx: bsvSyntaxParser.CaseItem_actionStmtContext) => Boolean;
     visitCaseItemActionValueStmt?: (
-        ctx: CaseItem_actionValueStmtContext
+        ctx: bsvSyntaxParser.CaseItem_actionValueStmtContext
     ) => Boolean;
-    visitCaseItemModuleStmt?: (ctx: CaseItem_moduleStmtContext) => Boolean;
+    visitCaseItemModuleStmt?: (ctx: bsvSyntaxParser.CaseItem_moduleStmtContext) => Boolean;
     visitCaseItemExpressionStmt?: (
-        ctx: CaseItem_expressionStmtContext
+        ctx: bsvSyntaxParser.CaseItem_expressionStmtContext
     ) => Boolean;
     visitDefaultItemFunctionBodyStmt?: (
-        ctx: DefaultItem_functionBodyStmtContext
+        ctx: bsvSyntaxParser.DefaultItem_functionBodyStmtContext
     ) => Boolean;
     visitDefaultItemActionStmt?: (
-        ctx: DefaultItem_actionStmtContext
+        ctx: bsvSyntaxParser.DefaultItem_actionStmtContext
     ) => Boolean;
     visitDefaultItemActionValueStmt?: (
-        ctx: DefaultItem_actionValueStmtContext
+        ctx: bsvSyntaxParser.DefaultItem_actionValueStmtContext
     ) => Boolean;
     visitDefaultItemModuleStmt?: (
-        ctx: DefaultItem_moduleStmtContext
+        ctx: bsvSyntaxParser.DefaultItem_moduleStmtContext
     ) => Boolean;
     visitDefaultItemExpressionStmt?: (
-        ctx: DefaultItem_expressionStmtContext
+        ctx: bsvSyntaxParser.DefaultItem_expressionStmtContext
     ) => Boolean;
     visitWhileFunctionBodyStmt?: (
-        ctx: While_functionBodyStmtContext
+        ctx: bsvSyntaxParser.While_functionBodyStmtContext
     ) => Boolean;
-    visitWhileActionStmt?: (ctx: While_actionStmtContext) => Boolean;
-    visitWhileActionValueStmt?: (ctx: While_actionValueStmtContext) => Boolean;
-    visitWhileModuleStmt?: (ctx: While_moduleStmtContext) => Boolean;
-    visitWhileExpressionStmt?: (ctx: While_expressionStmtContext) => Boolean;
-    visitForFunctionBodyStmt?: (ctx: For_functionBodyStmtContext) => Boolean;
-    visitForActionStmt?: (ctx: For_actionStmtContext) => Boolean;
-    visitForActionValueStmt?: (ctx: For_actionValueStmtContext) => Boolean;
-    visitForModuleStmt?: (ctx: For_moduleStmtContext) => Boolean;
-    visitForExpressionStmt?: (ctx: For_expressionStmtContext) => Boolean;
-    visitForInit?: (ctx: ForInitContext) => Boolean;
-    visitForOldInit?: (ctx: ForOldInitContext) => Boolean;
-    visitSimpleVarAssign?: (ctx: SimpleVarAssignContext) => Boolean;
-    visitForNewInit?: (ctx: ForNewInitContext) => Boolean;
-    visitSimpleVarDeclAssign?: (ctx: SimpleVarDeclAssignContext) => Boolean;
-    visitForTest?: (ctx: ForTestContext) => Boolean;
-    visitForIncr?: (ctx: ForIncrContext) => Boolean;
-    visitVarIncr?: (ctx: VarIncrContext) => Boolean;
-    visitFunctionDef(ctx: FunctionDefContext): Boolean {
+    visitWhileActionStmt?: (ctx: bsvSyntaxParser.While_actionStmtContext) => Boolean;
+    visitWhileActionValueStmt?: (ctx: bsvSyntaxParser.While_actionValueStmtContext) => Boolean;
+    visitWhileModuleStmt?: (ctx: bsvSyntaxParser.While_moduleStmtContext) => Boolean;
+    visitWhileExpressionStmt?: (ctx: bsvSyntaxParser.While_expressionStmtContext) => Boolean;
+    visitForFunctionBodyStmt?: (ctx: bsvSyntaxParser.For_functionBodyStmtContext) => Boolean;
+    visitForActionStmt?: (ctx: bsvSyntaxParser.For_actionStmtContext) => Boolean;
+    visitForActionValueStmt?: (ctx: bsvSyntaxParser.For_actionValueStmtContext) => Boolean;
+    visitForModuleStmt?: (ctx: bsvSyntaxParser.For_moduleStmtContext) => Boolean;
+    visitForExpressionStmt?: (ctx: bsvSyntaxParser.For_expressionStmtContext) => Boolean;
+    visitForInit?: (ctx: bsvSyntaxParser.ForInitContext) => Boolean;
+    visitForOldInit?: (ctx: bsvSyntaxParser.ForOldInitContext) => Boolean;
+    visitSimpleVarAssign?: (ctx: bsvSyntaxParser.SimpleVarAssignContext) => Boolean;
+    visitForNewInit?: (ctx: bsvSyntaxParser.ForNewInitContext) => Boolean;
+    visitSimpleVarDeclAssign?: (ctx: bsvSyntaxParser.SimpleVarDeclAssignContext) => Boolean;
+    visitForTest?: (ctx: bsvSyntaxParser.ForTestContext) => Boolean;
+    visitForIncr?: (ctx: bsvSyntaxParser.ForIncrContext) => Boolean;
+    visitVarIncr?: (ctx: bsvSyntaxParser.VarIncrContext) => Boolean;
+    visitFunctionDef(ctx: bsvSyntaxParser.FunctionDefContext): Boolean {
         const name = ctx.functionProto().identifier().text;
         this.scopeName.push(name);
         this.symbolList.push(
@@ -3038,35 +2822,35 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitFunctionProto?: (ctx: FunctionProtoContext) => Boolean;
-    visitFunctionFormals?: (ctx: FunctionFormalsContext) => Boolean;
-    visitFunctionFormal?: (ctx: FunctionFormalContext) => Boolean;
-    visitFunctionBody?: (ctx: FunctionBodyContext) => Boolean;
-    visitFunctionBodyStmt?: (ctx: FunctionBodyStmtContext) => Boolean;
-    visitReturnStmt?: (ctx: ReturnStmtContext) => Boolean;
-    visitExpression?: (ctx: ExpressionContext) => Boolean;
-    visitExprPrimary?: (ctx: ExprPrimaryContext) => Boolean;
-    visitCondExpr?: (ctx: CondExprContext) => Boolean;
-    visitCondPredicate?: (ctx: CondPredicateContext) => Boolean;
-    visitExprOrCondPattern?: (ctx: ExprOrCondPatternContext) => Boolean;
-    visitOperatorExpr?: (ctx: OperatorExprContext) => Boolean;
-    visitUnop?: (ctx: UnopContext) => Boolean;
-    visitBinop?: (ctx: BinopContext) => Boolean;
-    visitBitConcat?: (ctx: BitConcatContext) => Boolean;
-    visitBeginEndExpr?: (ctx: BeginEndExprContext) => Boolean;
-    visitActionBlock?: (ctx: ActionBlockContext) => Boolean;
-    visitActionStmt?: (ctx: ActionStmtContext) => Boolean;
-    visitActionValueBlock?: (ctx: ActionValueBlockContext) => Boolean;
-    visitActionValueStmt?: (ctx: ActionValueStmtContext) => Boolean;
-    visitVarDeclDo?: (ctx: VarDeclDoContext) => Boolean;
-    visitVarDo?: (ctx: VarDoContext) => Boolean;
-    visitFunctionCall?: (ctx: FunctionCallContext) => Boolean;
-    visitMethodCall?: (ctx: MethodCallContext) => Boolean;
-    visitTypeAssertion?: (ctx: TypeAssertionContext) => Boolean;
-    visitStructExpr?: (ctx: StructExprContext) => Boolean;
-    visitMemberBind?: (ctx: MemberBindContext) => Boolean;
-    visitTaggedUnionExpr?: (ctx: TaggedUnionExprContext) => Boolean;
-    visitInterfaceExpr(ctx: InterfaceExprContext): Boolean {
+    visitFunctionProto?: (ctx: bsvSyntaxParser.FunctionProtoContext) => Boolean;
+    visitFunctionFormals?: (ctx: bsvSyntaxParser.FunctionFormalsContext) => Boolean;
+    visitFunctionFormal?: (ctx: bsvSyntaxParser.FunctionFormalContext) => Boolean;
+    visitFunctionBody?: (ctx: bsvSyntaxParser.FunctionBodyContext) => Boolean;
+    visitFunctionBodyStmt?: (ctx: bsvSyntaxParser.FunctionBodyStmtContext) => Boolean;
+    visitReturnStmt?: (ctx: bsvSyntaxParser.ReturnStmtContext) => Boolean;
+    visitExpression?: (ctx: bsvSyntaxParser.ExpressionContext) => Boolean;
+    visitExprPrimary?: (ctx: bsvSyntaxParser.ExprPrimaryContext) => Boolean;
+    visitCondExpr?: (ctx: bsvSyntaxParser.CondExprContext) => Boolean;
+    visitCondPredicate?: (ctx: bsvSyntaxParser.CondPredicateContext) => Boolean;
+    visitExprOrCondPattern?: (ctx: bsvSyntaxParser.ExprOrCondPatternContext) => Boolean;
+    visitOperatorExpr?: (ctx: bsvSyntaxParser.OperatorExprContext) => Boolean;
+    visitUnop?: (ctx: bsvSyntaxParser.UnopContext) => Boolean;
+    visitBinop?: (ctx: bsvSyntaxParser.BinopContext) => Boolean;
+    visitBitConcat?: (ctx: bsvSyntaxParser.BitConcatContext) => Boolean;
+    visitBeginEndExpr?: (ctx: bsvSyntaxParser.BeginEndExprContext) => Boolean;
+    visitActionBlock?: (ctx: bsvSyntaxParser.ActionBlockContext) => Boolean;
+    visitActionStmt?: (ctx: bsvSyntaxParser.ActionStmtContext) => Boolean;
+    visitActionValueBlock?: (ctx: bsvSyntaxParser.ActionValueBlockContext) => Boolean;
+    visitActionValueStmt?: (ctx: bsvSyntaxParser.ActionValueStmtContext) => Boolean;
+    visitVarDeclDo?: (ctx: bsvSyntaxParser.VarDeclDoContext) => Boolean;
+    visitVarDo?: (ctx: bsvSyntaxParser.VarDoContext) => Boolean;
+    visitFunctionCall?: (ctx: bsvSyntaxParser.FunctionCallContext) => Boolean;
+    visitMethodCall?: (ctx: bsvSyntaxParser.MethodCallContext) => Boolean;
+    visitTypeAssertion?: (ctx: bsvSyntaxParser.TypeAssertionContext) => Boolean;
+    visitStructExpr?: (ctx: bsvSyntaxParser.StructExprContext) => Boolean;
+    visitMemberBind?: (ctx: bsvSyntaxParser.MemberBindContext) => Boolean;
+    visitTaggedUnionExpr?: (ctx: bsvSyntaxParser.TaggedUnionExprContext) => Boolean;
+    visitInterfaceExpr(ctx: bsvSyntaxParser.InterfaceExprContext): Boolean {
         const name = ctx.type().text;
         this.scopeName.push(name);
         this.symbolList.push(
@@ -3094,51 +2878,51 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitRuleExpr?: (ctx: RuleExprContext) => Boolean;
-    visitRuleStmt?: (ctx: RuleStmtContext) => Boolean;
-    visitPattern?: (ctx: PatternContext) => Boolean;
-    visitConstantPattern?: (ctx: ConstantPatternContext) => Boolean;
-    visitTaggedUnionPattern?: (ctx: TaggedUnionPatternContext) => Boolean;
-    visitStructPattern?: (ctx: StructPatternContext) => Boolean;
-    visitTuplePattern?: (ctx: TuplePatternContext) => Boolean;
+    visitRuleExpr?: (ctx: bsvSyntaxParser.RuleExprContext) => Boolean;
+    visitRuleStmt?: (ctx: bsvSyntaxParser.RuleStmtContext) => Boolean;
+    visitPattern?: (ctx: bsvSyntaxParser.PatternContext) => Boolean;
+    visitConstantPattern?: (ctx: bsvSyntaxParser.ConstantPatternContext) => Boolean;
+    visitTaggedUnionPattern?: (ctx: bsvSyntaxParser.TaggedUnionPatternContext) => Boolean;
+    visitStructPattern?: (ctx: bsvSyntaxParser.StructPatternContext) => Boolean;
+    visitTuplePattern?: (ctx: bsvSyntaxParser.TuplePatternContext) => Boolean;
     visitCasePatItemFunctionBodyStmt?: (
-        ctx: CasePatItem_functionBodyStmtContext
+        ctx: bsvSyntaxParser.CasePatItem_functionBodyStmtContext
     ) => Boolean;
     visitCasePatItemActionStmt?: (
-        ctx: CasePatItem_actionStmtContext
+        ctx: bsvSyntaxParser.CasePatItem_actionStmtContext
     ) => Boolean;
     visitCasePatItemActionValueStmt?: (
-        ctx: CasePatItem_actionValueStmtContext
+        ctx: bsvSyntaxParser.CasePatItem_actionValueStmtContext
     ) => Boolean;
     visitCasePatItemModuleStmt?: (
-        ctx: CasePatItem_moduleStmtContext
+        ctx: bsvSyntaxParser.CasePatItem_moduleStmtContext
     ) => Boolean;
     visitCasePatItemExpressionStmt?: (
-        ctx: CasePatItem_expressionStmtContext
+        ctx: bsvSyntaxParser.CasePatItem_expressionStmtContext
     ) => Boolean;
-    visitCaseExpr?: (ctx: CaseExprContext) => Boolean;
-    visitCaseExprItem?: (ctx: CaseExprItemContext) => Boolean;
-    visitSystemTaskStmt?: (ctx: SystemTaskStmtContext) => Boolean;
-    visitDisplayTaskName?: (ctx: DisplayTaskNameContext) => Boolean;
-    visitStringTaskName?: (ctx: StringTaskNameContext) => Boolean;
-    visitSystemFunctionCall?: (ctx: SystemFunctionCallContext) => Boolean;
-    visitSystemTaskCall?: (ctx: SystemTaskCallContext) => Boolean;
-    visitStringAVTaskName?: (ctx: StringAVTaskNameContext) => Boolean;
-    visitAttributeInstances?: (ctx: AttributeInstancesContext) => Boolean;
-    visitAttributeInstance?: (ctx: AttributeInstanceContext) => Boolean;
-    visitAttrSpec?: (ctx: AttrSpecContext) => Boolean;
-    visitAttrName?: (ctx: AttrNameContext) => Boolean;
-    visitProvisos?: (ctx: ProvisosContext) => Boolean;
-    visitProviso?: (ctx: ProvisoContext) => Boolean;
-    visitTypeclassDef?: (ctx: TypeclassDefContext) => Boolean;
-    visitTypeclassIde?: (ctx: TypeclassIdeContext) => Boolean;
-    visitTypelist?: (ctx: TypelistContext) => Boolean;
-    visitTypedepends?: (ctx: TypedependsContext) => Boolean;
-    visitTypedepend?: (ctx: TypedependContext) => Boolean;
-    visitOverloadedDef?: (ctx: OverloadedDefContext) => Boolean;
-    visitTypeclassInstanceDef?: (ctx: TypeclassInstanceDefContext) => Boolean;
-    visitDerives?: (ctx: DerivesContext) => Boolean;
-    visitExternModuleImport(ctx: ExternModuleImportContext): Boolean {
+    visitCaseExpr?: (ctx: bsvSyntaxParser.CaseExprContext) => Boolean;
+    visitCaseExprItem?: (ctx: bsvSyntaxParser.CaseExprItemContext) => Boolean;
+    visitSystemTaskStmt?: (ctx: bsvSyntaxParser.SystemTaskStmtContext) => Boolean;
+    visitDisplayTaskName?: (ctx: bsvSyntaxParser.DisplayTaskNameContext) => Boolean;
+    visitStringTaskName?: (ctx: bsvSyntaxParser.StringTaskNameContext) => Boolean;
+    visitSystemFunctionCall?: (ctx: bsvSyntaxParser.SystemFunctionCallContext) => Boolean;
+    visitSystemTaskCall?: (ctx: bsvSyntaxParser.SystemTaskCallContext) => Boolean;
+    visitStringAVTaskName?: (ctx: bsvSyntaxParser.StringAVTaskNameContext) => Boolean;
+    visitAttributeInstances?: (ctx: bsvSyntaxParser.AttributeInstancesContext) => Boolean;
+    visitAttributeInstance?: (ctx: bsvSyntaxParser.AttributeInstanceContext) => Boolean;
+    visitAttrSpec?: (ctx: bsvSyntaxParser.AttrSpecContext) => Boolean;
+    visitAttrName?: (ctx: bsvSyntaxParser.AttrNameContext) => Boolean;
+    visitProvisos?: (ctx: bsvSyntaxParser.ProvisosContext) => Boolean;
+    visitProviso?: (ctx: bsvSyntaxParser.ProvisoContext) => Boolean;
+    visitTypeclassDef?: (ctx: bsvSyntaxParser.TypeclassDefContext) => Boolean;
+    visitTypeclassIde?: (ctx: bsvSyntaxParser.TypeclassIdeContext) => Boolean;
+    visitTypelist?: (ctx: bsvSyntaxParser.TypelistContext) => Boolean;
+    visitTypedepends?: (ctx: bsvSyntaxParser.TypedependsContext) => Boolean;
+    visitTypedepend?: (ctx: bsvSyntaxParser.TypedependContext) => Boolean;
+    visitOverloadedDef?: (ctx: bsvSyntaxParser.OverloadedDefContext) => Boolean;
+    visitTypeclassInstanceDef?: (ctx: bsvSyntaxParser.TypeclassInstanceDefContext) => Boolean;
+    visitDerives?: (ctx: bsvSyntaxParser.DerivesContext) => Boolean;
+    visitExternModuleImport(ctx: bsvSyntaxParser.ExternModuleImportContext): Boolean {
         const name = ctx.identifier(0).text;
         this.scopeName.push(name);
         this.symbolList.push(
@@ -3166,12 +2950,12 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitImportBVIStmt?: (ctx: ImportBVIStmtContext) => Boolean;
-    visitEnabledSel?: (ctx: Enabled_selContext) => Boolean;
-    visitReadySel?: (ctx: Ready_selContext) => Boolean;
-    visitClockedBySel?: (ctx: Clocked_by_selContext) => Boolean;
-    visitResetBySel?: (ctx: Reset_by_selContext) => Boolean;
-    visitParameterBVIStmt(ctx: ParameterBVIStmtContext): Boolean {
+    visitImportBVIStmt?: (ctx: bsvSyntaxParser.ImportBVIStmtContext) => Boolean;
+    visitEnabledSel?: (ctx: bsvSyntaxParser.Enabled_selContext) => Boolean;
+    visitReadySel?: (ctx: bsvSyntaxParser.Ready_selContext) => Boolean;
+    visitClockedBySel?: (ctx: bsvSyntaxParser.Clocked_by_selContext) => Boolean;
+    visitResetBySel?: (ctx: bsvSyntaxParser.Reset_by_selContext) => Boolean;
+    visitParameterBVIStmt(ctx: bsvSyntaxParser.ParameterBVIStmtContext): Boolean {
         const name = ctx.identifier().text;
         this.scopeName.push(name);
         this.symbolList.push(
@@ -3199,7 +2983,7 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitMethodBVIStmt(ctx: MethodBVIStmtContext): Boolean {
+    visitMethodBVIStmt(ctx: bsvSyntaxParser.MethodBVIStmtContext): Boolean {
         const name = ctx.identifier().text;
         this.scopeName.push(name);
         this.symbolList.push(
@@ -3227,7 +3011,7 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitPortBVIStmt(ctx: PortBVIStmtContext): Boolean {
+    visitPortBVIStmt(ctx: bsvSyntaxParser.PortBVIStmtContext): Boolean {
         const name = ctx.identifier().text;
         this.scopeName.push(name);
         this.symbolList.push(
@@ -3255,7 +3039,7 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitInputClockBVIStmt(ctx: InputClockBVIStmtContext): Boolean {
+    visitInputClockBVIStmt(ctx: bsvSyntaxParser.InputClockBVIStmtContext): Boolean {
         const name = ctx.identifier().text;
         this.scopeName.push(name);
         this.symbolList.push(
@@ -3283,9 +3067,9 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitPortsDef?: (ctx: PortsDefContext) => Boolean;
-    visitPortId?: (ctx: PortIdContext) => Boolean;
-    visitDefaultClockBVIStmt(ctx: DefaultClockBVIStmtContext): Boolean {
+    visitPortsDef?: (ctx: bsvSyntaxParser.PortsDefContext) => Boolean;
+    visitPortId?: (ctx: bsvSyntaxParser.PortIdContext) => Boolean;
+    visitDefaultClockBVIStmt(ctx: bsvSyntaxParser.DefaultClockBVIStmtContext): Boolean {
         const name = ctx.identifier().text;
         this.scopeName.push(name);
         this.symbolList.push(
@@ -3313,34 +3097,34 @@ class BsvSymbolVisior implements bsvVisitor<Boolean> {
         this.scopeName.pop();
         return res;
     }
-    visitOutputClockBVIStmt?: (ctx: OutputClockBVIStmtContext) => Boolean;
-    visitInputResetBVIStmt?: (ctx: InputResetBVIStmtContext) => Boolean;
-    visitClockId?: (ctx: ClockIdContext) => Boolean;
-    visitDefaultResetBVIStmt?: (ctx: DefaultResetBVIStmtContext) => Boolean;
-    visitOutputResetBVIStmt?: (ctx: OutputResetBVIStmtContext) => Boolean;
-    visitAncestorBVIStmt?: (ctx: AncestorBVIStmtContext) => Boolean;
-    visitSameFamilyBVIStmt?: (ctx: SameFamilyBVIStmtContext) => Boolean;
-    visitScheduleBVIStmt?: (ctx: ScheduleBVIStmtContext) => Boolean;
-    visitOperatorId?: (ctx: OperatorIdContext) => Boolean;
-    visitPathBVIStmt?: (ctx: PathBVIStmtContext) => Boolean;
-    visitInterfaceBVIStmt?: (ctx: InterfaceBVIStmtContext) => Boolean;
-    visitInterfaceBVIMembDecl?: (ctx: InterfaceBVIMembDeclContext) => Boolean;
-    visitInoutBVIStmt?: (ctx: InoutBVIStmtContext) => Boolean;
-    visitResetId?: (ctx: ResetIdContext) => Boolean;
-    visitNoResetBVIStmt?: (ctx: NoResetBVIStmtContext) => Boolean;
-    visitExternCImport?: (ctx: ExternCImportContext) => Boolean;
-    visitCFuncArgs?: (ctx: CFuncArgsContext) => Boolean;
-    visitCFuncArg?: (ctx: CFuncArgContext) => Boolean;
-    visitFsmStmt?: (ctx: FsmStmtContext) => Boolean;
-    visitExprFsmStmt?: (ctx: ExprFsmStmtContext) => Boolean;
-    visitSeqFsmStmt?: (ctx: SeqFsmStmtContext) => Boolean;
-    visitParFsmStmt?: (ctx: ParFsmStmtContext) => Boolean;
-    visitIfFsmStmt?: (ctx: IfFsmStmtContext) => Boolean;
-    visitWhileFsmStmt?: (ctx: WhileFsmStmtContext) => Boolean;
-    visitForFsmStmt?: (ctx: ForFsmStmtContext) => Boolean;
-    visitReturnFsmStmt?: (ctx: ReturnFsmStmtContext) => Boolean;
-    visitRepeatFsmStmt?: (ctx: RepeatFsmStmtContext) => Boolean;
-    visitLoopBodyFsmStmt?: (ctx: LoopBodyFsmStmtContext) => Boolean;
+    visitOutputClockBVIStmt?: (ctx: bsvSyntaxParser.OutputClockBVIStmtContext) => Boolean;
+    visitInputResetBVIStmt?: (ctx: bsvSyntaxParser.InputResetBVIStmtContext) => Boolean;
+    visitClockId?: (ctx: bsvSyntaxParser.ClockIdContext) => Boolean;
+    visitDefaultResetBVIStmt?: (ctx: bsvSyntaxParser.DefaultResetBVIStmtContext) => Boolean;
+    visitOutputResetBVIStmt?: (ctx: bsvSyntaxParser.OutputResetBVIStmtContext) => Boolean;
+    visitAncestorBVIStmt?: (ctx: bsvSyntaxParser.AncestorBVIStmtContext) => Boolean;
+    visitSameFamilyBVIStmt?: (ctx: bsvSyntaxParser.SameFamilyBVIStmtContext) => Boolean;
+    visitScheduleBVIStmt?: (ctx: bsvSyntaxParser.ScheduleBVIStmtContext) => Boolean;
+    visitOperatorId?: (ctx: bsvSyntaxParser.OperatorIdContext) => Boolean;
+    visitPathBVIStmt?: (ctx: bsvSyntaxParser.PathBVIStmtContext) => Boolean;
+    visitInterfaceBVIStmt?: (ctx: bsvSyntaxParser.InterfaceBVIStmtContext) => Boolean;
+    visitInterfaceBVIMembDecl?: (ctx: bsvSyntaxParser.InterfaceBVIMembDeclContext) => Boolean;
+    visitInoutBVIStmt?: (ctx: bsvSyntaxParser.InoutBVIStmtContext) => Boolean;
+    visitResetId?: (ctx: bsvSyntaxParser.ResetIdContext) => Boolean;
+    visitNoResetBVIStmt?: (ctx: bsvSyntaxParser.NoResetBVIStmtContext) => Boolean;
+    visitExternCImport?: (ctx: bsvSyntaxParser.ExternCImportContext) => Boolean;
+    visitCFuncArgs?: (ctx: bsvSyntaxParser.CFuncArgsContext) => Boolean;
+    visitCFuncArg?: (ctx: bsvSyntaxParser.CFuncArgContext) => Boolean;
+    visitFsmStmt?: (ctx: bsvSyntaxParser.FsmStmtContext) => Boolean;
+    visitExprFsmStmt?: (ctx: bsvSyntaxParser.ExprFsmStmtContext) => Boolean;
+    visitSeqFsmStmt?: (ctx: bsvSyntaxParser.SeqFsmStmtContext) => Boolean;
+    visitParFsmStmt?: (ctx: bsvSyntaxParser.ParFsmStmtContext) => Boolean;
+    visitIfFsmStmt?: (ctx: bsvSyntaxParser.IfFsmStmtContext) => Boolean;
+    visitWhileFsmStmt?: (ctx: bsvSyntaxParser.WhileFsmStmtContext) => Boolean;
+    visitForFsmStmt?: (ctx: bsvSyntaxParser.ForFsmStmtContext) => Boolean;
+    visitReturnFsmStmt?: (ctx: bsvSyntaxParser.ReturnFsmStmtContext) => Boolean;
+    visitRepeatFsmStmt?: (ctx: bsvSyntaxParser.RepeatFsmStmtContext) => Boolean;
+    visitLoopBodyFsmStmt?: (ctx: bsvSyntaxParser.LoopBodyFsmStmtContext) => Boolean;
 
     visit(_tree: ParseTree): Boolean {
         throw new Error('Method not implemented.');
@@ -3539,7 +3323,7 @@ class BsvStdLibProvider {
 class BsvBaseInfoProvider {
     stdProvider: BsvStdLibProvider = new BsvStdLibProvider();
 
-    parserCache: Map<Uri, TopContext> = new Map();
+    parserCache: Map<Uri, bsvSyntaxParser.TopContext> = new Map();
     docSymbolCache: Map<Uri, SymbolInformation[]> = new Map();
 
     resolveStdLib() {
@@ -3559,7 +3343,7 @@ class BsvBaseInfoProvider {
                     const chars = CharStreams.fromString(s.toString());
                     const lexer = new bsvLexer(chars);
                     const tokens = new CommonTokenStream(lexer);
-                    const parser = new bsvParser(tokens);
+                    const parser = new bsvSyntaxParser.bsvParser(tokens);
                     const tree = parser.top();
 
                     this.parserCache.set(Uri.file(fname), tree);
@@ -3585,7 +3369,7 @@ class BsvBaseInfoProvider {
             const chars = CharStreams.fromString(text);
             const lexer = new bsvLexer(chars);
             const tokens = new CommonTokenStream(lexer);
-            const parser = new bsvParser(tokens);
+            const parser = new bsvSyntaxParser.bsvParser(tokens);
             const tree = parser.top();
 
             this.parserCache.set(uri, tree);
@@ -3777,7 +3561,7 @@ class BsvSingleFileInfoProvider
         const chars = CharStreams.fromString(doc.getText());
         const lexer = new bsvLexer(chars);
         const tokens = new CommonTokenStream(lexer);
-        const parser = new bsvParser(tokens);
+        const parser = new bsvSyntaxParser.bsvParser(tokens);
 
         try {
             let top = parser.top();

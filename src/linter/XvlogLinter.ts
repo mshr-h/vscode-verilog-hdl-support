@@ -1,6 +1,5 @@
 import {
     workspace,
-    Disposable,
     Range,
     TextDocument,
     Diagnostic,

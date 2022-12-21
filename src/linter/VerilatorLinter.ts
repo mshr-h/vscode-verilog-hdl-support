@@ -1,17 +1,13 @@
 import {
     workspace,
-    window,
-    Disposable,
     Range,
     TextDocument,
     Diagnostic,
     DiagnosticSeverity,
     DiagnosticCollection,
-    languages,
 } from 'vscode';
 import * as child from 'child_process';
 import BaseLinter from './BaseLinter';
-import { join } from 'path';
 import { Logger, LogSeverity } from '../logger';
 
 var isWindows = process.platform === 'win32';

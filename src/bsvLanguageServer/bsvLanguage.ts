@@ -1,7 +1,3 @@
-function tuple<T extends any[]>(...args: T): T {
-  return args;
-}
-
 type Constructor = new (...a: any[]) => any;
 type Merge<TTrait extends Constructor, TTarget extends Constructor> = (new (
   ...a: ConstructorParameters<TTarget>
@@ -24,8 +20,6 @@ class BsvIdentifier {
 
 const bsvPackageMixin = trait(BsvScope)(trait(BsvIdentifier)(class {}));
 const bsvFunctionMixin = trait(BsvScope)(trait(BsvIdentifier)(class {}));
-const bsvMethodMixin = trait(BsvScope)(trait(BsvIdentifier)(class {}));
-const bsvModuleMixin = trait(BsvScope)(trait(BsvIdentifier)(class {}));
 
 export class BsvPackage extends bsvPackageMixin {
   constructor(_id: String) {

@@ -10,7 +10,7 @@ import {
     LocationLink,
 } from 'vscode';
 import { BsvInfoProviderManger } from '../BsvProvider';
-import { Ctags, CtagsManager, Symbol } from '../ctags';
+import { CtagsManager, Symbol } from '../ctags';
 import { Logger } from '../logger';
 
 export class VerilogDefinitionProvider implements DefinitionProvider {

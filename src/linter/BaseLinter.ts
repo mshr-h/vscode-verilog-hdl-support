@@ -1,10 +1,6 @@
 import {
-    Disposable,
-    workspace,
     TextDocument,
     DiagnosticCollection,
-    Diagnostic,
-    languages,
 } from 'vscode';
 import { Logger } from '../logger';
 

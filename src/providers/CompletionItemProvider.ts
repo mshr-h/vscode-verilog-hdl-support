@@ -7,13 +7,12 @@ import {
     CompletionContext,
     ProviderResult,
     CompletionItemKind,
-    CompletionTriggerKind,
     Range,
     MarkdownString,
     CompletionList,
 } from 'vscode';
 import { BsvInfoProviderManger } from '../BsvProvider';
-import { Ctags, CtagsManager, Symbol } from '../ctags';
+import { CtagsManager, Symbol } from '../ctags';
 import { Logger } from '../logger';
 
 export class VerilogCompletionItemProvider implements CompletionItemProvider {
