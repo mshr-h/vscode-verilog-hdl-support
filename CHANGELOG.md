@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## [1.6.1] - Unreleased
 
 - Added experimental support for Verilog-HDL formatting with [verilog-format](https://github.com/ericsonj/verilog-format).
+- Added experimental support for Verilog-HDL formatting with [thomasrussellmurphy/istyle-verilog-formatter: Open source implementation of a Verilog formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter).
 
 ## [1.6.0] - 2022-12-20
 

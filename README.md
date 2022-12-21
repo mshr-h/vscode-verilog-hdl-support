@@ -136,6 +136,20 @@ Use the following settings to configure the extension to your needs
 
     \[Experimental\] A path to the HDL Checker Language Server binary.
 
+        "verilog.formatter.name": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "verilog-format",
+            "iStyle"
+          ],
+          "default": "verilog-format",
+          "description": "[Experimental] Choose a Verilog-HDL formatter."
+        },
+- `verilog.formatter.verilogHDL.name` (Default: `verilog-format`)
+
+    \[Experimental\] Choose a Verilog-HDL formatter.
+
 - `verilog.formatter.verilogFormat.path` (Default: `verilog-format`)
 
     \[Experimental\] A path to the verilog-format binary.
@@ -143,6 +157,18 @@ Use the following settings to configure the extension to your needs
 - `verilog.formatter.verilogFormat.settings` (Default: `${env:HOME}/.verilog-format.properties`)
 
     \[Experimental\] A path to the verilog-format settings file.
+
+- `verilog.formatter.iStyleVerilogFormatter.path` (Default: `iStyle`)
+
+    \[Experimental\] A path to the iStyle Verilog Formatter binary.
+
+- `verilog.formatter.iStyleVerilogFormatter.arguments` (Default: nothing)
+
+    \[Experimental\] Add custom arguments to iStyle Verilog Formatter for formatting.
+
+- `verilog.formatter.iStyleVerilogFormatter.style` (Default: `Indent only`)
+
+    \[Experimental\] Choose styling options from ANSI/K&R/GNU.
 
 ## Commands
 

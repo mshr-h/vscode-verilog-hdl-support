@@ -319,6 +319,16 @@
           "default": "hdl_checker",
           "description": "[Experimental] A path to the HDL Checker Language Server binary."
         },
+        "verilog.formatter.verilogHDL.name": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "verilog-format",
+            "iStyle"
+          ],
+          "default": "verilog-format",
+          "description": "[Experimental] Choose a Verilog-HDL formatter."
+        },
         "verilog.formatter.verilogFormat.path": {
           "scope": "window",
           "type": "string",
@@ -330,6 +340,30 @@
           "type": "string",
           "default": "${env:HOME}/.verilog-format.properties",
           "description": "[Experimental] A path to the verilog-format settings file."
+        },
+        "verilog.formatter.iStyleVerilogFormatter.path": {
+          "scope": "window",
+          "type": "string",
+          "default": "iStyle",
+          "description": "[Experimental] A path to the iStyle Verilog Formatter binary."
+        },
+        "verilog.formatter.iStyleVerilogFormatter.arguments": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "[Experimental] Add custom arguments to iStyle Verilog Formatter for formatting."
+        },
+        "verilog.formatter.iStyleVerilogFormatter.style": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "ANSI",
+            "K&R",
+            "GNU",
+            "Indent only"
+          ],
+          "default": "Indent only",
+          "description": "[Experimental] Choose styling options from ANSI/K&R/GNU."
         }
       }
     },

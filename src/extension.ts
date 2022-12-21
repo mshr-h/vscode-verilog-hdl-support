@@ -129,9 +129,9 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     // Configure Format Provider
-    let formatProvider = new FormatProvider.VerilogFormatProvider(logger);
+    let verilogFormatProvider = new FormatProvider.VerilogFormatProvider(logger);
     context.subscriptions.push(
-        vscode.languages.registerDocumentFormattingEditProvider(verilogSelector, formatProvider)
+        vscode.languages.registerDocumentFormattingEditProvider(verilogSelector, verilogFormatProvider)
     );
 
     // Configure command to instantiate a module
