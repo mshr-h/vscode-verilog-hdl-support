@@ -26,9 +26,7 @@ import { extensionID } from './extension';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { readdirSync } from 'fs';
-import { Logger } from './logger';
-
-let logger: Logger = new Logger();
+import { logger } from './extension';
 
 export interface BsvInfoProvider {
     getSymbol(

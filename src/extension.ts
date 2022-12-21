@@ -15,10 +15,11 @@ import * as DefinitionProvider from './providers/DefinitionProvider';
 import * as CompletionItemProvider from './providers/CompletionItemProvider';
 import { BsvInfoProviderManger } from './BsvProvider';
 import * as ModuleInstantiation from './commands/ModuleInstantiation';
+import * as FormatProvider from './providers/FormatPrivider';
 import { Logger } from './logger';
 
 let lintManager: LintManager;
-let logger: Logger;
+export let logger: Logger; // Global logger
 export let ctagsManager: CtagsManager;
 export var extensionID: string = 'mshr-h.veriloghdl';
 let languageClients = new Map<string, LanguageClient>();
@@ -125,6 +126,12 @@ export function activate(context: vscode.ExtensionContext) {
     let bsvdefProvider = new DefinitionProvider.BsvDefinitionProvider();
     context.subscriptions.push(
         vscode.languages.registerDefinitionProvider(bsvSelector, bsvdefProvider)
+    );
+
+    // Configure Format Provider
+    let formatProvider = new FormatProvider.VerilogFormatProvider(logger);
+    context.subscriptions.push(
+        vscode.languages.registerDocumentFormattingEditProvider(verilogSelector, formatProvider)
     );
 
     // Configure command to instantiate a module

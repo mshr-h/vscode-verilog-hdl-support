@@ -43,6 +43,8 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - [svls](https://github.com/dalance/svls)
   - [veridian](https://github.com/vivekmalneedi/veridian)
   - [HDL Checker](https://github.com/suoto/hdl_checker)
+- \[Experimental\] Formatter support
+  - [verilog-format](https://github.com/ericsonj/verilog-format)
 - Improvements in the newly added features
 - Migrate VHDL support from [mshr-h/vscode-vhdl-support](https://github.com/mshr-h/vscode-vhdl-support)
 
@@ -134,6 +136,14 @@ Use the following settings to configure the extension to your needs
 
     \[Experimental\] A path to the HDL Checker Language Server binary.
 
+- `verilog.formatter.verilog-format.path` (Default: `verilog-format`)
+
+    \[Experimental\] A path to the verilog-format binary.
+
+- `verilog.formatter.verilog-format.settings` (Default: `${env:HOME}/.verilog-format.properties`)
+
+    \[Experimental\] A path to the verilog-format settings file.
+
 ## Commands
 
 - **Rerun lint tool**
@@ -161,6 +171,11 @@ If you encounter any problems even if it's not related to this feature, **deleti
 | [veridian](https://github.com/vivekmalneedi/veridian)          | not supported | enabled       | not supported |
 | [HDL Checker](https://github.com/suoto/hdl_checker)            | enabled       | enabled       | enabled       |
 
+## Formatter (Experimental)
+
+We currently support [verilog-format](https://github.com/ericsonj/verilog-format). You can format Verilog-HDL file by `Ctrl-Shift-p`, then select `Format Document`.
+Entire file formatting is supported. Selected range formatting is not supported yet.
+
 ## Compatibility
 
 | Feature                           |  Windows   |    Linux     |    macOS    |
@@ -172,6 +187,7 @@ If you encounter any problems even if it's not related to this feature, **deleti
 | Verilator                         | Windows 10 |   Debian 9   | Not Tested  |
 | Ctags Integration                 | Windows 10 | Ubuntu 18.10 | Not Tested  |
 | Language Server                   | Windows 10 | Ubuntu 20.04 | macOS 10.15 |
+| Formatter                         | Not tested | Ubuntu 20.04 | Not tested  |
 
 If you have tested the linters in new platforms or have issues with them, feel free to file an issue.
 
@@ -199,3 +215,4 @@ Open the **Output** pane in VS Code and choose _Verilog_ in the drop-down menu t
 - [veridian](https://github.com/vivekmalneedi/veridian)
 - [HDL Checker](https://github.com/suoto/hdl_checker)
 - [verible](https://github.com/chipsalliance/verible)
+- [ericsonj/verilog-format](https://github.com/ericsonj/verilog-format)
