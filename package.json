@@ -18,7 +18,8 @@
   "categories": [
     "Programming Languages",
     "Snippets",
-    "Linters"
+    "Linters",
+    "Formatters"
   ],
   "icon": "images/icon.png",
   "activationEvents": [
@@ -317,6 +318,18 @@
           "type": "string",
           "default": "hdl_checker",
           "description": "[Experimental] A path to the HDL Checker Language Server binary."
+        },
+        "verilog.formatter.verilog-format.path": {
+          "scope": "window",
+          "type": "string",
+          "default": "verilog-format",
+          "description": "[Experimental] A path to the verilog-format binary."
+        },
+        "verilog.formatter.verilog-format.settings": {
+          "scope": "window",
+          "type": "string",
+          "default": "${env:HOME}/.verilog-format.properties",
+          "description": "[Experimental] A path to the verilog-format settings file."
         }
       }
     },
