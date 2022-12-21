@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## [1.7.0] - Unreleased
+## [1.7.0] - 2022-12-21
 
 - Added experimental support for Verilog-HDL formatting with the following formatters.
   - [verilog-format](https://github.com/ericsonj/verilog-format) [#364](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/364)
