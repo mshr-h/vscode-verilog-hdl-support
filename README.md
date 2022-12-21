@@ -45,6 +45,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - [HDL Checker](https://github.com/suoto/hdl_checker)
 - \[Experimental\] Formatter support
   - [verilog-format](https://github.com/ericsonj/verilog-format)
+  - [istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter)
 - Improvements in the newly added features
 - Migrate VHDL support from [mshr-h/vscode-vhdl-support](https://github.com/mshr-h/vscode-vhdl-support)
 
@@ -134,21 +135,12 @@ Use the following settings to configure the extension to your needs
 
 - `verilog.languageServer.hdlChecker.path` (Default: `hdl_checker`)
 
-    \[Experimental\] A path to the HDL Checker Language Server binary.
-
-        "verilog.formatter.name": {
-          "scope": "window",
-          "type": "string",
-          "enum": [
-            "verilog-format",
-            "iStyle"
-          ],
-          "default": "verilog-format",
-          "description": "[Experimental] Choose a Verilog-HDL formatter."
-        },
 - `verilog.formatter.verilogHDL.name` (Default: `verilog-format`)
 
-    \[Experimental\] Choose a Verilog-HDL formatter.
+    \[Experimental\] Choose the Verilog-HDL formatter. Possible values are:
+
+  - `verilog-format`
+  - `iStyle`
 
 - `verilog.formatter.verilogFormat.path` (Default: `verilog-format`)
 
@@ -199,7 +191,7 @@ If you encounter any problems even if it's not related to this feature, **deleti
 
 ## Formatter (Experimental)
 
-We currently support [verilog-format](https://github.com/ericsonj/verilog-format). You can format Verilog-HDL file by `Ctrl-Shift-p`, then select `Format Document`.
+We currently support Verilog-HDL file formatting with [verilog-format](https://github.com/ericsonj/verilog-format) and [thomasrussellmurphy/istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter). You can format Verilog-HDL file by typing `Ctrl-Shift-p`, then select `Format Document`.
 Entire file formatting is supported. Selected range formatting is not supported yet.
 
 ## Compatibility
@@ -237,8 +229,9 @@ Open the **Output** pane in VS Code and choose _Verilog_ in the drop-down menu t
 - [Sublime Text Bluespec SystemVerilog](https://github.com/thotypous/sublime-bsv)
 - [yangsu/sublime-vhdl](https://github.com/yangsu/sublime-vhdl)
 - [Sublime EDA](https://github.com/tschinz/sublime_eda)
-- [svls](https://github.com/dalance/svls)
-- [veridian](https://github.com/vivekmalneedi/veridian)
-- [HDL Checker](https://github.com/suoto/hdl_checker)
-- [verible](https://github.com/chipsalliance/verible)
+- [dalance/svls](https://github.com/dalance/svls)
+- [vivekmalneedi/veridian](https://github.com/vivekmalneedi/veridian)
+- [suoto/hdl_checkerChecker](https://github.com/suoto/hdl_checker)
+- [chipsalliance/verible](https://github.com/chipsalliance/verible)
 - [ericsonj/verilog-format](https://github.com/ericsonj/verilog-format)
+- [thomasrussellmurphy/istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter)
