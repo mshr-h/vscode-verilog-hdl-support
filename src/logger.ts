@@ -1,7 +1,5 @@
 import * as vscode from 'vscode';
 
-const outputChannel: vscode.OutputChannel = vscode.window.createOutputChannel('Verilog');
-
 export enum LogSeverity {
     info,
     warn,
@@ -10,13 +8,16 @@ export enum LogSeverity {
 }
 
 export class Logger {
+    private outputChannel: vscode.OutputChannel;
+
     constructor() {
+        this.outputChannel = vscode.window.createOutputChannel('Verilog');
     }
 
     log(msg: string, severity: LogSeverity = LogSeverity.info) {
-        if (severity === LogSeverity.command) { outputChannel.appendLine('> ' + msg); }
+        if (severity === LogSeverity.command) { this.outputChannel.appendLine('> ' + msg); }
         else {
-            outputChannel.appendLine(
+            this.outputChannel.appendLine(
                 '[' + LogSeverity[severity] + '] ' + msg
             );
         }

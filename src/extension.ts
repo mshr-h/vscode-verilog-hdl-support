@@ -18,7 +18,7 @@ import * as ModuleInstantiation from './commands/ModuleInstantiation';
 import { Logger } from './logger';
 
 let lintManager: LintManager;
-let logger: Logger;
+export let logger: Logger; // Global logger
 export let ctagsManager: CtagsManager;
 export var extensionID: string = 'mshr-h.veriloghdl';
 let languageClients = new Map<string, LanguageClient>();
