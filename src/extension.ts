@@ -69,7 +69,7 @@ export function activate(context: vscode.ExtensionContext) {
     let bsvSelector: vscode.DocumentSelector = { scheme: 'file', language: 'bsv' };
 
     // Check if the Extension was updated recently
-    checkIfUpdated(context);
+    askShowChangelogIfUpdated(context);
 
     // Configure ctags
     ctagsManager = new CtagsManager(logger);
@@ -233,7 +233,7 @@ function initAllLanguageClients() {
         });
 }
 
-function checkIfUpdated(context: vscode.ExtensionContext) {
+function askShowChangelogIfUpdated(context: vscode.ExtensionContext) {
     let previousVersion = new SemVer(context.globalState.get('version', '0.0.0'));
     let currentVersion = new SemVer(vscode.extensions.getExtension(extensionID).packageJSON.version);
     if (previousVersion < currentVersion) {
@@ -242,18 +242,16 @@ function checkIfUpdated(context: vscode.ExtensionContext) {
                 'Verilog-HDL/SystemVerilog extension has been updated',
                 'Open Changelog'
             )
-            .then(function (str: string) {
-                if (str === 'Open Changelog') {
-                    // get path of CHANGELOG.md
-                    let changelogPath: string =
-                        vscode.extensions.getExtension(extensionID).extensionPath +
-                        '/CHANGELOG.md';
-                    let path = vscode.Uri.file(changelogPath);
-                    // open
-                    vscode.workspace.openTextDocument(path).then((doc) => {
-                        vscode.window.showTextDocument(doc);
-                    });
-                }
+            .then(function (_: string) {
+                // get path of CHANGELOG.md
+                let changelogPath: string =
+                    vscode.extensions.getExtension(extensionID).extensionPath +
+                    '/CHANGELOG.md';
+                let changelogUri = vscode.Uri.file(changelogPath);
+                // open
+                vscode.workspace.openTextDocument(changelogUri).then((doc) => {
+                    vscode.window.showTextDocument(doc);
+                });
             });
     }
 
