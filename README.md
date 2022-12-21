@@ -136,11 +136,11 @@ Use the following settings to configure the extension to your needs
 
     \[Experimental\] A path to the HDL Checker Language Server binary.
 
-- `verilog.formatter.verilog-format.path` (Default: `verilog-format`)
+- `verilog.formatter.verilogFormat.path` (Default: `verilog-format`)
 
     \[Experimental\] A path to the verilog-format binary.
 
-- `verilog.formatter.verilog-format.settings` (Default: `${env:HOME}/.verilog-format.properties`)
+- `verilog.formatter.verilogFormat.settings` (Default: `${env:HOME}/.verilog-format.properties`)
 
     \[Experimental\] A path to the verilog-format settings file.
 

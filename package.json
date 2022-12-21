@@ -319,13 +319,13 @@
           "default": "hdl_checker",
           "description": "[Experimental] A path to the HDL Checker Language Server binary."
         },
-        "verilog.formatter.verilog-format.path": {
+        "verilog.formatter.verilogFormat.path": {
           "scope": "window",
           "type": "string",
           "default": "verilog-format",
           "description": "[Experimental] A path to the verilog-format binary."
         },
-        "verilog.formatter.verilog-format.settings": {
+        "verilog.formatter.verilogFormat.settings": {
           "scope": "window",
           "type": "string",
           "default": "${env:HOME}/.verilog-format.properties",
