@@ -6,8 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [1.7.0] - Unreleased
 
-- Added experimental support for Verilog-HDL formatting with [verilog-format](https://github.com/ericsonj/verilog-format) [#364](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/364)
-- Added experimental support for Verilog-HDL formatting with [thomasrussellmurphy/istyle-verilog-formatter: Open source implementation of a Verilog formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter) [#365](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/365).
+- Added experimental support for Verilog-HDL formatting with the following formatters.
+  - [verilog-format](https://github.com/ericsonj/verilog-format) [#364](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/364)
+  - [thomasrussellmurphy/istyle-verilog-formatter: Open source implementation of a Verilog formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter) [#365](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/365).
 
 ## [1.6.0] - 2022-12-20
 
