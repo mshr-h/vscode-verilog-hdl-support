@@ -193,6 +193,7 @@ If you encounter any problems even if it's not related to this feature, **deleti
 
 We currently support Verilog-HDL file formatting with [verilog-format](https://github.com/ericsonj/verilog-format) and [thomasrussellmurphy/istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter). You can format Verilog-HDL file by typing `Ctrl-Shift-p`, then select `Format Document`.
 Entire file formatting is supported. Selected range formatting is not supported yet.
+All the settings for formatting is under `verilog.formatter` namespace.
 
 ## Compatibility
 
