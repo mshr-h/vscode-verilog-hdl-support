@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 - Added experimental support for Verilog-HDL formatting with verible-verilog-format.
 - Added experimental support for SystemVerilog formatting with verible-verilog-format.
-- Updated config namespace for formatter.
+- \[Caution\] Updated config namespace for formatter.
   - `verilog.formatter` -> `verilog.formatting`
 
 ## [1.7.0] - 2022-12-21
