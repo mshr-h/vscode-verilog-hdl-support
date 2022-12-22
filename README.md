@@ -127,7 +127,7 @@ Use the following settings to configure the extension to your needs.
 
 - `verilog.languageServer.hdlChecker.path` (Default: `hdl_checker`)
 
-- `verilog.formatting.verilogHDL.name` (Default: `verilog-format`)
+- `verilog.formatting.verilogHDL.formatter` (Default: `verilog-format`)
 
     \[Experimental\] Choose the Verilog-HDL formatter. Possible values are:
 

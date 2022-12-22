@@ -319,7 +319,7 @@
           "default": "hdl_checker",
           "description": "[Experimental] A path to the HDL Checker Language Server binary."
         },
-        "verilog.formatting.verilogHDL.name": {
+        "verilog.formatting.verilogHDL.formatter": {
           "scope": "window",
           "type": "string",
           "enum": [

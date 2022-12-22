@@ -179,7 +179,7 @@ export class VerilogFormatProvider implements vscode.DocumentFormattingEditProvi
     _token: vscode.CancellationToken
   ): vscode.ProviderResult<vscode.TextEdit[]> {
     let settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('verilog.formatting.verilogHDL');
-    let formatter: string | null = <string>(settings.get("name", null));
+    let formatter: string | null = <string>(settings.get("formatter", null));
 
     switch (formatter) {
       case "verilog-format":
