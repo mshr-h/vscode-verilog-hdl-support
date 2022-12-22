@@ -1,6 +1,6 @@
 # HDL support for VS Code
 
-HDL support for VS Code with Syntax Highlighting, Snippets, Linting and much more!
+HDL support for VS Code with Syntax Highlighting, Snippets, Linting, Formatting and much more!
 
 [![Build Status](https://github.com/mshr-h/vscode-verilog-hdl-support/workflows/.github/workflows/ci.yml/badge.svg?branch=master&event=push)](https://github.com/mshr-h/vscode-verilog-hdl-support/actions?query=workflow%3A.github%2Fworkflows%2Fci.yml)
 
@@ -8,11 +8,9 @@ HDL support for VS Code with Syntax Highlighting, Snippets, Linting and much mor
 
 ## Installation
 
-Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items/mshr-h.VerilogHDL) or [Open VSX Registry](https://open-vsx.org/extension/mshr-h/veriloghdl)
+Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items/mshr-h.VerilogHDL) or [Open VSX Registry](https://open-vsx.org/extension/mshr-h/veriloghdl).
 
 ## Features
-
-### Done
 
 - Syntax Highlighting
   - Verilog-HDL
@@ -36,20 +34,14 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - Hover over variable declaration
   - Go to Definition & Peek Definition
   - Module Instantiation
-
-### In Progress / Future
-
 - \[Experimental\] Language Server support
   - [svls](https://github.com/dalance/svls)
   - [veridian](https://github.com/vivekmalneedi/veridian)
   - [HDL Checker](https://github.com/suoto/hdl_checker)
-- \[Experimental\] Formatter support
+- \[Experimental\] Formatting support
   - [verilog-format](https://github.com/ericsonj/verilog-format)
   - [istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter)
-- Improvements in the newly added features
-- Migrate VHDL support from [mshr-h/vscode-vhdl-support](https://github.com/mshr-h/vscode-vhdl-support)
-
-[Take a look at our list of planned features](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/25)
+  - [verible-verilog-format](https://github.com/chipsalliance/verible)
 
 ### Ctags Integration
 
@@ -65,7 +57,7 @@ Add the installation path of Ctags binary in your `PATH` environment variable or
 
 ## Configuration Settings
 
-Use the following settings to configure the extension to your needs
+Use the following settings to configure the extension to your needs.
 
 - `verilog.linting.linter` (Default: `none` )
 
@@ -135,32 +127,47 @@ Use the following settings to configure the extension to your needs
 
 - `verilog.languageServer.hdlChecker.path` (Default: `hdl_checker`)
 
-- `verilog.formatter.verilogHDL.name` (Default: `verilog-format`)
+- `verilog.formatting.verilogHDL.formatter` (Default: `verilog-format`)
 
     \[Experimental\] Choose the Verilog-HDL formatter. Possible values are:
 
   - `verilog-format`
   - `iStyle`
+  - `verible-verilog-format`
 
-- `verilog.formatter.verilogFormat.path` (Default: `verilog-format`)
+- `verilog.formatting.systemVerilog.formatter` (Default: `verible-verilog-format`)
+
+    \[Experimental\] Choose the Verilog-HDL formatter. Possible values are:
+
+  - `verible-verilog-format`
+
+- `verilog.formatting.verilogFormat.path` (Default: `verilog-format`)
 
     \[Experimental\] A path to the verilog-format binary.
 
-- `verilog.formatter.verilogFormat.settings` (Default: `${env:HOME}/.verilog-format.properties`)
+- `verilog.formatting.verilogFormat.settings` (Default: `${env:HOME}/.verilog-format.properties`)
 
     \[Experimental\] A path to the verilog-format settings file.
 
-- `verilog.formatter.iStyleVerilogFormatter.path` (Default: `iStyle`)
+- `verilog.formatting.iStyleVerilogFormatter.path` (Default: `iStyle`)
 
     \[Experimental\] A path to the iStyle Verilog Formatter binary.
 
-- `verilog.formatter.iStyleVerilogFormatter.arguments` (Default: nothing)
+- `verilog.formatting.iStyleVerilogFormatter.arguments` (Default: nothing)
 
     \[Experimental\] Add custom arguments to iStyle Verilog Formatter for formatting.
 
-- `verilog.formatter.iStyleVerilogFormatter.style` (Default: `Indent only`)
+- `verilog.formatting.iStyleVerilogFormatter.style` (Default: `Indent only`)
 
     \[Experimental\] Choose styling options from ANSI/K&R/GNU.
+
+- `verilog.formatting.veribleVerilogFormatter.path` (Default: `verible-verilog-format`)
+
+    \[Experimental\] A path to the verible-verilog-format binary.
+
+- `verilog.formatting.veribleVerilogFormatter.arguments` (Default: nothing)
+
+    \[Experimental\] Add custom arguments to verible-verilog-format for formatting.
 
 ## Commands
 
@@ -180,6 +187,7 @@ Use the following settings to configure the extension to your needs
 ## Language Servers
 
 We currently support the following Language Servers and enabled for Verilog-HDL, SystemVerilog and VHDL.
+You can enable multiple Language Servers at the same time.
 It might be pretty unstable because it's currently in the experimental support.
 If you encounter any problems even if it's not related to this feature, **deleting all the config may solve the problem**.
 
@@ -189,11 +197,17 @@ If you encounter any problems even if it's not related to this feature, **deleti
 | [veridian](https://github.com/vivekmalneedi/veridian)          | not supported | enabled       | not supported |
 | [HDL Checker](https://github.com/suoto/hdl_checker)            | enabled       | enabled       | enabled       |
 
-## Formatter (Experimental)
+## Formatting (Experimental)
 
-We currently support Verilog-HDL file formatting with [verilog-format](https://github.com/ericsonj/verilog-format) and [thomasrussellmurphy/istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter). You can format Verilog-HDL file by typing `Ctrl-Shift-p`, then select `Format Document`.
+We currently support Verilog-HDL file formatting with the following formatters.
+
+- [verilog-format](https://github.com/ericsonj/verilog-format)
+- [thomasrussellmurphy/istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter).
+- [verible-verilog-format](https://github.com/chipsalliance/verible)
+
+You can format Verilog-HDL file by typing `Ctrl-Shift-p`, then select `Format Document`.
 Entire file formatting is supported. Selected range formatting is not supported yet.
-All the settings for formatting is under `verilog.formatter` namespace.
+All the settings for formatting is under `verilog.formatting` namespace.
 
 ## Compatibility
 
@@ -206,7 +220,7 @@ All the settings for formatting is under `verilog.formatter` namespace.
 | Verilator                         | Windows 10 |   Debian 9   | Not Tested  |
 | Ctags Integration                 | Windows 10 | Ubuntu 18.10 | Not Tested  |
 | Language Server                   | Windows 10 | Ubuntu 20.04 | macOS 10.15 |
-| Formatter                         | Not tested | Ubuntu 20.04 | Not tested  |
+| Formatting                        | Not tested | Ubuntu 20.04 | Not tested  |
 
 If you have tested the linters in new platforms or have issues with them, feel free to file an issue.
 

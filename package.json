@@ -319,41 +319,51 @@
           "default": "hdl_checker",
           "description": "[Experimental] A path to the HDL Checker Language Server binary."
         },
-        "verilog.formatter.verilogHDL.name": {
+        "verilog.formatting.verilogHDL.formatter": {
           "scope": "window",
           "type": "string",
           "enum": [
             "verilog-format",
-            "iStyle"
+            "iStyle",
+            "verible-verilog-format"
           ],
           "default": "verilog-format",
           "description": "[Experimental] Choose a Verilog-HDL formatter."
         },
-        "verilog.formatter.verilogFormat.path": {
+        "verilog.formatting.systemVerilog.formatter": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "verible-verilog-format"
+          ],
+          "default": "verible-verilog-format",
+          "description": "[Experimental] Choose a SystemVerilog formatter."
+        },
+        "verilog.formatting.verilogFormat.path": {
           "scope": "window",
           "type": "string",
           "default": "verilog-format",
           "description": "[Experimental] A path to the verilog-format binary."
         },
-        "verilog.formatter.verilogFormat.settings": {
+        "verilog.formatting.verilogFormat.settings": {
           "scope": "window",
           "type": "string",
           "default": "${env:HOME}/.verilog-format.properties",
           "description": "[Experimental] A path to the verilog-format settings file."
         },
-        "verilog.formatter.iStyleVerilogFormatter.path": {
+        "verilog.formatting.iStyleVerilogFormatter.path": {
           "scope": "window",
           "type": "string",
           "default": "iStyle",
           "description": "[Experimental] A path to the iStyle Verilog Formatter binary."
         },
-        "verilog.formatter.iStyleVerilogFormatter.arguments": {
+        "verilog.formatting.iStyleVerilogFormatter.arguments": {
           "scope": "window",
           "type": "string",
           "default": "",
           "description": "[Experimental] Add custom arguments to iStyle Verilog Formatter for formatting."
         },
-        "verilog.formatter.iStyleVerilogFormatter.style": {
+        "verilog.formatting.iStyleVerilogFormatter.style": {
           "scope": "window",
           "type": "string",
           "enum": [
@@ -364,6 +374,18 @@
           ],
           "default": "Indent only",
           "description": "[Experimental] Choose styling options from ANSI/K&R/GNU."
+        },
+        "verilog.formatting.veribleVerilogFormatter.path": {
+          "scope": "window",
+          "type": "string",
+          "default": "verible-verilog-format",
+          "description": "[Experimental] A path to the verible-verilog-format binary."
+        },
+        "verilog.formatting.veribleVerilogFormatter.arguments": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "[Experimental] Add custom arguments to verible-verilog-format for formatting."
         }
       }
     },
@@ -398,7 +420,8 @@
     "antlr4": "^4.11.0",
     "antlr4ts": "^0.5.0-alpha.4",
     "semver": "^7.3.8",
-    "vscode-languageclient": "^8.0.2"
+    "vscode-languageclient": "^8.0.2",
+    "which": "^3.0.0"
   },
   "devDependencies": {
     "@types/antlr4": "4.11.2",
@@ -406,6 +429,7 @@
     "@types/mocha": "~10.0.1",
     "@types/node": "~18.11.13",
     "@types/vscode": "^1.60.0",
+    "@types/which": "^2.0.1",
     "@typescript-eslint/eslint-plugin": "^5.46.0",
     "@typescript-eslint/parser": "^5.46.0",
     "@vscode/test-electron": "^2.2.1",
