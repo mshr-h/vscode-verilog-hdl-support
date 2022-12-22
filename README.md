@@ -34,11 +34,11 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - Hover over variable declaration
   - Go to Definition & Peek Definition
   - Module Instantiation
-- \[Experimental\] Language Server support
+- \[Experimental\] Language Server support from:
   - [svls](https://github.com/dalance/svls)
   - [veridian](https://github.com/vivekmalneedi/veridian)
   - [HDL Checker](https://github.com/suoto/hdl_checker)
-- \[Experimental\] Formatting support
+- \[Experimental\] Formatting support from:
   - [verilog-format](https://github.com/ericsonj/verilog-format)
   - [istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter)
   - [verible-verilog-format](https://github.com/chipsalliance/verible)
