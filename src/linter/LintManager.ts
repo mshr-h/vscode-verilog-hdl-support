@@ -80,14 +80,14 @@ export default class LintManager {
                     );
                     break;
                 default:
-                    this.logger.log('Invalid linter name.');
+                    this.logger.log('[Lint Manager] Invalid linter name.');
                     this.linter = null;
                     break;
             }
         }
 
         if (this.linter != null) {
-            this.logger.log('Using linter ' + this.linter.name);
+            this.logger.log('[iverilog-lint] Using linter ' + this.linter.name);
         }
     }
 

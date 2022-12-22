@@ -23,10 +23,9 @@ export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
         document: TextDocument,
         _token: CancellationToken
     ): Promise<DocumentSymbol[]> {
-        this.logger.log('Symbols Requested: ' + document.uri);
-        this.logger.log('symbol provider');
+        this.logger.log('[VerilogSymbol] Symbols Requested: ' + document.uri);
         let symbols: Symbol[] = await CtagsManager.getSymbols(document);
-        this.logger.log(symbols.toString());
+        this.logger.log("[VerilogSymbol] Symbols: " + symbols.toString());
         this.docSymbols = this.buildDocumentSymbolList(symbols);
         this.logger.log(
             this.docSymbols.length + ' top-level symbols returned',

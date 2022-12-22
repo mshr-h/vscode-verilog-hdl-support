@@ -158,7 +158,7 @@ export class Ctags {
     }
 
     execCtags(filepath: string): Thenable<string> {
-        this.logger.log('executing ctags');
+        this.logger.log('[Ctags] executing ctags');
 
         let ctags: string = <string>(
             vscode.workspace.getConfiguration().get('verilog.ctags.path', 'none')
@@ -166,7 +166,7 @@ export class Ctags {
         if (ctags !== 'none') {
             let command: string =
                 ctags + ' -f - --fields=+K --sort=no --excmd=n "' + filepath + '"';
-            this.logger.log(command, LogSeverity.command);
+            this.logger.log("[Ctags] " + command, LogSeverity.command);
             return new Promise((resolve, _reject) => {
                 child_process.exec(
                     command,
@@ -209,8 +209,8 @@ export class Ctags {
                 false
             );
         } catch (e) {
-            this.logger.log('Ctags Line Parser: ' + e, LogSeverity.error);
-            this.logger.log('Line: ' + line, LogSeverity.error);
+            this.logger.log('[Ctags] Line Parser: ' + e, LogSeverity.error);
+            this.logger.log('[Ctags] Line: ' + line, LogSeverity.error);
         }
         return undefined;
     }
@@ -218,9 +218,9 @@ export class Ctags {
     buildSymbolsList(tags: string): Thenable<void> {
         try {
             if (this.isDirty) {
-                this.logger.log('building symbols');
+                this.logger.log('[Ctags] building symbols');
                 if (tags === '') {
-                    this.logger.log('No output from ctags');
+                    this.logger.log('[Ctags] No output from ctags');
                     return undefined;
                 }
                 // Parse ctags output
@@ -272,18 +272,18 @@ export class Ctags {
                         }
                     }
                 }
-                this.logger.log(this.symbols.toString());
+                this.logger.log("[Ctags] Symbols: " + this.symbols.toString());
                 this.isDirty = false;
             }
             return Promise.resolve();
         } catch (e) {
-            this.logger.log(e);
+            this.logger.log("[Ctags] " + e.toString(), LogSeverity.error);
         }
         return undefined;
     }
 
     index(): Thenable<void> {
-        this.logger.log('indexing...');
+        this.logger.log('[Ctags] indexing...');
         return new Promise((resolve, _reject) => {
             this.execCtags(this.doc.uri.fsPath)
                 .then((output) => this.buildSymbolsList(output))
@@ -302,12 +302,12 @@ export class CtagsManager {
     }
 
     configure() {
-        this.logger.log('ctags manager configure');
+        this.logger.log('[Ctags] ctags manager configure');
         vscode.workspace.onDidSaveTextDocument(this.onSave.bind(this));
     }
 
     onSave(doc: vscode.TextDocument) {
-        this.logger.log('on save');
+        this.logger.log('[Ctags] on save');
         let ctags: Ctags = CtagsManager.ctags;
         if (
             ctags.doc === undefined ||

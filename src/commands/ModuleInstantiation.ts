@@ -74,12 +74,12 @@ function instantiateModule(srcpath: string): Thenable<SnippetString> {
                         tag.parentScope === scope
                 );
                 parametersName = params.map((tag) => tag.name);
-                this.logger.log(module.name);
+                this.logger.log("Module name: " + module.name);
                 let paramString = ``;
                 if (parametersName.length > 0) {
                     paramString = `\n#(\n${instantiatePort(parametersName)})\n`;
                 }
-                this.logger.log(portsName.toString());
+                this.logger.log("portsName: " + portsName.toString());
                 resolve(
                     new SnippetString()
                         .appendText(module.name + ' ')

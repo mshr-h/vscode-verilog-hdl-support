@@ -44,7 +44,7 @@ export default class IcarusLinter extends BaseLinter {
     }
 
     protected lint(doc: TextDocument) {
-        this.logger.log('iverilog lint requested');
+        this.logger.log('[iverilog-lint] iverilog lint requested');
         let docUri: string = doc.uri.fsPath; //path of current doc
         let lastIndex: number =
             isWindows == true
@@ -63,7 +63,7 @@ export default class IcarusLinter extends BaseLinter {
             ' "' +
             doc.fileName +
             '"'; //command to execute
-        this.logger.log(command, LogSeverity.command);
+        this.logger.log("[iverilog-lint] Execute command: " + command, LogSeverity.command);
 
         var foo: child.ChildProcess = child.exec(
             command,
@@ -76,7 +76,6 @@ export default class IcarusLinter extends BaseLinter {
                     if (line.startsWith(doc.fileName)) {
                         line = line.replace(doc.fileName, '');
                         let terms = line.split(':');
-                        this.logger.log(terms[1] + ' ' + terms[2]);
                         let lineNum = parseInt(terms[1].trim()) - 1;
                         if (terms.length == 3) {
                             diagnostics.push({
@@ -113,7 +112,7 @@ export default class IcarusLinter extends BaseLinter {
                     }
                 });
                 this.logger.log(
-                    diagnostics.length + ' errors/warnings returned'
+                    "[iverilog-lint] " + diagnostics.length + ' errors/warnings returned'
                 );
                 this.diagnosticCollection.set(doc.uri, diagnostics);
             }
