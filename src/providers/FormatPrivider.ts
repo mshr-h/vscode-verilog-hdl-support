@@ -192,3 +192,26 @@ export class VerilogFormatProvider implements vscode.DocumentFormattingEditProvi
     return [];
   }
 }
+
+export class SystemVerilogFormatProvider implements vscode.DocumentFormattingEditProvider {
+  private logger: Logger;
+
+  constructor(logger: Logger) {
+    this.logger = logger;
+  }
+
+  provideDocumentFormattingEdits(
+    document: vscode.TextDocument,
+    _options: vscode.FormattingOptions,
+    _token: vscode.CancellationToken
+  ): vscode.ProviderResult<vscode.TextEdit[]> {
+    let settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('verilog.formatting.systemVerilog');
+    let formatter: string | null = <string>(settings.get("formatter", null));
+
+    switch (formatter) {
+      case "verible-verilog-format":
+        return formatWithVeribleVerilogFormat(document, this.logger);
+    }
+    return [];
+  }
+}

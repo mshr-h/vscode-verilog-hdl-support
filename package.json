@@ -330,6 +330,15 @@
           "default": "verilog-format",
           "description": "[Experimental] Choose a Verilog-HDL formatter."
         },
+        "verilog.formatting.systemVerilog.formatter": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "verible-verilog-format"
+          ],
+          "default": "verible-verilog-format",
+          "description": "[Experimental] Choose a SystemVerilog formatter."
+        },
         "verilog.formatting.verilogFormat.path": {
           "scope": "window",
           "type": "string",

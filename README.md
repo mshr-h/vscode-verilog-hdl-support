@@ -135,6 +135,12 @@ Use the following settings to configure the extension to your needs.
   - `iStyle`
   - `verible-verilog-format`
 
+- `verilog.formatting.systemVerilog.formatter` (Default: `verible-verilog-format`)
+
+    \[Experimental\] Choose the Verilog-HDL formatter. Possible values are:
+
+  - `verible-verilog-format`
+
 - `verilog.formatting.verilogFormat.path` (Default: `verilog-format`)
 
     \[Experimental\] A path to the verilog-format binary.
