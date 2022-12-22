@@ -9,7 +9,7 @@ import { Logger, LogSeverity } from '../logger';
 
 function formatWithVerilogFormat(document: vscode.TextDocument, logger: Logger): vscode.ProviderResult<vscode.TextEdit[]> {
   // grab config from verilog.formatter
-  let settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('verilog.formatter.verilogFormat');
+  let settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('verilog.formatting.verilogFormat');
   let binPath: string = <string>(settings.get("path", "verilog-format"));
   let settingsPath: string | null = <string>(settings.get("settings", null));
 
@@ -57,7 +57,7 @@ function formatWithVerilogFormat(document: vscode.TextDocument, logger: Logger):
 
 function formatWithIStyleVerilogFormatter(document: vscode.TextDocument, logger: Logger): vscode.ProviderResult<vscode.TextEdit[]> {
   // grab config from verilog.iStyleVerilogFormatter
-  let settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('verilog.formatter.iStyleVerilogFormatter');
+  let settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('verilog.formatting.iStyleVerilogFormatter');
   let binPath: string = <string>(settings.get("path", "iStyle"));
   let customArgs: string = <string>(settings.get("arguments", ""));
   let formatStyle: string = <string>(settings.get("style", "Indent only"));
@@ -120,7 +120,7 @@ function formatWithIStyleVerilogFormatter(document: vscode.TextDocument, logger:
 
 function formatWithVeribleVerilogFormat(document: vscode.TextDocument, logger: Logger): vscode.ProviderResult<vscode.TextEdit[]> {
   // grab config from verilog.veribleVerilogFormatter
-  let settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('verilog.formatter.veribleVerilogFormatter');
+  let settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('verilog.formatting.veribleVerilogFormatter');
   let binPath: string = <string>(settings.get("path", "verible-verilog-format"));
   let customArgs: string = <string>(settings.get("arguments", ""));
 
@@ -178,7 +178,7 @@ export class VerilogFormatProvider implements vscode.DocumentFormattingEditProvi
     _options: vscode.FormattingOptions,
     _token: vscode.CancellationToken
   ): vscode.ProviderResult<vscode.TextEdit[]> {
-    let settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('verilog.formatter.verilogHDL');
+    let settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('verilog.formatting.verilogHDL');
     let formatter: string | null = <string>(settings.get("name", null));
 
     switch (formatter) {
