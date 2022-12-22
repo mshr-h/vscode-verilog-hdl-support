@@ -7,6 +7,28 @@ import * as path from 'path';
 import * as which from 'which';
 import { Logger, LogSeverity } from '../logger';
 
+class TemporaryFile {
+  public readonly filePath: string;
+
+  constructor(prefix: string, ext: string) {
+    this.filePath = path.join(os.tmpdir(), prefix + crypto.randomBytes(16).toString('hex') + ".tmp" + ext);
+  }
+
+  public writeFileSync(data: string, options?: fs.WriteFileOptions) {
+    fs.writeFileSync(this.filePath, data, options);
+  }
+
+  public readFileSync(options: BufferEncoding | { encoding: BufferEncoding; flag?: string }): string {
+    return fs.readFileSync(this.filePath, options);
+  }
+
+  public dispose(): void {
+    if (fs.existsSync(this.filePath)) {
+      fs.rmSync(this.filePath);
+    }
+  }
+}
+
 function formatWithVerilogFormat(document: vscode.TextDocument, logger: Logger): vscode.ProviderResult<vscode.TextEdit[]> {
   // grab config from verilog.formatter
   let settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('verilog.formatting.verilogFormat');
@@ -22,11 +44,11 @@ function formatWithVerilogFormat(document: vscode.TextDocument, logger: Logger):
   }
 
   // create temporary file and copy document to it
-  let tempFilepath: string = path.join(os.tmpdir(), "verilog-format-" + crypto.randomBytes(16).toString('hex') + ".tmp.v");
-  fs.writeFileSync(tempFilepath, document.getText(), { flag: "w" });
-  logger.log("[Verilog-Format] Temp file created at:" + tempFilepath);
+  let tempFile: TemporaryFile = new TemporaryFile("verilog-format-", ".v");
+  tempFile.writeFileSync(document.getText(), { flag: "w" });
+  logger.log("[Verilog-Format] Temp file created at:" + tempFile.filePath);
 
-  var args: string[] = ["-f", tempFilepath];
+  var args: string[] = ["-f", tempFile.filePath];
 
   if (settingsPath !== null && fs.existsSync(settingsPath)) {
     args.push("-s");
@@ -37,21 +59,17 @@ function formatWithVerilogFormat(document: vscode.TextDocument, logger: Logger):
   logger.log("[Verilog-Format] Executing command: " + binPath + " " + args.join(" "));
   try {
     child_process.execFileSync(binPath, args, {});
-
-    let formattedText: string = fs.readFileSync(tempFilepath, { encoding: "utf-8" });
+    let formattedText: string = tempFile.readFileSync({ encoding: "utf-8" });
     let wholeFileRange: vscode.Range = new vscode.Range(
       document.positionAt(0),
       document.positionAt(document.getText().length));
-    fs.rmSync(tempFilepath);
-
+    tempFile.dispose();
     return [vscode.TextEdit.replace(wholeFileRange, formattedText)];
   } catch (err) {
     logger.log("[Verilog-Format]  " + err.toString(), LogSeverity.error);
   }
 
-  if (fs.existsSync(tempFilepath)) {
-    fs.rmSync(tempFilepath);
-  }
+  tempFile.dispose();
   return [];
 }
 
@@ -71,9 +89,9 @@ function formatWithIStyleVerilogFormatter(document: vscode.TextDocument, logger:
   }
 
   // create temporary file and copy document to it
-  let tempFilepath: string = path.join(os.tmpdir(), "istyle-verilog-format-" + crypto.randomBytes(16).toString('hex') + ".tmp.v");
-  fs.writeFileSync(tempFilepath, document.getText(), { flag: "w" });
-  logger.log("[iStyle-Formatter] Temp file created at:" + tempFilepath);
+  let tempFile: TemporaryFile = new TemporaryFile("istyle-verilog-format-", ".v");
+  tempFile.writeFileSync(document.getText(), { flag: "w" });
+  logger.log("[iStyle-Formatter] Temp file created at:" + tempFile.filePath);
 
   // -n means not to create a .orig file
   var args: string[] = ["-n"];
@@ -94,27 +112,24 @@ function formatWithIStyleVerilogFormatter(document: vscode.TextDocument, logger:
       break;
   }
 
-  args.push(tempFilepath);
+  args.push(tempFile.filePath);
 
   // execute command
   logger.log("[iStyle-Formater] Executing command: " + binPath + " " + args.join(" "));
   try {
     child_process.execFileSync(binPath, args, {});
-
-    let formattedText: string = fs.readFileSync(tempFilepath, { encoding: "utf-8" });
+    let formattedText: string = tempFile.readFileSync({ encoding: "utf-8" });
     let wholeFileRange: vscode.Range = new vscode.Range(
       document.positionAt(0),
       document.positionAt(document.getText().length));
-    fs.rmSync(tempFilepath);
 
+    tempFile.dispose();
     return [vscode.TextEdit.replace(wholeFileRange, formattedText)];
   } catch (err) {
     logger.log("[iStyle-Formatter] " + err.toString(), LogSeverity.error);
   }
 
-  if (fs.existsSync(tempFilepath)) {
-    fs.rmSync(tempFilepath);
-  }
+  tempFile.dispose();
   return [];
 }
 
@@ -133,36 +148,33 @@ function formatWithVeribleVerilogFormat(document: vscode.TextDocument, logger: L
   }
 
   // create temporary file and copy document to it
-  let tempFilepath: string = path.join(os.tmpdir(), "verible-verilog-format-" + crypto.randomBytes(16).toString('hex') + ".tmp.v");
-  fs.writeFileSync(tempFilepath, document.getText(), { flag: "w" });
-  logger.log("[verible-verilog-format] Temp file created at:" + tempFilepath);
+  let tempFile: TemporaryFile = new TemporaryFile("verible-verilog-format-", ".v");
+  tempFile.writeFileSync(document.getText(), { flag: "w" });
+  logger.log("[verible-verilog-format] Temp file created at:" + tempFile.filePath);
 
   var args: string[] = ["--inplace"];
   if (customArgs.length > 0) {
     args = args.concat(customArgs.split(" "));
   }
 
-  args.push(tempFilepath);
+  args.push(tempFile.filePath);
 
   // execute command
   logger.log("[verible-verilog-format] Executing command: " + binPath + " " + args.join(" "));
   try {
     child_process.execFileSync(binPath, args, {});
-
-    let formattedText: string = fs.readFileSync(tempFilepath, { encoding: "utf-8" });
+    let formattedText: string = tempFile.readFileSync({ encoding: "utf-8" });
     let wholeFileRange: vscode.Range = new vscode.Range(
       document.positionAt(0),
       document.positionAt(document.getText().length));
-    fs.rmSync(tempFilepath);
 
+    tempFile.dispose();
     return [vscode.TextEdit.replace(wholeFileRange, formattedText)];
   } catch (err) {
     logger.log("[verible-verilog-format] " + err.toString(), LogSeverity.error);
   }
 
-  if (fs.existsSync(tempFilepath)) {
-    fs.rmSync(tempFilepath);
-  }
+  tempFile.dispose();
   return [];
 }
 
