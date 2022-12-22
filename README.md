@@ -141,6 +141,7 @@ Use the following settings to configure the extension to your needs
 
   - `verilog-format`
   - `iStyle`
+  - `verible-verilog-format`
 
 - `verilog.formatter.verilogFormat.path` (Default: `verilog-format`)
 
@@ -161,6 +162,14 @@ Use the following settings to configure the extension to your needs
 - `verilog.formatter.iStyleVerilogFormatter.style` (Default: `Indent only`)
 
     \[Experimental\] Choose styling options from ANSI/K&R/GNU.
+
+- `verilog.formatter.veribleVerilogFormatter.path` (Default: `verible-verilog-format`)
+
+    \[Experimental\] A path to the verible-verilog-format binary.
+
+- `verilog.formatter.veribleVerilogFormatter.arguments` (Default: nothing)
+
+    \[Experimental\] Add custom arguments to verible-verilog-format for formatting.
 
 ## Commands
 
@@ -191,7 +200,13 @@ If you encounter any problems even if it's not related to this feature, **deleti
 
 ## Formatter (Experimental)
 
-We currently support Verilog-HDL file formatting with [verilog-format](https://github.com/ericsonj/verilog-format) and [thomasrussellmurphy/istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter). You can format Verilog-HDL file by typing `Ctrl-Shift-p`, then select `Format Document`.
+We currently support Verilog-HDL file formatting with the following formatters.
+
+- [verilog-format](https://github.com/ericsonj/verilog-format)
+- [thomasrussellmurphy/istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter).
+- [chipsalliance/verible](https://github.com/chipsalliance/verible)
+
+You can format Verilog-HDL file by typing `Ctrl-Shift-p`, then select `Format Document`.
 Entire file formatting is supported. Selected range formatting is not supported yet.
 All the settings for formatting is under `verilog.formatter` namespace.
 

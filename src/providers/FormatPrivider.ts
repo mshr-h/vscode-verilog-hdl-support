@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as crypto from 'crypto';
 import * as path from 'path';
+import * as which from 'which';
 import { Logger, LogSeverity } from '../logger';
 
 function formatWithVerilogFormat(document: vscode.TextDocument, logger: Logger): vscode.ProviderResult<vscode.TextEdit[]> {
@@ -11,6 +12,14 @@ function formatWithVerilogFormat(document: vscode.TextDocument, logger: Logger):
   let settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('verilog.formatter.verilogFormat');
   let binPath: string = <string>(settings.get("path", "verilog-format"));
   let settingsPath: string | null = <string>(settings.get("settings", null));
+
+  // check if binary found
+  try {
+    which.sync(binPath);
+  } catch (e) {
+    logger.log("[Verilog-Format] cannot find executable: " + binPath, LogSeverity.error);
+    return [];
+  }
 
   // create temporary file and copy document to it
   let tempFilepath: string = path.join(os.tmpdir(), "verilog-format-" + crypto.randomBytes(16).toString('hex') + ".tmp.v");
@@ -52,6 +61,14 @@ function formatWithIStyleVerilogFormatter(document: vscode.TextDocument, logger:
   let binPath: string = <string>(settings.get("path", "iStyle"));
   let customArgs: string = <string>(settings.get("arguments", ""));
   let formatStyle: string = <string>(settings.get("style", "Indent only"));
+
+  // check if binary found
+  try {
+    which.sync(binPath);
+  } catch (e) {
+    logger.log("[iStyle-Formatter] cannot find executable: " + binPath, LogSeverity.error);
+    return [];
+  }
 
   // create temporary file and copy document to it
   let tempFilepath: string = path.join(os.tmpdir(), "istyle-verilog-format-" + crypto.randomBytes(16).toString('hex') + ".tmp.v");
@@ -101,6 +118,54 @@ function formatWithIStyleVerilogFormatter(document: vscode.TextDocument, logger:
   return [];
 }
 
+function formatWithVeribleVerilogFormat(document: vscode.TextDocument, logger: Logger): vscode.ProviderResult<vscode.TextEdit[]> {
+  // grab config from verilog.veribleVerilogFormatter
+  let settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('verilog.formatter.veribleVerilogFormatter');
+  let binPath: string = <string>(settings.get("path", "verible-verilog-format"));
+  let customArgs: string = <string>(settings.get("arguments", ""));
+
+  // check if binary found
+  try {
+    which.sync(binPath);
+  } catch (e) {
+    logger.log("[verible-verilog-format] cannot find executable: " + binPath, LogSeverity.error);
+    return [];
+  }
+
+  // create temporary file and copy document to it
+  let tempFilepath: string = path.join(os.tmpdir(), "verible-verilog-format-" + crypto.randomBytes(16).toString('hex') + ".tmp.v");
+  fs.writeFileSync(tempFilepath, document.getText(), { flag: "w" });
+  logger.log("[verible-verilog-format] Temp file created at:" + tempFilepath);
+
+  var args: string[] = ["--inplace"];
+  if (customArgs.length > 0) {
+    args = args.concat(customArgs.split(" "));
+  }
+
+  args.push(tempFilepath);
+
+  // execute command
+  logger.log("[verible-verilog-format] Executing command: " + binPath + " " + args.join(" "));
+  try {
+    child_process.execFileSync(binPath, args, {});
+
+    let formattedText: string = fs.readFileSync(tempFilepath, { encoding: "utf-8" });
+    let wholeFileRange: vscode.Range = new vscode.Range(
+      document.positionAt(0),
+      document.positionAt(document.getText().length));
+    fs.rmSync(tempFilepath);
+
+    return [vscode.TextEdit.replace(wholeFileRange, formattedText)];
+  } catch (err) {
+    logger.log("[verible-verilog-format] " + err.toString(), LogSeverity.error);
+  }
+
+  if (fs.existsSync(tempFilepath)) {
+    fs.rmSync(tempFilepath);
+  }
+  return [];
+}
+
 export class VerilogFormatProvider implements vscode.DocumentFormattingEditProvider {
   private logger: Logger;
 
@@ -121,6 +186,8 @@ export class VerilogFormatProvider implements vscode.DocumentFormattingEditProvi
         return formatWithVerilogFormat(document, this.logger);
       case "iStyle":
         return formatWithIStyleVerilogFormatter(document, this.logger);
+      case "verible-verilog-format":
+        return formatWithVeribleVerilogFormat(document, this.logger);
     }
     return [];
   }
