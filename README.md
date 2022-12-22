@@ -1,6 +1,6 @@
 # HDL support for VS Code
 
-HDL support for VS Code with Syntax Highlighting, Snippets, Linting and much more!
+HDL support for VS Code with Syntax Highlighting, Snippets, Linting, Formatting and much more!
 
 [![Build Status](https://github.com/mshr-h/vscode-verilog-hdl-support/workflows/.github/workflows/ci.yml/badge.svg?branch=master&event=push)](https://github.com/mshr-h/vscode-verilog-hdl-support/actions?query=workflow%3A.github%2Fworkflows%2Fci.yml)
 
@@ -8,11 +8,9 @@ HDL support for VS Code with Syntax Highlighting, Snippets, Linting and much mor
 
 ## Installation
 
-Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items/mshr-h.VerilogHDL) or [Open VSX Registry](https://open-vsx.org/extension/mshr-h/veriloghdl)
+Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items/mshr-h.VerilogHDL) or [Open VSX Registry](https://open-vsx.org/extension/mshr-h/veriloghdl).
 
 ## Features
-
-### Done
 
 - Syntax Highlighting
   - Verilog-HDL
@@ -36,9 +34,6 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - Hover over variable declaration
   - Go to Definition & Peek Definition
   - Module Instantiation
-
-### In Progress / Future
-
 - \[Experimental\] Language Server support
   - [svls](https://github.com/dalance/svls)
   - [veridian](https://github.com/vivekmalneedi/veridian)
@@ -62,7 +57,7 @@ Add the installation path of Ctags binary in your `PATH` environment variable or
 
 ## Configuration Settings
 
-Use the following settings to configure the extension to your needs
+Use the following settings to configure the extension to your needs.
 
 - `verilog.linting.linter` (Default: `none` )
 
@@ -186,6 +181,7 @@ Use the following settings to configure the extension to your needs
 ## Language Servers
 
 We currently support the following Language Servers and enabled for Verilog-HDL, SystemVerilog and VHDL.
+You can enable multiple Language Servers at the same time.
 It might be pretty unstable because it's currently in the experimental support.
 If you encounter any problems even if it's not related to this feature, **deleting all the config may solve the problem**.
 
@@ -218,7 +214,7 @@ All the settings for formatting is under `verilog.formatting` namespace.
 | Verilator                         | Windows 10 |   Debian 9   | Not Tested  |
 | Ctags Integration                 | Windows 10 | Ubuntu 18.10 | Not Tested  |
 | Language Server                   | Windows 10 | Ubuntu 20.04 | macOS 10.15 |
-| Formatter                         | Not tested | Ubuntu 20.04 | Not tested  |
+| Formatting                        | Not tested | Ubuntu 20.04 | Not tested  |
 
 If you have tested the linters in new platforms or have issues with them, feel free to file an issue.
 
