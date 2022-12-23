@@ -159,11 +159,11 @@ export class Ctags {
   execCtags(filepath: string): Thenable<string> {
     this.logger.info('[Ctags] executing ctags');
 
-    let ctags: string = <string>(
+    let binPath: string = <string>(
       vscode.workspace.getConfiguration().get('verilog.ctags.path', 'none')
     );
-    if (ctags !== 'none') {
-      let command: string = ctags + ' -f - --fields=+K --sort=no --excmd=n "' + filepath + '"';
+    if (binPath !== 'none') {
+      let command: string = binPath + ' -f - --fields=+K --sort=no --excmd=n "' + filepath + '"';
       this.logger.info('[Ctags] Executing Command: ' + command);
       return new Promise((resolve, _reject) => {
         child_process.exec(command, (_error: Error, stdout: string, _stderr: string) => {

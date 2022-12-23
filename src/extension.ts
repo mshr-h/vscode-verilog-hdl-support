@@ -13,10 +13,11 @@ import { BsvInfoProviderManger } from './BsvProvider';
 import * as ModuleInstantiation from './commands/ModuleInstantiation';
 import * as FormatProvider from './providers/FormatPrivider';
 
-let lintManager: LintManager;
 export var logger: vscode.LogOutputChannel; // Global logger
 export var ctagsManager: CtagsManager;
 export let extensionID: string = 'mshr-h.veriloghdl';
+
+let lintManager: LintManager;
 let languageClients = new Map<string, LanguageClient>();
 
 export function activate(context: vscode.ExtensionContext) {
@@ -29,7 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   // document selector
-  let systemverilogSelector: vscode.DocumentSelector = {
+  let systemVerilogSelector: vscode.DocumentSelector = {
     scheme: 'file',
     language: 'systemverilog',
   };
@@ -53,25 +54,32 @@ export function activate(context: vscode.ExtensionContext) {
   lintManager = new LintManager(logger);
 
   // Configure Document Symbol Provider
-  let docProvider = new DocumentSymbolProvider.VerilogDocumentSymbolProvider(logger);
-  context.subscriptions.push(
-    vscode.languages.registerDocumentSymbolProvider(systemverilogSelector, docProvider)
+  let verilogDocumentSymbolProvider = new DocumentSymbolProvider.VerilogDocumentSymbolProvider(
+    logger
   );
   context.subscriptions.push(
-    vscode.languages.registerDocumentSymbolProvider(verilogSelector, docProvider)
+    vscode.languages.registerDocumentSymbolProvider(
+      systemVerilogSelector,
+      verilogDocumentSymbolProvider
+    )
   );
-  let bsvdocProvider = new DocumentSymbolProvider.BsvDocumentSymbolProvider(logger);
   context.subscriptions.push(
-    vscode.languages.registerDocumentSymbolProvider(bsvSelector, bsvdocProvider)
+    vscode.languages.registerDocumentSymbolProvider(verilogSelector, verilogDocumentSymbolProvider)
+  );
+  let bsvDocumentSymbolProvider = new DocumentSymbolProvider.BsvDocumentSymbolProvider(logger);
+  context.subscriptions.push(
+    vscode.languages.registerDocumentSymbolProvider(bsvSelector, bsvDocumentSymbolProvider)
   );
 
   // Configure Completion Item Provider
   // Trigger on ".", "(", "="
-  let compItemProvider = new CompletionItemProvider.VerilogCompletionItemProvider(logger);
+  let verilogCompletionItemProvider = new CompletionItemProvider.VerilogCompletionItemProvider(
+    logger
+  );
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(
       verilogSelector,
-      compItemProvider,
+      verilogCompletionItemProvider,
       '.',
       '(',
       '='
@@ -79,51 +87,57 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(
-      systemverilogSelector,
-      compItemProvider,
+      systemVerilogSelector,
+      verilogCompletionItemProvider,
       '.',
       '(',
       '='
     )
   );
-  let bsvcompItemProvider = new CompletionItemProvider.BsvCompletionItemProvider(logger);
+  let bsvCompletionItemProvider = new CompletionItemProvider.BsvCompletionItemProvider(logger);
   context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(bsvSelector, bsvcompItemProvider, '.', '(', '=')
+    vscode.languages.registerCompletionItemProvider(
+      bsvSelector,
+      bsvCompletionItemProvider,
+      '.',
+      '(',
+      '='
+    )
   );
 
   // Configure Hover Providers
-  let veriloghoverProvider = new HoverProvider.VerilogHoverProvider(logger);
+  let verilogHoverProvider = new HoverProvider.VerilogHoverProvider(logger);
   context.subscriptions.push(
-    vscode.languages.registerHoverProvider(systemverilogSelector, veriloghoverProvider)
+    vscode.languages.registerHoverProvider(systemVerilogSelector, verilogHoverProvider)
   );
   context.subscriptions.push(
-    vscode.languages.registerHoverProvider(verilogSelector, veriloghoverProvider)
+    vscode.languages.registerHoverProvider(verilogSelector, verilogHoverProvider)
   );
-  let bsvhoverProvider = new HoverProvider.BsvHoverProvider(logger);
-  context.subscriptions.push(vscode.languages.registerHoverProvider(bsvSelector, bsvhoverProvider));
+  let bsvHoverProvider = new HoverProvider.BsvHoverProvider(logger);
+  context.subscriptions.push(vscode.languages.registerHoverProvider(bsvSelector, bsvHoverProvider));
 
   // Configure Definition Providers
-  let defProvider = new DefinitionProvider.VerilogDefinitionProvider(logger);
+  let verilogDefinitionProvider = new DefinitionProvider.VerilogDefinitionProvider(logger);
   context.subscriptions.push(
-    vscode.languages.registerDefinitionProvider(systemverilogSelector, defProvider)
+    vscode.languages.registerDefinitionProvider(systemVerilogSelector, verilogDefinitionProvider)
   );
   context.subscriptions.push(
-    vscode.languages.registerDefinitionProvider(verilogSelector, defProvider)
+    vscode.languages.registerDefinitionProvider(verilogSelector, verilogDefinitionProvider)
   );
-  let bsvdefProvider = new DefinitionProvider.BsvDefinitionProvider();
+  let bsvDefinitionProvider = new DefinitionProvider.BsvDefinitionProvider();
   context.subscriptions.push(
-    vscode.languages.registerDefinitionProvider(bsvSelector, bsvdefProvider)
+    vscode.languages.registerDefinitionProvider(bsvSelector, bsvDefinitionProvider)
   );
 
   // Configure Format Provider
   let verilogFormatProvider = new FormatProvider.VerilogFormatProvider(logger);
-  let systemVerilogFormatProvider = new FormatProvider.SystemVerilogFormatProvider(logger);
   context.subscriptions.push(
     vscode.languages.registerDocumentFormattingEditProvider(verilogSelector, verilogFormatProvider)
   );
+  let systemVerilogFormatProvider = new FormatProvider.SystemVerilogFormatProvider(logger);
   context.subscriptions.push(
     vscode.languages.registerDocumentFormattingEditProvider(
-      systemverilogSelector,
+      systemVerilogSelector,
       systemVerilogFormatProvider
     )
   );
@@ -134,6 +148,7 @@ export function activate(context: vscode.ExtensionContext) {
     ModuleInstantiation.instantiateModuleInteract,
     logger
   );
+
   // Register command for manual linting
   vscode.commands.registerCommand('verilog.lint', lintManager.runLintTool, lintManager);
 
@@ -179,17 +194,6 @@ function setupLanguageClient(
   logger.info('"' + name + '" language server started.');
 }
 
-function stopAllLanguageClients(): Promise<any> {
-  var p = [];
-  for (const [name, client] of languageClients) {
-    if (client.isRunning()) {
-      p.push(client.stop());
-      logger.info('"' + name + '" language server stopped.');
-    }
-  }
-  return Promise.all(p);
-}
-
 function initAllLanguageClients() {
   // init svls
   setupLanguageClient('svls', 'svls', [], ['--debug'], {
@@ -209,6 +213,17 @@ function initAllLanguageClients() {
       { scheme: 'file', language: 'vhdl' },
     ],
   });
+}
+
+function stopAllLanguageClients(): Promise<any> {
+  var p = [];
+  for (const [name, client] of languageClients) {
+    if (client.isRunning()) {
+      p.push(client.stop());
+      logger.info('"' + name + '" language server stopped.');
+    }
+  }
+  return Promise.all(p);
 }
 
 function askShowChangelogIfUpdated(context: vscode.ExtensionContext) {
