@@ -12,8 +12,11 @@
     "curly": "warn",
     "eqeqeq": "warn",
     "no-throw-literal": "warn",
-    "semi": "off"
+    "semi": "off",
+    "no-unused-vars": "off",
+    "no-undef": "warn",
+    "no-constant-condition": "warn"
   },
-  "ignorePatterns": ["out", "dist", "**/*.d.ts", "src/bsvjs/syntaxes"],
+  "ignorePatterns": ["out", "dist", "**/*.d.ts", "src/bsvjs/syntaxes", "src/test", "src/BsvProvider.ts"],
   "extends": ["eslint:recommended", "prettier"]
 }
