@@ -1,14 +1,6 @@
-import {
-    workspace,
-    Range,
-    TextDocument,
-    Diagnostic,
-    DiagnosticSeverity,
-    DiagnosticCollection,
-} from 'vscode';
+import * as vscode from 'vscode';
 import * as child from 'child_process';
 import BaseLinter from './BaseLinter';
-import { Logger, LogSeverity } from '../logger';
 
 var isWindows = process.platform === 'win32';
 
@@ -18,10 +10,10 @@ export default class VerilatorLinter extends BaseLinter {
     private runAtFileLocation: boolean;
     private useWSL: boolean;
 
-    constructor(diagnosticCollection: DiagnosticCollection, logger: Logger) {
+    constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: vscode.LogOutputChannel) {
         super('verilator', diagnosticCollection, logger);
 
-        workspace.onDidChangeConfiguration(() => {
+        vscode.workspace.onDidChangeConfiguration(() => {
             this.getConfig();
         });
         this.getConfig();
@@ -29,22 +21,22 @@ export default class VerilatorLinter extends BaseLinter {
 
     private getConfig() {
         this.verilatorPath = <string>(
-            workspace
+            vscode.workspace
                 .getConfiguration()
                 .get('verilog.linting.path', '')
         );
         this.verilatorArgs = <string>(
-            workspace
+            vscode.workspace
                 .getConfiguration()
                 .get('verilog.linting.verilator.arguments', '')
         );
         this.runAtFileLocation = <boolean>(
-            workspace
+            vscode.workspace
                 .getConfiguration()
                 .get('verilog.linting.verilator.runAtFileLocation')
         );
         this.useWSL = <boolean>(
-            workspace.getConfiguration().get('verilog.linting.verilator.useWSL')
+            vscode.workspace.getConfiguration().get('verilog.linting.verilator.useWSL')
         );
     }
 
@@ -64,19 +56,19 @@ export default class VerilatorLinter extends BaseLinter {
     }
 
     protected getSeverity(severityString: string) {
-        let result = DiagnosticSeverity.Information;
+        let result = vscode.DiagnosticSeverity.Information;
 
         if (severityString.startsWith('Error')) {
-            result = DiagnosticSeverity.Error;
+            result = vscode.DiagnosticSeverity.Error;
         } else if (severityString.startsWith('Warning')) {
-            result = DiagnosticSeverity.Warning;
+            result = vscode.DiagnosticSeverity.Warning;
         }
 
         return result;
     }
 
-    protected lint(doc: TextDocument) {
-        this.logger.log('verilator lint requested');
+    protected lint(doc: vscode.TextDocument) {
+        this.logger.info('verilator lint requested');
         let docUri: string = doc.uri.fsPath; //path of current doc
         let lastIndex: number =
             isWindows == true
@@ -84,7 +76,7 @@ export default class VerilatorLinter extends BaseLinter {
                 : docUri.lastIndexOf('/');
         let docFolder = docUri.substr(0, lastIndex); //folder of current doc
         let runLocation: string =
-            this.runAtFileLocation == true ? docFolder : workspace.rootPath; //choose correct location to run
+            this.runAtFileLocation == true ? docFolder : vscode.workspace.rootPath; //choose correct location to run
         let svArgs: string = doc.languageId == 'systemverilog' ? '-sv' : ''; //Systemverilog args
         let verilator: string = 'verilator';
         if (isWindows) {
@@ -95,20 +87,14 @@ export default class VerilatorLinter extends BaseLinter {
                     .execSync(docUriCmd, {})
                     .toString()
                     .replace(/\r?\n/g, '');
-                this.logger.log(
-                    `Rewrote docUri to ${docUri} for WSL`,
-                    LogSeverity.info
-                );
+                this.logger.info(`Rewrote docUri to ${docUri} for WSL`);
 
                 let docFolderCmd: string = `wsl wslpath '${docFolder}'`;
                 docFolder = child
                     .execSync(docFolderCmd, {})
                     .toString()
                     .replace(/\r?\n/g, '');
-                this.logger.log(
-                    `Rewrote docFolder to ${docFolder} for WSL`,
-                    LogSeverity.info
-                );
+                this.logger.info(`Rewrote docFolder to ${docFolder} for WSL`);
             } else {
                 verilator = verilator + '_bin.exe';
                 docUri = docUri.replace(/\\/g, '/');
@@ -128,13 +114,13 @@ export default class VerilatorLinter extends BaseLinter {
             ' "' +
             docUri +
             '"'; //command to execute
-        this.logger.log(command, LogSeverity.command);
+        this.logger.info("Execute command: " + command);
 
         var foo: child.ChildProcess = child.exec(
             command,
             { cwd: runLocation },
             (_error: Error, _stdout: string, stderr: string) => {
-                let diagnostics: Diagnostic[] = [];
+                let diagnostics: vscode.Diagnostic[] = [];
                 let lines = stderr.split(/\r?\n/g);
 
                 // Parse output lines
@@ -154,13 +140,11 @@ export default class VerilatorLinter extends BaseLinter {
                             colNum = isNaN(colNum) ? 0 : colNum; // for older Verilator versions (< 4.030 ~ish)
 
                             if (!isNaN(lineNum)) {
-                                this.logger.log(
-                                    severity + ': [' + lineNum + '] ' + message
-                                );
+                                this.logger.info(severity + ': [' + lineNum + '] ' + message);
 
                                 diagnostics.push({
                                     severity: severity,
-                                    range: new Range(
+                                    range: new vscode.Range(
                                         lineNum,
                                         colNum,
                                         lineNum,
@@ -172,16 +156,11 @@ export default class VerilatorLinter extends BaseLinter {
                                 });
                             }
                         } else {
-                            this.logger.log(
-                                'failed to parse error: ' + line,
-                                LogSeverity.warn
-                            );
+                            this.logger.warn('failed to parse error: ' + line);
                         }
                     }
                 });
-                this.logger.log(
-                    diagnostics.length + ' errors/warnings returned'
-                );
+                this.logger.info(diagnostics.length + ' errors/warnings returned');
                 this.diagnosticCollection.set(doc.uri, diagnostics);
             }
         );

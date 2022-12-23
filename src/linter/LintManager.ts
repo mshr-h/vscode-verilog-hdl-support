@@ -1,40 +1,29 @@
-import {
-    Disposable,
-    workspace,
-    TextDocument,
-    DiagnosticCollection,
-    languages,
-    window,
-    QuickPickItem,
-    ProgressLocation,
-} from 'vscode';
-
+import * as vscode from 'vscode';
 import BaseLinter from './BaseLinter';
 import IcarusLinter from './IcarusLinter';
 import VerilatorLinter from './VerilatorLinter';
 import XvlogLinter from './XvlogLinter';
 import ModelsimLinter from './ModelsimLinter';
-import { Logger } from '../logger';
 
 export default class LintManager {
-    private subscriptions: Disposable[];
+    private subscriptions: vscode.Disposable[];
 
     private linter: BaseLinter;
-    private diagnosticCollection: DiagnosticCollection;
-    private logger: Logger;
+    private diagnosticCollection: vscode.DiagnosticCollection;
+    private logger: vscode.LogOutputChannel;
 
-    constructor(logger: Logger) {
-        this.diagnosticCollection = languages.createDiagnosticCollection();
+    constructor(logger: vscode.LogOutputChannel) {
+        this.diagnosticCollection = vscode.languages.createDiagnosticCollection();
         this.logger = logger;
-        workspace.onDidOpenTextDocument(this.lint, this, this.subscriptions);
-        workspace.onDidSaveTextDocument(this.lint, this, this.subscriptions);
-        workspace.onDidCloseTextDocument(
+        vscode.workspace.onDidOpenTextDocument(this.lint, this, this.subscriptions);
+        vscode.workspace.onDidSaveTextDocument(this.lint, this, this.subscriptions);
+        vscode.workspace.onDidCloseTextDocument(
             this.removeFileDiagnostics,
             this,
             this.subscriptions
         );
 
-        workspace.onDidChangeConfiguration(
+        vscode.workspace.onDidChangeConfiguration(
             this.configLinter,
             this,
             this.subscriptions
@@ -42,14 +31,14 @@ export default class LintManager {
         this.configLinter();
 
         // Run linting for open documents on launch
-        window.visibleTextEditors.forEach((editor) => {
+        vscode.window.visibleTextEditors.forEach((editor) => {
             this.lint(editor.document);
         });
     }
 
     configLinter() {
         let linterName;
-        linterName = workspace
+        linterName = vscode.workspace
             .getConfiguration('verilog.linting')
             .get<string>('linter');
 
@@ -80,18 +69,18 @@ export default class LintManager {
                     );
                     break;
                 default:
-                    this.logger.log('[Lint Manager] Invalid linter name.');
+                    this.logger.warn('[Lint Manager] Invalid linter name.');
                     this.linter = null;
                     break;
             }
         }
 
         if (this.linter != null) {
-            this.logger.log('[iverilog-lint] Using linter ' + this.linter.name);
+            this.logger.info('[iverilog-lint] Using linter ' + this.linter.name);
         }
     }
 
-    lint(doc: TextDocument) {
+    lint(doc: vscode.TextDocument) {
         // Check for language id
         let lang: string = doc.languageId;
         if (
@@ -100,18 +89,18 @@ export default class LintManager {
         ) { this.linter.startLint(doc); }
     }
 
-    removeFileDiagnostics(doc: TextDocument) {
+    removeFileDiagnostics(doc: vscode.TextDocument) {
         if (this.linter != null) { this.linter.removeFileDiagnostics(doc); }
     }
 
     async runLintTool() {
         // Check for language id
-        let lang: string = window.activeTextEditor.document.languageId;
+        let lang: string = vscode.window.activeTextEditor.document.languageId;
         if (
-            window.activeTextEditor === undefined ||
+            vscode.window.activeTextEditor === undefined ||
             (lang !== 'verilog' && lang !== 'systemverilog')
         ) {
-            window.showErrorMessage(
+            vscode.window.showErrorMessage(
                 'Verilog-HDL/SystemVerilog: No document opened'
             );
         }
@@ -119,7 +108,7 @@ export default class LintManager {
         // window.showErrorMessage("Verilog-HDL/SystemVerilog: No Verilog document opened");
         else {
             // Show the available linters
-            let linterStr: QuickPickItem = await window.showQuickPick(
+            let linterStr: vscode.QuickPickItem = await vscode.window.showQuickPick(
                 [
                     {
                         label: 'iverilog',
@@ -174,16 +163,16 @@ export default class LintManager {
                 default:
                     return;
             }
-            await window.withProgress(
+            await vscode.window.withProgress(
                 {
-                    location: ProgressLocation.Notification,
+                    location: vscode.ProgressLocation.Notification,
                     title: 'Verilog-HDL/SystemVerilog: Running lint tool...',
                 },
                 async (_progress, _token) => {
                     tempLinter.removeFileDiagnostics(
-                        window.activeTextEditor.document
+                        vscode.window.activeTextEditor.document
                     );
-                    tempLinter.startLint(window.activeTextEditor.document);
+                    tempLinter.startLint(vscode.window.activeTextEditor.document);
                 }
             );
         }

@@ -1,67 +1,55 @@
-import {
-    DocumentSymbolProvider,
-    CancellationToken,
-    TextDocument,
-    SymbolKind,
-    DocumentSymbol,
-    ProviderResult,
-    SymbolInformation,
-} from 'vscode';
+import * as vscode from 'vscode';
 import { BsvInfoProviderManger } from '../BsvProvider';
 import { CtagsManager, Symbol } from '../ctags';
-import { Logger, LogSeverity } from '../logger';
 
-export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
-    public docSymbols: DocumentSymbol[] = [];
+export class VerilogDocumentSymbolProvider implements vscode.DocumentSymbolProvider {
+    public docSymbols: vscode.DocumentSymbol[] = [];
 
-    private logger: Logger;
-    constructor(logger: Logger) {
+    private logger: vscode.LogOutputChannel;
+    constructor(logger: vscode.LogOutputChannel) {
         this.logger = logger;
     }
 
     async provideDocumentSymbols(
-        document: TextDocument,
-        _token: CancellationToken
-    ): Promise<DocumentSymbol[]> {
-        this.logger.log('[VerilogSymbol] Symbols Requested: ' + document.uri);
+        document: vscode.TextDocument,
+        _token: vscode.CancellationToken
+    ): Promise<vscode.DocumentSymbol[]> {
+        this.logger.info('[VerilogSymbol] Symbols Requested: ' + document.uri);
         let symbols: Symbol[] = await CtagsManager.getSymbols(document);
-        this.logger.log("[VerilogSymbol] Symbols: " + symbols.toString());
+        this.logger.info("[VerilogSymbol] Symbols: " + symbols.toString());
         this.docSymbols = this.buildDocumentSymbolList(symbols);
-        this.logger.log(
-            this.docSymbols.length + ' top-level symbols returned',
-            this.docSymbols.length > 0 ? LogSeverity.info : LogSeverity.warn
-        );
+        this.logger.info(this.docSymbols.length + ' top-level symbols returned');
         return this.docSymbols;
     }
 
-    isContainer(type: SymbolKind): boolean {
+    isContainer(type: vscode.SymbolKind): boolean {
         switch (type) {
-            case SymbolKind.Array:
-            case SymbolKind.Boolean:
-            case SymbolKind.Constant:
-            case SymbolKind.EnumMember:
-            case SymbolKind.Event:
-            case SymbolKind.Field:
-            case SymbolKind.Key:
-            case SymbolKind.Null:
-            case SymbolKind.Number:
-            case SymbolKind.Object:
-            case SymbolKind.Property:
-            case SymbolKind.String:
-            case SymbolKind.TypeParameter:
-            case SymbolKind.Variable:
+            case vscode.SymbolKind.Array:
+            case vscode.SymbolKind.Boolean:
+            case vscode.SymbolKind.Constant:
+            case vscode.SymbolKind.EnumMember:
+            case vscode.SymbolKind.Event:
+            case vscode.SymbolKind.Field:
+            case vscode.SymbolKind.Key:
+            case vscode.SymbolKind.Null:
+            case vscode.SymbolKind.Number:
+            case vscode.SymbolKind.Object:
+            case vscode.SymbolKind.Property:
+            case vscode.SymbolKind.String:
+            case vscode.SymbolKind.TypeParameter:
+            case vscode.SymbolKind.Variable:
                 return false;
-            case SymbolKind.Class:
-            case SymbolKind.Constructor:
-            case SymbolKind.Enum:
-            case SymbolKind.File:
-            case SymbolKind.Function:
-            case SymbolKind.Interface:
-            case SymbolKind.Method:
-            case SymbolKind.Module:
-            case SymbolKind.Namespace:
-            case SymbolKind.Package:
-            case SymbolKind.Struct:
+            case vscode.SymbolKind.Class:
+            case vscode.SymbolKind.Constructor:
+            case vscode.SymbolKind.Enum:
+            case vscode.SymbolKind.File:
+            case vscode.SymbolKind.Function:
+            case vscode.SymbolKind.Interface:
+            case vscode.SymbolKind.Method:
+            case vscode.SymbolKind.Module:
+            case vscode.SymbolKind.Namespace:
+            case vscode.SymbolKind.Package:
+            case vscode.SymbolKind.Struct:
                 return true;
         }
         return false;
@@ -70,7 +58,7 @@ export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
     // find the appropriate container RECURSIVELY and add to its childrem
     // return true: if done
     // return false: if container not found
-    findContainer(con: DocumentSymbol, sym: DocumentSymbol): boolean {
+    findContainer(con: vscode.DocumentSymbol, sym: vscode.DocumentSymbol): boolean {
         let res: boolean = false;
         for (let i of con.children) {
             if (this.isContainer(i.kind) && i.range.contains(sym.range)) {
@@ -86,9 +74,9 @@ export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
     }
 
     // Build heiarchial DocumentSymbol[] from linear symbolsList[] using start and end position
-    // TODO: Use parentscope/parenttype of symbol to construct heirarchial DocumentSymbol []
-    buildDocumentSymbolList(symbolsList: Symbol[]): DocumentSymbol[] {
-        let list: DocumentSymbol[] = [];
+    // TODO: Use parentscope/parenttype of symbol to construct heirarchial vscode.DocumentSymbol []
+    buildDocumentSymbolList(symbolsList: Symbol[]): vscode.DocumentSymbol[] {
+        let list: vscode.DocumentSymbol[] = [];
         symbolsList = symbolsList.sort((a, b): number => {
             if (a.startPosition.isBefore(b.startPosition)) { return -1; }
             if (a.startPosition.isAfter(b.startPosition)) { return 1; }
@@ -96,7 +84,7 @@ export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
         });
         // Add each of the symbols in order
         for (let i of symbolsList) {
-            let sym: DocumentSymbol = i.getDocumentSymbol();
+            let sym: vscode.DocumentSymbol = i.getDocumentSymbol();
             // if no top level elements present
             if (list.length === 0) {
                 list.push(sym);
@@ -123,16 +111,16 @@ export class VerilogDocumentSymbolProvider implements DocumentSymbolProvider {
     }
 }
 
-export class BsvDocumentSymbolProvider implements DocumentSymbolProvider {
-    private logger: Logger;
-    constructor(logger: Logger) {
+export class BsvDocumentSymbolProvider implements vscode.DocumentSymbolProvider {
+    private logger: vscode.LogOutputChannel;
+    constructor(logger: vscode.LogOutputChannel) {
         this.logger = logger;
     }
 
     provideDocumentSymbols(
-        document: TextDocument,
-        _token: CancellationToken
-    ): ProviderResult<DocumentSymbol[] | SymbolInformation[]> {
+        document: vscode.TextDocument,
+        _token: vscode.CancellationToken
+    ): vscode.ProviderResult<vscode.DocumentSymbol[] | vscode.SymbolInformation[]> {
         // return new Promise((resolve)=>{
         //     const provider = BsvInfoProviderManger.getInstance().getProvider();
         //     var info = provider.getSymbol(document);

@@ -6,10 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [1.8.0] - Unreleased
 
-- Added experimental support for Verilog-HDL formatting with verible-verilog-format.
-- Added experimental support for SystemVerilog formatting with verible-verilog-format.
+- Added experimental formatting support with verible-verilog-format for the following languages.
+  - Verilog-HDL
+  - SystemVerilog
 - \[Caution\] Updated config namespace for formatter.
   - `verilog.formatter` -> `verilog.formatting`
+- Improved logging implementation.
+  - Replaced own `Logger` class with `vscode.LogOutputChannel`.
+  - From this version, the extension requires VS Code at least 1.74.0 or above.
 
 ## [1.7.0] - 2022-12-21
 
