@@ -226,10 +226,10 @@ If you have tested the linters in new platforms or have issues with them, feel f
 
 ## [Guidelines for Contributing](./CONTRIBUTING.md)
 
-## Logging
+## Logs
 
-Logs are outputted to OutputChannel in th VS Code.
-Open the **Output** pane in VS Code and choose _Verilog_ in the drop-down menu to view the log.
+Logs are outputted to LogOutputChannel in th VS Code.
+You can check it by opening the **Output** pane in VS Code and choose _Verilog_ in the drop-down menu.
 
 ## Helpful links
 
