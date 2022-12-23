@@ -16,17 +16,16 @@ import * as CompletionItemProvider from './providers/CompletionItemProvider';
 import { BsvInfoProviderManger } from './BsvProvider';
 import * as ModuleInstantiation from './commands/ModuleInstantiation';
 import * as FormatProvider from './providers/FormatPrivider';
-import { Logger } from './logger';
 
 let lintManager: LintManager;
-export let logger: Logger; // Global logger
-export let ctagsManager: CtagsManager;
-export var extensionID: string = 'mshr-h.veriloghdl';
+export var logger: vscode.LogOutputChannel; // Global logger
+export var ctagsManager: CtagsManager;
+export let extensionID: string = 'mshr-h.veriloghdl';
 let languageClients = new Map<string, LanguageClient>();
 
 export function activate(context: vscode.ExtensionContext) {
-    logger = new Logger();
-    logger.log(extensionID + ' is now active!');
+    logger = vscode.window.createOutputChannel("Verilog", { log: true });
+    logger.info(extensionID + " activation started.");
 
     BsvInfoProviderManger.getInstance().onWorkspace();
     vscode.workspace.onDidChangeWorkspaceFolders((_e) => {
@@ -141,7 +140,8 @@ export function activate(context: vscode.ExtensionContext) {
     // Configure command to instantiate a module
     vscode.commands.registerCommand(
         'verilog.instantiateModule',
-        ModuleInstantiation.instantiateModuleInteract
+        ModuleInstantiation.instantiateModuleInteract,
+        logger
     );
     // Register command for manual linting
     vscode.commands.registerCommand(
@@ -161,7 +161,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
     initAllLanguageClients();
 
-    logger.log('Activation complete');
+    logger.info(extensionID + " activation finished.");
 }
 
 function setupLanguageClient(name: string, defaultPath: string, serverArgs: string[], serverDebugArgs: string[], clientOptions: LanguageClientOptions) {
@@ -183,7 +183,7 @@ function setupLanguageClient(name: string, defaultPath: string, serverArgs: stri
     ));
     if (!enabled) { return; }
     languageClients.get(name).start();
-    logger.log('"' + name + '" language server started.');
+    logger.info('"' + name + '" language server started.');
 }
 
 function stopAllLanguageClients(): Promise<any> {
@@ -191,7 +191,7 @@ function stopAllLanguageClients(): Promise<any> {
     for (const [name, client] of languageClients) {
         if (client.isRunning()) {
             p.push(client.stop());
-            logger.log('"' + name + '" language server stopped.');
+            logger.info('"' + name + '" language server stopped.');
         }
     }
     return Promise.all(p);
@@ -246,6 +246,6 @@ function askShowChangelogIfUpdated(context: vscode.ExtensionContext) {
 }
 
 export function deactivate(): Thenable<void> {
-    logger.log('Deactivated');
+    logger.info('Deactivated');
     return stopAllLanguageClients();
 }

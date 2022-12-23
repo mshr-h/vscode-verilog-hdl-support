@@ -1,27 +1,25 @@
+import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Ctags, Symbol } from '../ctags';
-import { window, QuickPickItem, workspace, SnippetString } from 'vscode';
-import { Logger } from '../logger';
 
-export function instantiateModuleInteract() {
-    let filePath = path.dirname(window.activeTextEditor.document.fileName);
+export function instantiateModuleInteract(logger: vscode.LogOutputChannel) {
+    let filePath = path.dirname(vscode.window.activeTextEditor.document.fileName);
     selectFile(filePath).then((srcpath) => {
-        instantiateModule(srcpath).then((inst) => {
-            window.activeTextEditor.insertSnippet(inst);
+        instantiateModule(srcpath, logger).then((inst) => {
+            vscode.window.activeTextEditor.insertSnippet(inst);
         });
     });
 }
 
-function instantiateModule(srcpath: string): Thenable<SnippetString> {
-    return new Promise<SnippetString>((resolve, _reject) => {
+function instantiateModule(srcpath: string, logger: vscode.LogOutputChannel): Thenable<vscode.SnippetString> {
+    return new Promise<vscode.SnippetString>((resolve, _reject) => {
         // Using Ctags to get all the modules in the file
         let moduleName: string = '';
         let portsName: string[] = [];
         let parametersName: string[] = [];
-        let logger: Logger = new Logger();
         let ctags: ModuleTags = new ModuleTags(logger);
-        this.logger.log('Executing ctags for module instantiation');
+        logger.info('Executing ctags for module instantiation');
         ctags
             .execCtags(srcpath)
             .then((output) => {
@@ -34,7 +32,7 @@ function instantiateModule(srcpath: string): Thenable<SnippetString> {
                 );
                 // No modules found
                 if (modules.length <= 0) {
-                    window.showErrorMessage(
+                    vscode.window.showErrorMessage(
                         'Verilog-HDL/SystemVerilog: No modules found in the file'
                     );
                     return;
@@ -43,7 +41,7 @@ function instantiateModule(srcpath: string): Thenable<SnippetString> {
                 else if (modules.length === 1) { module = modules[0]; }
                 // many modules found
                 else if (modules.length > 1) {
-                    moduleName = await window.showQuickPick(
+                    moduleName = await vscode.window.showQuickPick(
                         ctags.symbols
                             .filter((tag) => tag.type === 'module')
                             .map((tag) => tag.name),
@@ -74,14 +72,14 @@ function instantiateModule(srcpath: string): Thenable<SnippetString> {
                         tag.parentScope === scope
                 );
                 parametersName = params.map((tag) => tag.name);
-                this.logger.log("Module name: " + module.name);
+                logger.info("Module name: " + module.name);
                 let paramString = ``;
                 if (parametersName.length > 0) {
                     paramString = `\n#(\n${instantiatePort(parametersName)})\n`;
                 }
-                this.logger.log("portsName: " + portsName.toString());
+                logger.info("portsName: " + portsName.toString());
                 resolve(
-                    new SnippetString()
+                    new vscode.SnippetString()
                         .appendText(module.name + ' ')
                         .appendText(paramString)
                         .appendPlaceholder('u_')
@@ -114,11 +112,11 @@ function instantiatePort(ports: string[]): string {
 }
 
 function selectFile(currentDir?: string): Thenable<string> {
-    currentDir = currentDir || workspace.rootPath;
+    currentDir = currentDir || vscode.workspace.rootPath;
 
     let dirs = getDirectories(currentDir);
     // if is subdirectory, add '../'
-    if (currentDir !== workspace.rootPath) {
+    if (currentDir !== vscode.workspace.rootPath) {
         dirs.unshift('..');
     }
     // all files ends with '.sv'
@@ -128,7 +126,7 @@ function selectFile(currentDir?: string): Thenable<string> {
 
     // available quick pick items
     // Indicate folders in the Quick pick
-    let items: QuickPickItem[] = [];
+    let items: vscode.QuickPickItem[] = [];
     dirs.forEach((dir) => {
         items.push({
             label: dir,
@@ -141,7 +139,7 @@ function selectFile(currentDir?: string): Thenable<string> {
         });
     });
 
-    return window
+    return vscode.window
         .showQuickPick(items, {
             placeHolder: 'Choose the module file',
         })

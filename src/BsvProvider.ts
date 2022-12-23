@@ -3373,7 +3373,7 @@ class BsvBaseInfoProvider {
             this.parserCache.set(uri, tree);
             this.updateSymbol(uri);
 
-            logger.log('cache ' + uri);
+            logger.info('cache ' + uri);
         } catch (error) { }
     }
 
@@ -3643,7 +3643,7 @@ export class BsvInfoProviderManger {
                 workspace.workspaceFolders[0].uri
             );
         } else {
-            logger.log('bsv only support one opened workspace now');
+            logger.error('bsv only support one opened workspace now');
         }
     }
 }

@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Added experimental support for SystemVerilog formatting with verible-verilog-format.
 - \[Caution\] Updated config namespace for formatter.
   - `verilog.formatter` -> `verilog.formatting`
+- Improved logging implementation.
+  - Replaced own `Logger` class with `vscode.LogOutputChannel`.
+  - From this version, the extension requires VS Code at least 1.74.0 or above.
 
 ## [1.7.0] - 2022-12-21
 

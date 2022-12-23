@@ -1,14 +1,6 @@
-import {
-    workspace,
-    Range,
-    TextDocument,
-    Diagnostic,
-    DiagnosticSeverity,
-    DiagnosticCollection,
-} from 'vscode';
+import * as vscode from 'vscode';
 import * as child from 'child_process';
 import BaseLinter from './BaseLinter';
-import { Logger, LogSeverity } from '../logger';
 
 var isWindows = process.platform === 'win32';
 
@@ -17,9 +9,9 @@ export default class IcarusLinter extends BaseLinter {
     private iverilogArgs: string;
     private runAtFileLocation: boolean;
 
-    constructor(diagnosticCollection: DiagnosticCollection, logger: Logger) {
+    constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: vscode.LogOutputChannel) {
         super('iverilog', diagnosticCollection, logger);
-        workspace.onDidChangeConfiguration(() => {
+        vscode.workspace.onDidChangeConfiguration(() => {
             this.getConfig();
         });
         this.getConfig();
@@ -27,24 +19,24 @@ export default class IcarusLinter extends BaseLinter {
 
     private getConfig() {
         this.iverilogPath = <string>(
-            workspace
+            vscode.workspace
                 .getConfiguration()
                 .get('verilog.linting.path')
         );
         this.iverilogArgs = <string>(
-            workspace
+            vscode.workspace
                 .getConfiguration()
                 .get('verilog.linting.iverilog.arguments')
         );
         this.runAtFileLocation = <boolean>(
-            workspace
+            vscode.workspace
                 .getConfiguration()
                 .get('verilog.linting.iverilog.runAtFileLocation')
         );
     }
 
-    protected lint(doc: TextDocument) {
-        this.logger.log('[iverilog-lint] iverilog lint requested');
+    protected lint(doc: vscode.TextDocument) {
+        this.logger.info('[iverilog-lint] iverilog lint requested');
         let docUri: string = doc.uri.fsPath; //path of current doc
         let lastIndex: number =
             isWindows == true
@@ -52,7 +44,7 @@ export default class IcarusLinter extends BaseLinter {
                 : docUri.lastIndexOf('/');
         let docFolder = docUri.substr(0, lastIndex); //folder of current doc
         let runLocation: string =
-            this.runAtFileLocation == true ? docFolder : workspace.rootPath; //choose correct location to run
+            this.runAtFileLocation == true ? docFolder : vscode.workspace.rootPath; //choose correct location to run
         let svArgs: string = doc.languageId == 'systemverilog' ? '-g2012' : ''; //SystemVerilog args
         let command: string =
             this.iverilogPath +
@@ -63,13 +55,13 @@ export default class IcarusLinter extends BaseLinter {
             ' "' +
             doc.fileName +
             '"'; //command to execute
-        this.logger.log("[iverilog-lint] Execute command: " + command, LogSeverity.command);
+        this.logger.info("[iverilog-lint] Execute command: " + command);
 
         var foo: child.ChildProcess = child.exec(
             command,
             { cwd: runLocation },
             (_error: Error, _stdout: string, stderr: string) => {
-                let diagnostics: Diagnostic[] = [];
+                let diagnostics: vscode.Diagnostic[] = [];
                 let lines = stderr.split(/\r?\n/g);
                 // Parse output lines
                 lines.forEach((line, _) => {
@@ -79,8 +71,8 @@ export default class IcarusLinter extends BaseLinter {
                         let lineNum = parseInt(terms[1].trim()) - 1;
                         if (terms.length == 3) {
                             diagnostics.push({
-                                severity: DiagnosticSeverity.Error,
-                                range: new Range(
+                                severity: vscode.DiagnosticSeverity.Error,
+                                range: new vscode.Range(
                                     lineNum,
                                     0,
                                     lineNum,
@@ -92,13 +84,13 @@ export default class IcarusLinter extends BaseLinter {
                             });
                         }
                         else if (terms.length >= 4) {
-                            let sev: DiagnosticSeverity;
-                            if (terms[2].trim() == 'error') { sev = DiagnosticSeverity.Error; }
-                            else if (terms[2].trim() == 'warning') { sev = DiagnosticSeverity.Warning; }
-                            else { sev = DiagnosticSeverity.Information; }
+                            let sev: vscode.DiagnosticSeverity;
+                            if (terms[2].trim() == 'error') { sev = vscode.DiagnosticSeverity.Error; }
+                            else if (terms[2].trim() == 'warning') { sev = vscode.DiagnosticSeverity.Warning; }
+                            else { sev = vscode.DiagnosticSeverity.Information; }
                             diagnostics.push({
                                 severity: sev,
-                                range: new Range(
+                                range: new vscode.Range(
                                     lineNum,
                                     0,
                                     lineNum,
@@ -111,7 +103,7 @@ export default class IcarusLinter extends BaseLinter {
                         }
                     }
                 });
-                this.logger.log(
+                this.logger.info(
                     "[iverilog-lint] " + diagnostics.length + ' errors/warnings returned'
                 );
                 this.diagnosticCollection.set(doc.uri, diagnostics);

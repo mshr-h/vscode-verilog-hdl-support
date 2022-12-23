@@ -1,120 +1,107 @@
-import {
-    CompletionItemProvider,
-    CompletionItem,
-    TextDocument,
-    Position,
-    CancellationToken,
-    CompletionContext,
-    ProviderResult,
-    CompletionItemKind,
-    Range,
-    MarkdownString,
-    CompletionList,
-} from 'vscode';
+import * as vscode from 'vscode';
 import { BsvInfoProviderManger } from '../BsvProvider';
 import { CtagsManager, Symbol } from '../ctags';
-import { Logger } from '../logger';
 
-export class VerilogCompletionItemProvider implements CompletionItemProvider {
-    private logger: Logger;
+export class VerilogCompletionItemProvider implements vscode.CompletionItemProvider {
+    private logger: vscode.LogOutputChannel;
 
-    constructor(logger: Logger) {
+    constructor(logger: vscode.LogOutputChannel) {
         this.logger = logger;
     }
 
     //TODO: Better context based completion items
     async provideCompletionItems(
-        document: TextDocument,
-        _position: Position,
-        _token: CancellationToken,
-        _context: CompletionContext
-    ): Promise<CompletionItem[]> {
-        this.logger.log('Completion items requested');
-        let items: CompletionItem[] = [];
+        document: vscode.TextDocument,
+        _position: vscode.Position,
+        _token: vscode.CancellationToken,
+        _context: vscode.CompletionContext
+    ): Promise<vscode.CompletionItem[]> {
+        this.logger.info('Completion items requested');
+        let items: vscode.CompletionItem[] = [];
 
         let symbols: Symbol[] = await CtagsManager.getSymbols(document);
         symbols.forEach((symbol) => {
-            let newItem: CompletionItem = new CompletionItem(
+            let newItem: vscode.CompletionItem = new vscode.CompletionItem(
                 symbol.name,
                 this.getCompletionItemKind(symbol.type)
             );
-            let codeRange = new Range(
+            let codeRange = new vscode.Range(
                 symbol.startPosition,
-                new Position(symbol.startPosition.line, Number.MAX_VALUE)
+                new vscode.Position(symbol.startPosition.line, Number.MAX_VALUE)
             );
             let code = document.getText(codeRange).trim();
             newItem.detail = symbol.type;
             let doc: string = '```systemverilog\n' + code + '\n```';
             if (symbol.parentScope !== undefined && symbol.parentScope !== '') { doc += '\nHeirarchial Scope: ' + symbol.parentScope; }
-            newItem.documentation = new MarkdownString(doc);
+            newItem.documentation = new vscode.MarkdownString(doc);
             items.push(newItem);
         });
-        this.logger.log(items.length + ' items requested');
+        this.logger.info(items.length + ' items requested');
         return items;
     }
 
-    private getCompletionItemKind(type: string): CompletionItemKind {
+    private getCompletionItemKind(type: string): vscode.CompletionItemKind {
         switch (type) {
             case 'constant':
-                return CompletionItemKind.Constant;
+                return vscode.CompletionItemKind.Constant;
             case 'event':
-                return CompletionItemKind.Event;
+                return vscode.CompletionItemKind.Event;
             case 'function':
-                return CompletionItemKind.Function;
+                return vscode.CompletionItemKind.Function;
             case 'module':
-                return CompletionItemKind.Module;
+                return vscode.CompletionItemKind.Module;
             case 'net':
-                return CompletionItemKind.Variable;
+                return vscode.CompletionItemKind.Variable;
             case 'port':
-                return CompletionItemKind.Variable;
+                return vscode.CompletionItemKind.Variable;
             case 'register':
-                return CompletionItemKind.Variable;
+                return vscode.CompletionItemKind.Variable;
             case 'task':
-                return CompletionItemKind.Function;
+                return vscode.CompletionItemKind.Function;
             case 'block':
-                return CompletionItemKind.Module;
+                return vscode.CompletionItemKind.Module;
             case 'assert':
-                return CompletionItemKind.Variable; // No idea what to use
+                return vscode.CompletionItemKind.Variable; // No idea what to use
             case 'class':
-                return CompletionItemKind.Class;
+                return vscode.CompletionItemKind.Class;
             case 'covergroup':
-                return CompletionItemKind.Class; // No idea what to use
+                return vscode.CompletionItemKind.Class; // No idea what to use
             case 'enum':
-                return CompletionItemKind.Enum;
+                return vscode.CompletionItemKind.Enum;
             case 'interface':
-                return CompletionItemKind.Interface;
+                return vscode.CompletionItemKind.Interface;
             case 'modport':
-                return CompletionItemKind.Variable; // same as ports
+                return vscode.CompletionItemKind.Variable; // same as ports
             case 'package':
-                return CompletionItemKind.Module;
+                return vscode.CompletionItemKind.Module;
             case 'program':
-                return CompletionItemKind.Module;
+                return vscode.CompletionItemKind.Module;
             case 'prototype':
-                return CompletionItemKind.Function;
+                return vscode.CompletionItemKind.Function;
             case 'property':
-                return CompletionItemKind.Property;
+                return vscode.CompletionItemKind.Property;
             case 'struct':
-                return CompletionItemKind.Struct;
+                return vscode.CompletionItemKind.Struct;
             case 'typedef':
-                return CompletionItemKind.TypeParameter;
+                return vscode.CompletionItemKind.TypeParameter;
             default:
-                return CompletionItemKind.Variable;
+                return vscode.CompletionItemKind.Variable;
         }
     }
 }
 
-export class BsvCompletionItemProvider implements CompletionItemProvider {
-    private logger: Logger;
-    constructor(logger: Logger) {
+export class BsvCompletionItemProvider implements vscode.CompletionItemProvider {
+    private logger: vscode.LogOutputChannel;
+    constructor(logger: vscode.LogOutputChannel) {
         this.logger = logger;
     }
 
     provideCompletionItems(
-        document: TextDocument,
-        position: Position,
-        _token: CancellationToken,
-        _context: CompletionContext
-    ): ProviderResult<CompletionItem[] | CompletionList<CompletionItem>> {
+        document: vscode.TextDocument,
+        position: vscode.Position,
+        _token: vscode.CancellationToken,
+        _context: vscode.CompletionContext
+    ): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList<vscode.CompletionItem>> {
         const provider = BsvInfoProviderManger.getInstance().getProvider();
         return provider.lint(document, position);
     }

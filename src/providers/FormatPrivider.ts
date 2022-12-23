@@ -4,7 +4,6 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as crypto from 'crypto';
 import * as path from 'path';
-import { Logger, LogSeverity } from '../logger';
 
 // handle temporary file
 class TemporaryFile {
@@ -32,19 +31,15 @@ class TemporaryFile {
 // Base class
 abstract class FileBasedFormattingEditProvider implements vscode.DocumentFormattingEditProvider {
   private namespace: string;
-  private logger: Logger;
   private tmpFileExt: string; // .v, .sv, .vhd
+  public logger: vscode.LogOutputChannel;
   public config: vscode.WorkspaceConfiguration;
 
-  constructor(namespace: string, tmpFileExt: string, logger: Logger) {
+  constructor(namespace: string, tmpFileExt: string, logger: vscode.LogOutputChannel) {
     this.namespace = namespace;
     this.logger = logger;
     this.tmpFileExt = tmpFileExt;
     this.config = vscode.workspace.getConfiguration('verilog.formatting.' + namespace);
-  }
-
-  log(message: string, severity?: LogSeverity) {
-    this.logger.log("[" + this.namespace + "] " + message, severity);
   }
 
   // should be implemented to match formatter's argument
@@ -58,13 +53,13 @@ abstract class FileBasedFormattingEditProvider implements vscode.DocumentFormatt
     // create temporary file and copy document to it
     let tempFile: TemporaryFile = new TemporaryFile(this.namespace, this.tmpFileExt);
     tempFile.writeFileSync(document.getText(), { flag: "w" });
-    this.log("Temp file created at:" + tempFile.path);
+    this.logger.info("Temp file created at:" + tempFile.path);
 
     let args: string[] = this.prepareArgument(tempFile.path);
 
     // execute command
     let binPath: string = this.config.get("path");
-    this.log("Executing command: " + binPath + " " + args.join(" "));
+    this.logger.info("Executing command: " + binPath + " " + args.join(" "));
     try {
       child_process.execFileSync(binPath, args, {});
       let formattedText: string = tempFile.readFileSync({ encoding: "utf-8" });
@@ -74,7 +69,7 @@ abstract class FileBasedFormattingEditProvider implements vscode.DocumentFormatt
       tempFile.dispose();
       return [vscode.TextEdit.replace(wholeFileRange, formattedText)];
     } catch (err) {
-      this.log(err.toString(), LogSeverity.error);
+      this.logger.error(err.toString());
     }
 
     tempFile.dispose();
@@ -134,9 +129,9 @@ class VeribleVerilogFormatEditProvider extends FileBasedFormattingEditProvider {
 }
 
 export class VerilogFormatProvider implements vscode.DocumentFormattingEditProvider {
-  private logger: Logger;
+  private logger: vscode.LogOutputChannel;
 
-  constructor(logger: Logger) {
+  constructor(logger: vscode.LogOutputChannel) {
     this.logger = logger;
   }
 
@@ -164,9 +159,9 @@ export class VerilogFormatProvider implements vscode.DocumentFormattingEditProvi
 }
 
 export class SystemVerilogFormatProvider implements vscode.DocumentFormattingEditProvider {
-  private logger: Logger;
+  private logger: vscode.LogOutputChannel;
 
-  constructor(logger: Logger) {
+  constructor(logger: vscode.LogOutputChannel) {
     this.logger = logger;
   }
 
