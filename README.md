@@ -70,7 +70,7 @@ Add the installation path of Ctags binary in your `PATH` environment variable or
 
     Choose a module present in your workspace to instantiate it in the current file.
 
-### Language Servers
+### Language Servers (Experimental)
 
 We currently support the following Language Servers and enabled for Verilog-HDL, SystemVerilog and VHDL.
 You can enable multiple Language Servers at the same time.
