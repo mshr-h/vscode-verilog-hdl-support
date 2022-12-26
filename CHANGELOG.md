@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.8.1] - 2022-12-26
+
+- Fixed `Instantiate Module` not working issue. [#376](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/376)
+
 ## [1.8.0] - 2022-12-22
 
 - Added experimental formatting support with verible-verilog-format for the following languages. [#371](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/371)
