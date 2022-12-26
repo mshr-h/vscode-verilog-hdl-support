@@ -145,8 +145,7 @@ export function activate(context: vscode.ExtensionContext) {
   // Configure command to instantiate a module
   vscode.commands.registerCommand(
     'verilog.instantiateModule',
-    ModuleInstantiation.instantiateModuleInteract,
-    logger
+    ModuleInstantiation.instantiateModuleInteract
   );
 
   // Register command for manual linting

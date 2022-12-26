@@ -2,20 +2,18 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Ctags, Symbol } from '../ctags';
+import { logger } from '../extension';
 
-export function instantiateModuleInteract(logger: vscode.LogOutputChannel) {
+export function instantiateModuleInteract() {
   let filePath = path.dirname(vscode.window.activeTextEditor.document.fileName);
   selectFile(filePath).then((srcpath) => {
-    instantiateModule(srcpath, logger).then((inst) => {
+    instantiateModule(srcpath).then((inst) => {
       vscode.window.activeTextEditor.insertSnippet(inst);
     });
   });
 }
 
-function instantiateModule(
-  srcpath: string,
-  logger: vscode.LogOutputChannel
-): Thenable<vscode.SnippetString> {
+function instantiateModule(srcpath: string): Thenable<vscode.SnippetString> {
   return new Promise<vscode.SnippetString>((resolve, _reject) => {
     // Using Ctags to get all the modules in the file
     let moduleName: string = '';
