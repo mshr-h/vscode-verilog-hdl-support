@@ -30,9 +30,9 @@ export function activate(context: vscode.ExtensionContext) {
     extMgr.showChangelog();
   }
 
-  BsvInfoProviderManger.getInstance().onWorkspace();
+  BsvInfoProviderManger.getInstance().onWorkspace(logger);
   vscode.workspace.onDidChangeWorkspaceFolders((_e) => {
-    BsvInfoProviderManger.getInstance().onWorkspace();
+    BsvInfoProviderManger.getInstance().onWorkspace(logger);
   });
 
   // document selector
