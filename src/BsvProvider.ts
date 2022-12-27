@@ -12,6 +12,7 @@ import {
   extensions,
   CompletionItem,
   LocationLink,
+  LogOutputChannel,
 } from 'vscode';
 import * as bsvSyntaxParser from '../src/bsvjs/syntaxes/bsvParser';
 import { CharStreams, CommonTokenStream } from 'antlr4ts';
@@ -22,11 +23,9 @@ import { ParseTree } from 'antlr4ts/tree/ParseTree';
 import { RuleNode } from 'antlr4ts/tree/RuleNode';
 import { TerminalNode } from 'antlr4ts/tree/TerminalNode';
 import { assert } from 'console';
-import { extensionID } from './extension';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { readdirSync } from 'fs';
-import { logger } from './extension';
 
 export interface BsvInfoProvider {
   getSymbol(doc: TextDocument): Promise<SymbolInformation[]> | Promise<DocumentSymbol[]>;
@@ -3132,7 +3131,13 @@ class BsvBaseInfoProvider {
   parserCache: Map<Uri, bsvSyntaxParser.TopContext> = new Map();
   docSymbolCache: Map<Uri, SymbolInformation[]> = new Map();
 
-  resolveStdLib() {
+  public logger: LogOutputChannel;
+
+  constructor(logger: LogOutputChannel) {
+    this.logger = logger;
+  }
+
+  resolveStdLib(extensionID: string) {
     var self = extensions.getExtension(extensionID);
     var dir = readdirSync(join(self.extensionPath, 'syntaxes', 'bsc-lib'));
 
@@ -3176,7 +3181,7 @@ class BsvBaseInfoProvider {
       this.parserCache.set(uri, tree);
       this.updateSymbol(uri);
 
-      logger.info('cache ' + uri);
+      this.logger.info('cache ' + uri);
     } catch (error) {}
   }
 
@@ -3237,8 +3242,8 @@ class SymbolLink implements LocationLink {
 class BsvWorkspaceInfoProvider extends BsvBaseInfoProvider implements BsvInfoProvider {
   initFinished = false;
 
-  constructor(_path: Uri) {
-    super();
+  constructor(_path: Uri, logger: LogOutputChannel) {
+    super(logger);
     this.updateWorkspace();
     workspace.onDidCreateFiles(async (e) => {
       for await (const file of e.files) {
@@ -3387,8 +3392,8 @@ class BsvSingleFileInfoProvider extends BsvBaseInfoProvider implements BsvInfoPr
     return undefined;
   }
 
-  constructor() {
-    super();
+  constructor(logger: LogOutputChannel) {
+    super(logger);
   }
 }
 
@@ -3410,18 +3415,18 @@ export class BsvInfoProviderManger {
     return this.provider;
   }
 
-  onWorkspace(): Boolean {
-    this.refreshWorkspace();
+  onWorkspace(logger: LogOutputChannel): Boolean {
+    this.refreshWorkspace(logger);
     return true;
   }
 
-  protected refreshWorkspace() {
+  protected refreshWorkspace(logger: LogOutputChannel) {
     if (!workspace.workspaceFolders) {
-      this.provider = new BsvSingleFileInfoProvider();
+      this.provider = new BsvSingleFileInfoProvider(logger);
     } else if (workspace.workspaceFolders.length == 0) {
-      this.provider = new BsvSingleFileInfoProvider();
+      this.provider = new BsvSingleFileInfoProvider(logger);
     } else if (workspace.workspaceFolders.length == 1) {
-      this.provider = new BsvWorkspaceInfoProvider(workspace.workspaceFolders[0].uri);
+      this.provider = new BsvWorkspaceInfoProvider(workspace.workspaceFolders[0].uri, logger);
     } else {
       logger.error('bsv only support one opened workspace now');
     }
