@@ -35,20 +35,6 @@ export function activate(context: vscode.ExtensionContext) {
     BsvInfoProviderManger.getInstance().onWorkspace(logger);
   });
 
-  // document selector
-  let systemVerilogSelector: vscode.DocumentSelector = {
-    scheme: 'file',
-    language: 'systemverilog',
-  };
-  let verilogSelector: vscode.DocumentSelector = {
-    scheme: 'file',
-    language: 'verilog',
-  };
-  let bsvSelector: vscode.DocumentSelector = {
-    scheme: 'file',
-    language: 'bsv',
-  };
-
   // Configure ctags
   ctagsManager = new CtagsManager(logger);
   ctagsManager.configure();
@@ -62,16 +48,22 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(
     vscode.languages.registerDocumentSymbolProvider(
-      systemVerilogSelector,
+      { scheme: 'file', language: 'verilog' },
       verilogDocumentSymbolProvider
     )
   );
   context.subscriptions.push(
-    vscode.languages.registerDocumentSymbolProvider(verilogSelector, verilogDocumentSymbolProvider)
+    vscode.languages.registerDocumentSymbolProvider(
+      { scheme: 'file', language: 'systemverilog' },
+      verilogDocumentSymbolProvider
+    )
   );
   let bsvDocumentSymbolProvider = new DocumentSymbolProvider.BsvDocumentSymbolProvider(logger);
   context.subscriptions.push(
-    vscode.languages.registerDocumentSymbolProvider(bsvSelector, bsvDocumentSymbolProvider)
+    vscode.languages.registerDocumentSymbolProvider(
+      { scheme: 'file', language: 'bsv' },
+      bsvDocumentSymbolProvider
+    )
   );
 
   // Configure Completion Item Provider
@@ -81,7 +73,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(
-      verilogSelector,
+      { scheme: 'file', language: 'verilog' },
       verilogCompletionItemProvider,
       '.',
       '(',
@@ -90,7 +82,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(
-      systemVerilogSelector,
+      { scheme: 'file', language: 'systemverilog' },
       verilogCompletionItemProvider,
       '.',
       '(',
@@ -100,7 +92,7 @@ export function activate(context: vscode.ExtensionContext) {
   let bsvCompletionItemProvider = new CompletionItemProvider.BsvCompletionItemProvider(logger);
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(
-      bsvSelector,
+      { scheme: 'file', language: 'bsv' },
       bsvCompletionItemProvider,
       '.',
       '(',
@@ -111,36 +103,56 @@ export function activate(context: vscode.ExtensionContext) {
   // Configure Hover Providers
   let verilogHoverProvider = new HoverProvider.VerilogHoverProvider(logger);
   context.subscriptions.push(
-    vscode.languages.registerHoverProvider(systemVerilogSelector, verilogHoverProvider)
+    vscode.languages.registerHoverProvider(
+      { scheme: 'file', language: 'verilog' },
+      verilogHoverProvider
+    )
   );
   context.subscriptions.push(
-    vscode.languages.registerHoverProvider(verilogSelector, verilogHoverProvider)
+    vscode.languages.registerHoverProvider(
+      { scheme: 'file', language: 'systemverilog' },
+      verilogHoverProvider
+    )
   );
   let bsvHoverProvider = new HoverProvider.BsvHoverProvider(logger);
-  context.subscriptions.push(vscode.languages.registerHoverProvider(bsvSelector, bsvHoverProvider));
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider({ scheme: 'file', language: 'bsv' }, bsvHoverProvider)
+  );
 
   // Configure Definition Providers
   let verilogDefinitionProvider = new DefinitionProvider.VerilogDefinitionProvider(logger);
   context.subscriptions.push(
-    vscode.languages.registerDefinitionProvider(systemVerilogSelector, verilogDefinitionProvider)
+    vscode.languages.registerDefinitionProvider(
+      { scheme: 'file', language: 'verilog' },
+      verilogDefinitionProvider
+    )
   );
   context.subscriptions.push(
-    vscode.languages.registerDefinitionProvider(verilogSelector, verilogDefinitionProvider)
+    vscode.languages.registerDefinitionProvider(
+      { scheme: 'file', language: 'systemverilog' },
+      verilogDefinitionProvider
+    )
   );
   let bsvDefinitionProvider = new DefinitionProvider.BsvDefinitionProvider();
   context.subscriptions.push(
-    vscode.languages.registerDefinitionProvider(bsvSelector, bsvDefinitionProvider)
+    vscode.languages.registerDefinitionProvider(
+      { scheme: 'file', language: 'bsv' },
+      bsvDefinitionProvider
+    )
   );
 
   // Configure Format Provider
   let verilogFormatProvider = new FormatProvider.VerilogFormatProvider(logger);
   context.subscriptions.push(
-    vscode.languages.registerDocumentFormattingEditProvider(verilogSelector, verilogFormatProvider)
+    vscode.languages.registerDocumentFormattingEditProvider(
+      { scheme: 'file', language: 'verilog' },
+      verilogFormatProvider
+    )
   );
   let systemVerilogFormatProvider = new FormatProvider.SystemVerilogFormatProvider(logger);
   context.subscriptions.push(
     vscode.languages.registerDocumentFormattingEditProvider(
-      systemVerilogSelector,
+      { scheme: 'file', language: 'systemverilog' },
       systemVerilogFormatProvider
     )
   );
