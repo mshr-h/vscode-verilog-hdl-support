@@ -113,6 +113,12 @@ Use the following settings to configure the extension to your needs.
 
     Add custom arguments to Icarus Verilog for linting, like `-Wall` . The argument `-t null` will be added by the linter automatically.
 
+- `verilog.linting.iverilog.includePath` (Default: nothing)
+
+    A list of directory paths to use while Icarus Verilog linting.
+    All the paths are passed as arguments `-I <directory_path>`.
+    Paths can be specified either an absolute or a relate to the workspace directory.
+
 - `verilog.linting.iverilog.runAtFileLocation` (Default: `false` )
 
     By default, the linter will be run at the workspace directory. Enable this option to run at the file location. If enabled, `` ` include`` directives should contain file paths relative to the current file.

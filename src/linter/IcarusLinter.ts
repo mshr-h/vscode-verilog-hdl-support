@@ -1,54 +1,73 @@
 import * as vscode from 'vscode';
 import * as child from 'child_process';
 import BaseLinter from './BaseLinter';
-
-var isWindows = process.platform === 'win32';
+import * as path from 'path';
 
 export default class IcarusLinter extends BaseLinter {
-  private iverilogPath: string;
-  private iverilogArgs: string;
+  private linterDir: string;
+  private arguments: string;
+  private includePath: string[];
   private runAtFileLocation: boolean;
 
   constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: vscode.LogOutputChannel) {
     super('iverilog', diagnosticCollection, logger);
     vscode.workspace.onDidChangeConfiguration(() => {
-      this.getConfig();
+      this.updateConfig();
     });
-    this.getConfig();
+    this.updateConfig();
   }
 
-  private getConfig() {
-    this.iverilogPath = <string>vscode.workspace.getConfiguration().get('verilog.linting.path');
-    this.iverilogArgs = <string>(
+  private updateConfig() {
+    this.linterDir = <string>vscode.workspace.getConfiguration().get('verilog.linting.path');
+    this.arguments = <string>(
       vscode.workspace.getConfiguration().get('verilog.linting.iverilog.arguments')
     );
+    let path = <string[]>(
+      vscode.workspace.getConfiguration().get('verilog.linting.iverilog.includePath')
+    );
+    this.includePath = path.map((includePath: string) => this.resolvePath(includePath));
+
     this.runAtFileLocation = <boolean>(
       vscode.workspace.getConfiguration().get('verilog.linting.iverilog.runAtFileLocation')
     );
   }
 
+  // returns absolute path
+  private resolvePath(inputPath: string): string {
+    if (!path || path.isAbsolute(inputPath) || !vscode.workspace.workspaceFolders[0]) {
+      return '';
+    }
+    return path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, inputPath);
+  }
+
   protected lint(doc: vscode.TextDocument) {
     this.logger.info('[iverilog-lint] iverilog lint requested');
-    let docUri: string = doc.uri.fsPath; //path of current doc
-    let lastIndex: number = isWindows == true ? docUri.lastIndexOf('\\') : docUri.lastIndexOf('/');
-    let docFolder = docUri.substr(0, lastIndex); //folder of current doc
-    let runLocation: string =
-      this.runAtFileLocation == true ? docFolder : vscode.workspace.rootPath; //choose correct location to run
-    let svArgs: string = doc.languageId == 'systemverilog' ? '-g2012' : ''; //SystemVerilog args
-    let command: string =
-      this.iverilogPath +
-      'iverilog ' +
-      svArgs +
-      ' -t null ' +
-      this.iverilogArgs +
-      ' "' +
-      doc.fileName +
-      '"'; //command to execute
-    this.logger.info('[iverilog-lint] Execute command: ' + command);
+    let args: string[] = [];
 
-    var foo: child.ChildProcess = child.exec(
+    args.push('-t null');
+
+    if (doc.languageId === 'systemverilog') {
+      args.push('-g2012');
+    }
+
+    args = args.concat(this.includePath.map((path: string) => '-I ' + path));
+
+    args.push(this.arguments);
+    args.push(doc.uri.fsPath);
+
+    let command: string = path.join(this.linterDir, 'iverilog') + ' ' + args.join(' ');
+
+    let cwd: string = this.runAtFileLocation
+      ? path.dirname(doc.uri.fsPath)
+      : vscode.workspace.workspaceFolders[0].uri.fsPath;
+
+    this.logger.info('[iverilog-lint] Execute');
+    this.logger.info('[iverilog-lint]   command: ' + command);
+    this.logger.info('[iverilog-lint]   cwd    : ' + cwd);
+
+    var _: child.ChildProcess = child.exec(
       command,
-      { cwd: runLocation },
+      { cwd: cwd },
       (_error: Error, _stdout: string, stderr: string) => {
         let diagnostics: vscode.Diagnostic[] = [];
         let lines = stderr.split(/\r?\n/g);

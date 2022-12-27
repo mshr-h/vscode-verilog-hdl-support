@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.x.y] - Unreleased
+
+- Added an experimental option (`verilog.linting.iverilog.includePath`) to specify include directory for iverilog linting.
+  - \[Caution\] I've only tested on Ubuntu on WSL2 platform. If you find any problems about iverilog linter, please let me know.
+
 ## [1.8.1] - 2022-12-26
 
 - Fixed `Instantiate Module` not working issue. [#376](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/376)

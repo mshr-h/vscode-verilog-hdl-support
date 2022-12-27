@@ -235,6 +235,15 @@
           "default": "",
           "description": "Add Icarus Verilog arguments here (like macros). They will be added to Icarus Verilog while linting (The command \"-t null\" will be added by the linter by default)."
         },
+        "verilog.linting.iverilog.includePath": {
+          "scope": "window",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "A list of directory paths to use while Icarus Verilog linting."
+        },
         "verilog.linting.iverilog.runAtFileLocation": {
           "scope": "window",
           "type": "boolean",
