@@ -12,6 +12,7 @@ import * as CompletionItemProvider from './providers/CompletionItemProvider';
 import { BsvInfoProviderManger } from './BsvProvider';
 import * as ModuleInstantiation from './commands/ModuleInstantiation';
 import * as FormatProvider from './providers/FormatPrivider';
+import { ExtensionManager } from './extensionManager';
 
 export var logger: vscode.LogOutputChannel; // Global logger
 export var ctagsManager: CtagsManager;
@@ -24,8 +25,10 @@ export function activate(context: vscode.ExtensionContext) {
   logger = vscode.window.createOutputChannel('Verilog', { log: true });
   logger.info(extensionID + ' is now active.');
 
-  // If the extension was update, ask to show changelog
-  askShowChangelogIfUpdated(context);
+  let extMgr = new ExtensionManager(context, extensionID, logger);
+  if (extMgr.isVersionUpdated()) {
+    extMgr.showChangelog();
+  }
 
   BsvInfoProviderManger.getInstance().onWorkspace();
   vscode.workspace.onDidChangeWorkspaceFolders((_e) => {
@@ -223,29 +226,6 @@ function stopAllLanguageClients(): Promise<any> {
     }
   }
   return Promise.all(p);
-}
-
-function askShowChangelogIfUpdated(context: vscode.ExtensionContext) {
-  let previousVersion = new SemVer(context.globalState.get('version', '0.0.0'));
-  let currentVersion = new SemVer(vscode.extensions.getExtension(extensionID).packageJSON.version);
-  let displayName: string = vscode.extensions.getExtension(extensionID).packageJSON.displayName;
-  if (previousVersion < currentVersion) {
-    vscode.window
-      .showInformationMessage(displayName + ' extension has been updated', 'Open Changelog')
-      .then(function (_: string) {
-        // get the path of CHANGELOG.md
-        let changelogPath: string =
-          vscode.extensions.getExtension(extensionID).extensionPath + '/CHANGELOG.md';
-        let changelogUri = vscode.Uri.file(changelogPath);
-        // open it
-        vscode.workspace.openTextDocument(changelogUri).then((doc) => {
-          vscode.window.showTextDocument(doc);
-        });
-      });
-  }
-
-  // update version value
-  context.globalState.update('version', currentVersion.version);
 }
 
 export function deactivate(): Thenable<void> {
