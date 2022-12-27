@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [1.x.y] - Unreleased
 
-- Added options for Icarus Verilog linting.
+- Added experimental options for Icarus Verilog linting.
   - `verilog.linting.iverilog.includePath` is to specify include directory.
   - `verilog.linting.iverilog.verilogHDL.standard` is to specify standard rules for Verilog-HDL files.
   - `verilog.linting.iverilog.systemVerilog.standard` is to specify standard rules for SystemVerilog files.
