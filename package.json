@@ -244,6 +244,38 @@
           "uniqueItems": true,
           "description": "A list of directory paths to use while Icarus Verilog linting."
         },
+        "verilog.linting.iverilog.verilogHDL.standard": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "Verilog-95",
+            "Verilog-2001",
+            "Verilog-2005"
+          ],
+          "enumDescriptions": [
+            "IEEE1364-1995, specified by -g1995 option in Icarus Verilog",
+            "IEEE1364-2001, specified by -g2001 option in Icarus Verilog",
+            "IEEE1364-2005, specified by -g2005 option in Icarus Verilog"
+          ],
+          "default": "Verilog-2005",
+          "description": "Select the standard rule to be used when Icarus Verilog linting for Verilog-HDL files."
+        },
+        "verilog.linting.iverilog.systemVerilog.standard": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "SystemVerilog2005",
+            "SystemVerilog2009",
+            "SystemVerilog2012"
+          ],
+          "enumDescriptions": [
+            "IEEE1800-2005, specified by -g2005-sv option in Icarus Verilog",
+            "IEEE1800-2009, specified by -g2009 option in Icarus Verilog",
+            "IEEE1800-2012, specified by -g2012 option in Icarus Verilog"
+          ],
+          "default": "SystemVerilog2012",
+          "description": "Select the standard rule to be used when Icarus Verilog linting for SystemVerilog files."
+        },
         "verilog.linting.iverilog.runAtFileLocation": {
           "scope": "window",
           "type": "boolean",

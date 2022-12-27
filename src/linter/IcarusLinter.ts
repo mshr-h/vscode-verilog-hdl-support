@@ -1,12 +1,22 @@
 import * as vscode from 'vscode';
 import * as child from 'child_process';
-import BaseLinter from './BaseLinter';
 import * as path from 'path';
+import BaseLinter from './BaseLinter';
+
+let standardToArg: Map<string, string> = new Map<string, string>([
+  ['Verilog-95', '-g1995'],
+  ['Verilog-2001', '-g2001'],
+  ['Verilog-2005', '-g2005'],
+  ['SystemVerilog2005', '-g2005-sv'],
+  ['SystemVerilog2009', '-g2009'],
+  ['SystemVerilog2012', '-g2012'],
+]);
 
 export default class IcarusLinter extends BaseLinter {
   private linterDir: string;
   private arguments: string;
   private includePath: string[];
+  private standards: Map<string, string>;
   private runAtFileLocation: boolean;
 
   constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: vscode.LogOutputChannel) {
@@ -26,7 +36,16 @@ export default class IcarusLinter extends BaseLinter {
       vscode.workspace.getConfiguration().get('verilog.linting.iverilog.includePath')
     );
     this.includePath = path.map((includePath: string) => this.resolvePath(includePath));
-
+    this.standards = new Map<string, string>([
+      [
+        'verilog',
+        vscode.workspace.getConfiguration().get('verilog.linting.iverilog.verilogHDL.standard'),
+      ],
+      [
+        'systemverilog',
+        vscode.workspace.getConfiguration().get('verilog.linting.iverilog.systemVerilog.standard'),
+      ],
+    ]);
     this.runAtFileLocation = <boolean>(
       vscode.workspace.getConfiguration().get('verilog.linting.iverilog.runAtFileLocation')
     );
@@ -42,16 +61,12 @@ export default class IcarusLinter extends BaseLinter {
 
   protected lint(doc: vscode.TextDocument) {
     this.logger.info('[iverilog-lint] iverilog lint requested');
-    let args: string[] = [];
 
+    let args: string[] = [];
     args.push('-t null');
 
-    if (doc.languageId === 'systemverilog') {
-      args.push('-g2012');
-    }
-
+    args.push(standardToArg.get(this.standards.get(doc.languageId)));
     args = args.concat(this.includePath.map((path: string) => '-I ' + path));
-
     args.push(this.arguments);
     args.push(doc.uri.fsPath);
 
