@@ -22,7 +22,10 @@ let languageClients = new Map<string, LanguageClient>();
 
 export function activate(context: vscode.ExtensionContext) {
   logger = vscode.window.createOutputChannel('Verilog', { log: true });
-  logger.info(extensionID + ' activation started.');
+  logger.info(extensionID + ' is now active.');
+
+  // If the extension was update, ask to show changelog
+  askShowChangelogIfUpdated(context);
 
   BsvInfoProviderManger.getInstance().onWorkspace();
   vscode.workspace.onDidChangeWorkspaceFolders((_e) => {
@@ -42,9 +45,6 @@ export function activate(context: vscode.ExtensionContext) {
     scheme: 'file',
     language: 'bsv',
   };
-
-  // If the extension was update, ask to show changelog
-  askShowChangelogIfUpdated(context);
 
   // Configure ctags
   ctagsManager = new CtagsManager(logger);
@@ -228,18 +228,16 @@ function stopAllLanguageClients(): Promise<any> {
 function askShowChangelogIfUpdated(context: vscode.ExtensionContext) {
   let previousVersion = new SemVer(context.globalState.get('version', '0.0.0'));
   let currentVersion = new SemVer(vscode.extensions.getExtension(extensionID).packageJSON.version);
+  let displayName: string = vscode.extensions.getExtension(extensionID).packageJSON.displayName;
   if (previousVersion < currentVersion) {
     vscode.window
-      .showInformationMessage(
-        'Verilog-HDL/SystemVerilog extension has been updated',
-        'Open Changelog'
-      )
+      .showInformationMessage(displayName + ' extension has been updated', 'Open Changelog')
       .then(function (_: string) {
-        // get path of CHANGELOG.md
+        // get the path of CHANGELOG.md
         let changelogPath: string =
           vscode.extensions.getExtension(extensionID).extensionPath + '/CHANGELOG.md';
         let changelogUri = vscode.Uri.file(changelogPath);
-        // open
+        // open it
         vscode.workspace.openTextDocument(changelogUri).then((doc) => {
           vscode.window.showTextDocument(doc);
         });
