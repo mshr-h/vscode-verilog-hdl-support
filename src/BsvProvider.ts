@@ -23,7 +23,6 @@ import { ParseTree } from 'antlr4ts/tree/ParseTree';
 import { RuleNode } from 'antlr4ts/tree/RuleNode';
 import { TerminalNode } from 'antlr4ts/tree/TerminalNode';
 import { assert } from 'console';
-import { extensionID } from './extension';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { readdirSync } from 'fs';
@@ -3138,7 +3137,7 @@ class BsvBaseInfoProvider {
     this.logger = logger;
   }
 
-  resolveStdLib() {
+  resolveStdLib(extensionID: string) {
     var self = extensions.getExtension(extensionID);
     var dir = readdirSync(join(self.extensionPath, 'syntaxes', 'bsc-lib'));
 

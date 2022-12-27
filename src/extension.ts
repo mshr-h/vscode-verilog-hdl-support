@@ -15,8 +15,8 @@ import * as FormatProvider from './providers/FormatPrivider';
 import { ExtensionManager } from './extensionManager';
 
 export var logger: vscode.LogOutputChannel; // Global logger
-export var ctagsManager: CtagsManager;
-export let extensionID: string = 'mshr-h.veriloghdl';
+var ctagsManager: CtagsManager;
+let extensionID: string = 'mshr-h.veriloghdl';
 
 let lintManager: LintManager;
 let languageClients = new Map<string, LanguageClient>();
