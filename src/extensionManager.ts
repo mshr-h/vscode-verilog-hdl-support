@@ -30,7 +30,7 @@ export class ExtensionManager {
     return previousVersion < currentVersion;
   }
 
-  public showChangelog() {
+  public showChangelogNotification() {
     let displayName: string = this.packageJSON.displayName;
     let extensionPath: string = this.extensionPath;
     if (this.isVersionUpdated()) {

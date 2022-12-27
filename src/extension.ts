@@ -27,7 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   let extMgr = new ExtensionManager(context, extensionID, logger);
   if (extMgr.isVersionUpdated()) {
-    extMgr.showChangelog();
+    extMgr.showChangelogNotification();
   }
 
   BsvInfoProviderManger.getInstance().onWorkspace(logger);
