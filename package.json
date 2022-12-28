@@ -306,6 +306,15 @@
           "default": "",
           "description": "Add Verilator arguments here (like macros). They will be added to Verilator while linting (The command \"--lint-only -I<document folder>\" will be added by the linter by default)."
         },
+        "verilog.linting.verilator.includePath": {
+          "scope": "window",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "A list of directory paths to use while Verilator linting."
+        },
         "verilog.linting.verilator.runAtFileLocation": {
           "scope": "window",
           "type": "boolean",

@@ -43,14 +43,6 @@ export default class IcarusLinter extends BaseLinter {
     this.runAtFileLocation = <boolean>this.configuration.get('runAtFileLocation');
   }
 
-  // returns absolute path
-  private resolvePath(inputPath: string): string {
-    if (!path || path.isAbsolute(inputPath) || !vscode.workspace.workspaceFolders[0]) {
-      return '';
-    }
-    return path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, inputPath);
-  }
-
   protected lint(doc: vscode.TextDocument) {
     let binPath: string = path.join(this.linterInstalledPath, 'iverilog');
 
