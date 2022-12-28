@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
   - `verilog.linting.iverilog.verilogHDL.standard` is to specify standard rules for Verilog-HDL files.
   - `verilog.linting.iverilog.systemVerilog.standard` is to specify standard rules for SystemVerilog files.
   - \[Caution\] I've only tested on Ubuntu on WSL2 platform. If you find any problems about Icarus Verilog linting, please let me know.
+- Added experimental options for Verilator lintings.
+  - xxx
+  - yyy
+  - zzz
 
 ## [1.8.1] - 2022-12-26
 
