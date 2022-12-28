@@ -54,7 +54,7 @@ export default class LintManager {
     }
 
     if (this.linter != null) {
-      this.logger.info('[iverilog-lint] Using linter ' + this.linter.name);
+      this.logger.info('[lint-manager] Using linter ' + this.linter.name);
     }
   }
 
