@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## [1.x.y] - Unreleased
+## [1.9.0] - 2022-12-29
 
 - Added experimental options for Icarus Verilog linting. [#379](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/379)
   - `verilog.linting.iverilog.includePath` is to specify include directories.
