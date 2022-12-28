@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 export default abstract class BaseLinter {
   protected diagnosticCollection: vscode.DiagnosticCollection;
@@ -13,6 +14,14 @@ export default abstract class BaseLinter {
     this.diagnosticCollection = diagnosticCollection;
     this.name = name;
     this.logger = logger;
+  }
+
+  // returns absolute path
+  protected resolvePath(inputPath: string): string {
+    if (!path || path.isAbsolute(inputPath) || !vscode.workspace.workspaceFolders[0]) {
+      return '';
+    }
+    return path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, inputPath);
   }
 
   public startLint(doc: vscode.TextDocument) {
