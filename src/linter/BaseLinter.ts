@@ -18,8 +18,8 @@ export default abstract class BaseLinter {
 
   // returns absolute path
   protected resolvePath(inputPath: string): string {
-    if (!path || path.isAbsolute(inputPath) || !vscode.workspace.workspaceFolders[0]) {
-      return '';
+    if (path.isAbsolute(inputPath)) {
+      return inputPath;
     }
     return path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, inputPath);
   }

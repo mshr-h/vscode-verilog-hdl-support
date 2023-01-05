@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.10.0] - Unreleased
+
+- Added an experimental option for Xilinx xvlog linting.
+  - `verilog.linting.xvlog.includePath` is to specify include directories.
+  - \[Caution\] I've only tested on Ubuntu on WSL2 platform. If you find any problems about xvlog linting, please let me know.
+
 ## [1.9.0] - 2022-12-29
 
 - Added experimental options for Icarus Verilog linting. [#379](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/379)
