@@ -1,6 +1,4 @@
-'use strict';
 import * as vscode from 'vscode';
-import { SemVer } from 'semver';
 import { LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient/node';
 
 import LintManager from './linter/LintManager';
@@ -38,9 +36,6 @@ export function activate(context: vscode.ExtensionContext) {
   // Configure ctags
   ctagsManager = new CtagsManager(logger);
   ctagsManager.configure();
-
-  // Configure lint manager
-  lintManager = new LintManager(logger);
 
   // Configure Document Symbol Provider
   let verilogDocumentSymbolProvider = new DocumentSymbolProvider.VerilogDocumentSymbolProvider(
@@ -164,6 +159,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // Register command for manual linting
+  lintManager = new LintManager(logger);
   vscode.commands.registerCommand('verilog.lint', lintManager.runLintTool, lintManager);
 
   // Configure language server
@@ -240,7 +236,7 @@ function stopAllLanguageClients(): Promise<any> {
   return Promise.all(p);
 }
 
-export function deactivate(): Thenable<void> {
+export function deactivate(): Promise<void> {
   logger.info('Deactivated');
   return stopAllLanguageClients();
 }
