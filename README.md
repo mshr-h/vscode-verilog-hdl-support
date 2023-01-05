@@ -104,9 +104,9 @@ Use the following settings to configure the extension to your needs.
     Choose the linter for you. Possible values are
 
   - `iverilog`
-  - `xvlog`
   - `modelsim`
   - `verilator`
+  - `xvlog`
   - `none`
 
 - `verilog.linting.iverilog.arguments` (Default: nothing)
@@ -152,6 +152,16 @@ Use the following settings to configure the extension to your needs.
     to WSL paths using the `wslpath` program. Any other paths you specify in `verilog.linting.verilator.arguments`
 
     must be manually converted.
+
+- `verilog.linting.xvlog.arguments` (Default: nothing)
+
+    Add custom arguments to Xilinx xvlog for linting, like `-Wall` . The argument `--nolog` will be added by the linter automatically.
+
+- `verilog.linting.xvlog.includePath` (Default: nothing)
+
+    A list of directory paths to use while Xilinx xvlog linting.
+    All the paths are passed as arguments `-i <directory_path>`.
+    Paths can be specified either an absolute or a relate to the workspace directory.
 
 - `verilog.ctags.path` (Default: `ctags` )
 

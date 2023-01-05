@@ -1,38 +1,53 @@
 import * as vscode from 'vscode';
-import { ChildProcess, exec } from 'child_process';
+import * as child_process from 'child_process';
+import * as path from 'path';
 import BaseLinter from './BaseLinter';
 
 export default class XvlogLinter extends BaseLinter {
-  private xvlogPath: string;
-  private xvlogArgs: string;
+  private configuration: vscode.WorkspaceConfiguration;
+  private linterInstalledPath: string;
+  private arguments: string;
+  private includePath: string[];
 
   constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: vscode.LogOutputChannel) {
     super('xvlog', diagnosticCollection, logger);
     vscode.workspace.onDidChangeConfiguration(() => {
-      this.getConfig();
+      this.updateConfig();
     });
-    this.getConfig();
+    this.updateConfig();
   }
 
-  private getConfig() {
-    this.xvlogPath = <string>vscode.workspace.getConfiguration().get('verilog.linting.path');
-    this.xvlogArgs = <string>(
-      vscode.workspace.getConfiguration().get('verilog.linting.xvlog.arguments')
+  private updateConfig() {
+    this.linterInstalledPath = <string>(
+      vscode.workspace.getConfiguration().get('verilog.linting.path')
     );
+    this.configuration = vscode.workspace.getConfiguration('verilog.linting.xvlog');
+    this.arguments = <string>this.configuration.get('arguments');
+    let path = <string[]>this.configuration.get('includePath');
+    this.includePath = path.map((includePath: string) => this.resolvePath(includePath));
   }
 
   protected lint(doc: vscode.TextDocument) {
-    this.logger.info('xvlog lint requested');
-    let svArgs: string = doc.languageId == 'systemverilog' ? '-sv' : ''; //Systemverilog args
-    let command =
-      this.xvlogPath + 'xvlog ' + svArgs + ' -nolog ' + this.xvlogArgs + ' "' + doc.fileName + '"';
-    this.logger.info('Execute command: ' + command);
+    let binPath: string = path.join(this.linterInstalledPath, 'xvlog');
 
-    let process: ChildProcess = exec(command, (_error: Error, stdout: string, _stderr: string) => {
+    let args: string[] = [];
+    args.push('-nolog');
+    if (doc.languageId === 'systemverilog') {
+      args.push('-sv');
+    }
+    args = args.concat(this.includePath.map((path: string) => '-i ' + path));
+    this.logger.warn(this.includePath.join(' '));
+    args.push(this.arguments);
+    args.push(`"${doc.fileName}"`);
+    let command: string = binPath + ' ' + args.join(' ');
+
+    this.logger.info('[xvlog] Execute');
+    this.logger.info('[xvlog]   command: ' + command);
+
+    child_process.exec(command, (_error: Error, stdout: string, _stderr: string) => {
       let diagnostics: vscode.Diagnostic[] = [];
 
-      let lines = stdout.split(/\r?\n/g);
-      lines.forEach((line) => {
+      stdout.split(/\r?\n/g).forEach((line) => {
         let match = line.match(
           /^(ERROR|WARNING):\s+\[(VRFC\b[^\]]*)\]\s+(.*\S)\s+\[(.*):(\d+)\]\s*$/
         );
@@ -46,12 +61,9 @@ export default class XvlogLinter extends BaseLinter {
             : vscode.DiagnosticSeverity.Warning;
 
         // Get filename and line number
-        let filename = match[4];
+        let _filename = match[4];
         let linenoStr = match[5];
         let lineno = parseInt(linenoStr) - 1;
-
-        // if (filename != doc.fileName) // Check that filename matches
-        //     return;
 
         let diagnostic: vscode.Diagnostic = {
           severity: severity,

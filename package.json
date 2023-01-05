@@ -223,12 +223,6 @@
           "default": "none",
           "description": "Select the verilog linter. Possible values are 'iverilog', 'verilator', xvlog' or 'none'."
         },
-        "verilog.linting.xvlog.arguments": {
-          "scope": "window",
-          "type": "string",
-          "default": "",
-          "description": "Add xvlog arguments here. They will be added to xvlog while linting."
-        },
         "verilog.linting.iverilog.arguments": {
           "scope": "window",
           "type": "string",
@@ -326,6 +320,21 @@
           "type": "boolean",
           "default": false,
           "description": "If enabled, run verilator in WSL."
+        },
+        "verilog.linting.xvlog.arguments": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "Add xvlog arguments here. They will be added to xvlog while linting."
+        },
+        "verilog.linting.xvlog.includePath": {
+          "scope": "window",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "A list of directory paths to use while xvlog linting."
         },
         "verilog.ctags.path": {
           "scope": "window",
