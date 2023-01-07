@@ -1,0 +1,4 @@
+{
+    "verilog.linting.linter": "slang",
+    "verilog.linting.slang.useWSL": true
+}

@@ -3,6 +3,7 @@ import BaseLinter from './BaseLinter';
 import IcarusLinter from './IcarusLinter';
 import ModelsimLinter from './ModelsimLinter';
 import VerilatorLinter from './VerilatorLinter';
+import SlangLinter from './SlangLinter';
 import XvlogLinter from './XvlogLinter';
 
 export default class LintManager {
@@ -38,6 +39,8 @@ export default class LintManager {
         return new ModelsimLinter(this.diagnosticCollection, this.logger);
       case 'verilator':
         return new VerilatorLinter(this.diagnosticCollection, this.logger);
+        case 'slang':
+          return new SlangLinter(this.diagnosticCollection, this.logger);
       default:
         return null;
     }
@@ -110,6 +113,10 @@ export default class LintManager {
         {
           label: 'verilator',
           description: 'Verilator',
+        },
+        {
+          label: 'slang',
+          description: 'Slang',
         },
       ],
       {
