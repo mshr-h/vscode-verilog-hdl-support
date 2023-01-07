@@ -1,93 +1,82 @@
-import {
-    workspace,
-    Disposable,
-    Range,
-    TextDocument,
-    Diagnostic,
-    DiagnosticSeverity,
-    DiagnosticCollection,
-} from 'vscode';
-import { ChildProcess, exec } from 'child_process';
+import * as vscode from 'vscode';
+import * as child_process from 'child_process';
+import * as path from 'path';
 import BaseLinter from './BaseLinter';
-import { Logger, LogSeverity } from '../Logger';
 
 export default class XvlogLinter extends BaseLinter {
-    private xvlogPath: string;
-    private xvlogArgs: string;
+  private configuration: vscode.WorkspaceConfiguration;
+  private linterInstalledPath: string;
+  private arguments: string;
+  private includePath: string[];
 
-    constructor(diagnosticCollection: DiagnosticCollection, logger: Logger) {
-        super('xvlog', diagnosticCollection, logger);
-        workspace.onDidChangeConfiguration(() => {
-            this.getConfig();
-        });
-        this.getConfig();
+  constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: vscode.LogOutputChannel) {
+    super('xvlog', diagnosticCollection, logger);
+    vscode.workspace.onDidChangeConfiguration(() => {
+      this.updateConfig();
+    });
+    this.updateConfig();
+  }
+
+  private updateConfig() {
+    this.linterInstalledPath = <string>(
+      vscode.workspace.getConfiguration().get('verilog.linting.path')
+    );
+    this.configuration = vscode.workspace.getConfiguration('verilog.linting.xvlog');
+    this.arguments = <string>this.configuration.get('arguments');
+    let path = <string[]>this.configuration.get('includePath');
+    this.includePath = path.map((includePath: string) => this.resolvePath(includePath));
+  }
+
+  protected lint(doc: vscode.TextDocument) {
+    let binPath: string = path.join(this.linterInstalledPath, 'xvlog');
+
+    let args: string[] = [];
+    args.push('-nolog');
+    if (doc.languageId === 'systemverilog') {
+      args.push('-sv');
     }
+    args = args.concat(this.includePath.map((path: string) => '-i ' + path));
+    this.logger.warn(this.includePath.join(' '));
+    args.push(this.arguments);
+    args.push(`"${doc.fileName}"`);
+    let command: string = binPath + ' ' + args.join(' ');
 
-    private getConfig() {
-        this.xvlogPath = <string>(
-            workspace.getConfiguration().get('verilog.linting.path')
+    this.logger.info('[xvlog] Execute');
+    this.logger.info('[xvlog]   command: ' + command);
+
+    child_process.exec(command, (_error: Error, stdout: string, _stderr: string) => {
+      let diagnostics: vscode.Diagnostic[] = [];
+
+      stdout.split(/\r?\n/g).forEach((line) => {
+        let match = line.match(
+          /^(ERROR|WARNING):\s+\[(VRFC\b[^\]]*)\]\s+(.*\S)\s+\[(.*):(\d+)\]\s*$/
         );
-        this.xvlogArgs = <string>(
-            workspace.getConfiguration().get('verilog.linting.xvlog.arguments')
-        );
-    }
+        if (!match) {
+          return;
+        }
 
-    protected lint(doc: TextDocument) {
-        this.logger.log('xvlog lint requested');
-        let svArgs: string = doc.languageId == 'systemverilog' ? '-sv' : ''; //Systemverilog args
-        let command =
-            this.xvlogPath + 
-            'xvlog ' +
-            svArgs +
-            ' -nolog ' +
-            this.xvlogArgs +
-            ' "' +
-            doc.fileName +
-            '"';
-        this.logger.log(command, LogSeverity.command);
+        let severity =
+          match[1] === 'ERROR'
+            ? vscode.DiagnosticSeverity.Error
+            : vscode.DiagnosticSeverity.Warning;
 
-        let process: ChildProcess = exec(
-            command,
-            (_error: Error, stdout: string, _stderr: string) => {
-                let diagnostics: Diagnostic[] = [];
+        // Get filename and line number
+        let _filename = match[4];
+        let linenoStr = match[5];
+        let lineno = parseInt(linenoStr) - 1;
 
-                let lines = stdout.split(/\r?\n/g);
-                lines.forEach((line) => {
-                    let match = line.match(
-                        /^(ERROR|WARNING):\s+\[(VRFC\b[^\]]*)\]\s+(.*\S)\s+\[(.*):(\d+)\]\s*$/
-                    );
-                    if (!match) {
-                        return;
-                    }
+        let diagnostic: vscode.Diagnostic = {
+          severity: severity,
+          code: match[2],
+          message: '[' + match[2] + '] ' + match[3],
+          range: new vscode.Range(lineno, 0, lineno, Number.MAX_VALUE),
+          source: 'xvlog',
+        };
 
-                    let severity =
-                        match[1] === 'ERROR'
-                            ? DiagnosticSeverity.Error
-                            : DiagnosticSeverity.Warning;
-
-                    // Get filename and line number
-                    let filename = match[4];
-                    let linenoStr = match[5];
-                    let lineno = parseInt(linenoStr) - 1;
-
-                    // if (filename != doc.fileName) // Check that filename matches
-                    //     return;
-
-                    let diagnostic: Diagnostic = {
-                        severity: severity,
-                        code: match[2],
-                        message: '[' + match[2] + '] ' + match[3],
-                        range: new Range(lineno, 0, lineno, Number.MAX_VALUE),
-                        source: 'xvlog',
-                    };
-
-                    diagnostics.push(diagnostic);
-                });
-                this.logger.log(
-                    diagnostics.length + ' errors/warnings returned'
-                );
-                this.diagnosticCollection.set(doc.uri, diagnostics);
-            }
-        );
-    }
+        diagnostics.push(diagnostic);
+      });
+      this.logger.info(diagnostics.length + ' errors/warnings returned');
+      this.diagnosticCollection.set(doc.uri, diagnostics);
+    });
+  }
 }

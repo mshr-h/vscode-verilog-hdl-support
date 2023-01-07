@@ -1,6 +1,6 @@
 # HDL support for VS Code
 
-HDL support for VS Code with Syntax Highlighting, Snippets, Linting and much more!
+HDL support for VS Code with Syntax Highlighting, Snippets, Linting, Formatting and much more!
 
 [![Build Status](https://github.com/mshr-h/vscode-verilog-hdl-support/workflows/.github/workflows/ci.yml/badge.svg?branch=master&event=push)](https://github.com/mshr-h/vscode-verilog-hdl-support/actions?query=workflow%3A.github%2Fworkflows%2Fci.yml)
 
@@ -8,11 +8,9 @@ HDL support for VS Code with Syntax Highlighting, Snippets, Linting and much mor
 
 ## Installation
 
-Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items/mshr-h.VerilogHDL) or [Open VSX Registry](https://open-vsx.org/extension/mshr-h/veriloghdl)
+Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items/mshr-h.VerilogHDL) or [Open VSX Registry](https://open-vsx.org/extension/mshr-h/veriloghdl).
 
 ## Features
-
-### Done
 
 - Syntax Highlighting
   - Verilog-HDL
@@ -21,6 +19,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - VHDL
   - Vivado UCF constraints
   - Synopsys Design Constraints
+  - Verilog Filelists (dot-F files)
 - Simple Snippets
 - Linting support from:
   - Icarus Verilog - `iverilog`
@@ -35,23 +34,25 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - Hover over variable declaration
   - Go to Definition & Peek Definition
   - Module Instantiation
-
-### In Progress / Future
-
-- Language Server support
+- \[Experimental\] Language Server support from:
   - [svls](https://github.com/dalance/svls)
   - [veridian](https://github.com/vivekmalneedi/veridian)
   - [HDL Checker](https://github.com/suoto/hdl_checker)
-- Improvements in the newly added features
-- Migrate VHDL support from [mshr-h/vscode-vhdl-support](https://github.com/mshr-h/vscode-vhdl-support)
+- \[Experimental\] Formatting support from:
+  - [verilog-format](https://github.com/ericsonj/verilog-format)
+  - [istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter)
+  - [verible-verilog-format](https://github.com/chipsalliance/verible)
 
-[Take a look at our list of planned features](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/25)
+## Usage Instructions
+
+- All linters expect the executable binary ( `iverilog` , `verilator` ...) to be present in the `PATH` environment variable, unless otherwise specified.
+- While using `` `include`` directives, the path to the files should be relative to the workspace directory, unless`runAtFileLocation` is enabled (not supported by all linters)
 
 ### Ctags Integration
 
 This extension uses the tags created using Ctags to provide many of its features. It is recommended to use [Universal Ctags](https://github.com/universal-ctags/ctags) as it supports SystemVerilog also, compared to Exuberant Ctags and other older versions. The tags are stored in memory and not as separate files.
 
-### Installation of Universal Ctags
+#### Installation of Universal Ctags
 
 - Windows - Daily builds are available at [ctags-win32](https://github.com/universal-ctags/ctags-win32)
 - Linux - Installation instructions are [here](https://github.com/universal-ctags/ctags/blob/master/docs/autotools.rst)
@@ -59,23 +60,64 @@ This extension uses the tags created using Ctags to provide many of its features
 
 Add the installation path of Ctags binary in your `PATH` environment variable or mention it in `verilog.ctags.path` setting.
 
+### Commands
+
+- **Rerun lint tool**
+
+    Choose a lint tool from the list and run it manually. Useful if the code was changed by an external script or version control system.
+
+- **Instantiate Module**
+
+    Choose a module present in your workspace to instantiate it in the current file.
+
+### Language Servers (Experimental)
+
+We currently support the following Language Servers and enabled for Verilog-HDL, SystemVerilog and VHDL.
+You can enable multiple Language Servers at the same time.
+It might be pretty unstable because it's currently in the experimental support.
+If you encounter any problems even if it's not related to this feature, **deleting all the config may solve the problem**.
+
+| Language Server                                                | Verilog-HDL   | SystemVerilog | VHDL          |
+| -------------------------------------------------------------- | :-----------: | :-----------: | :-----------: |
+| [svls](https://github.com/dalance/svls)                        | not supported | enabled       | not supported |
+| [veridian](https://github.com/vivekmalneedi/veridian)          | not supported | enabled       | not supported |
+| [HDL Checker](https://github.com/suoto/hdl_checker)            | enabled       | enabled       | enabled       |
+
+### Formatting (Experimental)
+
+We currently support Verilog-HDL file formatting with the following formatters.
+
+- [verilog-format](https://github.com/ericsonj/verilog-format)
+- [thomasrussellmurphy/istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter).
+- [verible-verilog-format](https://github.com/chipsalliance/verible)
+
+You can format the Verilog-HDL file by typing `Ctrl-Shift-p`, then select `Format Document`.
+Entire file formatting is supported. Selected range formatting is not supported yet.
+All the settings for formatting is under `verilog.formatting` namespace.
+
 ## Configuration Settings
 
-Use the following settings to configure the extension to your needs
+Use the following settings to configure the extension to your needs.
 
 - `verilog.linting.linter` (Default: `none` )
 
     Choose the linter for you. Possible values are
 
   - `iverilog`
-  - `xvlog`
   - `modelsim`
   - `verilator`
+  - `xvlog`
   - `none`
 
 - `verilog.linting.iverilog.arguments` (Default: nothing)
 
     Add custom arguments to Icarus Verilog for linting, like `-Wall` . The argument `-t null` will be added by the linter automatically.
+
+- `verilog.linting.iverilog.includePath` (Default: nothing)
+
+    A list of directory paths to use while Icarus Verilog linting.
+    All the paths are passed as arguments `-I <directory_path>`.
+    Paths can be specified either an absolute or a relate to the workspace directory.
 
 - `verilog.linting.iverilog.runAtFileLocation` (Default: `false` )
 
@@ -93,6 +135,12 @@ Use the following settings to configure the extension to your needs
 
     Add custom arguments to Verilator for linting, like `-Wall` . The argument `--lint-only -I<document folder>` will be added by the linter automatically.
 
+- `verilog.linting.verilator.includePath` (Default: nothing)
+
+    A list of directory paths to use while Verilator linting.
+    All the paths are passed as arguments `-I<directory_path>`.
+    Paths can be specified either an absolute or a relate to the workspace directory.
+
 - `verilog.linting.verilator.runAtFileLocation` (Default: `false` )
 
     By default, the linter will be run at the workspace directory. Enable this option to run at the file location. If enabled, `` ` include`` directives should contain file paths relative to the current file.
@@ -105,54 +153,85 @@ Use the following settings to configure the extension to your needs
 
     must be manually converted.
 
+- `verilog.linting.xvlog.arguments` (Default: nothing)
+
+    Add custom arguments to Xilinx xvlog for linting, like `-Wall` . The argument `--nolog` will be added by the linter automatically.
+
+- `verilog.linting.xvlog.includePath` (Default: nothing)
+
+    A list of directory paths to use while Xilinx xvlog linting.
+    All the paths are passed as arguments `-i <directory_path>`.
+    Paths can be specified either an absolute or a relate to the workspace directory.
+
 - `verilog.ctags.path` (Default: `ctags` )
 
     Path to your installation of Ctags if it isn't already present in your `PATH` environment variable.
 
-- `verilog.languageServer.enabled` (Default: `false` )
+- `verilog.languageServer.svls.enabled` (Default: `false`)
 
-    Enable the Language Server.
-    Experimental support.
+    \[Experimental\] Enable svls Language Server for SystemVerilog.
 
-- `verilog.languageServer.name` (Default: `svls` )
+- `verilog.languageServer.svls.path` (Default: `svls`)
 
-    Select the Language Server. See the [Language Servers](#language-servers) section for more details.
-    Experimental support.
+    \[Experimental\] A path to the svls Language Server binary.
 
-- `verilog.languageServer.path` (Default: `svls` )
+- `verilog.languageServer.veridian.enabled` (Default: `false`)
 
-    Path or name of the Language Server binary file.
-    Experimental support.
+    \[Experimental\] Enable veridian Language Server for SystemVerilog.
 
-- `verilog.logging.enabled` (Default: `false` )
+- `verilog.languageServer.veridian.path` (Default: `veridian`)
 
-    Enable logging for this extension. Open the **Output** pane in VS Code and choose _Verilog_ in the drop-down menu to view the log.
+    \[Experimental\] A path to the veridian Language Server binary.
 
-## Commands
+- `verilog.languageServer.hdlChecker.enabled` (Default: `false`)
 
-- **Rerun lint tool**
+    \[Experimental\] Enable HDL Checker Language Server for Verilog-HDL, SystemVerilog, and VHDL.
 
-    Choose a lint tool from the list and run it manually. Useful if the code was changed by an external script or version control system.
+- `verilog.languageServer.hdlChecker.path` (Default: `hdl_checker`)
 
-- **Instantiate Module**
+    \[Experimental\] A path to the HDL Checker Language Server binary.
 
-    Choose a module present in your workspace to instantiate it in the current file.
+- `verilog.formatting.verilogHDL.formatter` (Default: `verilog-format`)
 
-## Usage Instructions
+    \[Experimental\] Choose the Verilog-HDL formatter. Possible values are:
 
-- All linters expect the executable binary ( `iverilog` , `verilator` ...) to be present in the `PATH` environment variable, unless otherwise specified.
-- While using `` `include`` directives, the path to the files should be relative to the workspace directory, unless`runAtFileLocation` is enabled (not supported by all linters)
+  - `verilog-format`
+  - `iStyle`
+  - `verible-verilog-format`
 
-## Language Servers
+- `verilog.formatting.systemVerilog.formatter` (Default: `verible-verilog-format`)
 
-We currently support the following Language Servers and enabled for Verilog-HDL, SystemVerilog and VHDL.
+    \[Experimental\] Choose the Verilog-HDL formatter. Possible values are:
 
-| Language Server                                                | Verilog-HDL   | SystemVerilog | VHDL          |
-| -------------------------------------------------------------- | :-----------: | :-----------: | :-----------: |
-| [svls](https://github.com/dalance/svls)                        | not supported | enabled       | not supported |
-| [veridian](https://github.com/vivekmalneedi/veridian)          | not supported | enabled       | not supported |
-| [HDL Checker](https://github.com/suoto/hdl_checker)            | enabled       | enabled       | enabled       |
-| [verible-verilog-ls](https://github.com/chipsalliance/verible) | enabled       | enabled       | not supported |
+  - `verible-verilog-format`
+
+- `verilog.formatting.verilogFormat.path` (Default: `verilog-format`)
+
+    \[Experimental\] A path to the verilog-format binary.
+
+- `verilog.formatting.verilogFormat.settings` (Default: `${env:HOME}/.verilog-format.properties`)
+
+    \[Experimental\] A path to the verilog-format settings file.
+
+- `verilog.formatting.iStyleVerilogFormatter.path` (Default: `iStyle`)
+
+    \[Experimental\] A path to the iStyle Verilog Formatter binary.
+
+- `verilog.formatting.iStyleVerilogFormatter.arguments` (Default: nothing)
+
+    \[Experimental\] Add custom arguments to iStyle Verilog Formatter for formatting.
+
+- `verilog.formatting.iStyleVerilogFormatter.style` (Default: `Indent only`)
+
+    \[Experimental\] Choose styling options from ANSI/K&R/GNU.
+
+- `verilog.formatting.veribleVerilogFormatter.path` (Default: `verible-verilog-format`)
+
+    \[Experimental\] A path to the verible-verilog-format binary.
+
+- `verilog.formatting.veribleVerilogFormatter.arguments` (Default: nothing)
+
+    \[Experimental\] Add custom arguments to verible-verilog-format for formatting.
 
 ## Compatibility
 
@@ -165,10 +244,16 @@ We currently support the following Language Servers and enabled for Verilog-HDL,
 | Verilator                         | Windows 10 |   Debian 9   | Not Tested  |
 | Ctags Integration                 | Windows 10 | Ubuntu 18.10 | Not Tested  |
 | Language Server                   | Windows 10 | Ubuntu 20.04 | macOS 10.15 |
+| Formatting                        | Not tested | Ubuntu 20.04 | Not tested  |
 
 If you have tested the linters in new platforms or have issues with them, feel free to file an issue.
 
 ## [Guidelines for Contributing](./CONTRIBUTING.md)
+
+## Logs
+
+Logs are outputted to LogOutputChannel in th VS Code.
+You can check it by opening the **Output** pane in VS Code and choose _Verilog_ in the drop-down menu.
 
 ## Helpful links
 
@@ -183,6 +268,9 @@ If you have tested the linters in new platforms or have issues with them, feel f
 - [Sublime Text Bluespec SystemVerilog](https://github.com/thotypous/sublime-bsv)
 - [yangsu/sublime-vhdl](https://github.com/yangsu/sublime-vhdl)
 - [Sublime EDA](https://github.com/tschinz/sublime_eda)
-- [svls](https://github.com/dalance/svls)
-- [veridian](https://github.com/vivekmalneedi/veridian)
-- [HDL Checker](https://github.com/suoto/hdl_checker)
+- [dalance/svls](https://github.com/dalance/svls)
+- [vivekmalneedi/veridian](https://github.com/vivekmalneedi/veridian)
+- [suoto/hdl_checkerChecker](https://github.com/suoto/hdl_checker)
+- [chipsalliance/verible](https://github.com/chipsalliance/verible)
+- [ericsonj/verilog-format](https://github.com/ericsonj/verilog-format)
+- [thomasrussellmurphy/istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter)

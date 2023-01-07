@@ -4,6 +4,61 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.10.0] - 2023-01-06
+
+- Added an experimental option for xvlog linting. [#382](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/382)
+  - `verilog.linting.xvlog.includePath` is to specify include directories.
+  - \[Caution\] I've only tested on Ubuntu on WSL2 platform. If you find any problems about xvlog linting, please let me know.
+- Internal cleanup [#383](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/383)
+
+## [1.9.0] - 2022-12-29
+
+- Added experimental options for Icarus Verilog linting. [#379](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/379)
+  - `verilog.linting.iverilog.includePath` is to specify include directories.
+  - `verilog.linting.iverilog.verilogHDL.standard` is to specify standard rules for Verilog-HDL files.
+  - `verilog.linting.iverilog.systemVerilog.standard` is to specify standard rules for SystemVerilog files.
+  - \[Caution\] I've only tested on Ubuntu on WSL2 platform. If you find any problems about Icarus Verilog linting, please let me know.
+- Added an experimental option for Verilator linting. [#380](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/380)
+  - `verilog.linting.verilator.includePath` is to specify include directories.
+  - \[Caution\] I've only tested on Ubuntu on WSL2 platform. If you find any problems about Verilator linting, please let me know.
+
+## [1.8.1] - 2022-12-26
+
+- Fixed `Instantiate Module` not working issue. [#376](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/376)
+
+## [1.8.0] - 2022-12-22
+
+- Added experimental formatting support with verible-verilog-format for the following languages. [#371](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/371)
+  - Verilog-HDL
+  - SystemVerilog
+- \[Caution\] Updated config namespace for formatter. [#371](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/371)
+  - `verilog.formatter` -> `verilog.formatting`
+- Improved logging implementation. [#374](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/374)
+  - Replaced own `Logger` class with `vscode.LogOutputChannel`.
+  - \[Caution\] From this version, the extension requires VS Code at least 1.74.0 or above.
+
+## [1.7.0] - 2022-12-21
+
+- Added experimental support for Verilog-HDL formatting with the following formatters.
+  - [verilog-format](https://github.com/ericsonj/verilog-format) [#364](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/364)
+  - [thomasrussellmurphy/istyle-verilog-formatter: Open source implementation of a Verilog formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter) [#365](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/365).
+
+## [1.6.0] - 2022-12-20
+
+- Changes for language server config take effect immediately.
+- Added experimental support for multiple Language Server [#353](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/353).
+  - \[Caution\] Language Server config names has changed!
+  - Users may have to reset all the configs related to Language Server feature.
+  - verible-verilog-ls support is temporary dropped because it returns error when stopping.
+- Deprecated `verilog.logging.enabled` option.
+  - Logs are always outputted to the **Verilog** OutputChannel of VS Code in the **Output** pane.
+- Intenal refactoring [#363](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/363)
+
+## [1.5.13] - 2022-12-12
+
+- Adds basic syntax highlighting for Verilog Filelists (dot-F files).
+- Add support for [verible-verilog-ls](https://github.com/chipsalliance/verible/tree/master/verilog/tools/ls) Language Server.
+
 ## [1.5.12] - 2022-12-04
 
 - Fix hdl_checker support.

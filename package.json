@@ -2,7 +2,7 @@
   "name": "veriloghdl",
   "displayName": "Verilog-HDL/SystemVerilog/Bluespec SystemVerilog",
   "description": "Verilog-HDL/SystemVerilog/Bluespec SystemVerilog support for VS Code",
-  "version": "1.5.12",
+  "version": "1.10.0",
   "publisher": "mshr-h",
   "homepage": "https://github.com/mshr-h/vscode-verilog-hdl-support",
   "repository": {
@@ -13,12 +13,13 @@
     "url": "https://github.com/mshr-h/vscode-verilog-hdl-support/issues"
   },
   "engines": {
-    "vscode": "^1.60.0"
+    "vscode": "^1.74.0"
   },
   "categories": [
     "Programming Languages",
     "Snippets",
-    "Linters"
+    "Linters",
+    "Formatters"
   ],
   "icon": "images/icon.png",
   "activationEvents": [
@@ -28,7 +29,8 @@
     "onLanguage:vhdl",
     "onLanguage:ucf",
     "onLanguage:sdc",
-    "onLanguage:xdc"
+    "onLanguage:xdc",
+    "onLanguage:verilog-filelist"
   ],
   "main": "./dist/main.js",
   "contributes": {
@@ -115,6 +117,17 @@
           ".xdc"
         ],
         "configuration": "./configs/sdc.configuration.json"
+      },
+      {
+        "id": "verilog-filelist",
+        "aliases": [
+          "Verilog Filelist",
+          "verilog-filelist"
+        ],
+        "extensions": [
+          ".f"
+        ],
+        "configuration": "./configs/verilog-filelist.configuration.json"
       }
     ],
     "grammars": [
@@ -163,6 +176,11 @@
           "meta.embedded.block.verilog": "source.verilog",
           "meta.embedded.block.systemverilog": "source.systemverilog"
         }
+      },
+      {
+        "language": "verilog-filelist",
+        "scopeName": "source.verilog-filelist",
+        "path": "./syntaxes/verilog-filelist.tmLanguage.json"
       }
     ],
     "snippets": [
@@ -205,17 +223,52 @@
           "default": "none",
           "description": "Select the verilog linter. Possible values are 'iverilog', 'verilator', xvlog' or 'none'."
         },
-        "verilog.linting.xvlog.arguments": {
-          "scope": "window",
-          "type": "string",
-          "default": "",
-          "description": "Add xvlog arguments here. They will be added to xvlog while linting."
-        },
         "verilog.linting.iverilog.arguments": {
           "scope": "window",
           "type": "string",
           "default": "",
           "description": "Add Icarus Verilog arguments here (like macros). They will be added to Icarus Verilog while linting (The command \"-t null\" will be added by the linter by default)."
+        },
+        "verilog.linting.iverilog.includePath": {
+          "scope": "window",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "A list of directory paths to use while Icarus Verilog linting."
+        },
+        "verilog.linting.iverilog.verilogHDL.standard": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "Verilog-95",
+            "Verilog-2001",
+            "Verilog-2005"
+          ],
+          "enumDescriptions": [
+            "IEEE1364-1995, specified by -g1995 option in Icarus Verilog",
+            "IEEE1364-2001, specified by -g2001 option in Icarus Verilog",
+            "IEEE1364-2005, specified by -g2005 option in Icarus Verilog"
+          ],
+          "default": "Verilog-2005",
+          "description": "Select the standard rule to be used when Icarus Verilog linting for Verilog-HDL files."
+        },
+        "verilog.linting.iverilog.systemVerilog.standard": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "SystemVerilog2005",
+            "SystemVerilog2009",
+            "SystemVerilog2012"
+          ],
+          "enumDescriptions": [
+            "IEEE1800-2005, specified by -g2005-sv option in Icarus Verilog",
+            "IEEE1800-2009, specified by -g2009 option in Icarus Verilog",
+            "IEEE1800-2012, specified by -g2012 option in Icarus Verilog"
+          ],
+          "default": "SystemVerilog2012",
+          "description": "Select the standard rule to be used when Icarus Verilog linting for SystemVerilog files."
         },
         "verilog.linting.iverilog.runAtFileLocation": {
           "scope": "window",
@@ -247,6 +300,15 @@
           "default": "",
           "description": "Add Verilator arguments here (like macros). They will be added to Verilator while linting (The command \"--lint-only -I<document folder>\" will be added by the linter by default)."
         },
+        "verilog.linting.verilator.includePath": {
+          "scope": "window",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "A list of directory paths to use while Verilator linting."
+        },
         "verilog.linting.verilator.runAtFileLocation": {
           "scope": "window",
           "type": "boolean",
@@ -259,65 +321,130 @@
           "default": false,
           "description": "If enabled, run verilator in WSL."
         },
+        "verilog.linting.xvlog.arguments": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "Add xvlog arguments here. They will be added to xvlog while linting."
+        },
+        "verilog.linting.xvlog.includePath": {
+          "scope": "window",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "A list of directory paths to use while xvlog linting."
+        },
         "verilog.ctags.path": {
           "scope": "window",
           "type": "string",
           "default": "none",
           "description": "A path to the installation of Universal Ctags."
         },
-        "verilog.languageServer.name": {
+        "verilog.languageServer.svls.enabled": {
           "scope": "window",
-          "type": "string",
-          "enum": [
-            "svls",
-            "veridian",
-            "hdl_checker",
-            "verible_ls"
-          ],
-          "enumDescriptions": [
-            "svls supports SystemVerilog",
-            "veridian supports SystemVerilog",
-            "hdl_checker supports Verilog-HDL, SystemVerilog and VHDL",
-            "verible_ls supports SystemVerilog"
-          ],
-          "default": "svls",
-          "description": "Select the Language Server."
+          "type": "boolean",
+          "default": false,
+          "description": "[Experimental] Enable svls Language Server for SystemVerilog."
         },
-        "verilog.languageServer.pathSvls": {
+        "verilog.languageServer.svls.path": {
           "scope": "window",
           "type": "string",
           "default": "svls",
-          "description": "A path to the Svls Language Server binary."
+          "description": "[Experimental] A path to the Svls Language Server binary."
         },
-        "verilog.languageServer.pathVeridian": {
+        "verilog.languageServer.veridian.enabled": {
+          "scope": "window",
+          "type": "boolean",
+          "default": false,
+          "description": "[Experimental] Enable veridian Language Server for SystemVerilog."
+        },
+        "verilog.languageServer.veridian.path": {
           "scope": "window",
           "type": "string",
           "default": "veridian",
-          "description": "A path to the Veridian Language Server binary."
+          "description": "[Experimental] A path to the Veridian Language Server binary."
         },
-        "verilog.languageServer.pathHdlChecker": {
+        "verilog.languageServer.hdlChecker.enabled": {
+          "scope": "window",
+          "type": "boolean",
+          "default": false,
+          "description": "[Experimental] Enable HDL Checker Language Server for Verilog-HDL, SystemVerilog, and VHDL."
+        },
+        "verilog.languageServer.hdlChecker.path": {
           "scope": "window",
           "type": "string",
           "default": "hdl_checker",
-          "description": "A path to the HDL Checker Language Server binary."
+          "description": "[Experimental] A path to the HDL Checker Language Server binary."
         },
-        "verilog.languageServer.pathVeribleLs": {
+        "verilog.formatting.verilogHDL.formatter": {
           "scope": "window",
           "type": "string",
-          "default": "verible-verilog-ls",
-          "description": "A path to the verible-verilog-ls Language Server binary."
+          "enum": [
+            "verilog-format",
+            "iStyle",
+            "verible-verilog-format"
+          ],
+          "default": "verilog-format",
+          "description": "[Experimental] Choose a Verilog-HDL formatter."
         },
-        "verilog.languageServer.enabled": {
+        "verilog.formatting.systemVerilog.formatter": {
           "scope": "window",
-          "type": "boolean",
-          "default": false,
-          "description": "Enable Language Server."
+          "type": "string",
+          "enum": [
+            "verible-verilog-format"
+          ],
+          "default": "verible-verilog-format",
+          "description": "[Experimental] Choose a SystemVerilog formatter."
         },
-        "verilog.logging.enabled": {
+        "verilog.formatting.verilogFormat.path": {
           "scope": "window",
-          "type": "boolean",
-          "default": false,
-          "description": "Enable logging for this extension."
+          "type": "string",
+          "default": "verilog-format",
+          "description": "[Experimental] A path to the verilog-format binary."
+        },
+        "verilog.formatting.verilogFormat.settings": {
+          "scope": "window",
+          "type": "string",
+          "default": "${env:HOME}/.verilog-format.properties",
+          "description": "[Experimental] A path to the verilog-format settings file."
+        },
+        "verilog.formatting.iStyleVerilogFormatter.path": {
+          "scope": "window",
+          "type": "string",
+          "default": "iStyle",
+          "description": "[Experimental] A path to the iStyle Verilog Formatter binary."
+        },
+        "verilog.formatting.iStyleVerilogFormatter.arguments": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "[Experimental] Add custom arguments to iStyle Verilog Formatter for formatting."
+        },
+        "verilog.formatting.iStyleVerilogFormatter.style": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "ANSI",
+            "K&R",
+            "GNU",
+            "Indent only"
+          ],
+          "default": "Indent only",
+          "description": "[Experimental] Choose styling options from ANSI/K&R/GNU."
+        },
+        "verilog.formatting.veribleVerilogFormatter.path": {
+          "scope": "window",
+          "type": "string",
+          "default": "verible-verilog-format",
+          "description": "[Experimental] A path to the verible-verilog-format binary."
+        },
+        "verilog.formatting.veribleVerilogFormatter.arguments": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "[Experimental] Add custom arguments to verible-verilog-format for formatting."
         }
       }
     },
@@ -349,31 +476,35 @@
     "test": "node ./out/src/test/bsv.js"
   },
   "dependencies": {
-    "antlr4": "^4.10.1",
+    "antlr4": "^4.11.0",
     "antlr4ts": "^0.5.0-alpha.4",
-    "vscode-languageclient": "^8.0.1"
+    "semver": "^7.3.8",
+    "vscode-languageclient": "^8.0.2",
+    "which": "^3.0.0"
   },
   "devDependencies": {
-    "@types/antlr4": "4.11.1",
+    "@types/antlr4": "4.11.2",
     "@types/glob": "^8.0.0",
-    "@types/mocha": "~10.0.0",
-    "@types/node": "~18.11.9",
-    "@types/vscode": "^1.60.0",
-    "@typescript-eslint/eslint-plugin": "^5.42.0",
-    "@typescript-eslint/parser": "^5.42.0",
-    "@vscode/test-electron": "^2.2.0",
+    "@types/mocha": "~10.0.1",
+    "@types/node": "~18.11.13",
+    "@types/vscode": "^1.74.0",
+    "@types/which": "^2.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.46.0",
+    "@typescript-eslint/parser": "^5.46.0",
+    "@vscode/test-electron": "^2.2.1",
+    "@vscode/vsce": "~2.16.0",
     "antlr4ts-cli": "0.5.0-alpha.4",
-    "esbuild": "^0.15.14",
-    "eslint": "8.29.0",
+    "esbuild": "^0.16.4",
+    "eslint": "8.30.0",
+    "eslint-config-prettier": "^8.5.0",
     "eslint-config-standard": "17.0.0",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-promise": "6.1.1",
     "glob": "^8.0.3",
-    "mocha": "^10.1.0",
-    "ts-loader": "^9.4.1",
-    "typescript": "4.9.3",
-    "vsce": "~2.15.0"
+    "mocha": "^10.2.0",
+    "ts-loader": "^9.4.2",
+    "typescript": "4.9.4"
   },
   "__metadata": {
     "id": "feb7e3b5-7d35-4f95-a3d2-61eeaa12efa5",

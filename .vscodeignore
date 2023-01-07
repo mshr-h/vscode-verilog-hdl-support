@@ -12,3 +12,6 @@ renovate.json
 **/.eslintrc.json
 **/*.map
 **/*.ts
+language_examples/**
+**/.hdl_checker/**
+**/svls.log
