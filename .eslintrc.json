@@ -3,7 +3,8 @@
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": 6,
-    "sourceType": "module"
+    "sourceType": "module",
+    "project": "tsconfig.json"
   },
   "plugins": ["@typescript-eslint"],
   "rules": {
@@ -18,5 +19,10 @@
     "no-constant-condition": "warn"
   },
   "ignorePatterns": ["out", "dist", "**/*.d.ts", "src/bsvjs/syntaxes", "src/test", "src/BsvProvider.ts"],
-  "extends": ["eslint:recommended", "prettier"]
+  "extends": [
+    "eslint:recommended",
+    "prettier",
+    "airbnb-base",
+    "airbnb-typescript"
+  ]
 }
