@@ -61,18 +61,19 @@ export default class SlangLinter extends BaseLinter {
       }
     }
 
-    let slang: string;
-    if (isWindows) {
-      if (this.useWSL) {
-        slang = 'wsl slang';
-      } else {
-        slang = 'slang.exe';
+    const linter = 'slang';
+    const binPath = path.join(this.linterInstalledPath, linter);
+    try {
+      let cmd = `which ${binPath}`;
+      if (isWindows && this.useWSL) {
+        cmd = `wsl ${cmd}`;
       }
-    } else {
-      slang = 'slang';
+      child.execSync(cmd);
+    } catch (err) {
+      vscode.window.showErrorMessage(`"${binPath}" does not exist or Permission to access!`);
+      return;
     }
 
-    const binPath = path.join(this.linterInstalledPath, slang);
     let args = [
       '--single-unit',
       `+incdir+${docFolder}`,
@@ -81,7 +82,7 @@ export default class SlangLinter extends BaseLinter {
     ];
     args.push('-Weverything', '--strict-driver-checking'); // Slang all warnings check options
     args = args.concat(this.includePath.map((incPath: string) => `+incdir+${incPath}`));
-    const command: string = `${binPath} ${args.join(' ')}`;
+    let command: string = `${binPath} ${args.join(' ')}`;
 
     const runLocation: string = this.runAtFileLocation
       ? docFolder
@@ -91,10 +92,17 @@ export default class SlangLinter extends BaseLinter {
     this.logger.info(`[slang]   command: ${command}`);
     this.logger.info(`[slang]   cwd    : ${runLocation}`);
 
+    if (isWindows && this.useWSL) {
+      command = `wsl ${command}`;
+    }
     child.exec(
       command,
       { cwd: runLocation },
-      (_error: Error, _stdout: string, stderr: string) => {
+      (error: Error, _stdout: string, stderr: string) => {
+        if (error) {
+          vscode.window.showErrorMessage(error.message);
+          return;
+        }
         const diagnostics: vscode.Diagnostic[] = [];
 
         const re = /(.+?):(\d+):(\d+):\s(note|warning|error):\s([^[\]]*)(\[-W(.*)\])?/;

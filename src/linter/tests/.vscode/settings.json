@@ -1,4 +1,5 @@
 {
     "verilog.linting.linter": "slang",
-    "verilog.linting.slang.useWSL": true
+    "verilog.linting.slang.useWSL": true,
+    "verilog.linting.slang.arguments": "--single-unit"
 }
