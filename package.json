@@ -222,7 +222,7 @@
             "none"
           ],
           "default": "none",
-          "description": "Select the verilog linter. Possible values are 'iverilog', 'verilator', 'xvlog', 'slang' or 'none'."
+          "description": "Select the verilog linter. Possible values are 'iverilog', 'verilator', 'modelsim', 'xvlog', 'slang' or 'none'."
         },
         "verilog.linting.iverilog.arguments": {
           "scope": "window",
