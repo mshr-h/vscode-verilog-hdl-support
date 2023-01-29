@@ -72,12 +72,10 @@ export default class SlangLinter extends BaseLinter {
 
     let binPath = path.join(this.linterInstalledPath, slang);
     let args: string[] = [];
-    args.push('--single-unit');
     args.push(`-I ${docFolder}`);
     args = args.concat(this.includePath.map((path: string) => `-I ${path}`));
     args.push(this.arguments);
     args.push(`"${docUri}"`);
-    args.push('-Weverything', '--strict-driver-checking'); // Slang all warnings check options
     let command: string = binPath + ' ' + args.join(' ');
 
     let cwd: string = this.runAtFileLocation
