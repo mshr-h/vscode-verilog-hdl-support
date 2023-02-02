@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.11.0] - 2023-02-02
+
+- Added an experimental support for Slang linting. [#387](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/387)
+
 ## [1.10.0] - 2023-01-06
 
 - Added an experimental option for xvlog linting. [#382](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/382)

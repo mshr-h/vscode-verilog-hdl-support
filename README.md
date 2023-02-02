@@ -23,9 +23,10 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 - Simple Snippets
 - Linting support from:
   - Icarus Verilog - `iverilog`
-  - Vivado Logical Simulation - `xvlog`
   - Modelsim - `modelsim`
   - Verilator - `verilator`
+  - Vivado Logical Simulation - `xvlog`
+  - \[Experimental\] Slang - `slang`
 - Linting support
   - Bluespec SystemVerilog
 - Ctags Integration
@@ -105,6 +106,7 @@ Use the following settings to configure the extension to your needs.
 
   - `iverilog`
   - `modelsim`
+  - `slang`
   - `verilator`
   - `xvlog`
   - `none`
@@ -130,6 +132,24 @@ Use the following settings to configure the extension to your needs.
 - `verilog.linting.modelsim.work` (Default: nothing)
 
     Add custom work library to Modelsim for linting.
+
+- `verilog.linting.slang.arguments` (Default: nothing)
+  
+    Add Slang arguments here (like macros). They will be added to Slang while linting (The command \"-I=<document folder>\" will be added by the linter by default).
+
+- `verilog.linting.slang.includePath` (Default: nothing)
+
+    A list of directory paths to use while Slang linting.
+
+- `verilog.linting.slang.runAtFileLocation` (Default: `false` )
+
+    If enabled, Slang will be run at the file location for linting. Else it will be run at workspace folder. Disabled by default.
+
+- `verilog.linting.slang.useWSL` (Default: `false` )
+
+    Run verilator under WSL. Paths generated automatically by the extension (the path to the Verilog file as well as
+    the auto-generated document folder for `-I` ) are translated to WSL paths using the `wslpath` program.
+    Any other paths you specify in `verilog.linting.includePath.arguments`
 
 - `verilog.linting.verilator.arguments` (Default: nothing)
 
@@ -274,3 +294,4 @@ You can check it by opening the **Output** pane in VS Code and choose _Verilog_ 
 - [chipsalliance/verible](https://github.com/chipsalliance/verible)
 - [ericsonj/verilog-format](https://github.com/ericsonj/verilog-format)
 - [thomasrussellmurphy/istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter)
+- [slang C++ docs](https://sv-lang.com/)

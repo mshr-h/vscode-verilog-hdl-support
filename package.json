@@ -2,7 +2,7 @@
   "name": "veriloghdl",
   "displayName": "Verilog-HDL/SystemVerilog/Bluespec SystemVerilog",
   "description": "Verilog-HDL/SystemVerilog/Bluespec SystemVerilog support for VS Code",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "publisher": "mshr-h",
   "homepage": "https://github.com/mshr-h/vscode-verilog-hdl-support",
   "repository": {
@@ -295,6 +295,33 @@
           "default": "",
           "description": "Add Modelsim work library here."
         },
+        "verilog.linting.slang.arguments": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "Add Slang arguments here (like macros). They will be added to Slang while linting (The command \"-I=<document folder>\" will be added by the linter by default)."
+        },
+        "verilog.linting.slang.includePath": {
+          "scope": "window",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "A list of directory paths to use while Slang linting."
+        },
+        "verilog.linting.slang.runAtFileLocation": {
+          "scope": "window",
+          "type": "boolean",
+          "default": false,
+          "description": "If enabled, Slang will be run at the file location for linting. Else it will be run at workspace folder. Disabled by default."
+        },
+        "verilog.linting.slang.useWSL": {
+          "scope": "window",
+          "type": "boolean",
+          "default": false,
+          "description": "If enabled, run slang in WSL."
+        },
         "verilog.linting.verilator.arguments": {
           "scope": "window",
           "type": "string",
@@ -321,34 +348,6 @@
           "type": "boolean",
           "default": false,
           "description": "If enabled, run verilator in WSL."
-        },
-        
-        "verilog.linting.slang.arguments": {
-          "scope": "window",
-          "type": "string",
-          "default": "",
-          "description": "Add Slang arguments here (like macros). They will be added to Slang while linting (The command \"--single-unit -Weverything --strict-driver-checking +incdir+<document folder>\" will be added by the linter by default)."
-        },
-        "verilog.linting.slang.includePath": {
-          "scope": "window",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "uniqueItems": true,
-          "description": "A list of directory paths to use while Slang linting."
-        },
-        "verilog.linting.slang.runAtFileLocation": {
-          "scope": "window",
-          "type": "boolean",
-          "default": false,
-          "description": "If enabled, Slang will be run at the file location for linting. Else it will be run at workspace folder. Disabled by default."
-        },
-        "verilog.linting.slang.useWSL": {
-          "scope": "window",
-          "type": "boolean",
-          "default": false,
-          "description": "If enabled, run slang in WSL."
         },
         "verilog.linting.xvlog.arguments": {
           "scope": "window",
