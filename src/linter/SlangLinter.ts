@@ -64,11 +64,7 @@ export default class SlangLinter extends BaseLinter {
       }
     }
 
-    let slang: string = isWindows
-      ? this.useWSL
-        ? 'wsl slang'
-        : 'slang.exe'
-      : 'slang';
+    let slang: string = isWindows ? (this.useWSL ? 'wsl slang' : 'slang.exe') : 'slang';
 
     let binPath = path.join(this.linterInstalledPath, slang);
     let args: string[] = [];
@@ -85,7 +81,6 @@ export default class SlangLinter extends BaseLinter {
     this.logger.info('[slang] Execute');
     this.logger.info('[slang]   command: ' + command);
     this.logger.info('[slang]   cwd    : ' + cwd);
-
 
     var _: child.ChildProcess = child.exec(
       command,
