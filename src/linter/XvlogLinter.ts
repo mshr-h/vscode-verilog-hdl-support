@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
 import * as child_process from 'child_process';
 import * as path from 'path';

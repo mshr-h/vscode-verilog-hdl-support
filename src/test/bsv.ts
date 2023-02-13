@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { CharStreams, CommonTokenStream } from 'antlr4ts';
 import { bsvLexer } from '../bsvjs/syntaxes/bsvLexer';
 import { bsvParser } from '../bsvjs/syntaxes/bsvParser';

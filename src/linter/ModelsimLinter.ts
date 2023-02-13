@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
 import * as child from 'child_process';
 import BaseLinter from './BaseLinter';
