@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 // import * as vscode from 'vscode';
 import * as vscode from 'vscode';
 import { BsvInfoProviderManger } from '../BsvProvider';

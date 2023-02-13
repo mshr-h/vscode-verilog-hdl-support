@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
 
 export class HoverProvider implements vscode.HoverProvider {

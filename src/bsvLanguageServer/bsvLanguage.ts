@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 type Constructor = new (...a: any[]) => any;
 type Merge<TTrait extends Constructor, TTarget extends Constructor> = (new (
   ...a: ConstructorParameters<TTarget>
