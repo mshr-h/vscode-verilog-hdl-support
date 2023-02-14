@@ -514,7 +514,7 @@
     "@types/antlr4": "4.11.2",
     "@types/glob": "^8.0.0",
     "@types/mocha": "~10.0.1",
-    "@types/node": "~18.11.13",
+    "@types/node": "~18.13.0",
     "@types/vscode": "^1.74.0",
     "@types/which": "^2.0.1",
     "@typescript-eslint/eslint-plugin": "^5.46.0",
