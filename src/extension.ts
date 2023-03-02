@@ -224,6 +224,11 @@ function initAllLanguageClients() {
       { scheme: 'file', language: 'vhdl' },
     ],
   });
+
+  // init verible-verilog-ls
+  setupLanguageClient('veribleVerilogLs', 'verible-verilog-ls', [], [], {
+    documentSelector: [{ scheme: 'file', language: 'systemverilog' }],
+  });
 }
 
 function stopAllLanguageClients(): Promise<any> {

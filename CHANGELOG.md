@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [Unreleased]
+
+- Re-added experimental support for verible-verilog-ls Language Server. [#403](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/403)
+
 ## [1.11.0] - 2023-02-02
 
 - Added an experimental support for Slang linting. [#387](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/387)

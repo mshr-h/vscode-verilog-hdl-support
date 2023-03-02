@@ -39,6 +39,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - [svls](https://github.com/dalance/svls)
   - [veridian](https://github.com/vivekmalneedi/veridian)
   - [HDL Checker](https://github.com/suoto/hdl_checker)
+  - [verible-verilog-ls](https://github.com/chipsalliance/verible)
 - \[Experimental\] Formatting support from:
   - [verilog-format](https://github.com/ericsonj/verilog-format)
   - [istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter)
@@ -83,7 +84,7 @@ If you encounter any problems even if it's not related to this feature, **deleti
 | [svls](https://github.com/dalance/svls)                        | not supported | enabled       | not supported |
 | [veridian](https://github.com/vivekmalneedi/veridian)          | not supported | enabled       | not supported |
 | [HDL Checker](https://github.com/suoto/hdl_checker)            | enabled       | enabled       | enabled       |
-
+| [verible-verilog-ls](https://github.com/chipsalliance/verible) | not supported | enabled       | not supported |
 ### Formatting (Experimental)
 
 We currently support Verilog-HDL file formatting with the following formatters.
@@ -210,6 +211,14 @@ Use the following settings to configure the extension to your needs.
 - `verilog.languageServer.hdlChecker.path` (Default: `hdl_checker`)
 
     \[Experimental\] A path to the HDL Checker Language Server binary.
+
+- `verilog.languageServer.veribleVerilogLs.enabled` (Default: `false`)
+
+    \[Experimental\] Enable verible-verilog-ls Language Server for SystemVerilog.
+
+- `verilog.languageServer.veribleVerilogLs.path` (Default: `verible-verilog-ls`)
+
+    \[Experimental\] A path to the verible-verilog-ls Language Server binary.
 
 - `verilog.formatting.verilogHDL.formatter` (Default: `verilog-format`)
 
