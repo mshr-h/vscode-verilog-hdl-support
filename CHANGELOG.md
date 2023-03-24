@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.11.2] - 2023-03-24
+
+- No feature update.
+- Added more logging messages to be able to debug [#407](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/407). [#410](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/410)
+
 ## [1.11.1] - 2023-03-04
 
 - Re-added experimental support for verible-verilog-ls Language Server. [#404](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/404)
