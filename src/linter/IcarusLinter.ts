@@ -21,6 +21,11 @@ export default class IcarusLinter extends BaseLinter {
   private standards: Map<string, string>;
   private runAtFileLocation: boolean;
 
+  // TODO: need to refactor
+  info(message: string) {
+    this.logger.info('[iverilog-lint] ' + message);
+  }
+
   constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: vscode.LogOutputChannel) {
     super('iverilog', diagnosticCollection, logger);
     vscode.workspace.onDidChangeConfiguration(() => {
@@ -45,7 +50,10 @@ export default class IcarusLinter extends BaseLinter {
   }
 
   protected lint(doc: vscode.TextDocument) {
+    this.info('Executing IcarusLinter.lint()');
+
     let binPath: string = path.join(this.linterInstalledPath, 'iverilog');
+    this.info('iverilog binary path: ' + binPath);
 
     let args: string[] = [];
     args.push('-t null');
@@ -61,9 +69,9 @@ export default class IcarusLinter extends BaseLinter {
       ? path.dirname(doc.uri.fsPath)
       : vscode.workspace.workspaceFolders[0].uri.fsPath;
 
-    this.logger.info('[iverilog-lint] Execute');
-    this.logger.info('[iverilog-lint]   command: ' + command);
-    this.logger.info('[iverilog-lint]   cwd    : ' + cwd);
+    this.info('Execute');
+    this.info('  command: ' + command);
+    this.info('  cwd    : ' + cwd);
 
     var _: child.ChildProcess = child.exec(
       command,
@@ -111,7 +119,7 @@ export default class IcarusLinter extends BaseLinter {
           }
         });
         if (diagnostics.length > 0) {
-          this.logger.info('[iverilog-lint] ' + diagnostics.length + ' errors/warnings returned');
+          this.info(diagnostics.length + ' errors/warnings returned');
         }
         this.diagnosticCollection.set(doc.uri, diagnostics);
       }
