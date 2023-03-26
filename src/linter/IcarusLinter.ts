@@ -65,13 +65,14 @@ export default class IcarusLinter extends BaseLinter {
 
     let command: string = binPath + ' ' + args.join(' ');
 
-    let cwd: string = this.runAtFileLocation
-      ? path.dirname(doc.uri.fsPath)
-      : vscode.workspace.workspaceFolders[0].uri.fsPath;
+    let cwd: string =
+      this.runAtFileLocation || vscode.workspace.workspaceFolders === undefined
+        ? path.dirname(doc.uri.fsPath)
+        : vscode.workspace.workspaceFolders[0].uri.fsPath;
 
     this.info('Execute');
-    this.info('  command: ' + command);
-    this.info('  cwd    : ' + cwd);
+    this.info('  command: ' + JSON.stringify(command));
+    this.info('  cwd    : ' + JSON.stringify(cwd));
 
     var _: child.ChildProcess = child.exec(
       command,
