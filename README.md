@@ -2,7 +2,8 @@
 
 HDL support for VS Code with Syntax Highlighting, Snippets, Linting, Formatting and much more!
 
-[![Build Status](https://github.com/mshr-h/vscode-verilog-hdl-support/workflows/.github/workflows/ci.yml/badge.svg?branch=master&event=push)](https://github.com/mshr-h/vscode-verilog-hdl-support/actions?query=workflow%3A.github%2Fworkflows%2Fci.yml)
+[![Install Count](https://img.shields.io/visual-studio-marketplace/i/mshr-h.VerilogHDL.svg)](https://marketplace.visualstudio.com/items?itemName=mshr-h.VerilogHDL)
+[![Download Count](https://img.shields.io/visual-studio-marketplace/d/mshr-h.VerilogHDL.png)](https://marketplace.visualstudio.com/items?itemName=mshr-h.VerilogHDL)
 
 ![sample](images/sample.gif)
 
