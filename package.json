@@ -541,7 +541,7 @@
     "eslint-plugin-import": "2.27.5",
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-promise": "6.1.1",
-    "glob": "^8.0.3",
+    "glob": "^9.0.0",
     "mocha": "^10.2.0",
     "ts-loader": "^9.4.2",
     "typescript": "5.0.2"
