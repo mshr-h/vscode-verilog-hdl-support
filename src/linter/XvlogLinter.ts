@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import * as child_process from 'child_process';
 import * as path from 'path';
 import BaseLinter from './BaseLinter';
+import { Logger } from '../logger';
 
 export default class XvlogLinter extends BaseLinter {
   private configuration: vscode.WorkspaceConfiguration;
@@ -10,7 +11,7 @@ export default class XvlogLinter extends BaseLinter {
   private arguments: string;
   private includePath: string[];
 
-  constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: vscode.LogOutputChannel) {
+  constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
     super('xvlog', diagnosticCollection, logger);
     vscode.workspace.onDidChangeConfiguration(() => {
       this.updateConfig();

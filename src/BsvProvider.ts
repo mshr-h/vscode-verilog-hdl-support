@@ -27,6 +27,7 @@ import { assert } from 'console';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { readdirSync } from 'fs';
+import { Logger } from './logger';
 
 export interface BsvInfoProvider {
   getSymbol(doc: TextDocument): Promise<SymbolInformation[]> | Promise<DocumentSymbol[]>;
@@ -3132,9 +3133,9 @@ class BsvBaseInfoProvider {
   parserCache: Map<Uri, bsvSyntaxParser.TopContext> = new Map();
   docSymbolCache: Map<Uri, SymbolInformation[]> = new Map();
 
-  public logger: LogOutputChannel;
+  public logger: Logger;
 
-  constructor(logger: LogOutputChannel) {
+  constructor(logger: Logger) {
     this.logger = logger;
   }
 
@@ -3243,7 +3244,7 @@ class SymbolLink implements LocationLink {
 class BsvWorkspaceInfoProvider extends BsvBaseInfoProvider implements BsvInfoProvider {
   initFinished = false;
 
-  constructor(_path: Uri, logger: LogOutputChannel) {
+  constructor(_path: Uri, logger: Logger) {
     super(logger);
     this.updateWorkspace();
     workspace.onDidCreateFiles(async (e) => {
@@ -3393,7 +3394,7 @@ class BsvSingleFileInfoProvider extends BsvBaseInfoProvider implements BsvInfoPr
     return undefined;
   }
 
-  constructor(logger: LogOutputChannel) {
+  constructor(logger: Logger) {
     super(logger);
   }
 }
@@ -3416,12 +3417,12 @@ export class BsvInfoProviderManger {
     return this.provider;
   }
 
-  onWorkspace(logger: LogOutputChannel): Boolean {
+  onWorkspace(logger: Logger): Boolean {
     this.refreshWorkspace(logger);
     return true;
   }
 
-  protected refreshWorkspace(logger: LogOutputChannel) {
+  protected refreshWorkspace(logger: Logger) {
     if (!workspace.workspaceFolders) {
       this.provider = new BsvSingleFileInfoProvider(logger);
     } else if (workspace.workspaceFolders.length == 0) {

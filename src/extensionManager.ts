@@ -1,19 +1,16 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
 import { SemVer } from 'semver';
+import { Logger } from './logger';
 
 export class ExtensionManager {
   private context: vscode.ExtensionContext;
   private extensionID: string;
   private packageJSON: any;
   private extensionPath: string;
-  private logger: vscode.LogOutputChannel;
+  private logger: Logger;
 
-  constructor(
-    context: vscode.ExtensionContext,
-    extensionID: string,
-    logger: vscode.LogOutputChannel
-  ) {
+  constructor(context: vscode.ExtensionContext, extensionID: string, logger: Logger) {
     this.context = context;
     this.extensionID = extensionID;
     this.logger = logger;
@@ -27,6 +24,12 @@ export class ExtensionManager {
 
     // update version value
     this.context.globalState.update('version', currentVersion.version);
+    this.logger.info(
+      'previousVersion: ' +
+        JSON.stringify(previousVersion.version) +
+        ', currentVersion: ' +
+        JSON.stringify(currentVersion.version)
+    );
 
     return previousVersion < currentVersion;
   }

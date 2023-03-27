@@ -4,6 +4,7 @@ import * as child from 'child_process';
 import * as path from 'path';
 import * as process from 'process';
 import BaseLinter from './BaseLinter';
+import { Logger } from '../logger';
 
 let isWindows = process.platform === 'win32';
 
@@ -15,7 +16,7 @@ export default class SlangLinter extends BaseLinter {
   private runAtFileLocation: boolean;
   private useWSL: boolean;
 
-  constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: vscode.LogOutputChannel) {
+  constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
     super('slang', diagnosticCollection, logger);
     vscode.workspace.onDidChangeConfiguration(() => {
       this.updateConfig();
