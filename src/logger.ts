@@ -53,6 +53,10 @@ export class Logger {
   error(message: string, data?: unknown) {
     this.log('error', message, data);
   }
+
+  show(): void {
+    this.parentLogger.show();
+  }
 }
 
 export function createLogger(name: string): Logger {
