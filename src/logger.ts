@@ -13,8 +13,8 @@ Info message
 */
 
 export class Logger {
-  readonly name: string;
-  readonly parentLogger: vscode.LogOutputChannel | Logger;
+  private name: string;
+  private parentLogger: vscode.LogOutputChannel | Logger;
 
   constructor(name: string, parentLogger: vscode.LogOutputChannel | Logger) {
     this.name = name;
@@ -25,36 +25,33 @@ export class Logger {
     return new Logger(name, this);
   }
 
-  info(message: string) {
-    if (this.parentLogger instanceof Logger) {
-      this.parentLogger.info('[' + this.name + '] ' + message);
-    } else {
-      this.parentLogger.info(message);
+  private log(level: keyof Logger, message: string, data?: unknown): void {
+    let formattedMessage =
+      this.parentLogger instanceof Logger ? `[${this.name}] ${message}` : `${message}`;
+    if (data) {
+      formattedMessage += JSON.stringify(data);
     }
+    this.parentLogger[level](formattedMessage);
   }
 
-  debug(message: string) {
-    if (this.parentLogger instanceof Logger) {
-      this.parentLogger.debug('[' + this.name + '] ' + message);
-    } else {
-      this.parentLogger.debug(message);
-    }
+  trace(message: string, data?: unknown) {
+    this.log('trace', message, data);
   }
 
-  warn(message: string) {
-    if (this.parentLogger instanceof Logger) {
-      this.parentLogger.warn('[' + this.name + '] ' + message);
-    } else {
-      this.parentLogger.warn(message);
-    }
+  info(message: string, data?: unknown) {
+    this.log('info', message, data);
   }
 
-  error(message: string) {
-    if (this.parentLogger instanceof Logger) {
-      this.parentLogger.error('[' + this.name + '] ' + message);
-    } else {
-      this.parentLogger.error(message);
-    }
+  debug(message: string, data?: unknown) {
+    this.log('debug', message, data);
+  }
+
+  warn(message: string, data?: unknown) {
+    this.log('warn', message, data);
+  }
+
+  error(message: string, data?: unknown) {
+    this.log('error', message, data);
   }
 }
 
