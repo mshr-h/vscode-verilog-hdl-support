@@ -34,23 +34,23 @@ export class Logger {
     this.parentLogger[level](formattedMessage);
   }
 
-  trace(message: string, data?: unknown) {
+  trace(message: string, data?: unknown): void {
     this.log('trace', message, data);
   }
 
-  info(message: string, data?: unknown) {
+  info(message: string, data?: unknown): void {
     this.log('info', message, data);
   }
 
-  debug(message: string, data?: unknown) {
+  debug(message: string, data?: unknown): void {
     this.log('debug', message, data);
   }
 
-  warn(message: string, data?: unknown) {
+  warn(message: string, data?: unknown): void {
     this.log('warn', message, data);
   }
 
-  error(message: string, data?: unknown) {
+  error(message: string, data?: unknown): void {
     this.log('error', message, data);
   }
 
