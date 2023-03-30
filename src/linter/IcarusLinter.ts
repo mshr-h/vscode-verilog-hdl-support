@@ -68,8 +68,8 @@ export default class IcarusLinter extends BaseLinter {
         : vscode.workspace.workspaceFolders[0].uri.fsPath;
 
     this.logger.info('Execute');
-    this.logger.info('  command: ' + JSON.stringify(command));
-    this.logger.info('  cwd    : ' + JSON.stringify(cwd));
+    this.logger.info('  command: ', command);
+    this.logger.info('  cwd    : ', cwd);
 
     var _: child.ChildProcess = child.exec(
       command,
