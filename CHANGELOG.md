@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.11.4] - 2023-04-19
+
+### Fixed
+
+- Fix Slang: only push diagnostics in the current file [#415](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/415)
+
 ## [1.11.3] - 2023-03-27
 
 ### Fixed
