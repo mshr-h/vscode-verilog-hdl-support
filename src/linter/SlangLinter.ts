@@ -96,6 +96,10 @@ export default class SlangLinter extends BaseLinter {
 
           let rex = line.match(re);
 
+          if (!docUri.endsWith(rex[1])) {
+            return;
+          }
+
           if (rex && rex[0].length > 0) {
             let lineNum = Number(rex[2]) - 1;
             let colNum = Number(rex[3]) - 1;
