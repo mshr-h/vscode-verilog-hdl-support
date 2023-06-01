@@ -52,6 +52,7 @@ export default class SlangLinter extends BaseLinter {
   protected lint(doc: vscode.TextDocument) {
     let docUri: string = doc.uri.fsPath;
     let docFolder: string = path.dirname(docUri);
+    let cwdWin: string = path.dirname(docUri);
     if (isWindows) {
       if (this.useWSL) {
         docUri = this.convertToWslPath(docUri);
@@ -76,7 +77,9 @@ export default class SlangLinter extends BaseLinter {
     let command: string = binPath + ' ' + args.join(' ');
 
     let cwd: string = this.runAtFileLocation
-      ? docFolder
+      ? isWindows
+        ? cwdWin
+        : docFolder
       : vscode.workspace.workspaceFolders[0].uri.fsPath;
 
     this.logger.info('[slang] Execute');
