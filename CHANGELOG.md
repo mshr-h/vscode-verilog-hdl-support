@@ -9,12 +9,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Fixed
 
 - Fixed Slang & Verilator: cant run under WSL  [#418](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/418)
+- Fixed [#139](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/139)
 
 ## [1.11.4] - 2023-04-19
 
 ### Fixed
 
-- Fix Slang: only push diagnostics in the current file [#415](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/415)
+- Fixed only push diagnostics from Slang in the current file [#415](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/415)
 
 ## [1.11.3] - 2023-03-27
 
