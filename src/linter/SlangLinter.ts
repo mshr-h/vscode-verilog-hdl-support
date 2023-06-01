@@ -76,7 +76,9 @@ export default class SlangLinter extends BaseLinter {
     let command: string = binPath + ' ' + args.join(' ');
 
     let cwd: string = this.runAtFileLocation
-      ? docFolder
+      ? isWindows
+        ? path.dirname(docUri)
+        : docFolder
       : vscode.workspace.workspaceFolders[0].uri.fsPath;
 
     this.logger.info('[slang] Execute');

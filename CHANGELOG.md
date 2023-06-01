@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [Unreleased]
+
+### Fixed
+
+- Fixed Slang & Verilator: cant run under WSL  [#418](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/418)
+
 ## [1.11.4] - 2023-04-19
 
 ### Fixed
