@@ -65,6 +65,7 @@ export default class IcarusLinter extends BaseLinter {
 
     let command: string = binPath + ' ' + args.join(' ');
 
+    // TODO: We have to apply the the #419 fix?
     let cwd: string =
       this.runAtFileLocation || vscode.workspace.workspaceFolders === undefined
         ? path.dirname(doc.uri.fsPath)
