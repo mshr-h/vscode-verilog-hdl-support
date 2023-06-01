@@ -59,9 +59,9 @@ export default class IcarusLinter extends BaseLinter {
     args.push('-t null');
 
     args.push(standardToArg.get(this.standards.get(doc.languageId)));
-    args = args.concat(this.includePath.map((path: string) => '-I ' + path));
+    args = args.concat(this.includePath.map((path: string) => '-I "' + path + '"'));
     args.push(this.arguments);
-    args.push(doc.uri.fsPath);
+    args.push('"' + doc.uri.fsPath + '"');
 
     let command: string = binPath + ' ' + args.join(' ');
 
