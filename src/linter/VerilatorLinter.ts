@@ -67,7 +67,6 @@ export default class VerilatorLinter extends BaseLinter {
   protected lint(doc: vscode.TextDocument) {
     let docUri: string = doc.uri.fsPath;
     let docFolder: string = path.dirname(docUri);
-    let cwdWin: string = path.dirname(docUri);
     if (isWindows) {
       if (this.useWSL) {
         docUri = this.convertToWslPath(docUri);
@@ -101,7 +100,7 @@ export default class VerilatorLinter extends BaseLinter {
 
     let cwd: string = this.runAtFileLocation
       ? isWindows
-        ? cwdWin
+        ? path.dirname(docUri)
         : docFolder
       : vscode.workspace.workspaceFolders[0].uri.fsPath;
 
