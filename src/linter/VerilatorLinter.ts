@@ -95,7 +95,7 @@ export default class VerilatorLinter extends BaseLinter {
     }
     args.push('--lint-only');
     args.push(`-I"${docFolder}"`);
-    args = args.concat(this.includePath.map((path: string) => '-I' + path));
+    args = args.concat(this.includePath.map((path: string) => `-I "${path}"`));
     args.push(this.arguments);
     args.push(`"${docUri}"`);
     let command: string = binPath + ' ' + args.join(' ');

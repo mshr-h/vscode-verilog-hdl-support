@@ -71,8 +71,8 @@ export default class SlangLinter extends BaseLinter {
 
     let binPath = path.join(this.linterInstalledPath, slang);
     let args: string[] = [];
-    args.push(`-I ${docFolder}`);
-    args = args.concat(this.includePath.map((path: string) => `-I ${path}`));
+    args.push(`-I "${docFolder}"`);
+    args = args.concat(this.includePath.map((path: string) => `-I "${path}"`));
     args.push(this.arguments);
     args.push(`"${docUri}"`);
     let command: string = binPath + ' ' + args.join(' ');
@@ -86,6 +86,9 @@ export default class SlangLinter extends BaseLinter {
     this.logger.info('[slang] Execute');
     this.logger.info('[slang]   command: ' + command);
     this.logger.info('[slang]   cwd    : ' + cwd);
+
+
+
 
     var _: child.ChildProcess = child.exec(
       command,
