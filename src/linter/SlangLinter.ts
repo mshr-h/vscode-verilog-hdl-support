@@ -87,9 +87,6 @@ export default class SlangLinter extends BaseLinter {
     this.logger.info('[slang]   command: ' + command);
     this.logger.info('[slang]   cwd    : ' + cwd);
 
-
-
-
     var _: child.ChildProcess = child.exec(
       command,
       { cwd: cwd },
