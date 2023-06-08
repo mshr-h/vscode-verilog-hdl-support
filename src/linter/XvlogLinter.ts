@@ -36,7 +36,7 @@ export default class XvlogLinter extends BaseLinter {
     if (doc.languageId === 'systemverilog') {
       args.push('-sv');
     }
-    args = args.concat(this.includePath.map((path: string) => '-i ' + path));
+    args = args.concat(this.includePath.map((path: string) => `-i "${path}"`));
     this.logger.warn(this.includePath.join(' '));
     args.push(this.arguments);
     args.push(`"${doc.fileName}"`);
