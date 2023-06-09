@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [1.11.9] - 2023-06-09
 
+## Changed
+
+- Improved logging implementation [#412](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/412)
+
 ### Fixed
 
 - Refactor Verilator linter
