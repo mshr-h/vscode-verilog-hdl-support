@@ -4,13 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.11.9] - 2023-06-09
+
+### Fixed
+
+- Refactor Verilator linter
+
 ## [1.11.8] - 2023-06-09
 
-- Fixed Verilator linting [#422](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/422)
+### Fixed
+
+- Fix Verilator linting include paths [#422](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/422)
 
 ## [1.11.7] - 2023-06-08
 
-- Fixed Slang, Verilator and Xvlog paths arguments by adding quotation marks [#420](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/420)
+### Fixed
+
+- Add quotation marks around paths for Slang, Verilator and Xvlog [#420](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/420)
 
 ## [1.11.6] - 2023-06-06
 
