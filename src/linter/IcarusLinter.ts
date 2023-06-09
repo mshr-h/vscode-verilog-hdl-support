@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import * as child from 'child_process';
 import * as path from 'path';
 import BaseLinter from './BaseLinter';
+import { Logger } from '../logger';
 
 let standardToArg: Map<string, string> = new Map<string, string>([
   ['Verilog-95', '-g1995'],
@@ -21,12 +22,7 @@ export default class IcarusLinter extends BaseLinter {
   private standards: Map<string, string>;
   private runAtFileLocation: boolean;
 
-  // TODO: need to refactor
-  info(message: string) {
-    this.logger.info('[iverilog-lint] ' + message);
-  }
-
-  constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: vscode.LogOutputChannel) {
+  constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
     super('iverilog', diagnosticCollection, logger);
     vscode.workspace.onDidChangeConfiguration(() => {
       this.updateConfig();
@@ -50,10 +46,10 @@ export default class IcarusLinter extends BaseLinter {
   }
 
   protected lint(doc: vscode.TextDocument) {
-    this.info('Executing IcarusLinter.lint()');
+    this.logger.info('Executing IcarusLinter.lint()');
 
     let binPath: string = path.join(this.linterInstalledPath, 'iverilog');
-    this.info('iverilog binary path: ' + binPath);
+    this.logger.info('iverilog binary path: ' + binPath);
 
     let args: string[] = [];
     args.push('-t null');
@@ -71,9 +67,9 @@ export default class IcarusLinter extends BaseLinter {
         ? path.dirname(doc.uri.fsPath)
         : vscode.workspace.workspaceFolders[0].uri.fsPath;
 
-    this.info('Execute');
-    this.info('  command: ' + JSON.stringify(command));
-    this.info('  cwd    : ' + JSON.stringify(cwd));
+    this.logger.info('Execute');
+    this.logger.info('  command: ', command);
+    this.logger.info('  cwd    : ', cwd);
 
     var _: child.ChildProcess = child.exec(
       command,
@@ -121,7 +117,7 @@ export default class IcarusLinter extends BaseLinter {
           }
         });
         if (diagnostics.length > 0) {
-          this.info(diagnostics.length + ' errors/warnings returned');
+          this.logger.info(diagnostics.length + ' errors/warnings returned');
         }
         this.diagnosticCollection.set(doc.uri, diagnostics);
       }

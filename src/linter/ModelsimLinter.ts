@@ -2,6 +2,7 @@
 import * as vscode from 'vscode';
 import * as child from 'child_process';
 import BaseLinter from './BaseLinter';
+import { Logger } from '../logger';
 
 var isWindows = process.platform === 'win32';
 
@@ -11,7 +12,7 @@ export default class ModelsimLinter extends BaseLinter {
   private modelsimWork: string;
   private runAtFileLocation: boolean;
 
-  constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: vscode.LogOutputChannel) {
+  constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
     super('modelsim', diagnosticCollection, logger);
     vscode.workspace.onDidChangeConfiguration(() => {
       this.getConfig();

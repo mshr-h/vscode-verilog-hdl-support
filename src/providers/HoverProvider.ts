@@ -3,12 +3,13 @@
 import * as vscode from 'vscode';
 import { BsvInfoProviderManger } from '../BsvProvider';
 import { CtagsManager, Symbol } from '../ctags';
+import { Logger } from '../logger';
 
 export class VerilogHoverProvider implements vscode.HoverProvider {
   // lang: verilog / systemverilog
-  private logger: vscode.LogOutputChannel;
+  private logger: Logger;
 
-  constructor(logger: vscode.LogOutputChannel) {
+  constructor(logger: Logger) {
     this.logger = logger;
   }
 
@@ -48,9 +49,9 @@ export class VerilogHoverProvider implements vscode.HoverProvider {
 }
 
 export class BsvHoverProvider implements vscode.HoverProvider {
-  private logger: vscode.LogOutputChannel;
+  private logger: Logger;
 
-  constructor(logger: vscode.LogOutputChannel) {
+  constructor(logger: Logger) {
     this.logger = logger;
   }
 
