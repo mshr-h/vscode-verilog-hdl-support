@@ -9,10 +9,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Changed
 
 - Improved logging implementation [#412](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/412)
+- Update dependencies (glob to v10, typescript to v5.0.4, and more) [#414](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/414), [#424](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/424), [#425](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/425)
 
 ### Fixed
 
-- Refactor Verilator linter
+- Refactor linters
 
 ## [1.11.8] - 2023-06-09
 
