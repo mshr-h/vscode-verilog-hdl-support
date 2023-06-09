@@ -34,15 +34,21 @@ export default class LintManager {
   getLinterFromString(name: string): BaseLinter {
     switch (name) {
       case 'iverilog':
-        return new IcarusLinter(this.diagnosticCollection, this.logger.child('IcarusLinter'));
+        return new IcarusLinter(this.diagnosticCollection, this.logger.getChild('IcarusLinter'));
       case 'xvlog':
-        return new XvlogLinter(this.diagnosticCollection, this.logger.child('XvlogLinter'));
+        return new XvlogLinter(this.diagnosticCollection, this.logger.getChild('XvlogLinter'));
       case 'modelsim':
-        return new ModelsimLinter(this.diagnosticCollection, this.logger.child('ModelsimLinter'));
+        return new ModelsimLinter(
+          this.diagnosticCollection,
+          this.logger.getChild('ModelsimLinter')
+        );
       case 'verilator':
-        return new VerilatorLinter(this.diagnosticCollection, this.logger.child('VerilatorLinter'));
+        return new VerilatorLinter(
+          this.diagnosticCollection,
+          this.logger.getChild('VerilatorLinter')
+        );
       case 'slang':
-        return new SlangLinter(this.diagnosticCollection, this.logger.child('SlangLinter'));
+        return new SlangLinter(this.diagnosticCollection, this.logger.getChild('SlangLinter'));
       default:
         return null;
     }

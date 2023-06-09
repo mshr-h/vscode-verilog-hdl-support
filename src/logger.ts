@@ -1,15 +1,14 @@
 import * as vscode from 'vscode';
 
-/* [WIP] Wrapper for vscode.LogOutputChannel.
+/* Wrapper for vscode.LogOutputChannel.
 Example usage:
-
-let logger: Logger = createLogger("Verilog");
-logger.info("Info message");
-let child_logger = logger.child("ChildA");
-child_logger.info("Message from child");
--> The output would be
-Info message
-[ChildA] Message from child"
+  let logger: Logger = createLogger("Verilog");
+  logger.info("Info message");
+  let child_logger = logger.getChild("ChildA");
+  child_logger.info("Message from child");
+  -> The output would be
+  Info message
+  [ChildA] Message from child"
 */
 
 export class Logger {
@@ -21,7 +20,7 @@ export class Logger {
     this.parentLogger = parentLogger;
   }
 
-  child(name: string) {
+  getChild(name: string) {
     return new Logger(name, this);
   }
 

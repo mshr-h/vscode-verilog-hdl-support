@@ -277,7 +277,7 @@ export class CtagsManager {
 
   constructor(logger: Logger) {
     this.logger = logger;
-    CtagsManager.ctags = new Ctags(logger.child('Ctags'));
+    CtagsManager.ctags = new Ctags(logger.getChild('Ctags'));
   }
 
   configure() {
