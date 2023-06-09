@@ -29,6 +29,13 @@ export default class XvlogLinter extends BaseLinter {
     this.includePath = path.map((includePath: string) => this.resolvePath(includePath));
   }
 
+  protected convertToSeverity(severityString: string): vscode.DiagnosticSeverity {
+    if (severityString === 'ERROR') {
+      return vscode.DiagnosticSeverity.Error;
+    }
+    return vscode.DiagnosticSeverity.Warning;
+  }
+
   protected lint(doc: vscode.TextDocument) {
     let binPath: string = path.join(this.linterInstalledPath, 'xvlog');
 
@@ -57,18 +64,12 @@ export default class XvlogLinter extends BaseLinter {
           return;
         }
 
-        let severity =
-          match[1] === 'ERROR'
-            ? vscode.DiagnosticSeverity.Error
-            : vscode.DiagnosticSeverity.Warning;
-
         // Get filename and line number
         let _filename = match[4];
-        let linenoStr = match[5];
-        let lineno = parseInt(linenoStr) - 1;
+        let lineno = parseInt(match[5]) - 1;
 
         let diagnostic: vscode.Diagnostic = {
-          severity: severity,
+          severity: this.convertToSeverity(match[1]),
           code: match[2],
           message: '[' + match[2] + '] ' + match[3],
           range: new vscode.Range(lineno, 0, lineno, Number.MAX_VALUE),

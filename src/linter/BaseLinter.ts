@@ -30,5 +30,6 @@ export default abstract class BaseLinter {
     this.diagnosticCollection.delete(doc.uri);
   }
 
+  protected abstract convertToSeverity(severityString: string): vscode.DiagnosticSeverity;
   protected abstract lint(doc: vscode.TextDocument);
 }

@@ -51,7 +51,7 @@ export default class VerilatorLinter extends BaseLinter {
     return terms;
   }
 
-  protected convertToSeverity(severityString: string) {
+  protected convertToSeverity(severityString: string): vscode.DiagnosticSeverity {
     if (severityString.startsWith('Error')) {
       return vscode.DiagnosticSeverity.Error;
     } else if (severityString.startsWith('Warning')) {
@@ -118,18 +118,16 @@ export default class VerilatorLinter extends BaseLinter {
           );
 
           if (rex && rex[0].length > 0) {
-            let severity = this.convertToSeverity(rex[1]);
             let lineNum = Number(rex[4]) - 1;
             let colNum = Number(rex[5]) - 1;
-            let message = rex[6];
             // Type of warning is in rex[2]
             colNum = isNaN(colNum) ? 0 : colNum; // for older Verilator versions (< 4.030 ~ish)
 
             if (!isNaN(lineNum)) {
               diagnostics.push({
-                severity: severity,
+                severity: this.convertToSeverity(rex[1]),
                 range: new vscode.Range(lineNum, colNum, lineNum, Number.MAX_VALUE),
-                message: message,
+                message: rex[6],
                 code: 'verilator',
                 source: 'verilator',
               });

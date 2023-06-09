@@ -34,6 +34,16 @@ export default class ModelsimLinter extends BaseLinter {
     );
   }
 
+  protected convertToSeverity(severityString: string): vscode.DiagnosticSeverity {
+    switch (severityString) {
+      case 'Error':
+        return vscode.DiagnosticSeverity.Error;
+      case 'Warning':
+        return vscode.DiagnosticSeverity.Warning;
+    }
+    return vscode.DiagnosticSeverity.Information;
+  }
+
   protected lint(doc: vscode.TextDocument) {
     this.logger.info('modelsim lint requested');
     let docUri: string = doc.uri.fsPath; //path of current doc
@@ -63,28 +73,16 @@ export default class ModelsimLinter extends BaseLinter {
           '^\\*\\* (((Error)|(Warning))( \\(suppressible\\))?: )(\\([a-z]+-[0-9]+\\) )?([^\\(]*)\\(([0-9]+)\\): (\\([a-z]+-[0-9]+\\) )?((((near|Unknown identifier|Undefined variable):? )?["\']([\\w:;\\.]+)["\'][ :.]*)?.*)';
         // Parse output lines
         lines.forEach((line, _) => {
-          let sev: vscode.DiagnosticSeverity;
           if (line.startsWith('**')) {
-            let m = line.match(regexExp);
             try {
+              let m = line.match(regexExp);
               if (m[7] != doc.fileName) {
                 return;
-              }
-              switch (m[2]) {
-                case 'Error':
-                  sev = vscode.DiagnosticSeverity.Error;
-                  break;
-                case 'Warning':
-                  sev = vscode.DiagnosticSeverity.Warning;
-                  break;
-                default:
-                  sev = vscode.DiagnosticSeverity.Information;
-                  break;
               }
               let lineNum = parseInt(m[8]) - 1;
               let msg = m[10];
               diagnostics.push({
-                severity: sev,
+                severity: this.convertToSeverity(m[2]),
                 range: new vscode.Range(lineNum, 0, lineNum, Number.MAX_VALUE),
                 message: msg,
                 code: 'modelsim',
@@ -92,7 +90,7 @@ export default class ModelsimLinter extends BaseLinter {
               });
             } catch (e) {
               diagnostics.push({
-                severity: sev,
+                severity: vscode.DiagnosticSeverity.Information,
                 range: new vscode.Range(0, 0, 0, Number.MAX_VALUE),
                 message: line,
                 code: 'modelsim',

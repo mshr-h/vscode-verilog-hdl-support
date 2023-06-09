@@ -45,6 +45,16 @@ export default class IcarusLinter extends BaseLinter {
     this.runAtFileLocation = <boolean>this.configuration.get('runAtFileLocation');
   }
 
+  protected convertToSeverity(severityString: string): vscode.DiagnosticSeverity {
+    switch (severityString) {
+      case 'error':
+        return vscode.DiagnosticSeverity.Error;
+      case 'warning':
+        return vscode.DiagnosticSeverity.Warning;
+    }
+    return vscode.DiagnosticSeverity.Information;
+  }
+
   protected lint(doc: vscode.TextDocument) {
     this.logger.info('Executing IcarusLinter.lint()');
 
@@ -96,17 +106,7 @@ export default class IcarusLinter extends BaseLinter {
               source: 'iverilog',
             });
           } else if (terms.length >= 4) {
-            let sev: vscode.DiagnosticSeverity;
-            switch (terms[2].trim()) {
-              case 'error':
-                sev = vscode.DiagnosticSeverity.Error;
-                break;
-              case 'warning':
-                sev = vscode.DiagnosticSeverity.Warning;
-                break;
-              default:
-                sev = vscode.DiagnosticSeverity.Information;
-            }
+            let sev: vscode.DiagnosticSeverity = this.convertToSeverity(terms[2].trim());
             diagnostics.push({
               severity: sev,
               range: new vscode.Range(lineNum, 0, lineNum, Number.MAX_VALUE),

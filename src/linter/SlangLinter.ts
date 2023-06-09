@@ -36,7 +36,7 @@ export default class SlangLinter extends BaseLinter {
     this.useWSL = <boolean>this.configuration.get('useWSL');
   }
 
-  protected convertToSeverity(severityString: string) {
+  protected convertToSeverity(severityString: string): vscode.DiagnosticSeverity {
     if (severityString.startsWith('error')) {
       return vscode.DiagnosticSeverity.Error;
     } else if (severityString.startsWith('warning')) {
