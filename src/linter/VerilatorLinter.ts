@@ -65,23 +65,21 @@ export default class VerilatorLinter extends BaseLinter {
   }
 
   protected lint(doc: vscode.TextDocument) {
-    // TODO: Refactoring
-    let docUri: string = doc.uri.fsPath;
-    let docFolder: string = path.dirname(docUri);
-    let cwdWin: string = path.dirname(docUri);
-    if (isWindows) {
-      if (this.useWSL) {
-        docUri = this.convertToWslPath(docUri);
-        this.logger.info(`Rewrote docUri to ${docUri} for WSL`);
-
-        docFolder = this.convertToWslPath(docFolder);
-        this.logger.info(`Rewrote docFolder to ${docFolder} for WSL`);
-      } else {
-        docUri = docUri.replace(/\\/g, '/');
-        docFolder = docFolder.replace(/\\/g, '/');
-      }
-    }
-
+    let docUri: string = isWindows
+      ? this.useWSL
+        ? this.convertToWslPath(doc.uri.fsPath)
+        : doc.uri.fsPath.replace(/\\/g, '/')
+      : doc.uri.fsPath;
+    let docFolder: string = isWindows
+      ? this.useWSL
+        ? this.convertToWslPath(path.dirname(doc.uri.fsPath))
+        : path.dirname(doc.uri.fsPath).replace(/\\/g, '/')
+      : path.dirname(doc.uri.fsPath);
+    let cwd: string = this.runAtFileLocation
+      ? isWindows
+        ? path.dirname(docUri)
+        : docFolder
+      : vscode.workspace.workspaceFolders[0].uri.fsPath;
     let verilator: string = isWindows
       ? this.useWSL
         ? 'wsl verilator'
@@ -99,12 +97,6 @@ export default class VerilatorLinter extends BaseLinter {
     args.push(this.arguments);
     args.push(`"${docUri}"`);
     let command: string = binPath + ' ' + args.join(' ');
-
-    let cwd: string = this.runAtFileLocation
-      ? isWindows
-        ? cwdWin
-        : docFolder
-      : vscode.workspace.workspaceFolders[0].uri.fsPath;
 
     this.logger.info('[verilator] Execute');
     this.logger.info('[verilator]   command: ' + command);
