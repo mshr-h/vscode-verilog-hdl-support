@@ -93,7 +93,7 @@ export default class SlangLinter extends BaseLinter {
       { cwd: cwd },
       (_error: Error, _stdout: string, stderr: string) => {
         let diagnostics: vscode.Diagnostic[] = [];
-        const re = /(.+?):(\d+):(\d+):\s(note|warning|error):\s([^[\]]*)(\[-W(.*)\])?/;
+        const re = /(.+?):(\d+):(\d+):\s(note|warning|error):\s(.*?)(\[-W(.*)\]|$)/;
         stderr.split(/\r?\n/g).forEach((line, _) => {
           if (line.search(re) === -1) {
             return;
