@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.11.10] - 2023-06-12
+
+### Fixed
+
+- Fix slang warning message with square brackets [#427](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/427)
+
 ## [1.11.9] - 2023-06-09
 
 ## Changed
