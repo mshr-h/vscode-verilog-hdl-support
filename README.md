@@ -55,6 +55,22 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 
 This extension uses the tags created using Ctags to provide many of its features. It is recommended to use [Universal Ctags](https://github.com/universal-ctags/ctags) as it supports SystemVerilog also, compared to Exuberant Ctags and other older versions. The tags are stored in memory and not as separate files.
 
+Currently the integrated feature supports only tags in the currently opened file, not tags in other files.
+However, you can use other independent Ctags extensions to find definitions from any file.
+
+For example [Ctags Companion](https://github.com/gediminasz/ctags-companion) works well with this extension
+by adding the following settings on `.vscode/settings.json` in your workspace.
+
+```json
+{
+    "ctags-companion.command": "ctags -R --fields=+nKz -f .vscode/.tags --langmap=SystemVerilog:+.v -R rtl /opt/uvm-1.2/src",
+    "ctags-companion.readtagsEnabled": true,
+}
+```
+
+It searches for definitions not only in the workspace, but also in files outside the workspace (ex. `/opt/uvm-1.2/src` in the example above).
+It also supports the `readtags` command included in Universal Ctags, allowing for fast searches from large workspaces.
+
 #### Installation of Universal Ctags
 
 - Windows - Daily builds are available at [ctags-win32](https://github.com/universal-ctags/ctags-win32)
