@@ -21,6 +21,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - Vivado UCF constraints
   - Synopsys Design Constraints
   - Verilog Filelists (dot-F files)
+  - Tcl
 - Simple Snippets
 - Linting support from:
   - Icarus Verilog - `iverilog`
@@ -321,3 +322,5 @@ You can check it by opening the **Output** pane in VS Code and choose _Verilog_ 
 - [ericsonj/verilog-format](https://github.com/ericsonj/verilog-format)
 - [thomasrussellmurphy/istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter)
 - [slang C++ docs](https://sv-lang.com/)
+- [bitwisecook/vscode-tcl: Tcl for Visual Studio Code](https://github.com/bitwisecook/vscode-tcl)
+  - `configs/tcl.configuration.json` and `syntaxes/tcl.tmlanguage.json` are obtained from the repo.
