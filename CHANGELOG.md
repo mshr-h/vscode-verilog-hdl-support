@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.12.0] - 2023-08-14
+
+- Update README.md for ctags [#433](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/433)
+- Added syntax highlighting for Tcl [#440](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/440)
+- Updated dependencies [#431](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/431), [#435](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/435), [#437](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/437), [#438](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/438), [#439](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/439)
+
 ## [1.11.11] - 2023-06-13
 
 ### Fixed
