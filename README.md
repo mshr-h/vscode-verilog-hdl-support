@@ -41,6 +41,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - [veridian](https://github.com/vivekmalneedi/veridian)
   - [HDL Checker](https://github.com/suoto/hdl_checker)
   - [verible-verilog-ls](https://github.com/chipsalliance/verible)
+  - [rust_hdl](https://github.com/VHDL-LS/rust_hdl)
 - \[Experimental\] Formatting support from:
   - [verilog-format](https://github.com/ericsonj/verilog-format)
   - [istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter)
