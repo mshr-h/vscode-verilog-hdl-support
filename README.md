@@ -63,8 +63,8 @@ by adding the following settings on `.vscode/settings.json` in your workspace.
 
 ```json
 {
-    "ctags-companion.command": "ctags -R --fields=+nKz -f .vscode/.tags --langmap=SystemVerilog:+.v -R rtl /opt/uvm-1.2/src",
-    "ctags-companion.readtagsEnabled": true,
+  "ctags-companion.command": "ctags -R --fields=+nKz -f .vscode/.tags --langmap=SystemVerilog:+.v -R rtl /opt/uvm-1.2/src",
+  "ctags-companion.readtagsEnabled": true
 }
 ```
 
@@ -83,11 +83,11 @@ Add the installation path of Ctags binary in your `PATH` environment variable or
 
 - **Rerun lint tool**
 
-    Choose a lint tool from the list and run it manually. Useful if the code was changed by an external script or version control system.
+  Choose a lint tool from the list and run it manually. Useful if the code was changed by an external script or version control system.
 
 - **Instantiate Module**
 
-    Choose a module present in your workspace to instantiate it in the current file.
+  Choose a module present in your workspace to instantiate it in the current file.
 
 ### Language Servers (Experimental)
 
@@ -96,12 +96,14 @@ You can enable multiple Language Servers at the same time.
 It might be pretty unstable because it's currently in the experimental support.
 If you encounter any problems even if it's not related to this feature, **deleting all the config may solve the problem**.
 
-| Language Server                                                | Verilog-HDL   | SystemVerilog | VHDL          |
+| Language Server                                                |  Verilog-HDL  | SystemVerilog |     VHDL      |
 | -------------------------------------------------------------- | :-----------: | :-----------: | :-----------: |
-| [svls](https://github.com/dalance/svls)                        | not supported | enabled       | not supported |
-| [veridian](https://github.com/vivekmalneedi/veridian)          | not supported | enabled       | not supported |
-| [HDL Checker](https://github.com/suoto/hdl_checker)            | enabled       | enabled       | enabled       |
-| [verible-verilog-ls](https://github.com/chipsalliance/verible) | not supported | enabled       | not supported |
+| [svls](https://github.com/dalance/svls)                        | not supported |    enabled    | not supported |
+| [veridian](https://github.com/vivekmalneedi/veridian)          | not supported |    enabled    | not supported |
+| [HDL Checker](https://github.com/suoto/hdl_checker)            |    enabled    |    enabled    |    enabled    |
+| [verible-verilog-ls](https://github.com/chipsalliance/verible) | not supported |    enabled    | not supported |
+| [rust_hdl](https://github.com/VHDL-LS/rust_hdl)                | not supported | not supported |    enable     |
+
 ### Formatting (Experimental)
 
 We currently support Verilog-HDL file formatting with the following formatters.
@@ -120,7 +122,7 @@ Use the following settings to configure the extension to your needs.
 
 - `verilog.linting.linter` (Default: `none` )
 
-    Choose the linter for you. Possible values are
+  Choose the linter for you. Possible values are
 
   - `iverilog`
   - `modelsim`
@@ -131,115 +133,123 @@ Use the following settings to configure the extension to your needs.
 
 - `verilog.linting.iverilog.arguments` (Default: nothing)
 
-    Add custom arguments to Icarus Verilog for linting, like `-Wall` . The argument `-t null` will be added by the linter automatically.
+  Add custom arguments to Icarus Verilog for linting, like `-Wall` . The argument `-t null` will be added by the linter automatically.
 
 - `verilog.linting.iverilog.includePath` (Default: nothing)
 
-    A list of directory paths to use while Icarus Verilog linting.
-    All the paths are passed as arguments `-I <directory_path>`.
-    Paths can be specified either an absolute or a relate to the workspace directory.
+  A list of directory paths to use while Icarus Verilog linting.
+  All the paths are passed as arguments `-I <directory_path>`.
+  Paths can be specified either an absolute or a relate to the workspace directory.
 
 - `verilog.linting.iverilog.runAtFileLocation` (Default: `false` )
 
-    By default, the linter will be run at the workspace directory. Enable this option to run at the file location. If enabled, `` ` include`` directives should contain file paths relative to the current file.
+  By default, the linter will be run at the workspace directory. Enable this option to run at the file location. If enabled, `` ` include`` directives should contain file paths relative to the current file.
 
 - `verilog.linting.modelsim.arguments` (Default: nothing)
 
-    Add custom arguments to Modelsim for linting.
+  Add custom arguments to Modelsim for linting.
 
 - `verilog.linting.modelsim.work` (Default: nothing)
 
-    Add custom work library to Modelsim for linting.
+  Add custom work library to Modelsim for linting.
 
 - `verilog.linting.slang.arguments` (Default: nothing)
-  
-    Add Slang arguments here (like macros). They will be added to Slang while linting (The command \"-I=<document folder>\" will be added by the linter by default).
+
+  Add Slang arguments here (like macros). They will be added to Slang while linting (The command \"-I=<document folder>\" will be added by the linter by default).
 
 - `verilog.linting.slang.includePath` (Default: nothing)
 
-    A list of directory paths to use while Slang linting.
+  A list of directory paths to use while Slang linting.
 
 - `verilog.linting.slang.runAtFileLocation` (Default: `false` )
 
-    If enabled, Slang will be run at the file location for linting. Else it will be run at workspace folder. Disabled by default.
+  If enabled, Slang will be run at the file location for linting. Else it will be run at workspace folder. Disabled by default.
 
 - `verilog.linting.slang.useWSL` (Default: `false` )
 
-    Run verilator under WSL. Paths generated automatically by the extension (the path to the Verilog file as well as
-    the auto-generated document folder for `-I` ) are translated to WSL paths using the `wslpath` program.
-    Any other paths you specify in `verilog.linting.includePath.arguments`
+  Run verilator under WSL. Paths generated automatically by the extension (the path to the Verilog file as well as
+  the auto-generated document folder for `-I` ) are translated to WSL paths using the `wslpath` program.
+  Any other paths you specify in `verilog.linting.includePath.arguments`
 
 - `verilog.linting.verilator.arguments` (Default: nothing)
 
-    Add custom arguments to Verilator for linting, like `-Wall` . The argument `--lint-only -I<document folder>` will be added by the linter automatically.
+  Add custom arguments to Verilator for linting, like `-Wall` . The argument `--lint-only -I<document folder>` will be added by the linter automatically.
 
 - `verilog.linting.verilator.includePath` (Default: nothing)
 
-    A list of directory paths to use while Verilator linting.
-    All the paths are passed as arguments `-I<directory_path>`.
-    Paths can be specified either an absolute or a relate to the workspace directory.
+  A list of directory paths to use while Verilator linting.
+  All the paths are passed as arguments `-I<directory_path>`.
+  Paths can be specified either an absolute or a relate to the workspace directory.
 
 - `verilog.linting.verilator.runAtFileLocation` (Default: `false` )
 
-    By default, the linter will be run at the workspace directory. Enable this option to run at the file location. If enabled, `` ` include`` directives should contain file paths relative to the current file.
+  By default, the linter will be run at the workspace directory. Enable this option to run at the file location. If enabled, `` ` include`` directives should contain file paths relative to the current file.
 
 - `verilog.linting.verilator.useWSL` (Default: `false` )
 
-    Run verilator under WSL (use `apg-get install verilator` to install). Paths generated automatically by the
-    extension (the path to the Verilog file as well as the auto-generated document folder for `-I` ) are translated
-    to WSL paths using the `wslpath` program. Any other paths you specify in `verilog.linting.verilator.arguments`
+  Run verilator under WSL (use `apg-get install verilator` to install). Paths generated automatically by the
+  extension (the path to the Verilog file as well as the auto-generated document folder for `-I` ) are translated
+  to WSL paths using the `wslpath` program. Any other paths you specify in `verilog.linting.verilator.arguments`
 
-    must be manually converted.
+  must be manually converted.
 
 - `verilog.linting.xvlog.arguments` (Default: nothing)
 
-    Add custom arguments to Xilinx xvlog for linting, like `-Wall` . The argument `--nolog` will be added by the linter automatically.
+  Add custom arguments to Xilinx xvlog for linting, like `-Wall` . The argument `--nolog` will be added by the linter automatically.
 
 - `verilog.linting.xvlog.includePath` (Default: nothing)
 
-    A list of directory paths to use while Xilinx xvlog linting.
-    All the paths are passed as arguments `-i <directory_path>`.
-    Paths can be specified either an absolute or a relate to the workspace directory.
+  A list of directory paths to use while Xilinx xvlog linting.
+  All the paths are passed as arguments `-i <directory_path>`.
+  Paths can be specified either an absolute or a relate to the workspace directory.
 
 - `verilog.ctags.path` (Default: `ctags` )
 
-    Path to your installation of Ctags if it isn't already present in your `PATH` environment variable.
+  Path to your installation of Ctags if it isn't already present in your `PATH` environment variable.
 
 - `verilog.languageServer.svls.enabled` (Default: `false`)
 
-    \[Experimental\] Enable svls Language Server for SystemVerilog.
+  \[Experimental\] Enable svls Language Server for SystemVerilog.
 
 - `verilog.languageServer.svls.path` (Default: `svls`)
 
-    \[Experimental\] A path to the svls Language Server binary.
+  \[Experimental\] A path to the svls Language Server binary.
 
 - `verilog.languageServer.veridian.enabled` (Default: `false`)
 
-    \[Experimental\] Enable veridian Language Server for SystemVerilog.
+  \[Experimental\] Enable veridian Language Server for SystemVerilog.
 
 - `verilog.languageServer.veridian.path` (Default: `veridian`)
 
-    \[Experimental\] A path to the veridian Language Server binary.
+  \[Experimental\] A path to the veridian Language Server binary.
 
 - `verilog.languageServer.hdlChecker.enabled` (Default: `false`)
 
-    \[Experimental\] Enable HDL Checker Language Server for Verilog-HDL, SystemVerilog, and VHDL.
+  \[Experimental\] Enable HDL Checker Language Server for Verilog-HDL, SystemVerilog, and VHDL.
 
 - `verilog.languageServer.hdlChecker.path` (Default: `hdl_checker`)
 
-    \[Experimental\] A path to the HDL Checker Language Server binary.
+  \[Experimental\] A path to the HDL Checker Language Server binary.
 
 - `verilog.languageServer.veribleVerilogLs.enabled` (Default: `false`)
 
-    \[Experimental\] Enable verible-verilog-ls Language Server for SystemVerilog.
+  \[Experimental\] Enable verible-verilog-ls Language Server for SystemVerilog.
 
 - `verilog.languageServer.veribleVerilogLs.path` (Default: `verible-verilog-ls`)
 
-    \[Experimental\] A path to the verible-verilog-ls Language Server binary.
+  \[Experimental\] A path to the verible-verilog-ls Language Server binary.
+
+- `verilog.languageServer.rustHdl.enabled` (Default: `false`)
+
+  \[Experimental\] Enable rust_hdl Language Server for VHDL.
+
+- `verilog.languageServer.rustHdl.path` (Default: `vhdl_ls`)
+
+  \[Experimental\] A path to the rust_hdl Language Server binary.
 
 - `verilog.formatting.verilogHDL.formatter` (Default: `verilog-format`)
 
-    \[Experimental\] Choose the Verilog-HDL formatter. Possible values are:
+  \[Experimental\] Choose the Verilog-HDL formatter. Possible values are:
 
   - `verilog-format`
   - `iStyle`
@@ -247,37 +257,37 @@ Use the following settings to configure the extension to your needs.
 
 - `verilog.formatting.systemVerilog.formatter` (Default: `verible-verilog-format`)
 
-    \[Experimental\] Choose the Verilog-HDL formatter. Possible values are:
+  \[Experimental\] Choose the Verilog-HDL formatter. Possible values are:
 
   - `verible-verilog-format`
 
 - `verilog.formatting.verilogFormat.path` (Default: `verilog-format`)
 
-    \[Experimental\] A path to the verilog-format binary.
+  \[Experimental\] A path to the verilog-format binary.
 
 - `verilog.formatting.verilogFormat.settings` (Default: `${env:HOME}/.verilog-format.properties`)
 
-    \[Experimental\] A path to the verilog-format settings file.
+  \[Experimental\] A path to the verilog-format settings file.
 
 - `verilog.formatting.iStyleVerilogFormatter.path` (Default: `iStyle`)
 
-    \[Experimental\] A path to the iStyle Verilog Formatter binary.
+  \[Experimental\] A path to the iStyle Verilog Formatter binary.
 
 - `verilog.formatting.iStyleVerilogFormatter.arguments` (Default: nothing)
 
-    \[Experimental\] Add custom arguments to iStyle Verilog Formatter for formatting.
+  \[Experimental\] Add custom arguments to iStyle Verilog Formatter for formatting.
 
 - `verilog.formatting.iStyleVerilogFormatter.style` (Default: `Indent only`)
 
-    \[Experimental\] Choose styling options from ANSI/K&R/GNU.
+  \[Experimental\] Choose styling options from ANSI/K&R/GNU.
 
 - `verilog.formatting.veribleVerilogFormatter.path` (Default: `verible-verilog-format`)
 
-    \[Experimental\] A path to the verible-verilog-format binary.
+  \[Experimental\] A path to the verible-verilog-format binary.
 
 - `verilog.formatting.veribleVerilogFormatter.arguments` (Default: nothing)
 
-    \[Experimental\] Add custom arguments to verible-verilog-format for formatting.
+  \[Experimental\] Add custom arguments to verible-verilog-format for formatting.
 
 ## Compatibility
 
