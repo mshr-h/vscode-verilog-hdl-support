@@ -243,7 +243,7 @@ function initAllLanguageClients() {
     documentSelector: [{ scheme: 'file', language: 'systemverilog' }],
   });
 
-  // init Rust hdl
+  // init rustHdl
   setupLanguageClient('rustHdl', 'vhdl_ls', [], [], {
     documentSelector: [{ scheme: 'file', language: 'vhdl' }],
   });
