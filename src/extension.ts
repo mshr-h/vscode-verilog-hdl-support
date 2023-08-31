@@ -242,6 +242,11 @@ function initAllLanguageClients() {
   setupLanguageClient('veribleVerilogLs', 'verible-verilog-ls', [], [], {
     documentSelector: [{ scheme: 'file', language: 'systemverilog' }],
   });
+
+  // init rustHdl
+  setupLanguageClient('rustHdl', 'vhdl_ls', [], [], {
+    documentSelector: [{ scheme: 'file', language: 'vhdl' }],
+  });
 }
 
 function stopAllLanguageClients(): Promise<any> {

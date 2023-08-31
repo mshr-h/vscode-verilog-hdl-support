@@ -42,6 +42,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - [veridian](https://github.com/vivekmalneedi/veridian)
   - [HDL Checker](https://github.com/suoto/hdl_checker)
   - [verible-verilog-ls](https://github.com/chipsalliance/verible)
+  - [rust_hdl](https://github.com/VHDL-LS/rust_hdl)
 - \[Experimental\] Formatting support from:
   - [verilog-format](https://github.com/ericsonj/verilog-format)
   - [istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter)
@@ -103,6 +104,8 @@ If you encounter any problems even if it's not related to this feature, **deleti
 | [veridian](https://github.com/vivekmalneedi/veridian)          | not supported | enabled       | not supported |
 | [HDL Checker](https://github.com/suoto/hdl_checker)            | enabled       | enabled       | enabled       |
 | [verible-verilog-ls](https://github.com/chipsalliance/verible) | not supported | enabled       | not supported |
+| [rust_hdl](https://github.com/VHDL-LS/rust_hdl)                | not supported | not supported | enabled       |
+
 ### Formatting (Experimental)
 
 We currently support Verilog-HDL file formatting with the following formatters.
@@ -153,7 +156,7 @@ Use the following settings to configure the extension to your needs.
     Add custom work library to Modelsim for linting.
 
 - `verilog.linting.slang.arguments` (Default: nothing)
-  
+
     Add Slang arguments here (like macros). They will be added to Slang while linting (The command \"-I=<document folder>\" will be added by the linter by default).
 
 - `verilog.linting.slang.includePath` (Default: nothing)
@@ -237,6 +240,14 @@ Use the following settings to configure the extension to your needs.
 - `verilog.languageServer.veribleVerilogLs.path` (Default: `verible-verilog-ls`)
 
     \[Experimental\] A path to the verible-verilog-ls Language Server binary.
+
+- `verilog.languageServer.rustHdl.enabled` (Default: `false`)
+
+    \[Experimental\] Enable rust_hdl Language Server for VHDL.
+
+- `verilog.languageServer.rustHdl.path` (Default: `vhdl_ls`)
+
+    \[Experimental\] A path to the rust_hdl Language Server binary.
 
 - `verilog.formatting.verilogHDL.formatter` (Default: `verilog-format`)
 

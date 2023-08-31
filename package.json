@@ -437,6 +437,18 @@
           "default": "hdl_checker",
           "description": "[Experimental] A path to the HDL Checker Language Server binary."
         },
+        "verilog.languageServer.rustHdl.enabled": {
+          "scope": "window",
+          "type": "boolean",
+          "default": false,
+          "description": "[Experimental] Enable Rust hdl Language Server for VHDL."
+        },
+        "verilog.languageServer.rustHdl.path": {
+          "scope": "window",
+          "type": "string",
+          "default": "vhdl_ls",
+          "description": "[Experimental] A path to the Rust hdl Language Server binary."
+        },
         "verilog.formatting.verilogHDL.formatter": {
           "scope": "window",
           "type": "string",
