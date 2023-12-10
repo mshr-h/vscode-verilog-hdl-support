@@ -52,6 +52,7 @@ export class Symbol {
   static isContainer(type: string): boolean {
     switch (type) {
       case 'constant':
+      case 'parameter':
       case 'event':
       case 'net':
       case 'port':
@@ -83,6 +84,8 @@ export class Symbol {
   static getSymbolKind(name: String): vscode.SymbolKind {
     switch (name) {
       case 'constant':
+        return vscode.SymbolKind.Constant;
+      case 'parameter':
         return vscode.SymbolKind.Constant;
       case 'event':
         return vscode.SymbolKind.Event;
@@ -165,7 +168,7 @@ export class Ctags {
       vscode.workspace.getConfiguration().get('verilog.ctags.path', 'none')
     );
     if (binPath !== 'none') {
-      let command: string = binPath + ' -f - --fields=+K --sort=no --excmd=n "' + filepath + '"';
+      let command: string = binPath + ' -f - --fields=+K --sort=no --excmd=n --fields-SystemVerilog=+{parameter} "' + filepath + '"';
       this.logger.info('Executing Command: ' + command);
       return new Promise((resolve, _reject) => {
         child_process.exec(command, (_error: Error, stdout: string, _stderr: string) => {
@@ -185,7 +188,11 @@ export class Ctags {
       name = parts[0];
       // pattern = parts[2];
       type = parts[3];
-      if (parts.length == 5) {
+      // override "type" for parameters (See #102)
+      if (parts.length == 6 && parts[5] === 'parameter:') {
+        type = 'parameter';
+      }
+      if (parts.length >= 5) {
         scope = parts[4].split(':');
         parentType = scope[0];
         parentScope = scope[1];

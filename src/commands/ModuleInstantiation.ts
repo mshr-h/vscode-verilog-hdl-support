@@ -59,7 +59,7 @@ function instantiateModule(srcpath: string): Thenable<vscode.SnippetString> {
         portsName = ports.map((tag) => tag.name);
         let params: Symbol[] = ctags.symbols.filter(
           (tag) =>
-            tag.type === 'constant' && tag.parentType === 'module' && tag.parentScope === scope
+            tag.type === 'parameter' && tag.parentType === 'module' && tag.parentScope === scope
         );
         parametersName = params.map((tag) => tag.name);
         logger.info('Module name: ' + module.name);
