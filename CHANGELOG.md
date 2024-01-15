@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## [Unreleased] - 2023-12-xx
+## [1.13.1] - 2024-01-15
 
 ### Fixed
 
