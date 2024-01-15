@@ -13,7 +13,7 @@
     "url": "https://github.com/mshr-h/vscode-verilog-hdl-support/issues"
   },
   "engines": {
-    "vscode": "^2023.0.0"
+    "vscode": "^1.74.0"
   },
   "categories": [
     "Programming Languages",
