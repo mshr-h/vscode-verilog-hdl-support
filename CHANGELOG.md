@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [Unreleased] - 2023-12-xx
+
+### Fixed
+
+- Fix [#102](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/102)
+  - requires [Universal Ctags, Oct 22, 2020 version](https://github.com/universal-ctags/ctags/pull/2666) and later.
+
 ## [1.13.0] 2023-08-31
 
 ### Added
