@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [Unreleased]
+
+### Fixed
+
+- Fix Slang: when run at filelocation is enable, detecting warning. [#460](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/460)
+
 ## [1.13.1] - 2024-01-15
 
 ### Fixed
