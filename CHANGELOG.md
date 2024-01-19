@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
-- Fix Slang: when run at filelocation is enable, detecting warning. [#460](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/460)
+- Fix Slang: when run at filelocation is disable, detecting warning. [#460](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/460)
 
 ## [1.13.1] - 2024-01-15
 
