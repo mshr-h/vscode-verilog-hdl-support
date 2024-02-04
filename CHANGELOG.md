@@ -4,11 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## [Unreleased]
+## [1.13.2] 2024-02-04
+
+### Added
+
+- Add a template for feature request. [#464](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/464)
 
 ### Fixed
 
-- Fix Slang: when run at filelocation is disable, detecting warning. [#460](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/460)
+- Slang linter can't detect warning when run at file location disabled. [#462](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/462)
 
 ## [1.13.1] - 2024-01-15
 
