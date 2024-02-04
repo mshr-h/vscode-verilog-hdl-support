@@ -101,7 +101,17 @@ export default class SlangLinter extends BaseLinter {
 
           let rex = line.match(re);
 
-          if (!docUri.endsWith(rex[1])) {
+          let filePath = rex[1];
+          if (isWindows) {
+            if (this.useWSL) {
+              filePath = this.convertToWslPath(filePath);
+              this.logger.info(`Rewrote filePath to ${filePath} for WSL`);
+            } else {
+              filePath = filePath.replace(/\\/g, '/');
+            }
+          }
+
+          if (!docUri.endsWith(filePath)) {
             return;
           }
 
