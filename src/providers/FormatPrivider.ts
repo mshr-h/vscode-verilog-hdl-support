@@ -68,7 +68,7 @@ abstract class FileBasedFormattingEditProvider implements vscode.DocumentFormatt
     let binPath: string = this.config.get('path');
     this.logger.info('Executing command: ' + binPath + ' ' + args.join(' '));
     try {
-      child_process.execFileSync(binPath, args, {});
+      child_process.execFileSync(binPath, args, {cwd: vscode.workspace.workspaceFolders[0].uri.fsPath});
       let formattedText: string = tempFile.readFileSync({ encoding: 'utf-8' });
       let wholeFileRange: vscode.Range = new vscode.Range(
         document.positionAt(0),
