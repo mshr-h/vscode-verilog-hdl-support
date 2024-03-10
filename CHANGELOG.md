@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Unreleased
+
+### Fixed
+
+- Fixed ctags indexing error when ctags path is set to none [#417](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/417)
+
 ## [1.13.2] 2024-02-04
 
 ### Added

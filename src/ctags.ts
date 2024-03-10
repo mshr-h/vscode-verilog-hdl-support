@@ -176,7 +176,8 @@ export class Ctags {
         });
       });
     }
-    return undefined;
+    // Return empty promise if ctags path is not set to avoid errors when indexing
+    return Promise.resolve('');
   }
 
   parseTagLine(line: string): Symbol {
