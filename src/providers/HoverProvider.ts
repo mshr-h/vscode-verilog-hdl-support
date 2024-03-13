@@ -21,14 +21,7 @@ export class VerilogHoverProvider implements vscode.HoverProvider {
     _token: vscode.CancellationToken
   ): Promise<vscode.Hover | undefined> {
     this.logger.info('Hover requested');
-    // get word start and end
-    let textRange = document.getWordRangeAtPosition(position);
-    if (!textRange || textRange.isEmpty) {
-      return undefined;
-    }
-    // hover word
-    let targetText = document.getText(textRange);
-    let matches: vscode.DefinitionLink[] = await this.ctagsManager.findSymbol(document, targetText);
+    let matches: vscode.DefinitionLink[] = await this.ctagsManager.findSymbol(document, position);
     // find symbol
     for (let i of matches) {
       // returns the first found tag. Disregards others

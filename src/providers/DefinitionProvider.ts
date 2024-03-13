@@ -21,15 +21,8 @@ export class VerilogDefinitionProvider implements vscode.DefinitionProvider {
     _token: vscode.CancellationToken
   ): Promise<vscode.DefinitionLink[] | undefined> {
     this.logger.info('Definitions Requested: ' + document.uri);
-    // get word start and end
-    let textRange = document.getWordRangeAtPosition(position);
-    if (!textRange || textRange.isEmpty) {
-      return undefined;
-    }
-    // hover word
-    let targetText = document.getText(textRange);
     // find all matching symbols
-    let definitions: vscode.DefinitionLink[] = await this.ctagsManager.findSymbol(document, targetText);
+    let definitions: vscode.DefinitionLink[] = await this.ctagsManager.findSymbol(document, position);
     this.logger.info(definitions.length + ' definitions returned');
     return definitions;
   }

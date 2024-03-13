@@ -2,6 +2,7 @@
 import * as vscode from 'vscode';
 import * as child_process from 'child_process';
 import { Logger } from './logger';
+import { text } from 'stream/consumers';
 
 // Internal representation of a symbol
 export class Symbol {
@@ -136,6 +137,7 @@ export class Symbol {
 
 // TODO: add a user setting to enable/disable all ctags based operations
 export class Ctags {
+  /// Symbol definitions (no rhs)
   symbols: Symbol[];
   doc: vscode.TextDocument;
   isDirty: boolean;
@@ -312,20 +314,15 @@ export class CtagsManager {
     return ctags.symbols;
   }
 
-  async findMatches(document: vscode.TextDocument, targetText: string): Promise<vscode.DefinitionLink[]> {
-    console.log("finding matches asdf", document.uri.fsPath, "for", targetText);
+
+
+  /// find a matching symbol in a single document
+  async findDefinition(document: vscode.TextDocument, targetText: string): Promise<vscode.DefinitionLink[]> {
     let symbols: Symbol[] = await this.getSymbols(document);
-    console.log("symbols", symbols, "for", document.uri.fsPath, targetText)
-    let matchingSymbols: Symbol[] = [];
-    for (let i of symbols) {
-      if (i.name === targetText) {
-        matchingSymbols.push(i);
-      }
-    }
-    // console.log("matchingSymbols", matchingSymbols, "for", document.uri.fsPath, targetText);
-    let ret: vscode.DefinitionLink[] = matchingSymbols.map((i) => {
+    let matchingSymbols = symbols.filter((sym) => sym.name === targetText);
+
+    return matchingSymbols.map((i) => {
       return {
-        document: document,
         targetUri: document.uri,
         targetRange: new vscode.Range(
           i.startPosition,
@@ -334,36 +331,42 @@ export class CtagsManager {
         targetSelectionRange: new vscode.Range(i.startPosition, i.endPosition),
       };
     });
-    console.log("ret", ret);
-    return ret;
   }
 
-  /// also searched in targetText.sv
-  async findSymbol(document: vscode.TextDocument, targetText: string): Promise<vscode.DefinitionLink[]> {
-    // we know we want to search the current doc
-    // let tasks = [this.findMatches(document, targetText)];
+  /// Finds a symbols definition, but also looks in targetText.sv to get module/interface defs
+  async findSymbol(document: vscode.TextDocument, position: vscode.Position): Promise<vscode.DefinitionLink[]> {
+    
+    let textRange = document.getWordRangeAtPosition(position);
+    if (!textRange || textRange.isEmpty) {
+      return undefined;
+    }
+    let targetText = document.getText(textRange);
+    
+    // always search the current doc
+    let tasks = [this.findDefinition(document, targetText)];
 
-    let matches = await this.findMatches(document, targetText);
-    
-
-    // kick off async job that looks for module.sv
-    
-    
-    let searchPattern = new vscode.RelativePattern(vscode.workspace.workspaceFolders[0], `**/${targetText}.sv`);
-    let files = await vscode.workspace.findFiles(searchPattern);
-    if (files.length !== 0) {
-      console.log("found", files[0].fsPath);
-      let file = await vscode.workspace.openTextDocument(files[0]);
-      // tasks.push(this.findMatches(file, targetText));
-      let modMatches = await this.findMatches(file, targetText);
-      matches = matches.concat(modMatches);
+    // if the previous character is :: or ., look up prev word
+    let prevChar = textRange.start.character - 1;
+    let prevCharRange = new vscode.Range(position.line, prevChar, position.line, prevChar+1);
+    let prevCharText = document.getText(prevCharRange);
+    let moduleToFind: string = targetText;
+    if (prevCharText === '.' || prevCharText === ':') {
+      let prevWordRange = document.getWordRangeAtPosition(new vscode.Position(position.line, prevChar - 2));
+      if (prevWordRange) {
+        moduleToFind = document.getText(prevWordRange);
+      }
     }
 
-    // const lists = await Promise.all(tasks);
-    // const lists = matches.concat(modMatches);
-    // combine into one using reduce
-    // let matchingSymbols = lists.reduce((acc, val) => acc.concat(val), []);
-    console.log("matchingSymbols", matches, "for", document.uri.fsPath, targetText);
-    return matches;
+    // kick off async job for indexing for module.sv
+    let searchPattern = new vscode.RelativePattern(vscode.workspace.workspaceFolders[0], `**/${moduleToFind}.sv`);
+    let files = await vscode.workspace.findFiles(searchPattern);
+    if (files.length !== 0) {
+      let file = await vscode.workspace.openTextDocument(files[0]);
+      tasks.push(this.findDefinition(file, targetText));
+    }
+    
+    // TODO: use promise.race
+    const results: vscode.DefinitionLink[][] = await Promise.all(tasks);
+    return results.reduce((acc, val) => acc.concat(val), []);
   }
 }
