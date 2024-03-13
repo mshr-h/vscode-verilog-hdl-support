@@ -257,7 +257,6 @@ export class Ctags {
             }
           }
         }
-        this.logger.info('Symbols: ' + this.symbols.toString());
         this.isDirty = false;
       }
     } catch (e) {
@@ -269,7 +268,6 @@ export class Ctags {
     this.logger.info('indexing ', this.doc.uri.fsPath);
     
     let output = await this.execCtags(this.doc.uri.fsPath)
-    console.log("output", output)
     await this.buildSymbolsList(output);
   }
 }
@@ -294,7 +292,6 @@ export class CtagsManager {
     return ctags;
   }
   onClose(doc: vscode.TextDocument) {
-    this.logger.info('on close');
     this.filemap.delete(doc);
   }
 
@@ -308,7 +305,6 @@ export class CtagsManager {
     let ctags: Ctags = this.getCtags(doc);
     // If dirty, re index and then build symbols
     if (ctags.isDirty) {
-      console.log("indxing ");
       await ctags.index();
     }
     return ctags.symbols;

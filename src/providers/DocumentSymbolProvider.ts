@@ -21,7 +21,6 @@ export class VerilogDocumentSymbolProvider implements vscode.DocumentSymbolProvi
   ): Promise<vscode.DocumentSymbol[]> {
     this.logger.info('[VerilogSymbol] Symbols Requested: ' + document.uri);
     let symbols: Symbol[] = await this.ctagsManager.getSymbols(document);
-    this.logger.info('[VerilogSymbol] Symbols: ' + symbols.toString());
     this.docSymbols = this.buildDocumentSymbolList(symbols);
     this.logger.info(this.docSymbols.length + ' top-level symbols returned');
     return this.docSymbols;
