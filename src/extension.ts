@@ -15,7 +15,7 @@ import { ExtensionManager } from './extensionManager';
 import { createLogger, Logger } from './logger';
 
 export var logger: Logger; // Global logger
-var ctagsManager: CtagsManager;
+var ctagsManager = new CtagsManager();
 let extensionID: string = 'mshr-h.veriloghdl';
 
 let lintManager: LintManager;
@@ -36,12 +36,12 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   // Configure ctags
-  ctagsManager = new CtagsManager(logger.getChild('CtagsManager'));
-  ctagsManager.configure();
+  ctagsManager.configure(logger);
 
   // Configure Document Symbol Provider
   let verilogDocumentSymbolProvider = new DocumentSymbolProvider.VerilogDocumentSymbolProvider(
-    logger.getChild('VerilogDocumentSymbolProvider')
+    logger.getChild('VerilogDocumentSymbolProvider'),
+    ctagsManager,
   );
   context.subscriptions.push(
     vscode.languages.registerDocumentSymbolProvider(
@@ -68,7 +68,8 @@ export function activate(context: vscode.ExtensionContext) {
   // Configure Completion Item Provider
   // Trigger on ".", "(", "="
   let verilogCompletionItemProvider = new CompletionItemProvider.VerilogCompletionItemProvider(
-    logger.getChild('VerilogCompletionItemProvider')
+    logger.getChild('VerilogCompletionItemProvider'),
+    ctagsManager,
   );
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(
@@ -103,7 +104,8 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Configure Hover Providers
   let verilogHoverProvider = new HoverProvider.VerilogHoverProvider(
-    logger.getChild('VerilogHoverProvider')
+    logger.getChild('VerilogHoverProvider'),
+    ctagsManager,
   );
   context.subscriptions.push(
     vscode.languages.registerHoverProvider(
@@ -124,7 +126,8 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Configure Definition Providers
   let verilogDefinitionProvider = new DefinitionProvider.VerilogDefinitionProvider(
-    logger.getChild('VerilogDefinitionProvider')
+    logger.getChild('VerilogDefinitionProvider'),
+    ctagsManager
   );
   context.subscriptions.push(
     vscode.languages.registerDefinitionProvider(

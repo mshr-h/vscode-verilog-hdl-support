@@ -8,8 +8,11 @@ export class VerilogDocumentSymbolProvider implements vscode.DocumentSymbolProvi
   public docSymbols: vscode.DocumentSymbol[] = [];
 
   private logger: Logger;
-  constructor(logger: Logger) {
+  private ctagsManager: CtagsManager;
+  constructor(logger: Logger,
+    ctagsManager: CtagsManager){
     this.logger = logger;
+    this.ctagsManager = ctagsManager;
   }
 
   async provideDocumentSymbols(
@@ -17,7 +20,7 @@ export class VerilogDocumentSymbolProvider implements vscode.DocumentSymbolProvi
     _token: vscode.CancellationToken
   ): Promise<vscode.DocumentSymbol[]> {
     this.logger.info('[VerilogSymbol] Symbols Requested: ' + document.uri);
-    let symbols: Symbol[] = await CtagsManager.getSymbols(document);
+    let symbols: Symbol[] = await this.ctagsManager.getSymbols(document);
     this.logger.info('[VerilogSymbol] Symbols: ' + symbols.toString());
     this.docSymbols = this.buildDocumentSymbolList(symbols);
     this.logger.info(this.docSymbols.length + ' top-level symbols returned');

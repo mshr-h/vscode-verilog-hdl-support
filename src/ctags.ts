@@ -141,16 +141,13 @@ export class Ctags {
   isDirty: boolean;
   private logger: Logger;
 
-  constructor(logger: Logger) {
+  constructor(logger: Logger, document: vscode.TextDocument) {
     this.symbols = [];
     this.isDirty = true;
     this.logger = logger;
+    this.doc = document;
   }
 
-  setDocument(doc: vscode.TextDocument) {
-    this.doc = doc;
-    this.clearSymbols();
-  }
 
   clearSymbols() {
     this.isDirty = true;
@@ -161,7 +158,7 @@ export class Ctags {
     return this.symbols;
   }
 
-  execCtags(filepath: string): Thenable<string> {
+  async execCtags(filepath: string): Promise<string> {
     this.logger.info('executing ctags');
 
     let binPath: string = <string>(
@@ -210,13 +207,13 @@ export class Ctags {
     return undefined;
   }
 
-  buildSymbolsList(tags: string): Thenable<void> {
+  async buildSymbolsList(tags: string): Promise<void> {
     try {
       if (this.isDirty) {
         this.logger.info('building symbols');
         if (tags === '') {
           this.logger.error('No output from ctags');
-          return undefined;
+          return;
         }
         // Parse ctags output
         let lines: string[] = tags.split(/\r?\n/);
@@ -261,54 +258,112 @@ export class Ctags {
         this.logger.info('Symbols: ' + this.symbols.toString());
         this.isDirty = false;
       }
-      return Promise.resolve();
     } catch (e) {
       this.logger.error(e.toString());
     }
-    return undefined;
   }
 
-  index(): Thenable<void> {
-    this.logger.info('indexing...');
-    return new Promise((resolve, _reject) => {
-      this.execCtags(this.doc.uri.fsPath)
-        .then((output) => this.buildSymbolsList(output))
-        .then(() => resolve());
-    });
+  async index(): Promise<void> {
+    this.logger.info('indexing ', this.doc.uri.fsPath);
+    
+    let output = await this.execCtags(this.doc.uri.fsPath)
+    console.log("output", output)
+    await this.buildSymbolsList(output);
   }
 }
 
 export class CtagsManager {
-  private static ctags: Ctags;
+  private filemap: Map<vscode.TextDocument, Ctags> = new Map();
   private logger: Logger;
 
-  constructor(logger: Logger) {
+  configure(logger: Logger) {
     this.logger = logger;
-    CtagsManager.ctags = new Ctags(logger.getChild('Ctags'));
-  }
-
-  configure() {
     this.logger.info('ctags manager configure');
     vscode.workspace.onDidSaveTextDocument(this.onSave.bind(this));
+    vscode.workspace.onDidCloseTextDocument(this.onClose.bind(this));
+  }
+
+  getCtags(doc: vscode.TextDocument): Ctags {
+    let ctags: Ctags = this.filemap.get(doc);
+    if (ctags === undefined) {
+      ctags = new Ctags(this.logger, doc);
+      this.filemap.set(doc, ctags);
+    }
+    return ctags;
+  }
+  onClose(doc: vscode.TextDocument) {
+    this.logger.info('on close');
+    this.filemap.delete(doc);
   }
 
   onSave(doc: vscode.TextDocument) {
     this.logger.info('on save');
-    let ctags: Ctags = CtagsManager.ctags;
-    if (ctags.doc === undefined || ctags.doc.uri.fsPath === doc.uri.fsPath) {
-      CtagsManager.ctags.clearSymbols();
-    }
+    let ctags: Ctags = this.getCtags(doc);
+    ctags.clearSymbols();
   }
 
-  static async getSymbols(doc: vscode.TextDocument): Promise<Symbol[]> {
-    let ctags: Ctags = CtagsManager.ctags;
-    if (ctags.doc === undefined || ctags.doc.uri.fsPath !== doc.uri.fsPath) {
-      ctags.setDocument(doc);
-    }
+  async getSymbols(doc: vscode.TextDocument): Promise<Symbol[]> {
+    let ctags: Ctags = this.getCtags(doc);
     // If dirty, re index and then build symbols
     if (ctags.isDirty) {
+      console.log("indxing ");
       await ctags.index();
     }
     return ctags.symbols;
+  }
+
+  async findMatches(document: vscode.TextDocument, targetText: string): Promise<vscode.DefinitionLink[]> {
+    console.log("finding matches asdf", document.uri.fsPath, "for", targetText);
+    let symbols: Symbol[] = await this.getSymbols(document);
+    console.log("symbols", symbols, "for", document.uri.fsPath, targetText)
+    let matchingSymbols: Symbol[] = [];
+    for (let i of symbols) {
+      if (i.name === targetText) {
+        matchingSymbols.push(i);
+      }
+    }
+    // console.log("matchingSymbols", matchingSymbols, "for", document.uri.fsPath, targetText);
+    let ret: vscode.DefinitionLink[] = matchingSymbols.map((i) => {
+      return {
+        document: document,
+        targetUri: document.uri,
+        targetRange: new vscode.Range(
+          i.startPosition,
+          new vscode.Position(i.startPosition.line, Number.MAX_VALUE)
+        ),
+        targetSelectionRange: new vscode.Range(i.startPosition, i.endPosition),
+      };
+    });
+    console.log("ret", ret);
+    return ret;
+  }
+
+  /// also searched in targetText.sv
+  async findSymbol(document: vscode.TextDocument, targetText: string): Promise<vscode.DefinitionLink[]> {
+    // we know we want to search the current doc
+    // let tasks = [this.findMatches(document, targetText)];
+
+    let matches = await this.findMatches(document, targetText);
+    
+
+    // kick off async job that looks for module.sv
+    
+    
+    let searchPattern = new vscode.RelativePattern(vscode.workspace.workspaceFolders[0], `**/${targetText}.sv`);
+    let files = await vscode.workspace.findFiles(searchPattern);
+    if (files.length !== 0) {
+      console.log("found", files[0].fsPath);
+      let file = await vscode.workspace.openTextDocument(files[0]);
+      // tasks.push(this.findMatches(file, targetText));
+      let modMatches = await this.findMatches(file, targetText);
+      matches = matches.concat(modMatches);
+    }
+
+    // const lists = await Promise.all(tasks);
+    // const lists = matches.concat(modMatches);
+    // combine into one using reduce
+    // let matchingSymbols = lists.reduce((acc, val) => acc.concat(val), []);
+    console.log("matchingSymbols", matches, "for", document.uri.fsPath, targetText);
+    return matches;
   }
 }

@@ -8,9 +8,11 @@ import { Logger } from '../logger';
 export class VerilogHoverProvider implements vscode.HoverProvider {
   // lang: verilog / systemverilog
   private logger: Logger;
-
-  constructor(logger: Logger) {
+  private ctagsManager: CtagsManager;
+  constructor(logger: Logger,
+    ctagsManager: CtagsManager){
     this.logger = logger;
+    this.ctagsManager = ctagsManager;
   }
 
   public async provideHover(
@@ -26,22 +28,21 @@ export class VerilogHoverProvider implements vscode.HoverProvider {
     }
     // hover word
     let targetText = document.getText(textRange);
-    let symbols: Symbol[] = await CtagsManager.getSymbols(document);
+    let matches: vscode.DefinitionLink[] = await this.ctagsManager.findSymbol(document, targetText);
     // find symbol
-    for (let i of symbols) {
+    for (let i of matches) {
       // returns the first found tag. Disregards others
       // TODO: very basic hover implementation. Can be extended
-      if (i.name === targetText) {
-        let codeRange = new vscode.Range(
-          i.startPosition,
-          new vscode.Position(i.startPosition.line, Number.MAX_VALUE)
-        );
-        let code = document.getText(codeRange).trim();
-        let hoverText: vscode.MarkdownString = new vscode.MarkdownString();
-        hoverText.appendCodeblock(code, document.languageId);
-        this.logger.info('Hover object returned');
-        return new vscode.Hover(hoverText);
+      let doc = document;
+      if (i.targetUri !== document.uri) {
+        doc = await vscode.workspace.openTextDocument(i.targetUri);
       }
+      // make a range 5 more lines
+      let code = doc.getText(i.targetRange).trim();
+      let hoverText: vscode.MarkdownString = new vscode.MarkdownString();
+      hoverText.appendCodeblock(code, document.languageId);
+      this.logger.info('Hover object returned');
+      return new vscode.Hover(hoverText);
     }
     this.logger.warn('Hover object not found');
     return undefined;
