@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## [1.13.2] 2024-02-04
+## [1.13.3] - 2024-03-22
+
+### Added
+
+- Execute from workspace folder [#466](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/466)
+
+## [1.13.2] - 2024-02-04
 
 ### Added
 
