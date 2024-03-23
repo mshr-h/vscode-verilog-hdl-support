@@ -6,9 +6,11 @@ import { Logger } from '../logger';
 
 export class VerilogCompletionItemProvider implements vscode.CompletionItemProvider {
   private logger: Logger;
-
-  constructor(logger: Logger) {
+  private ctagsManager: CtagsManager;
+  constructor(logger: Logger,
+    ctagsManager: CtagsManager){
     this.logger = logger;
+    this.ctagsManager = ctagsManager;
   }
 
   //TODO: Better context based completion items
@@ -21,7 +23,7 @@ export class VerilogCompletionItemProvider implements vscode.CompletionItemProvi
     this.logger.info('Completion items requested');
     let items: vscode.CompletionItem[] = [];
 
-    let symbols: Symbol[] = await CtagsManager.getSymbols(document);
+    let symbols: Symbol[] = await this.ctagsManager.getSymbols(document);
     symbols.forEach((symbol) => {
       let newItem: vscode.CompletionItem = new vscode.CompletionItem(
         symbol.name,

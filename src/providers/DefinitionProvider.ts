@@ -1,13 +1,18 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
 import { BsvInfoProviderManger } from '../BsvProvider';
-import { CtagsManager, Symbol } from '../ctags';
+import { CtagsManager } from '../ctags';
 import { Logger } from '../logger';
+
+
 
 export class VerilogDefinitionProvider implements vscode.DefinitionProvider {
   private logger: Logger;
-  constructor(logger: Logger) {
+  private ctagsManager: CtagsManager;
+  constructor(logger: Logger,
+    ctagsManager: CtagsManager){
     this.logger = logger;
+    this.ctagsManager = ctagsManager;
   }
 
   async provideDefinition(
@@ -16,32 +21,8 @@ export class VerilogDefinitionProvider implements vscode.DefinitionProvider {
     _token: vscode.CancellationToken
   ): Promise<vscode.DefinitionLink[] | undefined> {
     this.logger.info('Definitions Requested: ' + document.uri);
-    // get word start and end
-    let textRange = document.getWordRangeAtPosition(position);
-    if (!textRange || textRange.isEmpty) {
-      return undefined;
-    }
-    // hover word
-    let targetText = document.getText(textRange);
-    let symbols: Symbol[] = await CtagsManager.getSymbols(document);
-    let matchingSymbols: Symbol[] = [];
-    let definitions: vscode.DefinitionLink[] = [];
     // find all matching symbols
-    for (let i of symbols) {
-      if (i.name === targetText) {
-        matchingSymbols.push(i);
-      }
-    }
-    for (let i of matchingSymbols) {
-      definitions.push({
-        targetUri: document.uri,
-        targetRange: new vscode.Range(
-          i.startPosition,
-          new vscode.Position(i.startPosition.line, Number.MAX_VALUE)
-        ),
-        targetSelectionRange: new vscode.Range(i.startPosition, i.endPosition),
-      });
-    }
+    let definitions: vscode.DefinitionLink[] = await this.ctagsManager.findSymbol(document, position);
     this.logger.info(definitions.length + ' definitions returned');
     return definitions;
   }

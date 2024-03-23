@@ -2,6 +2,7 @@
 import * as vscode from 'vscode';
 import * as child_process from 'child_process';
 import { Logger } from './logger';
+import { text } from 'stream/consumers';
 
 // Internal representation of a symbol
 export class Symbol {
@@ -136,21 +137,19 @@ export class Symbol {
 
 // TODO: add a user setting to enable/disable all ctags based operations
 export class Ctags {
+  /// Symbol definitions (no rhs)
   symbols: Symbol[];
   doc: vscode.TextDocument;
   isDirty: boolean;
   private logger: Logger;
 
-  constructor(logger: Logger) {
+  constructor(logger: Logger, document: vscode.TextDocument) {
     this.symbols = [];
     this.isDirty = true;
     this.logger = logger;
+    this.doc = document;
   }
 
-  setDocument(doc: vscode.TextDocument) {
-    this.doc = doc;
-    this.clearSymbols();
-  }
 
   clearSymbols() {
     this.isDirty = true;
@@ -161,7 +160,7 @@ export class Ctags {
     return this.symbols;
   }
 
-  execCtags(filepath: string): Thenable<string> {
+  async execCtags(filepath: string): Promise<string> {
     this.logger.info('executing ctags');
 
     let binPath: string = <string>(
@@ -211,13 +210,13 @@ export class Ctags {
     return undefined;
   }
 
-  buildSymbolsList(tags: string): Thenable<void> {
+  async buildSymbolsList(tags: string): Promise<void> {
     try {
       if (this.isDirty) {
         this.logger.info('building symbols');
         if (tags === '') {
           this.logger.error('No output from ctags');
-          return undefined;
+          return;
         }
         // Parse ctags output
         let lines: string[] = tags.split(/\r?\n/);
@@ -259,57 +258,112 @@ export class Ctags {
             }
           }
         }
-        this.logger.info('Symbols: ' + this.symbols.toString());
         this.isDirty = false;
       }
-      return Promise.resolve();
     } catch (e) {
       this.logger.error(e.toString());
     }
-    return undefined;
   }
 
-  index(): Thenable<void> {
-    this.logger.info('indexing...');
-    return new Promise((resolve, _reject) => {
-      this.execCtags(this.doc.uri.fsPath)
-        .then((output) => this.buildSymbolsList(output))
-        .then(() => resolve());
-    });
+  async index(): Promise<void> {
+    this.logger.info('indexing ', this.doc.uri.fsPath);
+    
+    let output = await this.execCtags(this.doc.uri.fsPath)
+    await this.buildSymbolsList(output);
   }
 }
 
 export class CtagsManager {
-  private static ctags: Ctags;
+  private filemap: Map<vscode.TextDocument, Ctags> = new Map();
   private logger: Logger;
 
-  constructor(logger: Logger) {
+  configure(logger: Logger) {
     this.logger = logger;
-    CtagsManager.ctags = new Ctags(logger.getChild('Ctags'));
-  }
-
-  configure() {
     this.logger.info('ctags manager configure');
     vscode.workspace.onDidSaveTextDocument(this.onSave.bind(this));
+    vscode.workspace.onDidCloseTextDocument(this.onClose.bind(this));
+  }
+
+  getCtags(doc: vscode.TextDocument): Ctags {
+    let ctags: Ctags = this.filemap.get(doc);
+    if (ctags === undefined) {
+      ctags = new Ctags(this.logger, doc);
+      this.filemap.set(doc, ctags);
+    }
+    return ctags;
+  }
+  onClose(doc: vscode.TextDocument) {
+    this.filemap.delete(doc);
   }
 
   onSave(doc: vscode.TextDocument) {
     this.logger.info('on save');
-    let ctags: Ctags = CtagsManager.ctags;
-    if (ctags.doc === undefined || ctags.doc.uri.fsPath === doc.uri.fsPath) {
-      CtagsManager.ctags.clearSymbols();
-    }
+    let ctags: Ctags = this.getCtags(doc);
+    ctags.clearSymbols();
   }
 
-  static async getSymbols(doc: vscode.TextDocument): Promise<Symbol[]> {
-    let ctags: Ctags = CtagsManager.ctags;
-    if (ctags.doc === undefined || ctags.doc.uri.fsPath !== doc.uri.fsPath) {
-      ctags.setDocument(doc);
-    }
+  async getSymbols(doc: vscode.TextDocument): Promise<Symbol[]> {
+    let ctags: Ctags = this.getCtags(doc);
     // If dirty, re index and then build symbols
     if (ctags.isDirty) {
       await ctags.index();
     }
     return ctags.symbols;
+  }
+
+
+
+  /// find a matching symbol in a single document
+  async findDefinition(document: vscode.TextDocument, targetText: string): Promise<vscode.DefinitionLink[]> {
+    let symbols: Symbol[] = await this.getSymbols(document);
+    let matchingSymbols = symbols.filter((sym) => sym.name === targetText);
+
+    return matchingSymbols.map((i) => {
+      return {
+        targetUri: document.uri,
+        targetRange: new vscode.Range(
+          i.startPosition,
+          new vscode.Position(i.startPosition.line, Number.MAX_VALUE)
+        ),
+        targetSelectionRange: new vscode.Range(i.startPosition, i.endPosition),
+      };
+    });
+  }
+
+  /// Finds a symbols definition, but also looks in targetText.sv to get module/interface defs
+  async findSymbol(document: vscode.TextDocument, position: vscode.Position): Promise<vscode.DefinitionLink[]> {
+    
+    let textRange = document.getWordRangeAtPosition(position);
+    if (!textRange || textRange.isEmpty) {
+      return undefined;
+    }
+    let targetText = document.getText(textRange);
+    
+    // always search the current doc
+    let tasks = [this.findDefinition(document, targetText)];
+
+    // if the previous character is :: or ., look up prev word
+    let prevChar = textRange.start.character - 1;
+    let prevCharRange = new vscode.Range(position.line, prevChar, position.line, prevChar+1);
+    let prevCharText = document.getText(prevCharRange);
+    let moduleToFind: string = targetText;
+    if (prevCharText === '.' || prevCharText === ':') {
+      let prevWordRange = document.getWordRangeAtPosition(new vscode.Position(position.line, prevChar - 2));
+      if (prevWordRange) {
+        moduleToFind = document.getText(prevWordRange);
+      }
+    }
+
+    // kick off async job for indexing for module.sv
+    let searchPattern = new vscode.RelativePattern(vscode.workspace.workspaceFolders[0], `**/${moduleToFind}.sv`);
+    let files = await vscode.workspace.findFiles(searchPattern);
+    if (files.length !== 0) {
+      let file = await vscode.workspace.openTextDocument(files[0]);
+      tasks.push(this.findDefinition(file, targetText));
+    }
+    
+    // TODO: use promise.race
+    const results: vscode.DefinitionLink[][] = await Promise.all(tasks);
+    return results.reduce((acc, val) => acc.concat(val), []);
   }
 }
