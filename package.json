@@ -13,7 +13,7 @@
     "url": "https://github.com/mshr-h/vscode-verilog-hdl-support/issues"
   },
   "engines": {
-    "vscode": "^1.74.0"
+    "vscode": "^1.75.0"
   },
   "categories": [
     "Programming Languages",
@@ -22,17 +22,6 @@
     "Formatters"
   ],
   "icon": "images/icon.png",
-  "activationEvents": [
-    "onLanguage:verilog",
-    "onLanguage:systemverilog",
-    "onLanguage:bsv",
-    "onLanguage:vhdl",
-    "onLanguage:ucf",
-    "onLanguage:tcl",
-    "onLanguage:sdc",
-    "onLanguage:xdc",
-    "onLanguage:verilog-filelist"
-  ],
   "main": "./dist/main.js",
   "contributes": {
     "languages": [
