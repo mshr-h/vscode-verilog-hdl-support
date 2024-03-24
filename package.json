@@ -101,13 +101,13 @@
       {
         "id": "tcl",
         "aliases": [
-            "Tcl",
-            "tcl"
+          "Tcl",
+          "tcl"
         ],
         "extensions": [
-            ".tcl",
-            "tm",
-            "tk"
+          ".tcl",
+          "tm",
+          "tk"
         ],
         "configuration": "./configs/tcl.configuration.json"
       },
@@ -543,28 +543,27 @@
     "which": "^4.0.0"
   },
   "devDependencies": {
-    "@types/antlr4": "4.11.2",
-    "@types/glob": "^8.0.0",
-    "@types/mocha": "~10.0.1",
-    "@types/node": "~20.8.0",
-    "@types/vscode": "^1.74.0",
-    "@types/which": "^3.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "@vscode/test-electron": "^2.2.1",
-    "@vscode/vsce": "~2.20.0",
+    "@types/antlr4": "4.11.6",
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "~10.0.6",
+    "@types/node": "~20.11.30",
+    "@types/vscode": "^1.75.0",
+    "@types/which": "^3.0.3",
+    "@typescript-eslint/eslint-plugin": "^7.3.1",
+    "@typescript-eslint/parser": "^7.3.1",
+    "@vscode/test-electron": "^2.3.9",
+    "@vscode/vsce": "~2.24.0",
     "antlr4ts-cli": "0.5.0-alpha.4",
-    "esbuild": "^0.18.0",
-    "eslint": "8.46.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-config-standard": "17.1.0",
-    "eslint-plugin-import": "2.28.0",
-    "eslint-plugin-node": "11.1.0",
+    "esbuild": "^0.20.2",
+    "eslint": "8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "2.29.1",
+    "eslint-plugin-n": "16.6.2",
     "eslint-plugin-promise": "6.1.1",
-    "glob": "^10.0.0",
-    "mocha": "^10.2.0",
-    "ts-loader": "^9.4.2",
-    "typescript": "5.1.6"
+    "glob": "^10.3.10",
+    "mocha": "^10.3.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "5.4.3"
   },
   "__metadata": {
     "id": "feb7e3b5-7d35-4f95-a3d2-61eeaa12efa5",
