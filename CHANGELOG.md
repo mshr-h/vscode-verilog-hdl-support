@@ -4,11 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## Unreleased
+## [1.13.5] - 2024-03-25
 
 ### Changed
 
-- The extension is compatible with vscode `^1.75.0` from this version
+- From this version, the extension is compatible with vscode `^1.75.0`
+- Update all the dependencies/devDependencies to the latest version
 
 ## [1.13.4] - 2024-03-23
 
