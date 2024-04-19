@@ -335,3 +335,5 @@ You can check it by opening the **Output** pane in VS Code and choose _Verilog_ 
 - [slang C++ docs](https://sv-lang.com/)
 - [bitwisecook/vscode-tcl: Tcl for Visual Studio Code](https://github.com/bitwisecook/vscode-tcl)
   - `configs/tcl.configuration.json` and `syntaxes/tcl.tmlanguage.json` are obtained from the repo.
+- [eirikpre/VSCode-SystemVerilog: SystemVerilog support in VS Code](https://github.com/eirikpre/VSCode-SystemVerilog)
+  - SystemVerilog syntax is obtained from the repo.
