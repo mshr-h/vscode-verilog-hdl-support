@@ -103,7 +103,7 @@ If you encounter any problems even if it's not related to this feature, **deleti
 | [svls](https://github.com/dalance/svls)                        | not supported | enabled       | not supported |
 | [veridian](https://github.com/vivekmalneedi/veridian)          | not supported | enabled       | not supported |
 | [HDL Checker](https://github.com/suoto/hdl_checker)            | enabled       | enabled       | enabled       |
-| [verible-verilog-ls](https://github.com/chipsalliance/verible) | not supported | enabled       | not supported |
+| [verible-verilog-ls](https://github.com/chipsalliance/verible) | enabled       | enabled       | not supported |
 | [rust_hdl](https://github.com/VHDL-LS/rust_hdl)                | not supported | not supported | enabled       |
 
 ### Formatting (Experimental)
