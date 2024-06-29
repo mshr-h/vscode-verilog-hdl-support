@@ -565,7 +565,7 @@
     "glob": "^10.3.10",
     "mocha": "^10.3.0",
     "ts-loader": "^9.5.1",
-    "typescript": "5.4.3"
+    "typescript": "5.4.5"
   },
   "__metadata": {
     "id": "feb7e3b5-7d35-4f95-a3d2-61eeaa12efa5",
