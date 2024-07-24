@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.14.2] - 2024-07-24
+
+## Fixed
+
+- Show error log when verilator cannot be executed [#489](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/489)
+
 ## [1.14.1] - 2024-04-19
 
 ## Added
