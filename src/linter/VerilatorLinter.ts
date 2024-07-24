@@ -109,6 +109,11 @@ export default class VerilatorLinter extends BaseLinter {
       (_error: Error, _stdout: string, stderr: string) => {
         let diagnostics: vscode.Diagnostic[] = [];
         stderr.split(/\r?\n/g).forEach((line, _) => {
+          if (line.search("No such file or directory") >= 0 || line.search("Not a directory") >= 0 || line.search("command not found") >= 0) {
+            this.logger.error(`Could not execute command: ${command}`);
+            return;
+          }
+
           if (!line.startsWith('%') || line.indexOf(docUri) <= 0) {
             return;
           }
