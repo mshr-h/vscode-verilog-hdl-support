@@ -561,7 +561,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "2.29.1",
     "eslint-plugin-n": "17.8.1",
-    "eslint-plugin-promise": "6.1.1",
+    "eslint-plugin-promise": "7.0.0",
     "glob": "^11.0.0",
     "mocha": "^10.3.0",
     "ts-loader": "^9.5.1",
