@@ -107,42 +107,78 @@ export default class VerilatorLinter extends BaseLinter {
       command,
       { cwd: cwd },
       (_error: Error, _stdout: string, stderr: string) => {
-        let diagnostics: vscode.Diagnostic[] = [];
+        //let diagnostics: vscode.Diagnostic[] = [];
+
+        // basically DiagnosticsCollection but with ability to append diag lists
+        let filesDiag = {};
+        let error_warning_counter = 0;
         stderr.split(/\r?\n/g).forEach((line, _) => {
-          if (line.search("No such file or directory") >= 0 || line.search("Not a directory") >= 0 || line.search("command not found") >= 0) {
-            this.logger.error(`Could not execute command: ${command}`);
+
+          if (!line.startsWith('%')) {
+            this.logger.error(line);
             return;
           }
 
-          if (!line.startsWith('%') || line.indexOf(docUri) <= 0) {
-            return;
-          }
+          // for this regex, match sections are:
+          // 1 - severity (warning/error)
+          // 3 - error/warning code (EOFNEWLINE, ...),
+          // 5 - file path
+          // 9 - line number
+          // 11 - column number
+          // 12 - message
 
           let rex = line.match(
-            /%(\w+)(-[A-Z0-9_]+)?:\s*(\w+:)?(?:[^:]+):\s*(\d+):(?:\s*(\d+):)?\s*(\s*.+)/
+            /(\w+)(-([A-Z0-9]+))?: ((\S+((\.sv)|(\.v))):(\d+):((\d+):)? )?(.*)/
           );
 
+          // vscode problems are tied to files, so if there is no file name, no point adding
+          if (!rex[5]) {return;}
+          
+          // replacing "\\" and "\" with "/" for consistency
+          if (isWindows)
+          {
+            rex[5] = rex[5].replace(/(\\\\)|(\\)/, "/");
+          }
+
+          // if no errors for this file, new list needs to be created
+          if (!(rex[5] in Object.keys(filesDiag)))
+          {
+            filesDiag[rex[5]] = [];
+          }
+          
+
           if (rex && rex[0].length > 0) {
-            let lineNum = Number(rex[4]) - 1;
-            let colNum = Number(rex[5]) - 1;
+            let lineNum = Number(rex[9]) - 1;
+            let colNum = Number(rex[11]) - 1;
             // Type of warning is in rex[2]
             colNum = isNaN(colNum) ? 0 : colNum; // for older Verilator versions (< 4.030 ~ish)
 
             if (!isNaN(lineNum)) {
-              diagnostics.push({
+              filesDiag[rex[5]].push({
                 severity: this.convertToSeverity(rex[1]),
                 range: new vscode.Range(lineNum, colNum, lineNum, Number.MAX_VALUE),
-                message: rex[6],
-                code: 'verilator',
+                message: rex[12],
+                code: rex[3],
                 source: 'verilator',
               });
+
+              error_warning_counter++;
             }
             return;
           }
           this.logger.warn('[verilator] failed to parse error: ' + line);
         });
-        this.logger.info(`[verilator] ${diagnostics.length} errors/warnings returned`);
-        this.diagnosticCollection.set(doc.uri, diagnostics);
+        this.logger.info(`[verilator] ${error_warning_counter} errors/warnings returned`);
+        this.diagnosticCollection.clear()
+        for (let fileName in filesDiag)
+        {
+          let fileURI = vscode.Uri.file(fileName);
+          // adding diag info for each file
+          this.diagnosticCollection.set(
+            fileURI,
+            filesDiag[fileName]
+          );
+        }
       }
     );
   }
