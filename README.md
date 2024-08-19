@@ -65,8 +65,7 @@ by adding the following settings on `.vscode/settings.json` in your workspace.
 
 ```json
 {
-    "ctags-companion.command": "ctags -R --fields=+nKz -f .vscode/.tags --langmap=SystemVerilog:+.v -R rtl /opt/uvm-1.2/src",
-    "ctags-companion.readtagsEnabled": true,
+    "ctags-companion.command": "ctags -R --fields=+nKz --langmap=SystemVerilog:+.v -R rtl /opt/uvm-1.2/src",
 }
 ```
 
