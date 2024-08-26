@@ -159,8 +159,9 @@ class ModuleTags extends Ctags {
     lines.forEach((line) => {
       if (line !== '') {
         let tag: Symbol = this.parseTagLine(line);
-        // add only modules and ports
-        if (tag.type === 'module' || tag.type === 'port' || tag.type === 'constant') {
+        // add only modules, ports and parameters
+        // Use 'parameter' type instead of 'constant' after #102
+        if (tag.type === 'module' || tag.type === 'port' || tag.type === 'parameter') {
           this.symbols.push(tag);
         }
       }
