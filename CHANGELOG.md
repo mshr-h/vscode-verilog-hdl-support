@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)\
 
+## [Unreleased]
+
+## Added
+- Pass arguments to lsp [#446][https://github.com/mshr-h/vscode-verilog-hdl-support/issues/446]
+
 ## [1.14.3] - 2024-07-30
 
 ## Added
