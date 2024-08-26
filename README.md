@@ -216,6 +216,10 @@ Use the following settings to configure the extension to your needs.
 
     \[Experimental\] A path to the svls Language Server binary.
 
+- `verilog.languageServer.svls.arguments'`(Default: '')
+
+    \[Experimental\] Add custom arguments for the Svls Language Server.
+
 - `verilog.languageServer.veridian.enabled` (Default: `false`)
 
     \[Experimental\] Enable veridian Language Server for SystemVerilog.
@@ -223,6 +227,10 @@ Use the following settings to configure the extension to your needs.
 - `verilog.languageServer.veridian.path` (Default: `veridian`)
 
     \[Experimental\] A path to the veridian Language Server binary.
+
+- `verilog.languageServer.veridian.arguments'`(Default: '')
+
+    \[Experimental\] Add custom arguments for the Veridian Language Server.
 
 - `verilog.languageServer.hdlChecker.enabled` (Default: `false`)
 
@@ -232,6 +240,10 @@ Use the following settings to configure the extension to your needs.
 
     \[Experimental\] A path to the HDL Checker Language Server binary.
 
+- `verilog.languageServer.hdlChecker.arguments'`(Default: '')
+
+    \[Experimental\] Add custom arguments for the HDL Checker Language Server.
+
 - `verilog.languageServer.veribleVerilogLs.enabled` (Default: `false`)
 
     \[Experimental\] Enable verible-verilog-ls Language Server for SystemVerilog.
@@ -240,6 +252,10 @@ Use the following settings to configure the extension to your needs.
 
     \[Experimental\] A path to the verible-verilog-ls Language Server binary.
 
+- `verilog.languageServer.veribleVerilogLs.arguments'`(Default: '')
+
+    \[Experimental\] Add custom arguments for the verible-verilog-ls Language Server.
+
 - `verilog.languageServer.rustHdl.enabled` (Default: `false`)
 
     \[Experimental\] Enable rust_hdl Language Server for VHDL.
@@ -247,6 +263,10 @@ Use the following settings to configure the extension to your needs.
 - `verilog.languageServer.rustHdl.path` (Default: `vhdl_ls`)
 
     \[Experimental\] A path to the rust_hdl Language Server binary.
+
+- `verilog.languageServer.rustHdl.arguments'`(Default: '')
+
+    \[Experimental\] Add custom arguments for the rust_hdl Language Server.
 
 - `verilog.formatting.verilogHDL.formatter` (Default: `verilog-format`)
 

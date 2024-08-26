@@ -204,6 +204,12 @@ function setupLanguageClient(
   let enabled: boolean = <boolean>settings.get('enabled', false);
 
   let binPath = <string>settings.get('path', defaultPath);
+  let customArgs = <string>settings.get('arguments');
+
+  if (customArgs) {
+    serverArgs.push(customArgs);
+    serverDebugArgs.push(customArgs);
+  }
 
   let serverOptions: ServerOptions = {
     run: { command: binPath, args: serverArgs },

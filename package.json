@@ -390,6 +390,12 @@
           "default": "svls",
           "description": "[Experimental] A path to the Svls Language Server binary."
         },
+        "verilog.languageServer.svls.arguments": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "[Experimental] Add custom arguments for the Svls Language Server."
+        },
         "verilog.languageServer.veridian.enabled": {
           "scope": "window",
           "type": "boolean",
@@ -402,11 +408,23 @@
           "default": "veridian",
           "description": "[Experimental] A path to the Veridian Language Server binary."
         },
+        "verilog.languageServer.veridian.arguments": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "[Experimental] Add custom arguments for the HDL Checker Veridian Language Server."
+        },
         "verilog.languageServer.hdlChecker.enabled": {
           "scope": "window",
           "type": "boolean",
           "default": false,
           "description": "[Experimental] Enable HDL Checker Language Server for Verilog-HDL, SystemVerilog, and VHDL."
+        },
+        "verilog.languageServer.hdlChecker.arguments": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "[Experimental] Add custom arguments for the HDL Checker Language Server."
         },
         "verilog.languageServer.veribleVerilogLs.enabled": {
           "scope": "window",
@@ -419,6 +437,12 @@
           "type": "string",
           "default": "verible-verilog-ls",
           "description": "[Experimental] A path to the verible-verilog-ls Language Server binary."
+        },
+        "verilog.languageServer.veribleVerilogLs.arguments": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "[Experimental] Add custom arguments for the verible-verilog-ls Language Server."
         },
         "verilog.languageServer.hdlChecker.path": {
           "scope": "window",
@@ -437,6 +461,12 @@
           "type": "string",
           "default": "vhdl_ls",
           "description": "[Experimental] A path to the Rust hdl Language Server binary."
+        },
+        "verilog.languageServer.rustHdl.arguments": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "[Experimental] Add custom arguments for the Rust hdl Language Server."
         },
         "verilog.formatting.verilogHDL.formatter": {
           "scope": "window",
