@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
-import * as child_process from 'child_process';
+import {exec as execNonPromise} from 'child_process';
+import * as util from 'util';
 import { Logger } from './logger';
-import { text } from 'stream/consumers';
+const exec = util.promisify(execNonPromise);
 
 // Internal representation of a symbol
 export class Symbol {
@@ -169,11 +170,21 @@ export class Ctags {
     if (binPath !== 'none') {
       let command: string = binPath + ' -f - --fields=+K --sort=no --excmd=n --fields-SystemVerilog=+{parameter} "' + filepath + '"';
       this.logger.info('Executing Command: ' + command);
-      return new Promise((resolve, _reject) => {
-        child_process.exec(command, (_error: Error, stdout: string, _stderr: string) => {
-          resolve(stdout);
-        });
-      });
+      try {
+        const {stdout, stderr} = await exec(command);
+        if(stdout) {
+          return stdout.toString();
+        }
+        if(stderr) {
+          this.logger.error('stderr> ' + stderr);
+        }
+      }
+      catch (e) {
+        this.logger.error('Exception caught: ' + e.message + ' ' + e.data);
+      }
+    }
+    else {
+      this.logger.trace('Ctags binpath not set');
     }
     // Return empty promise if ctags path is not set to avoid errors when indexing
     return Promise.resolve('');
@@ -268,7 +279,7 @@ export class Ctags {
   async index(): Promise<void> {
     this.logger.info('indexing ', this.doc.uri.fsPath);
     
-    let output = await this.execCtags(this.doc.uri.fsPath)
+    let output = await this.execCtags(this.doc.uri.fsPath);
     await this.buildSymbolsList(output);
   }
 }
