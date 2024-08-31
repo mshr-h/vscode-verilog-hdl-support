@@ -4,41 +4,46 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)\
 
+## UNRELEASED
+
+### Changed
+- Better logging for ctags exection errors
+
 ## [1.15.0] - 2024-08-26
 
-## Added
+### Added
 
 - Pass arguments to lsp [#446][https://github.com/mshr-h/vscode-verilog-hdl-support/issues/446]
 
-## Fixed
+### Fixed
 
 - Fix #479 by add parameters back into Module instantiation [#496](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/496)
 
 ## [1.14.3] - 2024-07-30
 
-## Added
+### Added
 - Verilator linter stderr passthrough [#489](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/489)
 - When linting using Verilator, all detected problems are highlighted (By default it's just current file and it's dependencies. Verilator launch config can be adjusted in linting settings)
 
-## Fixed
+### Fixed
 - Imroved regex matcher for Verilator output
 - Verilator output blocks are correctly tagged with `[error]` or `[warning]`
 
 ## [1.14.2] - 2024-07-24
 
-## Fixed
+### Fixed
 
 - Show error log when verilator cannot be executed [#489](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/489)
 
 ## [1.14.1] - 2024-04-19
 
-## Added
+### Added
 
 - Enable verible-verilog-ls for Verilog filetype
 
 ## [1.14.0] - 2024-04-19
 
-## Changed
+### Changed
 
 - Update SystemVerilog syntax highlighting
 
