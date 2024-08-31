@@ -4,10 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)\
 
-## UNRELEASED
+## [1.15.1] - 2024-08-31
 
 ### Changed
-- Better logging for ctags exection errors
+
+- Better logging for ctags exection errors [#498][https://github.com/mshr-h/vscode-verilog-hdl-support/pull/498]
 
 ## [1.15.0] - 2024-08-26
 
