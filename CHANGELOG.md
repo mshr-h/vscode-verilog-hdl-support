@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)\
 
+## Unreleased
+
+### Changed
+
+- Reads indentation preferences for current workspace and uses it in instantiate module
+
+### Fixed
+
+- Fix by reading preferences from workspace [#493](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/493)
+
 ## [1.15.1] - 2024-08-31
 
 ### Changed
