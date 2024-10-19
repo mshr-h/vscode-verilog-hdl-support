@@ -73,9 +73,24 @@ async function instantiateModule(srcpath: string): Promise<vscode.SnippetString 
         .appendText(');\n');
 }
 
+function getIndentationString(): string {
+  const editorConfig = vscode.workspace.getConfiguration('editor');
+
+  const useSpaces = editorConfig.get<boolean>('insertSpaces', true);
+  const tabSize = editorConfig.get<number>('tabSize', 4);
+
+  if (useSpaces) {
+    return ' '.repeat(tabSize);
+  } else {
+    return '\t';
+  }
+}
+
 function instantiatePort(ports: string[]): string {
   let port = '';
   let maxLen = 0;
+  let indent = getIndentationString();
+
   for (let i = 0; i < ports.length; i++) {
     if (ports[i].length > maxLen) {
       maxLen = ports[i].length;
@@ -86,7 +101,8 @@ function instantiatePort(ports: string[]): string {
     let element = ports[i];
     let padding = maxLen - element.length + 1;
     element = element + ' '.repeat(padding);
-    port += `\t.${element}(${element})`;
+    port += indent;
+    port += `.${element}(${element})`;
     if (i !== ports.length - 1) {
       port += ',';
     }
