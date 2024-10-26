@@ -4,10 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)\
 
-## Unreleased
+## [1.15.3] - 2024-10-26
 
 ### Fixed
-- Fix the issue of keywords being tokenized as entity.name.tag.module.reference.verilog instead of keyword.other.verilog to fix the issue in [#476](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/476)
+- Fix the issue of keywords being tokenized as entity.name.tag.module.reference.verilog instead of keyword.other.verilog [#501](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/501)
 
 ## [1.15.2] - 2024-10-19
 
