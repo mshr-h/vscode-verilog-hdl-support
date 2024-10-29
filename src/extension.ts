@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
-import { LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient/node';
+import { LanguageClient, LanguageClientOptions, Message, ServerOptions } from 'vscode-languageclient/node';
 
 import LintManager from './linter/LintManager';
 import { CtagsManager } from './ctags';
@@ -249,6 +249,18 @@ function initAllLanguageClients() {
 
   // init verible-verilog-ls
   setupLanguageClient('veribleVerilogLs', 'verible-verilog-ls', [], [], {
+    connectionOptions: {
+      messageStrategy: {
+        handleMessage: (message, next) => {
+          if (Message.isResponse(message) && message.result['capabilities']) {
+            delete message.result['capabilities']['diagnosticProvider'];
+            delete message.result['capabilities']['documentFormattingProvider'];
+            delete message.result['capabilities']['documentRangeFormattingProvider'];
+          }
+          next(message);
+        }
+      }
+    },
     documentSelector: [
       { scheme: 'file', language: 'verilog' },
       { scheme: 'file', language: 'systemverilog' },

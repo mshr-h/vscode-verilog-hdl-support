@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)\
 
+## [Unreleased] - 2024-xx-xx
+
+### Fixed
+
+- Fix same warning of Verible LS shows twice [#449](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/449)
+- Fix Verible formatter arguments not working [#487](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/487)
+
 ## [1.15.3] - 2024-10-26
 
 ### Fixed
