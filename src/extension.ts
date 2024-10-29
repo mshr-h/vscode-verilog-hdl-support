@@ -258,8 +258,8 @@ function initAllLanguageClients() {
             delete message.result['capabilities']['documentRangeFormattingProvider'];
           }
           next(message);
-        }
-      }
+        },
+      },
     },
     documentSelector: [
       { scheme: 'file', language: 'verilog' },
