@@ -472,6 +472,10 @@ repository:
         name: keyword.operator.quantifier.regexp
   operators:
     patterns:
+      - match: \b(?:dist|inside|with|intersect|and|or|throughout|within|first_match)\b|:=|:/|\|->|\|=>|->>|\*>|#-#|#=#|&&&
+        name: keyword.operator.logical.systemverilog
+      - match: '@|##|#|->|<->'
+        name: keyword.operator.channel.systemverilog
       - match: \+=|-=|/=|\*=|%=|&=|\|=|\^=|>>>=|>>=|<<<=|<<=|<=|=
         name: keyword.operator.assignment.systemverilog
       # - match: :|\?
@@ -490,10 +494,6 @@ repository:
         name: keyword.operator.bitwise.systemverilog
       - match: <=|<|>=|>|==\?|!=\?|===|!==|==|!=
         name: keyword.operator.comparison.systemverilog
-      - match: '@|##|#|->|<->'
-        name: keyword.operator.channel.systemverilog
-      - match: \b(?:dist|inside|with|intersect|and|or|throughout|within|first_match)\b|:=|:/|\|->|\|=>|->>|\*>|#-#|#=#|&&&
-        name: keyword.operator.logical.systemverilog
   comments:
     patterns:
       - begin: /\*
