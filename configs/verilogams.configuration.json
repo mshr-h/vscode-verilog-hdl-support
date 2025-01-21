@@ -1,0 +1,64 @@
+{
+  "comments": {
+    "lineComment": "//",
+    "blockComment": ["/*", "*/"]
+  },
+
+  "brackets": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"],
+    ["fork", "join"],
+    ["case", "endcase"],
+    ["casex", "endcase"],
+    ["casez", "endcase"],
+    ["config", "endconfig"],
+    ["begin", "end"],
+    ["connectrules", "endconnectrules"],
+    ["discipline", "enddiscipline"],
+    ["function", "endfunction"],
+    ["generate", "endgenerate"],
+    ["module", "endmodule"],
+    ["connectmodule","endmodule"],
+    ["macromodule", "endmodule"],
+    ["nature", "endnature"],
+    ["paramset", "endparamset"],
+    ["primitive", "endprimitive"],
+    ["specify", "endspecify"],
+    ["table", "endtable"],
+    ["task", "endtask"]
+  ],
+
+  "autoClosingPairs": [
+    { "open": "{", "close": "}" },
+    { "open": "[", "close": "]" },
+    { "open": "(", "close": ")" },
+    { "open": "\"", "close": "\"", "notIn": ["string"] },
+    { "open": "/*", "close": " */", "notIn": ["string"] },
+    { "open": "begin", "close": "\nend", "notIn": ["string"] },
+    { "open": "fork", "close": "\njoin", "notIn": ["string"] }
+  ],
+
+  "surroundingPairs": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"],
+    ["'", "'"],
+    ["\"", "\""],
+    ["`", "`"]
+  ],
+
+  "folding": {
+    "offSide": true,
+    "markers": {
+      "start": "^\\s*[//]*region",
+      "end": "^\\s*[//]*endregion"
+    }
+  },
+
+  "wordPattern": "(-?\\d*\\.\\d\\w*)|([^\\`\\~\\!\\@\\#\\%\\^\\&\\*\\(\\)\\-\\=\\+\\[\\{\\]\\}\\\\\\|\\;\\:\\'\\\"\\,\\.\\<\\>\\/\\?\\s]+)",
+  "indentationRules": {
+    "increaseIndentPattern": "(begin$)",
+    "decreaseIndentPattern": "(end$)"
+  }
+}

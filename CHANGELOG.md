@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)\
+## [1.15.6] - 2025-01-22
+
+### Unreleased
+
+- Added Verilog-AMS syntax highlighting
 
 ## [1.15.5] - 2024-11-09
 

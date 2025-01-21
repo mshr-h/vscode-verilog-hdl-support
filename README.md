@@ -18,6 +18,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - SystemVerilog
   - Bluespec SystemVerilog
   - VHDL
+  - Verilog-AMS
   - Vivado UCF constraints
   - Synopsys Design Constraints
   - Verilog Filelists (dot-F files)
