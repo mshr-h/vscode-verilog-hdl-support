@@ -1,0 +1,79 @@
+{
+    "ddt": {
+        "prefix": ["dd", "ddt"],
+        "body": [
+            "ddt ( ${1:exp}, ${2:[tol]} )"
+        ],
+        "description": "Time Derivative Operator"
+    },
+    "ddx": {
+        "prefix": ["dd", "ddx"],
+        "body": [
+            "ddx ( ${1:exp}, ${2:[unknown]} )"
+        ],
+        "description": "Symbolic Derivative Operator"
+    },
+    "idt": {
+        "prefix": ["id", "idt"],
+        "body": [
+            "idt ( ${1:exp[}, ${2:ic[}, ${3:assert[}, ${4:tol]]]} )"
+        ],
+        "description": "Time Integral Operator"
+    },
+    "idtmod": {
+        "prefix": ["idtm", "idtmod"],
+        "body": [
+            "idtmod ( ${1:exp[}, ${2:ic[}, ${3:modulus[}, ${4:offset[}, ${5:tol]]]]} )"
+        ],
+        "description": "Circular Integral Operator"
+    },
+    "absdelay": {
+        "prefix": ["abs", "absdelay"],
+        "body": [
+            "absdelay ( ${1:exp}, ${2:td[}, ${3:max_delay]} )"
+        ],
+        "description": "Absolute Delay Operator"
+    },
+    "transition": {
+        "prefix": ["trans", "transition"],
+        "body": [
+            "transition ( ${1:exp[}, ${2:td[}, ${3:rise_time[}, ${4:fall_time[}, ${3:time_tol]]]]})"
+        ],
+        "description": "Transition Filter"
+    },
+    "slew": {
+        "prefix": ["sl", "slew"],
+        "body": [
+            "slew ( ${1:exp[}, ${2:max_pos_slew_rate[}, ${3:max_neg_slew_rate]]})"
+        ],
+        "description": "Slew Filter"
+    },
+    "last_crossing": {
+        "prefix": ["sl", "slew"],
+        "body": [
+            "slew ( ${1:exp[}, ${2:direction]})"
+        ],
+        "description": "Last Crossing Function"
+    },
+    "limexp": {
+        "prefix": ["lim", "limexp"],
+        "body": [
+            "limexp ( ${1:exp})"
+        ],
+        "description": "Limited Exponential"
+    },
+    "laplace": {
+        "prefix": ["lap", "laplace"],
+        "body": [
+            "laplace_${1:zp/zd/np/nd} ( ${2:exp}, ${3:Zero}, ${4:Pole [}, ${5:tol]})"
+        ],
+        "description": "Laplace Transform Filters"
+    },
+    "zfilter": {
+        "prefix": ["z", "zi"],
+        "body": [
+            "zi_${1:zp/zd/np/nd} ( ${2:exp}, ${3:Zero}, ${4:Pole }, ${5:period[}, ${6:transition time[}, ${7:time first transition]]})"
+        ],
+        "description": "Z Transform Filters"
+    }
+}

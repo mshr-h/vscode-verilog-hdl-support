@@ -39,6 +39,21 @@
         "configuration": "./configs/verilog.configuration.json"
       },
       {
+        "id": "verilogams",
+        "aliases": [
+          "Verilog-AMS",
+          "verilog-ams",
+          "vams",
+          "VAMS",
+          "verilogams"
+        ],
+        "extensions": [
+          ".vams",
+          ".va"
+        ],
+        "configuration": "./configs/verilogams.configuration.json"
+      },
+      {
         "id": "systemverilog",
         "aliases": [
           "System Verilog",
@@ -140,6 +155,11 @@
         "path": "./syntaxes/verilog.tmLanguage.json"
       },
       {
+        "language": "verilogams",
+        "scopeName": "source.verilogams",
+        "path": "./syntaxes/verilogams.tmLanguage.json"
+      },
+      {
         "language": "systemverilog",
         "scopeName": "source.systemverilog",
         "path": "./syntaxes/systemverilog.tmLanguage.json"
@@ -194,6 +214,14 @@
     "snippets": [
       {
         "language": "verilog",
+        "path": "./snippets/verilog.json"
+      },
+      {
+        "language": "verilogams",
+        "path": "./snippets/verilogams.json"
+      },
+      {
+        "language": "verilogams",
         "path": "./snippets/verilog.json"
       },
       {
