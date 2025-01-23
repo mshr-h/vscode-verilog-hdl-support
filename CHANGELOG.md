@@ -2,10 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)\
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+
 ## [1.15.6] - 2025-01-22
 
-### Unreleased
+### Added
 
 - Added Verilog-AMS syntax highlighting
 
@@ -56,10 +57,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)\
 ## [1.14.3] - 2024-07-30
 
 ### Added
+
 - Verilator linter stderr passthrough [#489](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/489)
 - When linting using Verilator, all detected problems are highlighted (By default it's just current file and it's dependencies. Verilator launch config can be adjusted in linting settings)
 
 ### Fixed
+
 - Imroved regex matcher for Verilator output
 - Verilator output blocks are correctly tagged with `[error]` or `[warning]`
 
