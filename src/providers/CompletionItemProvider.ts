@@ -37,7 +37,7 @@ export class VerilogCompletionItemProvider implements vscode.CompletionItemProvi
       newItem.detail = symbol.type;
       let doc: string = '```systemverilog\n' + code + '\n```';
       if (symbol.parentScope !== undefined && symbol.parentScope !== '') {
-        doc += '\nHeirarchial Scope: ' + symbol.parentScope;
+        doc += '\nHierarchical Scope: ' + symbol.parentScope;
       }
       newItem.documentation = new vscode.MarkdownString(doc);
       items.push(newItem);

@@ -59,7 +59,7 @@ export class VerilogDocumentSymbolProvider implements vscode.DocumentSymbolProvi
     return false;
   }
 
-  // find the appropriate container RECURSIVELY and add to its childrem
+  // find the appropriate container RECURSIVELY and add to its children
   // return true: if done
   // return false: if container not found
   findContainer(con: vscode.DocumentSymbol, sym: vscode.DocumentSymbol): boolean {
@@ -79,8 +79,8 @@ export class VerilogDocumentSymbolProvider implements vscode.DocumentSymbolProvi
     return false;
   }
 
-  // Build heiarchial DocumentSymbol[] from linear symbolsList[] using start and end position
-  // TODO: Use parentscope/parenttype of symbol to construct heirarchial vscode.DocumentSymbol []
+  // Build hierarchical DocumentSymbol[] from linear symbolsList[] using start and end position
+  // TODO: Use parentscope/parenttype of symbol to construct hierarchical vscode.DocumentSymbol []
   buildDocumentSymbolList(symbolsList: Symbol[]): vscode.DocumentSymbol[] {
     let list: vscode.DocumentSymbol[] = [];
     symbolsList = symbolsList.sort((a, b): number => {
