@@ -96,10 +96,11 @@ export default class LintManager {
   async runLintTool() {
     // Check for language id
     this.logger.info('Executing runLintTool()');
-    let lang: string = vscode.window.activeTextEditor.document.languageId;
+    const editor = vscode.window.activeTextEditor;
     if (
-      vscode.window.activeTextEditor === undefined ||
-      (lang !== 'verilog' && lang !== 'systemverilog')
+      !editor ||
+      (editor.document.languageId !== 'verilog' &&
+        editor.document.languageId !== 'systemverilog')
     ) {
       vscode.window.showErrorMessage('Verilog-HDL/SystemVerilog: No document opened');
       return;
@@ -151,8 +152,8 @@ export default class LintManager {
         }
         this.logger.info('Using ' + linter.name + ' linter');
 
-        linter.removeFileDiagnostics(vscode.window.activeTextEditor.document);
-        linter.startLint(vscode.window.activeTextEditor.document);
+        linter.removeFileDiagnostics(editor.document);
+        linter.startLint(editor.document);
       }
     );
   }
