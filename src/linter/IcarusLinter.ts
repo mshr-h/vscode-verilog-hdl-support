@@ -72,10 +72,11 @@ export default class IcarusLinter extends BaseLinter {
     let command: string = binPath + ' ' + args.join(' ');
 
     // TODO: We have to apply the the #419 fix?
+    const wsFolders = vscode.workspace.workspaceFolders;
     let cwd: string =
-      this.runAtFileLocation || vscode.workspace.workspaceFolders === undefined
+      this.runAtFileLocation || !wsFolders || wsFolders.length === 0
         ? path.dirname(doc.uri.fsPath)
-        : vscode.workspace.workspaceFolders[0].uri.fsPath;
+        : wsFolders[0].uri.fsPath;
 
     this.logger.info('Execute');
     this.logger.info('  command: ', command);

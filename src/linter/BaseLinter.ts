@@ -19,7 +19,9 @@ export default abstract class BaseLinter {
     if (path.isAbsolute(inputPath)) {
       return inputPath;
     }
-    return path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, inputPath);
+    const wsFolders = vscode.workspace.workspaceFolders;
+    const base = wsFolders && wsFolders.length > 0 ? wsFolders[0].uri.fsPath : '';
+    return path.join(base, inputPath);
   }
 
   public startLint(doc: vscode.TextDocument) {
