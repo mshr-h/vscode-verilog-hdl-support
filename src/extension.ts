@@ -10,7 +10,7 @@ import * as DefinitionProvider from './providers/DefinitionProvider';
 import * as CompletionItemProvider from './providers/CompletionItemProvider';
 import { BsvInfoProviderManger } from './BsvProvider';
 import * as ModuleInstantiation from './commands/ModuleInstantiation';
-import * as FormatProvider from './providers/FormatPrivider';
+import * as FormatProvider from './providers/FormatProvider';
 import { ExtensionManager } from './extensionManager';
 import { createLogger, Logger } from './logger';
 
