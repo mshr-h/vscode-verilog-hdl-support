@@ -76,11 +76,14 @@ export default class VerilatorLinter extends BaseLinter {
         ? this.convertToWslPath(path.dirname(doc.uri.fsPath))
         : path.dirname(doc.uri.fsPath).replace(/\\/g, '/')
       : path.dirname(doc.uri.fsPath);
+    const wsFolders = vscode.workspace.workspaceFolders;
     let cwd: string = this.runAtFileLocation
       ? isWindows
         ? path.dirname(doc.uri.fsPath.replace(/\\/g, '/'))
         : docFolder
-      : vscode.workspace.workspaceFolders[0].uri.fsPath;
+      : wsFolders && wsFolders.length > 0
+        ? wsFolders[0].uri.fsPath
+        : path.dirname(doc.uri.fsPath);
     let verilator: string = isWindows
       ? this.useWSL
         ? 'wsl verilator'

@@ -2,6 +2,7 @@
 import * as vscode from 'vscode';
 import {exec as execNonPromise} from 'child_process';
 import * as util from 'util';
+import * as path from 'path';
 import { Logger } from './logger';
 const exec = util.promisify(execNonPromise);
 
@@ -366,7 +367,11 @@ export class CtagsManager {
     }
 
     // kick off async job for indexing for module.sv
-    let searchPattern = new vscode.RelativePattern(vscode.workspace.workspaceFolders[0], `**/${moduleToFind}.sv`);
+    const wsFolders = vscode.workspace.workspaceFolders;
+    const base = wsFolders && wsFolders.length > 0
+      ? wsFolders[0]
+      : path.dirname(document.uri.fsPath);
+    let searchPattern = new vscode.RelativePattern(base, `**/${moduleToFind}.sv`);
     let files = await vscode.workspace.findFiles(searchPattern);
     if (files.length !== 0) {
       let file = await vscode.workspace.openTextDocument(files[0]);

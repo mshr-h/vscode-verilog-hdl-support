@@ -78,11 +78,14 @@ export default class SlangLinter extends BaseLinter {
     args.push(`"${docUri}"`);
     let command: string = binPath + ' ' + args.join(' ');
 
+    const wsFolders = vscode.workspace.workspaceFolders;
     let cwd: string = this.runAtFileLocation
       ? isWindows
         ? cwdWin
         : docFolder
-      : vscode.workspace.workspaceFolders[0].uri.fsPath;
+      : wsFolders && wsFolders.length > 0
+        ? wsFolders[0].uri.fsPath
+        : path.dirname(doc.uri.fsPath);
 
     this.logger.info('[slang] Execute');
     this.logger.info('[slang]   command: ' + command);
