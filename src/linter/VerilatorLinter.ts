@@ -65,6 +65,11 @@ export default class VerilatorLinter extends BaseLinter {
     return child.execSync(cmd, {}).toString().replace(/\r?\n/g, '');
   }
 
+  private convertFromWslPath(inputPath: string): string {
+    let cmd: string = `wsl wslpath -w '${inputPath}'`;
+    return child.execSync(cmd, {}).toString().replace(/\r?\n/g, '');
+  }
+
   protected lint(doc: vscode.TextDocument) {
     let docUri: string = isWindows
       ? this.useWSL
@@ -137,6 +142,11 @@ export default class VerilatorLinter extends BaseLinter {
             }
           }
 
+          // Remove superfluous NUL from line head
+          while (line.startsWith('\0')) {
+            line = line.slice(1);
+          }
+
           // first line would be normal stderr output like "directory name is invalid"
           // others are verilator sort of "highlighting" the issue, the block with "^~~~~"
           // this can actually be used for better error/warning highlighting
@@ -204,9 +214,13 @@ export default class VerilatorLinter extends BaseLinter {
           }
           
           // replacing "\\" and "\" with "/" for consistency
-          if (isWindows)
-          {
+          if (isWindows) {
             rex.groups["filePath"] = rex.groups["filePath"].replace(/(\\\\)|(\\)/g, "/");
+
+            // if WSL is used, convert the path to Windows format
+            if (this.useWSL) {
+              rex.groups["filePath"] = this.convertFromWslPath(rex.groups["filePath"]);
+            }
           }
 
           // if there isn't a list of errors for this file already, it
