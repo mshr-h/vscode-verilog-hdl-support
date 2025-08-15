@@ -592,7 +592,7 @@
     "syntax": "js-yaml ./syntaxes/systemverilog.tmLanguage.yaml >./syntaxes/systemverilog.tmLanguage.json",
     "makeBsv": "antlr4ts -visitor syntaxes/bsv.g4 -o src/bsvjs",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
-    "test": "node ./out/src/test/bsv.js"
+    "test": "node ./out/src/test/runTest.js"
   },
   "dependencies": {
     "antlr4": "^4.13.1-patch-1",
