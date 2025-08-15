@@ -604,7 +604,7 @@
   },
   "devDependencies": {
     "@types/antlr4": "4.11.6",
-    "@types/glob": "^8.1.0",
+    "@types/glob": "^9.0.0",
     "@types/mocha": "~10.0.6",
     "@types/node": "~22.10.0",
     "@types/vscode": "^1.75.0",
