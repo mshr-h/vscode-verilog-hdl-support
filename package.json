@@ -606,7 +606,7 @@
   "devDependencies": {
     "@types/antlr4": "4.11.6",
     "@types/mocha": "~10.0.6",
-    "@types/node": "~22.10.0",
+    "@types/node": "~24.10.0",
     "@types/semver": "^7.7.1",
     "@types/vscode": "^1.75.0",
     "@types/which": "^3.0.3",
