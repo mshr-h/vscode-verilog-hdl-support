@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: latest
+          node-version: lts/*
       - name: npm ci
         run: npm ci
       - name: npm run vscode:prepublish
@@ -28,6 +28,6 @@ jobs:
         run: npm run package
       - name: upload vsix package
         if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           path: veriloghdl-*.vsix
