@@ -16,7 +16,7 @@ export class HoverProvider implements vscode.HoverProvider {
     document: vscode.TextDocument,
     position: vscode.Position,
     _token: vscode.CancellationToken
-  ): vscode.Hover {
+  ): vscode.Hover | undefined {
     // get word start and end
     let textRange = document.getWordRangeAtPosition(position);
 
@@ -50,13 +50,12 @@ export class HoverProvider implements vscode.HoverProvider {
       return { element: '', comment: '' };
     }
 
-    let variableType: string;
-    if (this.lang === 'systemverilog') {
-      variableType = String.raw`\b(input|output|inout|reg|wire|logic|integer|bit|byte|shortint|int|longint|time|shortreal|real|double|realtime|rand|randc)\b\s+`;
-    } else if (this.lang === 'verilog') {
-      variableType = String.raw`\b(input|output|inout|reg|wire|integer|time|real)\b\s+`;
-    }
-    let variableTypeStart = '^' + variableType;
+    const systemverilogTypes = ['input', 'output', 'inout', 'reg', 'wire', 'logic', 'integer', 'bit', 'byte', 'shortint', 'int', 'longint', 'time', 'shortreal', 'real', 'double', 'realtime', 'rand', 'randc'];
+    const verilogTypes = ['input', 'output', 'inout', 'reg', 'wire', 'integer', 'time', 'real'];
+    
+    const types = this.lang === 'systemverilog' ? systemverilogTypes : verilogTypes;
+    const variableType = String.raw`\b(${types.join('|')})\b\s+`;
+    const variableTypeStart = '^' + variableType;
     let paraType = String.raw`^\b(parameter|localparam)\b\s+\b${target}\b`;
 
     let regexTarget = RegExp(String.raw`\b${target}\b`);
@@ -132,6 +131,6 @@ function getSuffixedComment(document: vscode.TextDocument, lineNo: number): stri
   if (idx !== -1) {
     return line.substring(idx + 2).trim();
   } else {
-    return undefined;
+    return '';
   }
 }

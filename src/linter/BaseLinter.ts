@@ -19,6 +19,9 @@ export default abstract class BaseLinter {
     if (path.isAbsolute(inputPath)) {
       return inputPath;
     }
+    if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
+      return inputPath;
+    }
     return path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, inputPath);
   }
 
@@ -31,5 +34,5 @@ export default abstract class BaseLinter {
   }
 
   protected abstract convertToSeverity(severityString: string): vscode.DiagnosticSeverity;
-  protected abstract lint(doc: vscode.TextDocument);
+  protected abstract lint(doc: vscode.TextDocument): void;
 }

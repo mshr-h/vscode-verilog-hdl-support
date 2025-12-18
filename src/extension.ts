@@ -223,8 +223,11 @@ function setupLanguageClient(
   if (!enabled) {
     return;
   }
-  languageClients.get(name).start();
-  logger.info('"' + name + '" language server started.');
+  const client = languageClients.get(name);
+  if (client) {
+    client.start();
+    logger.info('"' + name + '" language server started.');
+  }
 }
 
 function initAllLanguageClients() {
@@ -252,10 +255,11 @@ function initAllLanguageClients() {
     connectionOptions: {
       messageStrategy: {
         handleMessage: (message, next) => {
-          if (Message.isResponse(message) && message.result['capabilities']) {
-            delete message.result['capabilities']['diagnosticProvider'];
-            delete message.result['capabilities']['documentFormattingProvider'];
-            delete message.result['capabilities']['documentRangeFormattingProvider'];
+          if (Message.isResponse(message) && message.result && typeof message.result === 'object' && 'capabilities' in message.result) {
+            const result = message.result as any;
+            delete result['capabilities']['diagnosticProvider'];
+            delete result['capabilities']['documentFormattingProvider'];
+            delete result['capabilities']['documentRangeFormattingProvider'];
           }
           next(message);
         },

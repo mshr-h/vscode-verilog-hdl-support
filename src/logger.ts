@@ -24,7 +24,7 @@ export class Logger {
     return new Logger(name, this);
   }
 
-  private log(level: keyof Logger, message: string, data?: unknown): void {
+  private log(level: 'trace' | 'info' | 'debug' | 'warn' | 'error', message: string, data?: unknown): void {
     let formattedMessage =
       this.parentLogger instanceof Logger ? `[${this.name}] ${message}` : `${message}`;
     if (data) {

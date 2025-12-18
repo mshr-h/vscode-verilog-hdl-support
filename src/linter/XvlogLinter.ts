@@ -6,10 +6,10 @@ import BaseLinter from './BaseLinter';
 import { Logger } from '../logger';
 
 export default class XvlogLinter extends BaseLinter {
-  private configuration: vscode.WorkspaceConfiguration;
-  private linterInstalledPath: string;
-  private arguments: string;
-  private includePath: string[];
+  private configuration!: vscode.WorkspaceConfiguration;
+  private linterInstalledPath: string = '';
+  private arguments: string = '';
+  private includePath: string[] = [];
 
   constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
     super('xvlog', diagnosticCollection, logger);
@@ -53,7 +53,7 @@ export default class XvlogLinter extends BaseLinter {
     this.logger.info('[xvlog] Execute');
     this.logger.info('[xvlog]   command: ' + command);
 
-    child_process.exec(command, (_error: Error, stdout: string, _stderr: string) => {
+    child_process.exec(command, (_error: child_process.ExecException | null, stdout: string, _stderr: string) => {
       let diagnostics: vscode.Diagnostic[] = [];
 
       stdout.split(/\r?\n/g).forEach((line) => {

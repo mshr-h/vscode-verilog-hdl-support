@@ -27,12 +27,12 @@ async function main() {
 
             class MyBsvErrorListener {
                 syntaxError(
-                    _recognizer,
-                    _offendingSymbol,
-                    _line,
-                    _charPositionInLine,
-                    msg,
-                    _e
+                    _recognizer: any,
+                    _offendingSymbol: any,
+                    _line: number,
+                    _charPositionInLine: number,
+                    msg: string,
+                    _e: any
                 ) {
                     console.error(msg);
                     debugger;

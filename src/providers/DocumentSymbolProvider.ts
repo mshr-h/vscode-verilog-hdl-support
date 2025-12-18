@@ -101,7 +101,7 @@ export class VerilogDocumentSymbolProvider implements vscode.DocumentSymbolProvi
         continue;
       } else {
         // find a parent among the top level element
-        let done: boolean;
+        let done: boolean = false;
         for (let j of list) {
           if (this.isContainer(j.kind) && j.range.contains(sym.range)) {
             this.findContainer(j, sym);

@@ -11,11 +11,12 @@ import { Logger } from '../logger';
 export default class LintManager {
   private subscriptions: vscode.Disposable[];
 
-  private linter: BaseLinter;
+  private linter: BaseLinter | null;
   private diagnosticCollection: vscode.DiagnosticCollection;
   private logger: Logger;
 
   constructor(logger: Logger) {
+    this.subscriptions = [];
     this.linter = null;
     this.diagnosticCollection = vscode.languages.createDiagnosticCollection();
     this.logger = logger;
@@ -31,7 +32,7 @@ export default class LintManager {
     });
   }
 
-  getLinterFromString(name: string): BaseLinter {
+  getLinterFromString(name: string): BaseLinter | null {
     switch (name) {
       case 'iverilog':
         return new IcarusLinter(this.diagnosticCollection, this.logger.getChild('IcarusLinter'));
@@ -61,6 +62,11 @@ export default class LintManager {
       if (this.linter.name === linterName) {
         return;
       }
+    }
+
+    if (linterName === undefined) {
+      this.logger.warn('Linter name is undefined');
+      return;
     }
 
     this.linter = this.getLinterFromString(linterName);
@@ -106,7 +112,7 @@ export default class LintManager {
       return;
     }
 
-    let linterStr: vscode.QuickPickItem = await vscode.window.showQuickPick(
+    let linterStr: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(
       [
         {
           label: 'iverilog',
@@ -145,7 +151,7 @@ export default class LintManager {
         title: 'Verilog-HDL/SystemVerilog: Running lint tool...',
       },
       async (_progress, _token) => {
-        let linter: BaseLinter = this.getLinterFromString(linterStr.label);
+        let linter: BaseLinter | null = this.getLinterFromString(linterStr.label);
         if (linter === null) {
           this.logger.error('Cannot find linter name: ' + linterStr.label);
           return;

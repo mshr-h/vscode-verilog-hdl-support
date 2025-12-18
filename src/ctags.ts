@@ -31,8 +31,8 @@ export class Symbol {
     this.startPosition = new vscode.Position(startLine, 0);
     this.parentScope = parentScope;
     this.parentType = parentType;
-    this.isValid = isValid;
-    this.endPosition = new vscode.Position(endLine, Number.MAX_VALUE);
+    this.isValid = isValid ?? false;
+    this.endPosition = new vscode.Position(endLine ?? startLine, Number.MAX_VALUE);
   }
 
   setEndPosition(endLine: number) {
@@ -180,7 +180,7 @@ export class Ctags {
         }
       }
       catch (e) {
-        this.logger.error('Exception caught: ' + e.message + ' ' + e.data);
+        this.logger.error('Exception caught: ' + (e instanceof Error ? e.message : String(e)));
       }
     }
     else {
@@ -190,14 +190,14 @@ export class Ctags {
     return Promise.resolve('');
   }
 
-  parseTagLine(line: string): Symbol {
+  parseTagLine(line: string): Symbol | undefined {
     try {
       let name, type, pattern, lineNoStr, parentScope, parentType: string;
       let scope: string[];
       let lineNo: number;
       let parts: string[] = line.split('\t');
       name = parts[0];
-      // pattern = parts[2];
+      pattern = parts[2];
       type = parts[3];
       // override "type" for parameters (See #102)
       if (parts.length == 6 && parts[5] === 'parameter:') {
@@ -233,13 +233,16 @@ export class Ctags {
         let lines: string[] = tags.split(/\r?\n/);
         lines.forEach((line) => {
           if (line !== '') {
-            this.symbols.push(this.parseTagLine(line));
+            let tag: Symbol | undefined = this.parseTagLine(line);
+            if (tag) {
+              this.symbols.push(tag);
+            }
           }
         });
 
         // end tags are not supported yet in ctags. So, using regex
-        let match;
-        let endPosition;
+        let match: RegExpExecArray | null;
+        let endPosition: vscode.Position;
         let text = this.doc.getText();
         let eRegex: RegExp = /^(?![\r\n])\s*end(\w*)*[\s:]?/gm;
         while ((match = eRegex.exec(text))) {
@@ -247,8 +250,9 @@ export class Ctags {
             endPosition = this.doc.positionAt(match.index + match[0].length - 1);
             // get the starting symbols of the same type
             // doesn't check for begin...end blocks
+            const matchType = match[1];
             let s = this.symbols.filter(
-              (i) => i.type === match[1] && i.startPosition.isBefore(endPosition) && !i.isValid
+              (i) => i.type === matchType && i.startPosition.isBefore(endPosition) && !i.isValid
             );
             if (s.length > 0) {
               // get the symbol nearest to the end tag
@@ -272,7 +276,7 @@ export class Ctags {
         this.isDirty = false;
       }
     } catch (e) {
-      this.logger.error(e.toString());
+      this.logger.error(String(e));
     }
   }
 
@@ -286,7 +290,7 @@ export class Ctags {
 
 export class CtagsManager {
   private filemap: Map<vscode.TextDocument, Ctags> = new Map();
-  private logger: Logger;
+  private logger!: Logger;
 
   configure(logger: Logger) {
     this.logger = logger;
@@ -296,7 +300,7 @@ export class CtagsManager {
   }
 
   getCtags(doc: vscode.TextDocument): Ctags {
-    let ctags: Ctags = this.filemap.get(doc);
+    let ctags: Ctags | undefined = this.filemap.get(doc);
     if (ctags === undefined) {
       ctags = new Ctags(this.logger, doc);
       this.filemap.set(doc, ctags);
@@ -346,7 +350,7 @@ export class CtagsManager {
     
     let textRange = document.getWordRangeAtPosition(position);
     if (!textRange || textRange.isEmpty) {
-      return undefined;
+      return [];
     }
     let targetText = document.getText(textRange);
     
@@ -366,11 +370,13 @@ export class CtagsManager {
     }
 
     // kick off async job for indexing for module.sv
-    let searchPattern = new vscode.RelativePattern(vscode.workspace.workspaceFolders[0], `**/${moduleToFind}.sv`);
-    let files = await vscode.workspace.findFiles(searchPattern);
-    if (files.length !== 0) {
-      let file = await vscode.workspace.openTextDocument(files[0]);
-      tasks.push(this.findDefinition(file, targetText));
+    if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+      let searchPattern = new vscode.RelativePattern(vscode.workspace.workspaceFolders[0], `**/${moduleToFind}.sv`);
+      let files = await vscode.workspace.findFiles(searchPattern);
+      if (files.length !== 0) {
+        let file = await vscode.workspace.openTextDocument(files[0]);
+        tasks.push(this.findDefinition(file, targetText));
+      }
     }
     
     // TODO: use promise.race

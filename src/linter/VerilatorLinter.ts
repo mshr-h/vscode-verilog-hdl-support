@@ -9,12 +9,12 @@ import { Logger } from '../logger';
 let isWindows = process.platform === 'win32';
 
 export default class VerilatorLinter extends BaseLinter {
-  private configuration: vscode.WorkspaceConfiguration;
-  private linterInstalledPath: string;
-  private arguments: string;
-  private includePath: string[];
-  private runAtFileLocation: boolean;
-  private useWSL: boolean;
+  private configuration!: vscode.WorkspaceConfiguration;
+  private linterInstalledPath!: string;
+  private arguments!: string;
+  private includePath!: string[];
+  private runAtFileLocation!: boolean;
+  private useWSL!: boolean;
 
   constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
     super('verilator', diagnosticCollection, logger);
@@ -85,7 +85,7 @@ export default class VerilatorLinter extends BaseLinter {
       ? isWindows
         ? path.dirname(doc.uri.fsPath.replace(/\\/g, '/'))
         : docFolder
-      : vscode.workspace.workspaceFolders[0].uri.fsPath;
+      : vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? docFolder;
     let verilator: string = isWindows
       ? this.useWSL
         ? 'wsl verilator'
@@ -113,7 +113,7 @@ export default class VerilatorLinter extends BaseLinter {
     var _: child.ChildProcess = child.exec(
       command,
       { cwd: cwd },
-      (_error: Error, _stdout: string, stderr: string) => {
+      (_error: child.ExecException | null, _stdout: string, stderr: string) => {
 
         // basically DiagnosticsCollection but with ability to append diag lists
         let filesDiag = new Map();
@@ -195,6 +195,11 @@ export default class VerilatorLinter extends BaseLinter {
           );
 
           let rex = errorParserRegex.exec(line);
+
+          // Check if rex or rex.groups is undefined
+          if (!rex || !rex.groups) {
+            return;
+          }
 
           // stderr passthrough
           // probably better toggled with a parameter

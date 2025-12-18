@@ -6,10 +6,19 @@ import { Ctags, Symbol } from '../ctags';
 import { logger } from '../extension';
 
 export function instantiateModuleInteract() {
+  if (!vscode.window.activeTextEditor) {
+    vscode.window.showErrorMessage('No active text editor found');
+    return;
+  }
   let filePath = path.dirname(vscode.window.activeTextEditor.document.fileName);
   selectFile(filePath).then((srcpath) => {
+    if (srcpath === undefined) {
+      return;
+    }
     instantiateModule(srcpath).then((inst) => {
-      vscode.window.activeTextEditor.insertSnippet(inst);
+      if (inst && vscode.window.activeTextEditor) {
+        vscode.window.activeTextEditor.insertSnippet(inst);
+      }
     });
   });
 }
@@ -19,12 +28,15 @@ async function instantiateModule(srcpath: string): Promise<vscode.SnippetString 
     let moduleName: string = '';
     let portsName: string[] = [];
     let parametersName: string[] = [];
+    if (!vscode.window.activeTextEditor) {
+      return undefined;
+    }
     let file: vscode.TextDocument = vscode.window.activeTextEditor.document;
     let ctags: ModuleTags = new ModuleTags(logger, file);
     logger.info('Executing ctags for module instantiation');
     let output = await ctags.execCtags(srcpath);
     await ctags.buildSymbolsList(output);
-    let module: Symbol;
+    let module: Symbol | undefined;
     let modules: Symbol[] = ctags.symbols.filter((tag) => tag.type === 'module');
     // No modules found
     if (modules.length <= 0) {
@@ -37,16 +49,20 @@ async function instantiateModule(srcpath: string): Promise<vscode.SnippetString 
     }
     // many modules found
     else if (modules.length > 1) {
-      moduleName = await vscode.window.showQuickPick(
+      const selectedModuleName = await vscode.window.showQuickPick(
         ctags.symbols.filter((tag) => tag.type === 'module').map((tag) => tag.name),
         {
           placeHolder: 'Choose a module to instantiate',
         }
       );
-      if (moduleName === undefined) {
+      if (selectedModuleName === undefined) {
         return undefined;
       }
+      moduleName = selectedModuleName;
       module = modules.filter((tag) => tag.name === moduleName)[0];
+    }
+    if (!module) {
+      return undefined;
     }
     let scope = module.parentScope != '' ? module.parentScope + '.' + module.name : module.name;
     let ports: Symbol[] = ctags.symbols.filter(
@@ -114,6 +130,10 @@ function instantiatePort(ports: string[]): string {
 async function selectFile(currentDir?: string): Promise<string | undefined> {
   currentDir = currentDir || vscode.workspace.rootPath;
 
+  if (!currentDir) {
+    return undefined;
+  }
+
   let dirs = getDirectories(currentDir);
   // if is subdirectory, add '../'
   if (currentDir !== vscode.workspace.rootPath) {
@@ -168,21 +188,21 @@ function getFiles(srcpath: string): string[] {
 class ModuleTags extends Ctags {
   buildSymbolsList(tags: string): Promise<void> {
     if (tags === '') {
-      return undefined;
+      return Promise.resolve();
     }
     // Parse ctags output
     let lines: string[] = tags.split(/\r?\n/);
     lines.forEach((line) => {
       if (line !== '') {
-        let tag: Symbol = this.parseTagLine(line);
+        let tag: Symbol | undefined = this.parseTagLine(line);
         // add only modules, ports and parameters
         // Use 'parameter' type instead of 'constant' after #102
-        if (tag.type === 'module' || tag.type === 'port' || tag.type === 'parameter') {
+        if (tag && (tag.type === 'module' || tag.type === 'port' || tag.type === 'parameter')) {
           this.symbols.push(tag);
         }
       }
     });
     // skip finding end tags
-    return undefined;
+    return Promise.resolve();
   }
 }

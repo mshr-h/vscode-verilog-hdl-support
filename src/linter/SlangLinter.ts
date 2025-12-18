@@ -9,12 +9,12 @@ import { Logger } from '../logger';
 let isWindows = process.platform === 'win32';
 
 export default class SlangLinter extends BaseLinter {
-  private configuration: vscode.WorkspaceConfiguration;
-  private linterInstalledPath: string;
-  private arguments: string;
-  private includePath: string[];
-  private runAtFileLocation: boolean;
-  private useWSL: boolean;
+  private configuration!: vscode.WorkspaceConfiguration;
+  private linterInstalledPath!: string;
+  private arguments!: string;
+  private includePath!: string[];
+  private runAtFileLocation!: boolean;
+  private useWSL!: boolean;
 
   constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
     super('slang', diagnosticCollection, logger);
@@ -82,7 +82,7 @@ export default class SlangLinter extends BaseLinter {
       ? isWindows
         ? cwdWin
         : docFolder
-      : vscode.workspace.workspaceFolders[0].uri.fsPath;
+      : vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? docFolder;
 
     this.logger.info('[slang] Execute');
     this.logger.info('[slang]   command: ' + command);
@@ -91,7 +91,7 @@ export default class SlangLinter extends BaseLinter {
     var _: child.ChildProcess = child.exec(
       command,
       { cwd: cwd },
-      (_error: Error, _stdout: string, stderr: string) => {
+      (_error: Error | null, _stdout: string, stderr: string) => {
         let diagnostics: vscode.Diagnostic[] = [];
         const re = /(.+?):(\d+):(\d+):\s(note|warning|error):\s(.*?)(\[-W(.*)\]|$)/;
         stderr.split(/\r?\n/g).forEach((line, _) => {
@@ -100,6 +100,9 @@ export default class SlangLinter extends BaseLinter {
           }
 
           let rex = line.match(re);
+          if (!rex) {
+            return;
+          }
 
           let filePath = rex[1];
           if (isWindows) {
@@ -115,7 +118,7 @@ export default class SlangLinter extends BaseLinter {
             return;
           }
 
-          if (rex && rex[0].length > 0) {
+          if (rex && rex[0] && rex[0].length > 0) {
             let lineNum = Number(rex[2]) - 1;
             let colNum = Number(rex[3]) - 1;
 

@@ -14,8 +14,12 @@ export class ExtensionManager {
     this.context = context;
     this.extensionID = extensionID;
     this.logger = logger;
-    this.packageJSON = vscode.extensions.getExtension(this.extensionID).packageJSON;
-    this.extensionPath = vscode.extensions.getExtension(this.extensionID).extensionPath;
+    const extension = vscode.extensions.getExtension(this.extensionID);
+    if (!extension) {
+      throw new Error(`Extension ${extensionID} not found`);
+    }
+    this.packageJSON = extension.packageJSON;
+    this.extensionPath = extension.extensionPath;
   }
 
   public isVersionUpdated(): boolean {
@@ -40,7 +44,7 @@ export class ExtensionManager {
     if (this.isVersionUpdated()) {
       vscode.window
         .showInformationMessage(displayName + ' extension has been updated', 'Open Changelog')
-        .then(function (_: string) {
+        .then(function (_: string | undefined) {
           let changelogUri = vscode.Uri.file(extensionPath + '/CHANGELOG.md');
           vscode.workspace.openTextDocument(changelogUri).then((doc) => {
             vscode.window.showTextDocument(doc);

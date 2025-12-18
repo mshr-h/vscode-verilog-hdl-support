@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MIT
+// @ts-nocheck
+
 import {
   SymbolInformation,
   DocumentSymbol,

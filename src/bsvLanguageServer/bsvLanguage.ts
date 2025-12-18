@@ -16,7 +16,7 @@ const trait =
 class BsvScope {}
 
 class BsvIdentifier {
-  identifier: String;
+  identifier: String = '';
 }
 
 const bsvPackageMixin = trait(BsvScope)(trait(BsvIdentifier)(class {}));
