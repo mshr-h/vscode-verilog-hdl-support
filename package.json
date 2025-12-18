@@ -580,14 +580,14 @@
   "scripts": {
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
-    "lint": "eslint src --ext ts",
+    "lint": "eslint src --ext .ts",
     "vscode:prepublish": "npm run compile && npm run esbuild-base -- --minify",
     "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/main.js --external:vscode --format=cjs --platform=node",
     "esbuild": "npm run esbuild-base -- --sourcemap",
     "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
     "test-compile": "tsc -p ./",
     "compile": "npm run syntax && tsc -p ./",
-    "package": "vsce package",
+    "package": "npm run pretest && vsce package",
     "watch": "tsc -w -p ./",
     "syntax": "js-yaml ./syntaxes/systemverilog.tmLanguage.yaml >./syntaxes/systemverilog.tmLanguage.json",
     "makeBsv": "antlr4ts -visitor syntaxes/bsv.g4 -o src/bsvjs",
@@ -595,6 +595,7 @@
     "test": "node ./out/src/test/bsv.js"
   },
   "dependencies": {
+    "@vscode/test-cli": "^0.0.12",
     "antlr4": "^4.13.1-patch-1",
     "antlr4ts": "^0.5.0-alpha.4",
     "js-yaml": "^4.1.0",
