@@ -41,6 +41,7 @@ jobs:
           sudo mkdir -p /opt/verible
           sudo tar -xzf "$tgz" -C /opt/verible --strip-components=1
           sudo ln -sf /opt/verible/bin/* /usr/local/bin/
+          chown -R $USER:$USER /opt/verible
 
           ls -l /opt/verible/bin/*
 
