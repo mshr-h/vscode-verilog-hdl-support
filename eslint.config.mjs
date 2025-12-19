@@ -1,48 +1,46 @@
-import { defineConfig, globalIgnores } from "eslint/config";
-import typescriptEslint from "@typescript-eslint/eslint-plugin";
-import tsParser from "@typescript-eslint/parser";
+import typescriptEslint from "typescript-eslint";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const filename = fileURLToPath(import.meta.url);
+const dirname = path.dirname(filename);
 const compat = new FlatCompat({
-    baseDirectory: __dirname,
+    baseDirectory: dirname,
     recommendedConfig: js.configs.recommended,
     allConfig: js.configs.all
 });
 
-export default defineConfig([globalIgnores([
-    "**/out",
-    "**/dist",
-    "**/*.d.ts",
-    "src/bsvjs/syntaxes",
-    "src/test",
-    "src/BsvProvider.ts",
-]), {
-    extends: compat.extends("eslint:recommended", "prettier"),
-
+export default [{
+    files: [
+        "**/out",
+        "**/dist",
+        "**/*.d.ts",
+        "src/bsvjs/syntaxes",
+        "src/test",
+        "src/BsvProvider.ts"
+    ],
+}, {
     plugins: {
-        "@typescript-eslint": typescriptEslint,
+        "@typescript-eslint": typescriptEslint.plugin,
     },
 
     languageOptions: {
-        parser: tsParser,
-        ecmaVersion: 6,
+        parser: typescriptEslint.parser,
+        ecmaVersion: 2022,
         sourceType: "module",
     },
 
     rules: {
-        "@typescript-eslint/naming-convention": "warn",
-        "@/semi": "warn",
+        "@typescript-eslint/naming-convention": ["warn", {
+            selector: "import",
+            format: ["camelCase", "PascalCase"],
+        }],
+
         curly: "warn",
         eqeqeq: "warn",
         "no-throw-literal": "warn",
-        semi: "off",
-        "no-unused-vars": "off",
-        "no-undef": "warn",
-        "no-constant-condition": "warn",
+        semi: "warn",
     },
-}]);
+}];

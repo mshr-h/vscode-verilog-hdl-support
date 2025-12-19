@@ -64,7 +64,7 @@ async function instantiateModule(srcpath: string): Promise<vscode.SnippetString 
     if (!module) {
       return undefined;
     }
-    let scope = module.parentScope != '' ? module.parentScope + '.' + module.name : module.name;
+    let scope = module.parentScope !== '' ? module.parentScope + '.' + module.name : module.name;
     let ports: Symbol[] = ctags.symbols.filter(
       (tag) => tag.type === 'port' && tag.parentType === 'module' && tag.parentScope === scope
     );

@@ -624,6 +624,7 @@
     "glob": "^13.0.0",
     "mocha": "^11.0.0",
     "ts-loader": "^9.5.1",
+    "typescript-eslint": "^8.48.1",
     "typescript": "5.4.3"
   },
   "__metadata": {

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
-import * as child_process from 'child_process';
+import {exec, ExecException} from 'child_process';
 import * as path from 'path';
 import BaseLinter from './BaseLinter';
 import { Logger } from '../logger';
@@ -53,7 +53,7 @@ export default class XvlogLinter extends BaseLinter {
     this.logger.info('[xvlog] Execute');
     this.logger.info('[xvlog]   command: ' + command);
 
-    child_process.exec(command, (_error: child_process.ExecException | null, stdout: string, _stderr: string) => {
+    exec(command, (_error: ExecException | null, stdout: string, _stderr: string) => {
       let diagnostics: vscode.Diagnostic[] = [];
 
       stdout.split(/\r?\n/g).forEach((line) => {

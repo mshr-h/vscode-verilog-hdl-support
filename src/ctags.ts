@@ -200,7 +200,7 @@ export class Ctags {
       pattern = parts[2];
       type = parts[3];
       // override "type" for parameters (See #102)
-      if (parts.length == 6 && parts[5] === 'parameter:') {
+      if (parts.length === 6 && parts[5] === 'parameter:') {
         type = 'parameter';
       }
       if (parts.length >= 5) {

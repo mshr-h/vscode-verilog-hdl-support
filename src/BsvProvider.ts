@@ -76,7 +76,6 @@ const internalInfo = {
         "proto" : ``
     },
     */
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Bits: {
     type: 'typeclass',
     info: `Bits defines the class of types that can be converted to bit vectors and back. Membership in this
@@ -100,19 +99,16 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Eq: {
     type: 'typeclass',
     info: `Eq defines the class of types whose values can be compared for equality. Instances of the Eq class are often automatically derived using the deriving statement.`,
     proto: `Eq #(type data_t);`,
     methods: {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '==': {
         type: `function`,
         proto: `function Bool \== (data_t x, data_t y,);`,
         info: `Returns True if x is equal to y.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '/=': {
         type: `function`,
         proto: `function Bool \/= (data_t x, data_t y,);`,
@@ -122,7 +118,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Literal: {
     type: 'typeclass',
     info: `Literal defines the class of types which can be created from integer literals.`,
@@ -142,7 +137,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   RealLiteral: {
     type: 'typeclass',
     info: `RealLiteral defines the class of types which can be created from real literals.`,
@@ -157,7 +151,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   SizedLiteral: {
     type: 'typeclass',
     info: `SizedLiteral defines the class of types which can be created from integer literals with a specified size.`,
@@ -172,20 +165,17 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Arith: {
     type: 'typeclass',
     info: `Arith defines the class of types on which arithmetic operations are dened.`,
     proto: `Arith #(type data_t)`,
     methods: {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '+': {
         type: `function`,
         proto: `function data_t \+ (data_t x, data_t y);`,
         info: `Element x is added to element y.`,
         package: 'Prelude',
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '-': {
         type: `function`,
         proto: `function data_t \- (data_t x, data_t y);`,
@@ -198,21 +188,18 @@ const internalInfo = {
         info: `Change the sign of the number. When using the function the Verilog negate operator, -, may be used.`,
         package: 'Prelude',
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '*': {
         type: `function`,
         proto: `function data_t \* (data_t x, data_t y);`,
         info: `Element x is multiplied by y.`,
         package: 'Prelude',
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '/': {
         type: `function`,
         proto: `function data_t \/ (data_t x, data_t y);`,
         info: `Element x is divided by y. The definition depends on the type - many types truncate the remainder . Note: may not be synthesizable with downstream tools.`,
         package: 'Prelude',
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '%': {
         type: `function`,
         proto: `function data_t \% (data_t x, data_t y);`,
@@ -231,7 +218,6 @@ const internalInfo = {
         info: `Returns a unit value with the same sign as x, such that abs(x)*signum(x) = x. signum(12) returns 1 and signum(-12) returns -1.`,
         package: 'Prelude',
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '**': {
         type: `function`,
         proto: `function data_t \** (data_t x, data_t y);`,
@@ -244,7 +230,6 @@ const internalInfo = {
         info: `Returns the base 2 logarithm of x (log 2x).`,
         package: 'Prelude',
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       exp_e: {
         type: `function`,
         proto: `function data_t exp_e (data_t x);`,
@@ -271,34 +256,29 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Ord: {
     type: 'typeclass',
     info: `Ord defines the class of types for which an order is defined, allowing comparison operations. A complete definition of an instance of Ord requires dening either <= or compare.`,
     proto: `Ord #(type data_t);`,
     methods: {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '<': {
         type: `function`,
         proto: `function Bool \< (data_t x, data_t y);`,
         info: `Returns True if x is less than y.`,
         package: 'Prelude',
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '<=': {
         type: `function`,
         proto: `function Bool \<= (data_t x, data_t y);`,
         info: `Returns True if x is less than or equal to y.`,
         package: 'Prelude',
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '>': {
         type: `function`,
         proto: `function Bool \> (data_t x, data_t y);`,
         info: `Returns True if x is greater than y.`,
         package: 'Prelude',
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '>=': {
         type: `function`,
         proto: `function Bool \>= (data_t x, data_t y);`,
@@ -326,7 +306,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Bounded: {
     type: 'typeclass',
     info: `Bounded defines the class of types with a finite range and provides functions to define the range.`,
@@ -347,41 +326,35 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Bitwise: {
     type: 'typeclass',
     info: `Bitwise defines the class of types on which bitwise operations are defined.`,
     proto: `Bitwise #(type data_t);`,
     methods: {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '&': {
         type: `function`,
         proto: `function data_t \& (data_t x1, data_t x2);`,
         info: `Performs an and operation on each bit in x1 and x2 to calculate the result.`,
         package: 'Prelude',
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '|': {
         type: `function`,
         proto: `function data_t \| (data_t x1, data_t x2);`,
         info: `Performs an or operation on each bit in x1 and x2 to calculate the result.`,
         package: 'Prelude',
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '^': {
         type: `function`,
         proto: `function data_t \^ (data_t x1, data_t x2);`,
         info: `Performs an exclusive or operation on each bit in x1 and x2 to calculate the result.`,
         package: 'Prelude',
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '~^': {
         type: `function`,
         proto: `function data_t \~^ (data_t x1, data_t x2);`,
         info: `Performs an exclusive nor operation on each bit in x1 and x2 to calculate the result.`,
         package: 'Prelude',
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '^~': {
         type: `function`,
         proto: `function data_t \^~ (data_t x1, data_t x2);`,
@@ -394,21 +367,18 @@ const internalInfo = {
         info: `Performs a unary negation operation on each bit in x1. When using this function, the corresponding Verilog operator, ~, may be used.`,
         package: 'Prelude',
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '~': {
         type: `function`,
         proto: `function data_t invert (data_t x1);`,
         info: `Performs a unary negation operation on each bit in x1. When using this function, the corresponding Verilog operator, ~, may be used.`,
         package: 'Prelude',
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '<<': {
         type: `function`,
         proto: `function data_t \<< (data_t x1, x2);`,
         info: `Performs a left shift operation of x1 by the number of bit positions given by x2. x2 must be of an acceptable index type (Integer, Bit#(n), Int#(n) or UInt#(n)).`,
         package: 'Prelude',
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '>>': {
         type: `function`,
         proto: `function data_t \>> (data_t x1, x2);`,
@@ -430,7 +400,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   BitReduction: {
     type: 'typeclass',
     info: `BitReduction defines the class of types on which the Verilog bit reduction operations are defined.`,
@@ -474,7 +443,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   BitExtend: {
     type: 'typeclass',
     info: `BitExtend defines types on which bit extension operations are defined.`,
@@ -507,7 +475,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   SaturatingArith: {
     type: 'typeclass',
     info: `The SaturatingArith typeclass contains modified addition and subtraction functions which saturate to the values defined by maxBound or minBound when the operation would otherwise over ow or wrap-around`,
@@ -540,7 +507,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Alias: {
     type: 'typeclass',
     info: `Alias specifies that two types can be used interchangeably, providing a way to introduce local names for types within a module. They are used in Provisos.`,
@@ -548,7 +514,6 @@ const internalInfo = {
     methods: {},
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   NumAlias: {
     type: 'typeclass',
     info: `Alias specifies that two types can be used interchangeably, providing a way to introduce local names for types within a module. They are used in Provisos.`,
@@ -556,7 +521,6 @@ const internalInfo = {
     methods: {},
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   FShow: {
     type: 'typeclass',
     info: `The FShow typeclass defines the types to which the function fshow can be applied. The function converts a value to an associated Fmt representation for use with the $display family of system tasks. Instances of the FShow class can often be automatically derived using the deriving statement`,
@@ -571,7 +535,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   StringLiteral: {
     type: 'typeclass',
     info: `StringLiteral defines the class of types which can be created from strings.`,
@@ -588,7 +551,6 @@ const internalInfo = {
   },
 
   // type define
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Bit: {
     type: 'class',
     info: ``,
@@ -619,7 +581,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   UInt: {
     type: 'class',
     info: `The UInt type is an unsigned fixed width representation of an integer value`,
@@ -638,7 +599,6 @@ const internalInfo = {
     methods: {},
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Int: {
     type: 'class',
     info: `The Int type is a signed fixed width representation of an integer value.`,
@@ -657,7 +617,6 @@ const internalInfo = {
     methods: {},
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Integer: {
     type: 'class',
     info: `The Integer type is a data type used for integer values and functions. Because Integer is not part of the Bits typeclass, the Integer type is used for static elaboration only; all values must be resolved at compile time.`,
@@ -691,7 +650,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Bool: {
     type: 'class',
     info: `The Bool type is defined to have two values, True and False.`,
@@ -704,13 +662,11 @@ const internalInfo = {
         info: `Returns True if x is false, returns False if x is true.`,
         package: 'Prelude',
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '&&': {
         type: `function`,
         proto: `function Bool \&& (Bool x, Bool y);`,
         info: `Returns True if x and y are true, else it returns False.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       '||': {
         type: `function`,
         proto: `function Bool \|| (Bool x, Bool y);`,
@@ -719,7 +675,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Real: {
     type: 'class',
     info: `The Real type is a data type used for real values and functions.`,
@@ -741,7 +696,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   String: {
     type: 'class',
     info: `Strings are mostly used in system tasks (such as $display). The String type belongs to the Eq type class; strings can be tested for equality and inequality using the == and != operators. The String type is also part of the Arith class, but only the addition (+) operator is defined. All other Arith operators will produce an error message.`,
@@ -811,7 +765,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Char: {
     type: 'class',
     info: `The Char data type is used mostly in system tasks (such as $display). The Char type provides the ability to traverse the characters of a string. The Char type belongs to the Eq type class; chars can be tested for equality and inequality using the == and != operators.`,
@@ -947,7 +900,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Fmt: {
     type: 'class',
     info: `The Fmt primitive type provides a representation of arguments to the $display family of system tasks that can be manipulated in BSV code. Fmt representations of data objects can be written hierarchically and applied to polymorphic types.`,
@@ -956,7 +908,6 @@ const internalInfo = {
     methods: {},
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Void: {
     type: 'class',
     info: `The Void type is a type which has one literal ? used for constructing concrete values of the type void . The Void type is part of the Bits and Literal typeclasses.`,
@@ -965,7 +916,6 @@ const internalInfo = {
     methods: {},
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Maybe: {
     type: 'class',
     info: `The Maybe type is used for tagging values as either Valid or Invalid. If the value is Valid, the value contains a datatype data_t.`,
@@ -986,7 +936,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Tuple2: {
     type: 'class',
     info: `Tuples are predefined structures which group a small number of values together. The following pseudo code explains the structure of the tuples. You cannot define your own tuples, but must use the seven predefined tuples, Tuple2 through Tuple8. As shown, Tuple2 groups two items together, Tuple3 groups three items together, up through Tuple8 which groups eight items together.`,
@@ -998,13 +947,11 @@ const internalInfo = {
         proto: `function Tuple2 tuple2 (e1, e2)`,
         info: `Creates a variable of type Tuple2 with component values e1 and e2.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_1: {
         type: `function`,
         proto: ``,
         info: `Extracts the first field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_2: {
         type: `function`,
         proto: ``,
@@ -1013,7 +960,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Tuple3: {
     type: 'class',
     info: `Tuples are predefined structures which group a small number of values together. The following pseudo code explains the structure of the tuples. You cannot define your own tuples, but must use the seven predefined tuples, Tuple2 through Tuple8. As shown, Tuple2 groups two items together, Tuple3 groups three items together, up through Tuple8 which groups eight items together.`,
@@ -1025,19 +971,16 @@ const internalInfo = {
         proto: `function Tuple3 tuple3 (e1, e2, e3)`,
         info: `Creates a variable of type Tuple3 with component values e1 e2 and e3.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_1: {
         type: `function`,
         proto: ``,
         info: `Extracts the first field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_2: {
         type: `function`,
         proto: ``,
         info: `Extracts the second field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_3: {
         type: `function`,
         proto: ``,
@@ -1046,7 +989,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Tuple4: {
     type: 'class',
     info: `Tuples are predefined structures which group a small number of values together. The following pseudo code explains the structure of the tuples. You cannot define your own tuples, but must use the seven predefined tuples, Tuple2 through Tuple8. As shown, Tuple2 groups two items together, Tuple3 groups three items together, up through Tuple8 which groups eight items together.`,
@@ -1058,25 +1000,21 @@ const internalInfo = {
         proto: `function Tuple4 tuple4 (e1, e2, e3, e4)`,
         info: `Creates a variable of type Tuple4 with component values e1 e2 e3 and e4.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_1: {
         type: `function`,
         proto: ``,
         info: `Extracts the first field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_2: {
         type: `function`,
         proto: ``,
         info: `Extracts the second field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_3: {
         type: `function`,
         proto: ``,
         info: `Extracts the third field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_4: {
         type: `function`,
         proto: ``,
@@ -1085,7 +1023,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Tuple5: {
     type: 'class',
     info: `Tuples are predefined structures which group a small number of values together. The following pseudo code explains the structure of the tuples. You cannot define your own tuples, but must use the seven predefined tuples, Tuple2 through Tuple8. As shown, Tuple2 groups two items together, Tuple3 groups three items together, up through Tuple8 which groups eight items together.`,
@@ -1097,31 +1034,26 @@ const internalInfo = {
         proto: `function Tuple5 tuple5 (e1, e2, e3, e4, e5)`,
         info: `Creates a variable of type Tuple5 with component values e1 e2 e3 e4 and e5.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_1: {
         type: `function`,
         proto: ``,
         info: `Extracts the first field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_2: {
         type: `function`,
         proto: ``,
         info: `Extracts the second field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_3: {
         type: `function`,
         proto: ``,
         info: `Extracts the third field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_4: {
         type: `function`,
         proto: ``,
         info: `Extracts the fourth field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_5: {
         type: `function`,
         proto: ``,
@@ -1130,7 +1062,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Tuple6: {
     type: 'class',
     info: `Tuples are predefined structures which group a small number of values together. The following pseudo code explains the structure of the tuples. You cannot define your own tuples, but must use the seven predefined tuples, Tuple2 through Tuple8. As shown, Tuple2 groups two items together, Tuple3 groups three items together, up through Tuple8 which groups eight items together.`,
@@ -1142,37 +1073,31 @@ const internalInfo = {
         proto: `function Tuple6 tuple6 (e1, e2, e3, e4, e5, e6)`,
         info: `Creates a variable of type Tuple6 with component values e1 e2 e3 e4 e5 and e6.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_1: {
         type: `function`,
         proto: ``,
         info: `Extracts the first field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_2: {
         type: `function`,
         proto: ``,
         info: `Extracts the second field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_3: {
         type: `function`,
         proto: ``,
         info: `Extracts the third field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_4: {
         type: `function`,
         proto: ``,
         info: `Extracts the fourth field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_5: {
         type: `function`,
         proto: ``,
         info: `Extracts the fifth field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_6: {
         type: `function`,
         proto: ``,
@@ -1181,7 +1106,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Tuple7: {
     type: 'class',
     info: `Tuples are predefined structures which group a small number of values together. The following pseudo code explains the structure of the tuples. You cannot define your own tuples, but must use the seven predefined tuples, Tuple2 through Tuple8. As shown, Tuple2 groups two items together, Tuple3 groups three items together, up through Tuple8 which groups eight items together.`,
@@ -1193,43 +1117,36 @@ const internalInfo = {
         proto: `function Tuple7 tuple7 (e1, e2, e3, e4, e5, e6, e7)`,
         info: `Creates a variable of type Tuple7 with component values e1 e2 e3 e4 e5 e6 and e7.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_1: {
         type: `function`,
         proto: ``,
         info: `Extracts the first field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_2: {
         type: `function`,
         proto: ``,
         info: `Extracts the second field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_3: {
         type: `function`,
         proto: ``,
         info: `Extracts the third field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_4: {
         type: `function`,
         proto: ``,
         info: `Extracts the fourth field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_5: {
         type: `function`,
         proto: ``,
         info: `Extracts the fifth field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_6: {
         type: `function`,
         proto: ``,
         info: `Extracts the sixth field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_7: {
         type: `function`,
         proto: ``,
@@ -1238,7 +1155,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Tuple8: {
     type: 'class',
     info: `Tuples are predefined structures which group a small number of values together. The following pseudo code explains the structure of the tuples. You cannot define your own tuples, but must use the seven predefined tuples, Tuple2 through Tuple8. As shown, Tuple2 groups two items together, Tuple3 groups three items together, up through Tuple8 which groups eight items together.`,
@@ -1250,49 +1166,41 @@ const internalInfo = {
         proto: `function Tuple8 tuple8 (e1, e2, e3, e4, e5, e6, e7, e8)`,
         info: `Creates a variable of type Tuple8 with component values e1 e2 e3 e4 e5 e6 e7 and e8.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_1: {
         type: `function`,
         proto: ``,
         info: `Extracts the first field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_2: {
         type: `function`,
         proto: ``,
         info: `Extracts the second field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_3: {
         type: `function`,
         proto: ``,
         info: `Extracts the third field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_4: {
         type: `function`,
         proto: ``,
         info: `Extracts the fourth field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_5: {
         type: `function`,
         proto: ``,
         info: `Extracts the fifth field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_6: {
         type: `function`,
         proto: ``,
         info: `Extracts the sixth field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_7: {
         type: `function`,
         proto: ``,
         info: `Extracts the seventh field of x from a Tuple.`,
       },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       tpl_8: {
         type: `function`,
         proto: ``,
@@ -1301,7 +1209,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Array: {
     type: 'class',
     info: `Array variables are generally declared anonymously, using the bracket syntax. However, the type of such variables can be expressed with the type constructor Array, when an explicit type is needed.`,
@@ -1310,7 +1217,6 @@ const internalInfo = {
     methods: {},
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Ordering: {
     type: 'class',
     info: `The Ordering type is used as the return type for the result of generic comparators, including the compare function defined in the Ord (Section 2.1.7) type class. The valid values of Ordering are: LT, GT, and EQ.`,
@@ -1324,7 +1230,6 @@ const internalInfo = {
     methods: {},
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   File: {
     type: 'class',
     info: `File is a defined type in BSV which is defined as:`,
@@ -1338,7 +1243,6 @@ const internalInfo = {
     methods: {},
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Clock: {
     type: 'class',
     info: `Clock is an abstract type of two components: a single Bit oscillator and a Bool gate.`,
@@ -1347,7 +1251,6 @@ const internalInfo = {
     methods: {},
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Reset: {
     type: 'class',
     info: `Reset is an abstract type.`,
@@ -1356,7 +1259,6 @@ const internalInfo = {
     methods: {},
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Inout: {
     type: 'class',
     info: `An Inout type is a first class type that is used to pass Verilog inouts through a BSV module. It takes an argument which is the type of the underlying signal`,
@@ -1365,7 +1267,6 @@ const internalInfo = {
     methods: {},
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Action: {
     type: 'class',
     info: `The Action type is a special case of the more general type ActionValue where nothing is returned. That is, the returns type is (void)`,
@@ -1380,7 +1281,6 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Rules: {
     type: 'class',
     info: `A rule expression has type Rules and consists of a collection of individual rule constructs. Rules are first class objects, hence variables of type Rules may be created and manipulated. Rules values must eventually be added to a module in order to appear in synthesized hardware.`,
@@ -1437,56 +1337,48 @@ const internalInfo = {
     },
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   TAdd: {
     type: 'function',
     info: 'Calculate n1 + n2',
     proto: 'function TAdd#(n1,n2)',
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   TSub: {
     type: 'function',
     info: 'Calculate n1 - n2',
     proto: 'function TSub#(n1,n2)',
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   TMul: {
     type: 'function',
     info: 'Calculate n1 * n2',
     proto: 'function TSub#(n1,n2)',
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   TDiv: {
     type: 'function',
     info: 'Calculate ceiling n1/n2',
     proto: 'function TDiv#(n1,n2)',
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   TLog: {
     type: 'function',
     info: 'Calculate ceiling log2(n1)',
     proto: 'function TLog#(n1)',
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   TExp: {
     type: 'function',
     info: 'Calculate 2^n1',
     proto: 'function TExp#(n1)',
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   TMax: {
     type: 'function',
     info: 'Calculate max(n1; n2)',
     proto: 'function TMax#(n1,n2)',
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   TMin: {
     type: 'function',
     info: 'Calculate min(n1; n2)',
@@ -1507,7 +1399,6 @@ const internalInfo = {
     proto: 'function Integer valueof (t) ;',
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   SizeOf: {
     type: 'function',
     info: 'Converts a type into a numeric type representing its bit size.',
@@ -1516,7 +1407,6 @@ const internalInfo = {
   },
 
   // reg and wires
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Reg: {
     type: 'class',
     info: `The most elementary module available in BSV is the register, which has a Reg interface. Registers
@@ -1609,7 +1499,6 @@ const internalInfo = {
     package: 'Prelude',
   },
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   RWire: {
     type: 'class',
     info: `An RWire is a primitive stateless module whose purpose is to allow data transfer between methods and rules without the cycle latency of a register. That is, a RWire may be written in a cycle and that value can be read out in the same cycle; values are not stored across clock cycles.`,
@@ -1653,7 +1542,6 @@ const internalInfo = {
     package: 'Prelude',
   },
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Wire: {
     type: 'class',
     info: `The Wire interface and module are similar to RWire, but the valid bit is hidden from the user and the validity of the read is considered an implicit condition. The Wire interface works like the Reg interface, so mentioning the name of the wire gets (reads) its contents whenever they're valid, and using <= writes the wire. Wire is an RWire that is designed to be interchangeable with Reg. You can replace a Reg with a Wire without changing the syntax.`,
@@ -1705,7 +1593,6 @@ const internalInfo = {
     package: 'Prelude',
   },
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   PulseWire: {
     type: 'class',
     info: `The PulseWire interface is an RWire without any data. It is useful within rules and action methods to signal other methods or rules in the same clock cycle. Note that because the read method is called _read, the register shorthand can be used to get its value without mentioning the method _read (it is implicitly added).`,
@@ -1754,7 +1641,6 @@ const internalInfo = {
     package: 'Prelude',
   },
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   ReadOnly: {
     type: 'class',
     info: `ReadOnly is an interface which provides a value. The _read shorthand can be used to read the value.`,
@@ -1789,7 +1675,6 @@ const internalInfo = {
     proto: `function a_type readReadOnly(ReadOnly#(a_type) r);`,
     package: 'Prelude',
   },
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   WriteOnly: {
     type: 'class',
     info: `WriteOnly is an interface which writes a value. The _write shorthand is used to write the value.`,
@@ -3071,7 +2956,7 @@ class BsvStdLibProvider {
       if (Object.prototype.hasOwnProperty.call(internalInfo, key)) {
         const element = internalInfo[key];
         const pp: String = element.package;
-        if (element.package != p) {
+        if (element.package !== p) {
           continue;
         }
         const type: String = element.type;
@@ -3207,7 +3092,7 @@ class BsvBaseInfoProvider {
   findDocumentSymbol(id: String, perferUri: Uri): SymbolInformation | void {
     if (this.docSymbolCache.has(perferUri)) {
       for (const iterator of this.docSymbolCache.get(perferUri)) {
-        if (iterator.name == id) {
+        if (iterator.name === id) {
           return iterator;
         }
       }
@@ -3215,7 +3100,7 @@ class BsvBaseInfoProvider {
 
     for (let [k, v] of this.docSymbolCache) {
       for (const iterator of v) {
-        if (iterator.name == id) {
+        if (iterator.name === id) {
           return iterator;
         }
       }
@@ -3328,7 +3213,7 @@ class BsvWorkspaceInfoProvider extends BsvBaseInfoProvider implements BsvInfoPro
     if (res) {
       return res
         .filter((v) => {
-          return v.name == id;
+          return v.name === id;
         })
         .map((i) => {
           return new SymbolLink(i.location.uri, i.location.range);
@@ -3387,7 +3272,7 @@ class BsvSingleFileInfoProvider extends BsvBaseInfoProvider implements BsvInfoPr
     if (res) {
       return res
         .filter((v) => {
-          return v.name == id;
+          return v.name === id;
         })
         .map((i) => {
           return new SymbolLink(i.location.uri, i.location.range);
@@ -3427,9 +3312,9 @@ export class BsvInfoProviderManger {
   protected refreshWorkspace(logger: Logger) {
     if (!workspace.workspaceFolders) {
       this.provider = new BsvSingleFileInfoProvider(logger);
-    } else if (workspace.workspaceFolders.length == 0) {
+    } else if (workspace.workspaceFolders.length === 0) {
       this.provider = new BsvSingleFileInfoProvider(logger);
-    } else if (workspace.workspaceFolders.length == 1) {
+    } else if (workspace.workspaceFolders.length === 1) {
       this.provider = new BsvWorkspaceInfoProvider(workspace.workspaceFolders[0].uri, logger);
     } else {
       logger.error('bsv only support one opened workspace now');

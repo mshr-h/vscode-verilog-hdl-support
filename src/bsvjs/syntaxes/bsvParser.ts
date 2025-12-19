@@ -597,7 +597,7 @@ export class bsvParser extends Parser {
 			_alt = this.interpreter.adaptivePredict(this._input, 3, this._ctx);
 			while (_alt !== 2 && _alt !== ATN.INVALID_ALT_NUMBER) {
 				if (_alt === 1) {
-					if (this._parseListeners != null) {
+					if (this._parseListeners !== null) {
 						this.triggerExitRuleEvent();
 					}
 					_prevctx = _localctx;
@@ -5091,7 +5091,7 @@ export class bsvParser extends Parser {
 			_alt = this.interpreter.adaptivePredict(this._input, 151, this._ctx);
 			while (_alt !== 2 && _alt !== ATN.INVALID_ALT_NUMBER) {
 				if (_alt === 1) {
-					if (this._parseListeners != null) {
+					if (this._parseListeners !== null) {
 						this.triggerExitRuleEvent();
 					}
 					_prevctx = _localctx;
@@ -8103,7 +8103,7 @@ export class bsvParser extends Parser {
 			_alt = this.interpreter.adaptivePredict(this._input, 238, this._ctx);
 			while (_alt !== 2 && _alt !== ATN.INVALID_ALT_NUMBER) {
 				if (_alt === 1) {
-					if (this._parseListeners != null) {
+					if (this._parseListeners !== null) {
 						this.triggerExitRuleEvent();
 					}
 					_prevctx = _localctx;
@@ -8477,7 +8477,7 @@ export class bsvParser extends Parser {
 			_alt = this.interpreter.adaptivePredict(this._input, 246, this._ctx);
 			while (_alt !== 2 && _alt !== ATN.INVALID_ALT_NUMBER) {
 				if (_alt === 1) {
-					if (this._parseListeners != null) {
+					if (this._parseListeners !== null) {
 						this.triggerExitRuleEvent();
 					}
 					_prevctx = _localctx;
