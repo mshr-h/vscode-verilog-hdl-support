@@ -29,10 +29,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
+          echo "Installing Verible..."
           workdir="$(mktemp -d)"
           cd "$workdir"
+
+          echo "Downloading Verible release..."
           gh release download -R chipsalliance/verible --pattern '*linux-static-x86_64.tar.gz'
           tgz="$(ls -1 verible-*-linux-static-x86_64.tar.gz | head -n 1)"
+
+          echo "Extracting and installing Verible from $tgz ..."
           sudo mkdir -p /opt/verible
           sudo tar -xzf "$tgz" -C /opt/verible --strip-components=1
           sudo ln -sf /opt/verible/bin/* /usr/local/bin/
