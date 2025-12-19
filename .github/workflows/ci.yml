@@ -24,6 +24,8 @@ jobs:
           brew tap chipsalliance/verible
           brew install verible
           brew install universal-ctags
+          brew install icarus-verilog
+          brew install verilator
         if: runner.os == 'macOS'
       - run: xvfb-run -a npm test
         if: runner.os == 'Linux'
