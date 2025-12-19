@@ -19,6 +19,18 @@ jobs:
         with:
           node-version: lts/*
       - run: npm ci
+      - run: |
+          brew tap chipsalliance/verible
+          brew install verible
+        if: runner.os == 'macOS'
+      - run: |
+          VERIBLE_TAG="v0.0-4040-g0a93553b"
+          ARCH="$(uname -m)"
+          curl -L "https://sourceforge.net/projects/verible.mirror/files/${VERIBLE_TAG}/${VERIBLE_TGZ}/download" \
+          -o /tmp/verible.tar.gz
+          sudo mkdir -p /opt/verible
+          sudo tar -xzf /tmp/verible.tar.gz -C /opt/verible --strip-components=1
+          sudo ln -sf /opt/verible/bin/* /usr/local/bin/
       - run: xvfb-run -a npm test
         if: runner.os == 'Linux'
       - run: npm test
