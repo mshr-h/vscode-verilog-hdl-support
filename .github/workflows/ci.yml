@@ -43,7 +43,6 @@ jobs:
           sudo ln -sf /opt/verible/bin/* /usr/local/bin/
 
           echo "Verible installation complete. Verifying installation..."
-          which verible-verilog-format
           verible-verilog-format --version
       - run: xvfb-run -a npm test
         if: runner.os == 'Linux'
