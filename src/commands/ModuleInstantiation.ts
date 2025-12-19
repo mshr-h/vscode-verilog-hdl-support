@@ -23,7 +23,7 @@ export function instantiateModuleInteract() {
   });
 }
 
-async function instantiateModule(srcpath: string): Promise<vscode.SnippetString | undefined> {
+export async function instantiateModule(srcpath: string): Promise<vscode.SnippetString | undefined> {
     // Using Ctags to get all the modules in the file
     let moduleName: string = '';
     let portsName: string[] = [];
