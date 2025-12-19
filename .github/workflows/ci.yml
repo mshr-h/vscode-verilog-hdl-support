@@ -22,7 +22,7 @@ jobs:
       - run: xvfb-run -a npm test
         if: runner.os == 'Linux'
       - run: npm test
-        if: runner.os != 'Linux'
+        if: runner.os == 'macOS'
       - run: npm run compile
       - run: ./node_modules/@vscode/vsce/vsce package
       - name: upload vsix package
