@@ -3,9 +3,9 @@ import * as assert from 'assert';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { CharStreams, CommonTokenStream } from 'antlr4ts';
-import { bsvLexer } from '../../bsvjs/syntaxes/bsvLexer';
-import { bsvParser } from '../../bsvjs/syntaxes/bsvParser';
-import { bsvListener } from '../../bsvjs/syntaxes/bsvListener';
+import { bsvLexer } from '../bsvjs/syntaxes/bsvLexer';
+import { bsvParser } from '../bsvjs/syntaxes/bsvParser';
+import { bsvListener } from '../bsvjs/syntaxes/bsvListener';
 
 const testFolder = path.resolve(process.cwd(), 'syntaxes/bsc-lib');
 
