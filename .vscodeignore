@@ -15,3 +15,7 @@ renovate.json
 language_examples/**
 **/.hdl_checker/**
 **/svls.log
+esbuild.js
+**/eslint.config.mjs
+**/.vscode-test.*
+.devcontainer/**
