@@ -18,16 +18,13 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: lts/*
-      - name: npm ci
-        run: npm ci
-      - name: npm run vscode:prepublish
-        run: npm run vscode:prepublish
-      - name: npm test
-        run: npm test
-      - name: npm run compile
-        run: npm run compile
-      - name: build vsix package
-        run: ./node_modules/@vscode/vsce/vsce package
+      - run: npm ci
+      - run: xvfb-run -a npm test
+        if: runner.os == 'Linux'
+      - run: npm test
+        if: runner.os != 'Linux'
+      - run: npm run compile
+      - run: ./node_modules/@vscode/vsce/vsce package
       - name: upload vsix package
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v6
