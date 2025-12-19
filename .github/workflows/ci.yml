@@ -24,8 +24,8 @@ jobs:
           brew install verible
         if: runner.os == 'macOS'
       - run: |
-          VERIBLE_TAG="v0.0-4040-g0a93553b"
-          ARCH="$(uname -m)"
+          export VERIBLE_TAG="v0.0-4040-g0a93553b"
+          export ARCH="$(uname -m)"
           curl -L "https://sourceforge.net/projects/verible.mirror/files/${VERIBLE_TAG}/${VERIBLE_TGZ}/download" \
           -o /tmp/verible.tar.gz
           sudo mkdir -p /opt/verible
