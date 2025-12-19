@@ -42,6 +42,8 @@ jobs:
           sudo tar -xzf "$tgz" -C /opt/verible --strip-components=1
           sudo ln -sf /opt/verible/bin/* /usr/local/bin/
 
+          ls -l /opt/verible/bin/*
+
           echo $PATH
 
           echo "Verible installation complete. Verifying installation..."
