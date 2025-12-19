@@ -23,14 +23,31 @@ jobs:
           brew tap chipsalliance/verible
           brew install verible
         if: runner.os == 'macOS'
-      - run: |
-          export VERIBLE_TAG="v0.0-4040-g0a93553b"
-          export ARCH="$(uname -m)"
-          curl -L "https://sourceforge.net/projects/verible.mirror/files/${VERIBLE_TAG}/${VERIBLE_TGZ}/download" \
-          -o /tmp/verible.tar.gz
+      - name: Install Verible (latest linux-static-x86_64) system-wide
+        if: runner.os == 'Linux'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          workdir="$(mktemp -d)"
+          cd "$workdir"
+
+          gh release download -R chipsalliance/verible --pattern '*linux-static-x86_64.tar.gz'
+
+          tgz="$(ls -1 verible-*-linux-static-x86_64.tar.gz | head -n 1)"
+
+          sudo rm -rf /opt/verible
           sudo mkdir -p /opt/verible
-          sudo tar -xzf /tmp/verible.tar.gz -C /opt/verible --strip-components=1
+
+          sudo tar -xzf "$tgz" -C /opt/verible --strip-components=1
+
           sudo ln -sf /opt/verible/bin/* /usr/local/bin/
+
+          # 確認
+          which verible-verilog-format
+          verible-verilog-format --version
       - run: xvfb-run -a npm test
         if: runner.os == 'Linux'
       - run: npm test
