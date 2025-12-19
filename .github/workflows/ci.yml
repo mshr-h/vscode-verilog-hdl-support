@@ -39,9 +39,7 @@ jobs:
 
           echo "Extracting and installing Verible from $tgz ..."
           sudo mkdir -p /opt/verible
-          sudo tar -xzf "$tgz" -C /opt/verible --strip-components=1
-          sudo ln -sf /opt/verible/bin/* /usr/local/bin/
-          sudo chown -R $USER:$USER /opt/verible
+          sudo tar -xzf "$tgz" -C /usr/local --strip-components=1
       - run: xvfb-run -a npm test
         if: runner.os == 'Linux'
       - run: npm test
