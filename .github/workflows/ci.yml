@@ -26,7 +26,7 @@ jobs:
       - run: npm run compile
       - run: npx @vscode/vsce package
       - name: upload vsix package
-        if: runner.os == 'macOS'
+        if: runner.os == 'Linux'
         uses: actions/upload-artifact@v6
         with:
           path: veriloghdl-*.vsix
