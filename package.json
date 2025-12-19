@@ -22,7 +22,7 @@
     "Formatters"
   ],
   "icon": "images/icon.png",
-  "main": "./dist/main.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "languages": [
       {
