@@ -24,6 +24,8 @@ jobs:
         run: npm run vscode:prepublish
       - name: npm test
         run: npm test
+      - name: npm run compile
+        run: npm run compile
       - name: build vsix package
         run: ./node_modules/@vscode/vsce/vsce package
       - name: upload vsix package
