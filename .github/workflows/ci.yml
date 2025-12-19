@@ -41,6 +41,8 @@ jobs:
           sudo mkdir -p /opt/verible
           sudo tar -xzf "$tgz" -C /opt/verible --strip-components=1
           sudo ln -sf /opt/verible/bin/* /usr/local/bin/
+
+          echo "Verible installation complete. Verifying installation..."
           which verible-verilog-format
           verible-verilog-format --version
       - run: xvfb-run -a npm test
