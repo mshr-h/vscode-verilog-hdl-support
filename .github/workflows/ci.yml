@@ -24,7 +24,7 @@ jobs:
       - run: npm test
         if: runner.os == 'macOS'
       - run: npm run compile
-      - run: ./node_modules/@vscode/vsce/vsce package
+      - run: npx @vscode/vsce package
       - name: upload vsix package
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v6
