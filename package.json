@@ -601,7 +601,7 @@
     "js-yaml": "^4.1.0",
     "semver": "^7.6.0",
     "vscode-languageclient": "^9.0.1",
-    "which": "^5.0.0"
+    "which": "^6.0.0"
   },
   "devDependencies": {
     "@types/antlr4": "4.11.6",
