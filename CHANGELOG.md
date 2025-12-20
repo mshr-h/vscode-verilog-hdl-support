@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.18.0] - 2025-12-20
+
+### Changed
+
+- Reorganized configuration structure for linting, formatting, and language servers in package.json
+  - Backward compatible; no user config changes required
+
 ## [1.17.0] - 2025-12-20
 
 ### Added
