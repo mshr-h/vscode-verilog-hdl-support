@@ -166,3 +166,7 @@ You can check it by opening the **Output** pane in VS Code and choose _Verilog_ 
   - `configs/tcl.configuration.json` and `syntaxes/tcl.tmlanguage.json` are obtained from the repo.
 - [eirikpre/VSCode-SystemVerilog: SystemVerilog support in VS Code](https://github.com/eirikpre/VSCode-SystemVerilog)
   - SystemVerilog syntax is obtained from the repo.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=mshr-h/vscode-verilog-hdl-support&type=Date)](https://star-history.com/#mshr-h/vscode-verilog-hdl-support&Date)
