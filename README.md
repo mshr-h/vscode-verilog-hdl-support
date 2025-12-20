@@ -120,21 +120,6 @@ You can format the Verilog-HDL file by typing `Ctrl-Shift-p`, then select `Forma
 Entire file formatting is supported. Selected range formatting is not supported yet.
 All the settings for formatting is under `verilog.formatting` namespace.
 
-## Compatibility
-
-| Feature                           |  Windows   |    Linux     |    macOS    |
-| --------------------------------- | :--------: | :----------: | :---------: |
-| Basics (like Syntax highlighting) | Windows 10 | Ubuntu 20.04 | macOS 10.15 |
-| Icarus Verilog                    | Windows 10 | Ubuntu 18.04 |     Yes     |
-| Vivado Logical Simulation         | Windows 10 |  Not Tested  | Not Tested  |
-| Modelsim                          | Windows 10 | Ubuntu 18.04 | Not Tested  |
-| Verilator                         | Windows 10 |   Debian 9   | Not Tested  |
-| Ctags Integration                 | Windows 10 | Ubuntu 18.10 | Not Tested  |
-| Language Server                   | Windows 10 | Ubuntu 20.04 | macOS 10.15 |
-| Formatting                        | Not tested | Ubuntu 20.04 | Not tested  |
-
-If you have tested the linters in new platforms or have issues with them, feel free to file an issue.
-
 ## [Guidelines for Contributing](./CONTRIBUTING.md)
 
 ## Logs
