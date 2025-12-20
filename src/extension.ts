@@ -236,6 +236,12 @@ function initAllLanguageClients() {
     documentSelector: [{ scheme: 'file', language: 'systemverilog' }],
   });
 
+  // TODO: move to svls extension setting
+  let svlint_toml: string | undefined = vscode.workspace.getConfiguration('verilog.languageServer.svls').get('svlintTomlPath');
+  if (typeof svlint_toml !== undefined) {
+    process.env.SVLINT_CONFIG = svlint_toml;
+  }
+
   // init veridian
   setupLanguageClient('veridian', 'veridian', [], [], {
     documentSelector: [{ scheme: 'file', language: 'systemverilog' }],

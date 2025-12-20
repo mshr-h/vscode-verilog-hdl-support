@@ -1,0 +1,4 @@
+[syntaxrules]
+uppercamelcase_module = false
+[textrules]
+header_copyright = false

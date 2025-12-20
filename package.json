@@ -521,6 +521,14 @@
             "default": "svls",
             "description": "A path to the Svls Language Server binary."
           },
+          "verilog.languageServer.svls.svlintTomlPath": {
+            "scope": "window",
+            "type": "string",
+            "default": "",
+            "description": "[Experimental] Override the .toml configuration file to be used by svlint. Sets the `SVLINT_CONFIG` environment variable. When not set svlint searches for `.svlint.toml` within the Workspace folder.",
+            "pattern": "^(?:(?:~?\\/|[a-zA-Z]:\\\\)?[\\/\\\\\\w\\._-]*\\.toml)$|^$",
+						"patternErrorMessage": "Must be a path to a .toml file"
+          },
           "verilog.languageServer.svls.arguments": {
             "scope": "window",
             "type": "string",
