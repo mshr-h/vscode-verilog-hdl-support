@@ -30,6 +30,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - Verilator - `verilator`
   - Vivado Logical Simulation - `xvlog`
   - \[Experimental\] Slang - `slang`
+  - \[Experimental\] Verible Verilog Lint - `verible-verilog-lint`
 - Linting support
   - Bluespec SystemVerilog
 - Ctags Integration
@@ -129,6 +130,7 @@ Use the following settings to configure the extension to your needs.
   - `iverilog`
   - `modelsim`
   - `slang`
+  - `verible-verilog-lint`
   - `verilator`
   - `xvlog`
   - `none`
@@ -194,6 +196,14 @@ Use the following settings to configure the extension to your needs.
     to WSL paths using the `wslpath` program. Any other paths you specify in `verilog.linting.verilator.arguments`
 
     must be manually converted.
+
+- `verilog.linting.veribleVerilogLint.arguments` (Default: nothing)
+
+    Add Verible Verilog Lint arguments here. They will be added to Verible Verilog Lint while linting.
+
+- `verilog.linting.veribleVerilogLint.runAtFileLocation` (Default: `false` )
+
+    If enabled, Verible Verilog Lint will be run at the file location for linting. Else it will be run at workspace folder. Disabled by default.
 
 - `verilog.linting.xvlog.arguments` (Default: nothing)
 

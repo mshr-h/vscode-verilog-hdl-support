@@ -6,6 +6,7 @@ import ModelsimLinter from './ModelsimLinter';
 import VerilatorLinter from './VerilatorLinter';
 import SlangLinter from './SlangLinter';
 import XvlogLinter from './XvlogLinter';
+import VeribleVerilogLintLinter from './VeribleVerilogLintLinter';
 import { Logger } from '../logger';
 
 export default class LintManager {
@@ -50,6 +51,11 @@ export default class LintManager {
         );
       case 'slang':
         return new SlangLinter(this.diagnosticCollection, this.logger.getChild('SlangLinter'));
+      case 'verible-verilog-lint':
+        return new VeribleVerilogLintLinter(
+          this.diagnosticCollection,
+          this.logger.getChild('VeribleVerilogLintLinter')
+        );
       default:
         return null;
     }
@@ -133,6 +139,10 @@ export default class LintManager {
         {
           label: 'slang',
           description: 'Slang',
+        },
+        {
+          label: 'verible-verilog-lint',
+          description: 'Verible Verilog Lint',
         },
       ],
       {

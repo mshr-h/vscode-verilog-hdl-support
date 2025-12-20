@@ -255,10 +255,11 @@
             "verilator",
             "modelsim",
             "slang",
+            "verible-verilog-lint",
             "none"
           ],
           "default": "none",
-          "description": "Select the verilog linter. Possible values are 'iverilog', 'verilator', 'modelsim', 'xvlog', 'slang' or 'none'."
+          "description": "Select the verilog linter. Possible values are 'iverilog', 'verilator', 'modelsim', 'xvlog', 'slang', 'verible-verilog-lint' or 'none'."
         },
         "verilog.linting.iverilog.arguments": {
           "scope": "window",
@@ -384,6 +385,18 @@
           "type": "boolean",
           "default": false,
           "description": "If enabled, run verilator in WSL."
+        },
+        "verilog.linting.veribleVerilogLint.arguments": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "Add verible-verilog-lint arguments here. They will be added to verible-verilog-lint while linting."
+        },
+        "verilog.linting.veribleVerilogLint.runAtFileLocation": {
+          "scope": "window",
+          "type": "boolean",
+          "default": false,
+          "description": "If enabled, verible-verilog-lint will be run at the file location for linting. Else it will be run at workspace folder. Disabled by default."
         },
         "verilog.linting.xvlog.arguments": {
           "scope": "window",
