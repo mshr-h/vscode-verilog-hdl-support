@@ -241,6 +241,12 @@
       {
         "title": "Verilog: Ctags",
         "properties": {
+          "verilog.ctags.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "description": "Enable Ctags integration."
+          },
           "verilog.ctags.path": {
             "scope": "window",
             "type": "string",

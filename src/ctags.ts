@@ -136,7 +136,6 @@ export class Symbol {
   }
 }
 
-// TODO: add a user setting to enable/disable all ctags based operations
 export class Ctags {
   /// Symbol definitions (no rhs)
   symbols: Symbol[];
@@ -292,12 +291,35 @@ export class Ctags {
 export class CtagsManager {
   private filemap: Map<vscode.TextDocument, Ctags> = new Map();
   private logger!: Logger;
+  private enabled = false;
 
   configure(logger: Logger) {
     this.logger = logger;
     this.logger.info('ctags manager configure');
+    this.updateConfig();
     vscode.workspace.onDidSaveTextDocument(this.onSave.bind(this));
     vscode.workspace.onDidCloseTextDocument(this.onClose.bind(this));
+    vscode.workspace.onDidChangeConfiguration((event) => {
+      if (event.affectsConfiguration('verilog.ctags')) {
+        this.updateConfig();
+      }
+    });
+  }
+
+  private updateConfig() {
+    let config = vscode.workspace.getConfiguration('verilog.ctags');
+    let nextEnabled = <boolean>config.get('enabled', false);
+    if (this.enabled !== nextEnabled) {
+      this.enabled = nextEnabled;
+      this.logger.info('ctags enabled: ' + this.enabled);
+      this.invalidateCache();
+    }
+  }
+
+  private invalidateCache() {
+    for (let ctags of this.filemap.values()) {
+      ctags.clearSymbols();
+    }
   }
 
   getCtags(doc: vscode.TextDocument): Ctags {
@@ -314,11 +336,17 @@ export class CtagsManager {
 
   onSave(doc: vscode.TextDocument) {
     this.logger.info('on save');
+    if (!this.enabled) {
+      return;
+    }
     let ctags: Ctags = this.getCtags(doc);
     ctags.clearSymbols();
   }
 
   async getSymbols(doc: vscode.TextDocument): Promise<Symbol[]> {
+    if (!this.enabled) {
+      return [];
+    }
     let ctags: Ctags = this.getCtags(doc);
     // If dirty, re index and then build symbols
     if (ctags.isDirty) {
@@ -331,6 +359,9 @@ export class CtagsManager {
 
   /// find a matching symbol in a single document
   async findDefinition(document: vscode.TextDocument, targetText: string): Promise<vscode.DefinitionLink[]> {
+    if (!this.enabled) {
+      return [];
+    }
     let symbols: Symbol[] = await this.getSymbols(document);
     let matchingSymbols = symbols.filter((sym) => sym.name === targetText);
 
@@ -348,6 +379,9 @@ export class CtagsManager {
 
   /// Finds a symbols definition, but also looks in targetText.sv to get module/interface defs
   async findSymbol(document: vscode.TextDocument, position: vscode.Position): Promise<vscode.DefinitionLink[]> {
+    if (!this.enabled) {
+      return [];
+    }
     
     let textRange = document.getWordRangeAtPosition(position);
     if (!textRange || textRange.isEmpty) {

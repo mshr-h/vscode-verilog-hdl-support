@@ -6,6 +6,12 @@ import { Ctags, Symbol } from '../ctags';
 import { logger } from '../extension';
 
 export function instantiateModuleInteract() {
+  if (!isCtagsEnabled()) {
+    vscode.window.showInformationMessage(
+      'Verilog-HDL/SystemVerilog: Ctags integration is disabled (verilog.ctags.enabled).'
+    );
+    return;
+  }
   if (!vscode.window.activeTextEditor) {
     vscode.window.showErrorMessage('No active text editor found');
     return;
@@ -24,6 +30,9 @@ export function instantiateModuleInteract() {
 }
 
 export async function instantiateModule(srcpath: string): Promise<vscode.SnippetString | undefined> {
+    if (!isCtagsEnabled()) {
+      return undefined;
+    }
     // Using Ctags to get all the modules in the file
     let moduleName: string = '';
     let portsName: string[] = [];
@@ -87,6 +96,11 @@ export async function instantiateModule(srcpath: string): Promise<vscode.Snippet
         .appendPlaceholder(`${module.name}(\n`)
         .appendText(instantiatePort(portsName))
         .appendText(');\n');
+}
+
+function isCtagsEnabled(): boolean {
+  const config = vscode.workspace.getConfiguration('verilog.ctags');
+  return config.get<boolean>('enabled', false);
 }
 
 function getIndentationString(): string {

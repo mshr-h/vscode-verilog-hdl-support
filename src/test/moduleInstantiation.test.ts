@@ -11,6 +11,32 @@ import { createLogger } from '../logger';
 import { instantiateModule } from '../commands/ModuleInstantiation';
 
 suite('Module Instantiation', () => {
+  test('skips instantiation when ctags is disabled', async function () {
+    const ctagsConfig = vscode.workspace.getConfiguration('verilog.ctags');
+    const previousEnabled = ctagsConfig.get('enabled');
+
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'ctags-inst-disabled-'));
+    const tempFilePath = path.join(tempRoot, 'mod.sv');
+    const source = [
+      'module my_mod (input logic clk, input logic rst);',
+      'endmodule',
+    ].join('\n');
+    fs.writeFileSync(tempFilePath, source);
+
+    try {
+      await ctagsConfig.update('enabled', false, vscode.ConfigurationTarget.Global);
+
+      const document = await vscode.workspace.openTextDocument(tempFilePath);
+      await vscode.window.showTextDocument(document);
+
+      const snippet = await instantiateModule(tempFilePath);
+      assert.strictEqual(snippet, undefined, 'Expected no snippet when ctags is disabled');
+    } finally {
+      await ctagsConfig.update('enabled', previousEnabled, vscode.ConfigurationTarget.Global);
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   test('instantiates module with parameters and ports', async function () {
     const ctagsPath = which.sync('ctags', { nothrow: true }) || which.sync('uctags', { nothrow: true });
     if (!ctagsPath) {

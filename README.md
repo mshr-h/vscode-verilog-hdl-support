@@ -60,6 +60,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 This extension uses the tags created using Ctags to provide many of its features. It is recommended to use [Universal Ctags](https://github.com/universal-ctags/ctags) as it supports SystemVerilog also, compared to Exuberant Ctags and other older versions. The tags are stored in memory and not as separate files.
 
 Currently the integrated feature supports only tags in the currently opened file, not tags in other files.
+Enable this integration with the `verilog.ctags.enabled` setting.
 However, you can use other independent Ctags extensions to find definitions from any file.
 
 For example [Ctags Companion](https://github.com/gediminasz/ctags-companion) works well with this extension
