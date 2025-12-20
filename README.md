@@ -139,6 +139,7 @@ You can check it by opening the **Output** pane in VS Code and choose _Verilog_ 
 ## Helpful links
 
 - [Verilog in VSCode With Linting (Using Modelsim) - YouTube](https://www.youtube.com/watch?v=-DTGf3Z6v_o)
+- [A Productive VSCode Setup for SystemVerilog Development - Igor Freire](https://igorfreire.com.br/2023/06/18/vscode-setup-for-systemverilog-development/)
 
 ## Thanks
 
