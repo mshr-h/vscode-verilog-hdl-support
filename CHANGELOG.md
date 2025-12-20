@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.17.0] - 2025-12-20
+
+### Added
+
+- Add Verible Verilog Lint support (`verible-verilog-lint`) with arguments and run-at-file-location options
+
 ## [1.16.1] - 2025-08-15
 
 ### Changed
