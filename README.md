@@ -122,7 +122,16 @@ All the settings for formatting is under `verilog.formatting` namespace.
 
 ## [Guidelines for Contributing](./CONTRIBUTING.md)
 
-## Logs
+## Extension Development
+
+### Launch in Debug Mode
+
+1. Install dependencies with `npm install`.
+2. Open the repository in VS Code and start the default build task (`watch`) or simply press `F5`—the `Launch Extension` configuration in [.vscode/launch.json](.vscode/launch.json) will run the build task automatically.
+3. In the Run and Debug view, pick **Launch Extension** and start debugging. VS Code will open an Extension Development Host pointing at the bundled `language_examples` workspace so you can try the features immediately.
+4. Set breakpoints in the `src` files; the compiled output in `out` is mapped via sourcemaps so the breakpoints hit your TypeScript sources.
+
+### Logs
 
 Logs are outputted to LogOutputChannel in th VS Code.
 You can check it by opening the **Output** pane in VS Code and choose _Verilog_ in the drop-down menu.
