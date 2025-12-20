@@ -1,6 +1,7 @@
 *.vsix
 .vscode/**
 .vscode-test/**
+.vscode-dev/**
 out/**
 node_modules/**
 src/**

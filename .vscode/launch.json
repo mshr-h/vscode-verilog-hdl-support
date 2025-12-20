@@ -9,6 +9,8 @@
 			"args": [
 				"--disable-extensions",
 				"--extensionDevelopmentPath=${workspaceFolder}",
+				"--user-data-dir=${workspaceFolder}/.vscode-dev/user-data",
+				"--extensions-dir=${workspaceFolder}/.vscode-dev/extensions",
 				"${workspaceFolder}/language_examples"
 			],
 			"name": "Launch Extension",

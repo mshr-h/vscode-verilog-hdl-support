@@ -4,6 +4,7 @@
 /syntaxes/.antlr/*
 /dist
 /.vscode-test/
+/.vscode-dev/
 **/.hdl_checker/*
 svls.log
 .DS_Store
