@@ -182,8 +182,11 @@ export class Ctags {
         this.logger.error('stderr> ' + stderr);
       }
     }
-    catch (e) {
-      this.logger.error('Exception caught: ' + (e instanceof Error ? e.message : String(e)));
+    catch (err) {
+      this.logger.error('Exception caught: ' + (err instanceof Error ? err.message : String(err)));
+      if (err instanceof Error && err.stack) {
+        this.logger.error(err.stack);
+      }
     }
 
     // Return empty promise if ctags path is not set to avoid errors when indexing
@@ -214,8 +217,8 @@ export class Ctags {
       lineNoStr = parts[2];
       lineNo = Number(lineNoStr.slice(0, -2)) - 1;
       return new Symbol(name, type, pattern, lineNo, parentScope, parentType, lineNo, false);
-    } catch (e) {
-      this.logger.error('Line Parser: ' + e);
+    } catch (err) {
+      this.logger.error('Line Parser: ' + err);
       this.logger.error('Line: ' + line);
     }
     return undefined;
@@ -275,8 +278,11 @@ export class Ctags {
         }
         this.isDirty = false;
       }
-    } catch (e) {
-      this.logger.error(String(e));
+    } catch (err) {
+      this.logger.error(String(err));
+      if (err instanceof Error && err.stack) {
+        this.logger.error(err.stack);
+      }
     }
   }
 

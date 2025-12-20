@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
-import {execFileSync} from 'child_process';
+import { execFileSync } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as crypto from 'crypto';
@@ -69,7 +69,7 @@ abstract class FileBasedFormattingEditProvider implements vscode.DocumentFormatt
     this.logger.info('Executing command: ' + binPath + ' ' + args.join(' '));
     try {
       const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-      execFileSync(binPath, args, cwd ? {cwd} : undefined);
+      execFileSync(binPath, args, cwd ? { cwd } : undefined);
       let formattedText: string = tempFile.readFileSync({ encoding: 'utf-8' });
       let wholeFileRange: vscode.Range = new vscode.Range(
         document.positionAt(0),
@@ -79,6 +79,9 @@ abstract class FileBasedFormattingEditProvider implements vscode.DocumentFormatt
       return [vscode.TextEdit.replace(wholeFileRange, formattedText)];
     } catch (err) {
       this.logger.error(String(err));
+      if (err instanceof Error && err.stack) {
+        this.logger.error(err.stack);
+      }
     }
 
     tempFile.dispose();
