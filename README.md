@@ -1,4 +1,4 @@
-# HDL support for VS Code
+# HDL support for VS Code <img src="images/icon.png" alt="HDL support for VS Code icon" width="56" style="vertical-align: middle;" />
 
 HDL support for VS Code with Syntax Highlighting, Snippets, Linting, Formatting and much more!
 
