@@ -245,7 +245,7 @@
             "scope": "window",
             "type": "string",
             "default": "none",
-            "description": "A path to the installation of Universal Ctags."
+            "description": "Path to your installation of Ctags if it isn't already present in your `PATH` environment variable."
           }
         }
       },
@@ -306,7 +306,7 @@
               "Indent only"
             ],
             "default": "Indent only",
-            "description": "Choose styling options from ANSI/K&R/GNU."
+            "description": "Choose styling options."
           },
           "verilog.formatting.veribleVerilogFormatter.path": {
             "scope": "window",
@@ -329,7 +329,7 @@
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "A path to the installation of linter."
+            "description": "Path to your installation of linter if it isn't already present in your `PATH` environment variable."
           },
           "verilog.linting.linter": {
             "scope": "window",
@@ -344,7 +344,7 @@
               "none"
             ],
             "default": "none",
-            "description": "Select the verilog linter. Possible values are 'iverilog', 'verilator', 'modelsim', 'xvlog', 'slang', 'verible-verilog-lint' or 'none'."
+            "description": "Select the verilog linter."
           },
           "verilog.linting.iverilog.arguments": {
             "scope": "window",
@@ -359,7 +359,7 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "description": "A list of directory paths to use while Icarus Verilog linting."
+            "description": "A list of directory paths to use while Icarus Verilog linting. All the paths are passed as arguments `-I <directory_path>`. Paths can be specified either an absolute or a relative to the workspace directory."
           },
           "verilog.linting.iverilog.verilogHDL.standard": {
             "scope": "window",
@@ -442,13 +442,13 @@
             "scope": "window",
             "type": "boolean",
             "default": false,
-            "description": "If enabled, run slang in WSL."
+            "description": "Run verilator under WSL. Paths generated automatically by the extension (the path to the Verilog file as well as the auto-generated document folder for `-I` ) are translated to WSL paths using the `wslpath` program. Any other paths you specify in `verilog.linting.includePath.arguments`"
           },
           "verilog.linting.verilator.arguments": {
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Add Verilator arguments here (like macros). They will be added to Verilator while linting (The command \"--lint-only -I<document folder>\" will be added by the linter by default)."
+            "description": "Add Verilator arguments here (like macros or `-Wall`). They will be added to Verilator while linting (The command \"--lint-only -I<document folder>\" will be added by the linter by default)."
           },
           "verilog.linting.verilator.includePath": {
             "scope": "window",
@@ -457,7 +457,7 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "description": "A list of directory paths to use while Verilator linting."
+            "description": "A list of directory paths to use while Verilator linting. All the paths are passed as arguments `-I<directory_path>`. Paths can be specified either an absolute or a relative to the workspace directory."
           },
           "verilog.linting.verilator.runAtFileLocation": {
             "scope": "window",
@@ -469,7 +469,7 @@
             "scope": "window",
             "type": "boolean",
             "default": false,
-            "description": "If enabled, run verilator in WSL."
+            "description": "Run verilator under WSL (use `apg-get install verilator` to install). Paths generated automatically by the extension (the path to the Verilog file as well as the auto-generated document folder for `-I` ) are translated to WSL paths using the `wslpath` program. Any other paths you specify in `verilog.linting.verilator.arguments` must be manually converted."
           },
           "verilog.linting.veribleVerilogLint.arguments": {
             "scope": "window",
@@ -487,7 +487,7 @@
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Add xvlog arguments here. They will be added to xvlog while linting."
+            "description": "Add custom arguments to Xilinx xvlog for linting, like `-Wall` . The argument `--nolog` will be added by the linter automatically."
           },
           "verilog.linting.xvlog.includePath": {
             "scope": "window",
@@ -496,7 +496,7 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "description": "A list of directory paths to use while xvlog linting."
+            "description": "A list of directory paths to use while Xilinx xvlog linting. All the paths are passed as arguments `-i <directory_path>`. Paths can be specified either an absolute or a relative to the workspace directory."
           }
         }
       },
@@ -579,19 +579,19 @@
             "scope": "window",
             "type": "boolean",
             "default": false,
-            "description": "Enable Rust hdl Language Server for VHDL."
+            "description": "Enable rust_hdl Language Server for VHDL."
           },
           "verilog.languageServer.rustHdl.path": {
             "scope": "window",
             "type": "string",
             "default": "vhdl_ls",
-            "description": "A path to the Rust hdl Language Server binary."
+            "description": "A path to the rust_hdl Language Server binary."
           },
           "verilog.languageServer.rustHdl.arguments": {
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Add custom arguments for the Rust hdl Language Server."
+            "description": "Add custom arguments for the rust_hdl Language Server."
           }
         }
       }
