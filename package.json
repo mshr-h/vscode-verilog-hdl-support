@@ -244,8 +244,8 @@
           "verilog.ctags.path": {
             "scope": "window",
             "type": "string",
-            "default": "none",
-            "description": "Path to your installation of Ctags if it isn't already present in your `PATH` environment variable."
+            "default": "ctags",
+            "description": "A path to the Ctags binary. Specify the binary name if it's in your PATH, or provide an absolute path to the executable."
           }
         }
       },

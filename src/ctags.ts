@@ -143,14 +143,24 @@ export class Ctags {
   doc: vscode.TextDocument;
   isDirty: boolean;
   private logger: Logger;
+  private ctagBinPath!: string;
 
   constructor(logger: Logger, document: vscode.TextDocument) {
     this.symbols = [];
     this.isDirty = true;
     this.logger = logger;
     this.doc = document;
+    vscode.workspace.onDidChangeConfiguration(() => {
+      this.updateConfig();
+    });
+    this.updateConfig();
   }
 
+  private updateConfig() {
+    this.ctagBinPath = <string>(
+      vscode.workspace.getConfiguration().get('verilog.ctags.path', 'ctags')
+    );
+  }
 
   clearSymbols() {
     this.isDirty = true;
@@ -162,30 +172,21 @@ export class Ctags {
   }
 
   async execCtags(filepath: string): Promise<string> {
-    this.logger.info('executing ctags');
+    let command: string = this.ctagBinPath + ' -f - --fields=+K --sort=no --excmd=n --fields-SystemVerilog=+{parameter} "' + filepath + '"';
+    this.logger.info('Executing Command: ' + command);
+    try {
+      const {stdout, stderr} = await exec(command);
+      if(stdout) {
+        return stdout.toString();
+      }
+      if(stderr) {
+        this.logger.error('stderr> ' + stderr);
+      }
+    }
+    catch (e) {
+      this.logger.error('Exception caught: ' + (e instanceof Error ? e.message : String(e)));
+    }
 
-    let binPath: string = <string>(
-      vscode.workspace.getConfiguration().get('verilog.ctags.path', 'none')
-    );
-    if (binPath !== 'none') {
-      let command: string = binPath + ' -f - --fields=+K --sort=no --excmd=n --fields-SystemVerilog=+{parameter} "' + filepath + '"';
-      this.logger.info('Executing Command: ' + command);
-      try {
-        const {stdout, stderr} = await exec(command);
-        if(stdout) {
-          return stdout.toString();
-        }
-        if(stderr) {
-          this.logger.error('stderr> ' + stderr);
-        }
-      }
-      catch (e) {
-        this.logger.error('Exception caught: ' + (e instanceof Error ? e.message : String(e)));
-      }
-    }
-    else {
-      this.logger.trace('Ctags binpath not set');
-    }
     // Return empty promise if ctags path is not set to avoid errors when indexing
     return Promise.resolve('');
   }
