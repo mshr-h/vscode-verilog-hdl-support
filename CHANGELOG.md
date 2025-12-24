@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.20.0] - 2025-12-24
+
+### Changed
+
+- Update minimum VS Code engine to 1.107.0
+
+### Fixed
+
+- Fixed iverilog lint output parsing to correctly handle colons in messages and report accurate file/line locations (e.g., `test.v:46: ... here: ./float_add.v:69`). [#166](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/166)
+
 ## [1.19.4] - 2025-12-20
 
 ### Added
