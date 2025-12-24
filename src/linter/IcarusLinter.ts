@@ -45,14 +45,13 @@ export default class IcarusLinter extends BaseLinter {
     this.runAtFileLocation = <boolean>this.configuration.get('runAtFileLocation');
   }
 
-  protected convertToSeverity(severityString: string): vscode.DiagnosticSeverity {
-    switch (severityString) {
-      case 'error':
-        return vscode.DiagnosticSeverity.Error;
-      case 'warning':
-        return vscode.DiagnosticSeverity.Warning;
-    }
-    return vscode.DiagnosticSeverity.Information;
+  protected convertToSeverity(kind?: string, msg?: string): vscode.DiagnosticSeverity {
+    const k = (kind ?? "").toLowerCase();
+    if (k === "warning") return vscode.DiagnosticSeverity.Warning;
+    if (k === "note") return vscode.DiagnosticSeverity.Information;
+    if (k === "error") return vscode.DiagnosticSeverity.Error;
+    if ((msg ?? "").toLowerCase().includes("syntax error")) return vscode.DiagnosticSeverity.Error;
+    return vscode.DiagnosticSeverity.Error;
   }
 
   protected lint(doc: vscode.TextDocument) {
@@ -75,7 +74,6 @@ export default class IcarusLinter extends BaseLinter {
 
     let command: string = binPath + ' ' + args.join(' ');
 
-    // TODO: We have to apply the the #419 fix?
     let cwd: string =
       this.runAtFileLocation || vscode.workspace.workspaceFolders === undefined
         ? path.dirname(doc.uri.fsPath)
@@ -89,41 +87,80 @@ export default class IcarusLinter extends BaseLinter {
       command,
       { cwd: cwd },
       (_error: child.ExecException | null, _stdout: string, stderr: string) => {
-        let diagnostics: vscode.Diagnostic[] = [];
         // Parse output lines
         // the message is something like this
         // /home/ubuntu/project1/module_1.sv:3: syntax error"
         // /home/ubuntu/project1/property_1.sv:3: error: Invalid module instantiation"
-        stderr.split(/\r?\n/g).forEach((line, _) => {
-          if (!line.startsWith(doc.fileName)) {
-            return;
+        // test.v:8: error: Module test was already declared here: ./float_add.v:6
+
+        function makeLineRange(doc: vscode.TextDocument | undefined, oneBasedLine: number): vscode.Range {
+          const line = Math.max(0, oneBasedLine - 1);
+          if (doc && line < doc.lineCount) {
+            const textLine = doc.lineAt(line);
+            return new vscode.Range(
+              new vscode.Position(line, 0),
+              new vscode.Position(line, textLine.text.length)
+            );
           }
-          line = line.replace(doc.fileName, '');
-          let terms = line.split(':');
-          let lineNum = parseInt(terms[1].trim()) - 1;
-          if (terms.length === 3) {
-            diagnostics.push({
-              severity: vscode.DiagnosticSeverity.Error,
-              range: new vscode.Range(lineNum, 0, lineNum, Number.MAX_VALUE),
-              message: terms[2].trim(),
-              code: 'iverilog',
-              source: 'iverilog',
-            });
-          } else if (terms.length >= 4) {
-            let sev: vscode.DiagnosticSeverity = this.convertToSeverity(terms[2].trim());
-            diagnostics.push({
-              severity: sev,
-              range: new vscode.Range(lineNum, 0, lineNum, Number.MAX_VALUE),
-              message: terms[3].trim(),
-              code: 'iverilog',
-              source: 'Icarus Verilog',
-            });
-          }
-        });
-        if (diagnostics.length > 0) {
-          this.logger.info(diagnostics.length + ' errors/warnings returned');
+          // when doc is undefined, e.g., linting on closed files
+          return new vscode.Range(new vscode.Position(line, 0), new vscode.Position(line, 1));
         }
-        this.diagnosticCollection.set(doc.uri, diagnostics);
+
+        let output = stderr + "\n" + _stdout;
+        // 1) Group messages (lines starting with "file:line:" are the beginning of a new message)
+        const startRe = /^(.+?):(\d+):/;
+        const chunks: string[] = [];
+        let current = "";
+
+        for (const rawLine of output.split(/\r?\n/)) {
+          const line = rawLine.trimEnd();
+          if (!line) continue;
+
+          if (startRe.test(line)) {
+            if (current) chunks.push(current);
+            current = line;
+          } else {
+            // concat with newline
+            if (current) current += "\n" + line;
+          }
+        }
+        if (current) chunks.push(current);
+
+        // 2) Consider each chunk as: file:line: [error|warning|note:] message
+        const diagMap = new Map<string, vscode.Diagnostic[]>();
+        const mainRe = /^(?<file>.*?):(?<line>\d+):\s*(?:(?<kind>error|warning|note):\s*)?(?<msg>.*)$/i;
+
+        for (const chunk of chunks) {
+          const firstLine = chunk.split("\n", 1)[0];
+          const m = firstLine.match(mainRe);
+          if (!m || !m.groups) continue;
+
+          const fileRaw = m.groups.file;
+          const lineNum = Number(m.groups.line);
+          const kind = m.groups.kind;
+          const msgFirst = m.groups.msg ?? "";
+
+          // If there are continuation lines in the chunk, include them in the message
+          const restLines = chunk.includes("\n") ? "\n" + chunk.split("\n").slice(1).join("\n") : "";
+          const message = (msgFirst + restLines).trim();
+
+          const severity = this.convertToSeverity(kind, message);
+
+          // 3) Resolve file path and create Diagnostic
+          const fsPath = path.isAbsolute(fileRaw) ? fileRaw : path.resolve(cwd, fileRaw);
+
+          const range = makeLineRange(doc, lineNum);
+          const d = new vscode.Diagnostic(range, message, severity);
+          d.source = "iverilog";
+
+          const arr = diagMap.get(fsPath) ?? [];
+          arr.push(d);
+          diagMap.set(fsPath, arr);
+        }
+
+        for (const [fsPath, diags] of diagMap) {
+          this.diagnosticCollection.set(vscode.Uri.file(fsPath), diags);
+        }
       }
     );
   }
