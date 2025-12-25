@@ -261,13 +261,13 @@
             "scope": "window",
             "type": "boolean",
             "default": true,
-            "description": "Enable Ctags integration."
+            "markdownDescription": "Enable Ctags integration."
           },
           "verilog.ctags.path": {
             "scope": "window",
             "type": "string",
             "default": "ctags",
-            "description": "A path to the Ctags binary. Specify the binary name if it's in your PATH, or provide an absolute path to the executable."
+            "markdownDescription": "A path to the Ctags binary. Specify the binary name if it's in your `PATH`, or provide an absolute path to the executable."
           }
         }
       },
@@ -283,7 +283,7 @@
               "verible-verilog-format"
             ],
             "default": "verilog-format",
-            "description": "Choose a Verilog-HDL formatter."
+            "markdownDescription": "Choose a Verilog-HDL formatter."
           },
           "verilog.formatting.systemVerilog.formatter": {
             "scope": "window",
@@ -292,31 +292,31 @@
               "verible-verilog-format"
             ],
             "default": "verible-verilog-format",
-            "description": "Choose a SystemVerilog formatter."
+            "markdownDescription": "Choose a SystemVerilog formatter."
           },
           "verilog.formatting.verilogFormat.path": {
             "scope": "window",
             "type": "string",
             "default": "verilog-format",
-            "description": "A path to the verilog-format binary."
+            "markdownDescription": "A path to the verilog-format binary."
           },
           "verilog.formatting.verilogFormat.settings": {
             "scope": "window",
             "type": "string",
             "default": "${env:HOME}/.verilog-format.properties",
-            "description": "A path to the verilog-format settings file."
+            "markdownDescription": "A path to the verilog-format settings file."
           },
           "verilog.formatting.iStyleVerilogFormatter.path": {
             "scope": "window",
             "type": "string",
             "default": "iStyle",
-            "description": "A path to the iStyle Verilog Formatter binary."
+            "markdownDescription": "A path to the iStyle Verilog Formatter binary."
           },
           "verilog.formatting.iStyleVerilogFormatter.arguments": {
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Add custom arguments to iStyle Verilog Formatter for formatting."
+            "markdownDescription": "Add custom arguments to iStyle Verilog Formatter for formatting."
           },
           "verilog.formatting.iStyleVerilogFormatter.style": {
             "scope": "window",
@@ -328,19 +328,19 @@
               "Indent only"
             ],
             "default": "Indent only",
-            "description": "Choose styling options."
+            "markdownDescription": "Choose styling options."
           },
           "verilog.formatting.veribleVerilogFormatter.path": {
             "scope": "window",
             "type": "string",
             "default": "verible-verilog-format",
-            "description": "A path to the verible-verilog-format binary."
+            "markdownDescription": "A path to the verible-verilog-format binary."
           },
           "verilog.formatting.veribleVerilogFormatter.arguments": {
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Add custom arguments to verible-verilog-format for formatting."
+            "markdownDescription": "Add custom arguments to verible-verilog-format for formatting."
           }
         }
       },
@@ -351,7 +351,7 @@
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Path to your installation of linter if it isn't already present in your `PATH` environment variable."
+            "markdownDescription": "Path to your installation of linter if it isn't already present in your `PATH` environment variable."
           },
           "verilog.linting.linter": {
             "scope": "window",
@@ -366,13 +366,13 @@
               "none"
             ],
             "default": "none",
-            "description": "Select the verilog linter."
+            "markdownDescription": "Select the verilog linter."
           },
           "verilog.linting.iverilog.arguments": {
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Add Icarus Verilog arguments here (like macros). They will be added to Icarus Verilog while linting (The command \"-t null\" will be added by the linter by default)."
+            "markdownDescription": "Add Icarus Verilog arguments here (like macros). They will be added to Icarus Verilog while linting (The command `-t null` will be added by the linter by default)."
           },
           "verilog.linting.iverilog.includePath": {
             "scope": "window",
@@ -381,7 +381,7 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "description": "A list of directory paths to use while Icarus Verilog linting. All the paths are passed as arguments `-I <directory_path>`. Paths can be specified either an absolute or a relative to the workspace directory."
+            "markdownDescription": "A list of directory paths to use while Icarus Verilog linting. All the paths are passed as arguments `-I <directory_path>`. Paths can be specified either an absolute or a relative to the workspace directory."
           },
           "verilog.linting.iverilog.verilogHDL.standard": {
             "scope": "window",
@@ -397,7 +397,7 @@
               "IEEE1364-2005, specified by -g2005 option in Icarus Verilog"
             ],
             "default": "Verilog-2005",
-            "description": "Select the standard rule to be used when Icarus Verilog linting for Verilog-HDL files."
+            "markdownDescription": "Select the standard rule to be used when Icarus Verilog linting for Verilog-HDL files."
           },
           "verilog.linting.iverilog.systemVerilog.standard": {
             "scope": "window",
@@ -413,37 +413,37 @@
               "IEEE1800-2012, specified by -g2012 option in Icarus Verilog"
             ],
             "default": "SystemVerilog2012",
-            "description": "Select the standard rule to be used when Icarus Verilog linting for SystemVerilog files."
+            "markdownDescription": "Select the standard rule to be used when Icarus Verilog linting for SystemVerilog files."
           },
           "verilog.linting.iverilog.runAtFileLocation": {
             "scope": "window",
             "type": "boolean",
             "default": false,
-            "description": "If enabled, Icarus Verilog will be run at the file location for linting. Else it will be run at workspace folder. Disabled by default."
+            "markdownDescription": "If enabled, Icarus Verilog will be run at the file location for linting. Else it will be run at workspace folder."
           },
           "verilog.linting.modelsim.runAtFileLocation": {
             "scope": "window",
             "type": "boolean",
             "default": false,
-            "description": "If enabled, Modelsim will be run at the file location for linting. Else it will be run at workspace folder. Disabled by default."
+            "markdownDescription": "If enabled, Modelsim will be run at the file location for linting. Else it will be run at workspace folder."
           },
           "verilog.linting.modelsim.arguments": {
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Add Modelsim arguments here. They will be added to Modelsim while linting."
+            "markdownDescription": "Add Modelsim arguments here. They will be added to Modelsim while linting."
           },
           "verilog.linting.modelsim.work": {
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Add Modelsim work library here."
+            "markdownDescription": "Add Modelsim work library here."
           },
           "verilog.linting.slang.arguments": {
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Add Slang arguments here (like macros). They will be added to Slang while linting (The command \"-I=<document folder>\" will be added by the linter by default)."
+            "markdownDescription": "Add Slang arguments here (like macros). They will be added to Slang while linting (The command `-I=<document folder>` will be added by the linter by default)."
           },
           "verilog.linting.slang.includePath": {
             "scope": "window",
@@ -452,25 +452,25 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "description": "A list of directory paths to use while Slang linting."
+            "markdownDescription": "A list of directory paths to use while Slang linting."
           },
           "verilog.linting.slang.runAtFileLocation": {
             "scope": "window",
             "type": "boolean",
             "default": false,
-            "description": "If enabled, Slang will be run at the file location for linting. Else it will be run at workspace folder. Disabled by default."
+            "markdownDescription": "If enabled, Slang will be run at the file location for linting. Else it will be run at workspace folder."
           },
           "verilog.linting.slang.useWSL": {
             "scope": "window",
             "type": "boolean",
             "default": false,
-            "description": "Run verilator under WSL. Paths generated automatically by the extension (the path to the Verilog file as well as the auto-generated document folder for `-I` ) are translated to WSL paths using the `wslpath` program. Any other paths you specify in `verilog.linting.includePath.arguments`"
+            "markdownDescription": "Run verilator under WSL. Paths generated automatically by the extension (the path to the Verilog file as well as the auto-generated document folder for `-I` ) are translated to WSL paths using the `wslpath` program. Any other paths you specify in `verilog.linting.includePath.arguments`"
           },
           "verilog.linting.verilator.arguments": {
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Add Verilator arguments here (like macros or `-Wall`). They will be added to Verilator while linting (The command \"--lint-only -I<document folder>\" will be added by the linter by default)."
+            "markdownDescription": "Add Verilator arguments here (like macros or `-Wall`). They will be added to Verilator while linting (The command `--lint-only -I<document folder>` will be added by the linter by default)."
           },
           "verilog.linting.verilator.includePath": {
             "scope": "window",
@@ -479,37 +479,37 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "description": "A list of directory paths to use while Verilator linting. All the paths are passed as arguments `-I<directory_path>`. Paths can be specified either an absolute or a relative to the workspace directory."
+            "markdownDescription": "A list of directory paths to use while Verilator linting. All the paths are passed as arguments `-I<directory_path>`. Paths can be specified either an absolute or a relative to the workspace directory."
           },
           "verilog.linting.verilator.runAtFileLocation": {
             "scope": "window",
             "type": "boolean",
             "default": false,
-            "description": "If enabled, Verilator will be run at the file location for linting. Else it will be run at workspace folder. Disabled by default."
+            "markdownDescription": "If enabled, Verilator will be run at the file location for linting. Else it will be run at workspace folder."
           },
           "verilog.linting.verilator.useWSL": {
             "scope": "window",
             "type": "boolean",
             "default": false,
-            "description": "Run verilator under WSL (use `apg-get install verilator` to install). Paths generated automatically by the extension (the path to the Verilog file as well as the auto-generated document folder for `-I` ) are translated to WSL paths using the `wslpath` program. Any other paths you specify in `verilog.linting.verilator.arguments` must be manually converted."
+            "markdownDescription": "Run verilator under WSL (use `apg-get install verilator` to install). Paths generated automatically by the extension (the path to the Verilog file as well as the auto-generated document folder for `-I` ) are translated to WSL paths using the `wslpath` program. Any other paths you specify in `verilog.linting.verilator.arguments` must be manually converted."
           },
           "verilog.linting.veribleVerilogLint.arguments": {
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Add verible-verilog-lint arguments here. They will be added to verible-verilog-lint while linting."
+            "markdownDescription": "Add verible-verilog-lint arguments here. They will be added to verible-verilog-lint while linting."
           },
           "verilog.linting.veribleVerilogLint.runAtFileLocation": {
             "scope": "window",
             "type": "boolean",
             "default": false,
-            "description": "If enabled, verible-verilog-lint will be run at the file location for linting. Else it will be run at workspace folder. Disabled by default."
+            "markdownDescription": "If enabled, verible-verilog-lint will be run at the file location for linting. Else it will be run at workspace folder."
           },
           "verilog.linting.xvlog.arguments": {
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Add custom arguments to Xilinx xvlog for linting, like `-Wall` . The argument `--nolog` will be added by the linter automatically."
+            "markdownDescription": "Add custom arguments to Xilinx xvlog for linting, like `-Wall` . The argument `--nolog` will be added by the linter automatically."
           },
           "verilog.linting.xvlog.includePath": {
             "scope": "window",
@@ -518,7 +518,7 @@
               "type": "string"
             },
             "uniqueItems": true,
-            "description": "A list of directory paths to use while Xilinx xvlog linting. All the paths are passed as arguments `-i <directory_path>`. Paths can be specified either an absolute or a relative to the workspace directory."
+            "markdownDescription": "A list of directory paths to use while Xilinx xvlog linting. All the paths are passed as arguments `-i <directory_path>`. Paths can be specified either an absolute or a relative to the workspace directory."
           }
         }
       },
@@ -529,19 +529,19 @@
             "scope": "window",
             "type": "boolean",
             "default": false,
-            "description": "Enable svls Language Server for SystemVerilog."
+            "markdownDescription": "Enable svls Language Server for SystemVerilog."
           },
           "verilog.languageServer.svls.path": {
             "scope": "window",
             "type": "string",
             "default": "svls",
-            "description": "A path to the Svls Language Server binary."
+            "markdownDescription": "A path to the Svls Language Server binary."
           },
           "verilog.languageServer.svls.svlintTomlPath": {
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "[Experimental] Override the .toml configuration file to be used by svlint. Sets the `SVLINT_CONFIG` environment variable. When not set svlint searches for `.svlint.toml` within the Workspace folder.",
+            "markdownDescription": "[Experimental] Override the .toml configuration file to be used by svlint. Sets the `SVLINT_CONFIG` environment variable. When not set svlint searches for `.svlint.toml` within the Workspace folder.",
             "pattern": "^(?:(?:~?\\/|[a-zA-Z]:\\\\)?[\\/\\\\\\w\\._-]*\\.toml)$|^$",
             "patternErrorMessage": "Must be a path to a .toml file"
           },
@@ -549,103 +549,103 @@
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Add custom arguments for the Svls Language Server."
+            "markdownDescription": "Add custom arguments for the Svls Language Server."
           },
           "verilog.languageServer.veridian.enabled": {
             "scope": "window",
             "type": "boolean",
             "default": false,
-            "description": "Enable veridian Language Server for SystemVerilog."
+            "markdownDescription": "Enable veridian Language Server for SystemVerilog."
           },
           "verilog.languageServer.veridian.path": {
             "scope": "window",
             "type": "string",
             "default": "veridian",
-            "description": "A path to the Veridian Language Server binary."
+            "markdownDescription": "A path to the Veridian Language Server binary."
           },
           "verilog.languageServer.veridian.arguments": {
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Add custom arguments for the HDL Checker Veridian Language Server."
+            "markdownDescription": "Add custom arguments for the HDL Checker Veridian Language Server."
           },
           "verilog.languageServer.hdlChecker.enabled": {
             "scope": "window",
             "type": "boolean",
             "default": false,
-            "description": "Enable HDL Checker Language Server for Verilog-HDL, SystemVerilog, and VHDL."
+            "markdownDescription": "Enable HDL Checker Language Server for Verilog-HDL, SystemVerilog, and VHDL."
           },
           "verilog.languageServer.hdlChecker.path": {
             "scope": "window",
             "type": "string",
             "default": "hdl_checker",
-            "description": "A path to the HDL Checker Language Server binary."
+            "markdownDescription": "A path to the HDL Checker Language Server binary."
           },
           "verilog.languageServer.hdlChecker.arguments": {
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Add custom arguments for the HDL Checker Language Server."
+            "markdownDescription": "Add custom arguments for the HDL Checker Language Server."
           },
           "verilog.languageServer.veribleVerilogLs.enabled": {
             "scope": "window",
             "type": "boolean",
             "default": false,
-            "description": "Enable verible-verilog-ls Language Server for SystemVerilog."
+            "markdownDescription": "Enable verible-verilog-ls Language Server for SystemVerilog."
           },
           "verilog.languageServer.veribleVerilogLs.path": {
             "scope": "window",
             "type": "string",
             "default": "verible-verilog-ls",
-            "description": "A path to the verible-verilog-ls Language Server binary."
+            "markdownDescription": "A path to the verible-verilog-ls Language Server binary."
           },
           "verilog.languageServer.veribleVerilogLs.arguments": {
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Add custom arguments for the verible-verilog-ls Language Server."
+            "markdownDescription": "Add custom arguments for the verible-verilog-ls Language Server."
           },
           "verilog.languageServer.tclsp.enabled": {
             "scope": "window",
             "type": "boolean",
             "default": false,
-            "description": "Enable tclsp Language Server for Tcl/SDC/XDC/UPF."
+            "markdownDescription": "Enable tclsp Language Server for Tcl/SDC/XDC/UPF."
           },
           "verilog.languageServer.tclsp.path": {
             "scope": "window",
             "type": "string",
             "default": "tclsp",
-            "description": "A path to the tclsp Language Server binary."
+            "markdownDescription": "A path to the tclsp Language Server binary."
           },
           "verilog.languageServer.tclsp.arguments": {
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Add custom arguments for the tclsp Language Server."
+            "markdownDescription": "Add custom arguments for the tclsp Language Server."
           },
           "verilog.languageServer.tclsp.configPath": {
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Optional path to a tclint config file. Absolute paths are recommended; relative paths are resolved per workspace root."
+            "markdownDescription": "Optional path to a tclint config file. Absolute paths are recommended; relative paths are resolved per workspace root."
           },
           "verilog.languageServer.rustHdl.enabled": {
             "scope": "window",
             "type": "boolean",
             "default": false,
-            "description": "Enable rust_hdl Language Server for VHDL."
+            "markdownDescription": "Enable vhdl_ls Language Server for VHDL."
           },
           "verilog.languageServer.rustHdl.path": {
             "scope": "window",
             "type": "string",
             "default": "vhdl_ls",
-            "description": "A path to the rust_hdl Language Server binary."
+            "markdownDescription": "A path to the vhdl_ls Language Server binary."
           },
           "verilog.languageServer.rustHdl.arguments": {
             "scope": "window",
             "type": "string",
             "default": "",
-            "description": "Add custom arguments for the rust_hdl Language Server."
+            "markdownDescription": "Add custom arguments for the vhdl_ls Language Server."
           }
         }
       }
