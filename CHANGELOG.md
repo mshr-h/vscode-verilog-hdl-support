@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.22.0] - 2025-12-25
+
+### Added
+
+- \[Experimental\] Introduced VCD viewer powered by [raczben/fliplot](https://github.com/raczben/fliplot).
+
 ## [1.21.0] - 2025-12-25
 
 ### Added
