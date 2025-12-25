@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.21.0] - 2025-12-25
+
+### Added
+
+- Introduced Tcl language server support powered by [`tclint`](https://github.com/nmoroze/tclint).
+
 ## [1.20.0] - 2025-12-24
 
 ### Changed
