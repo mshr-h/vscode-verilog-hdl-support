@@ -47,10 +47,18 @@ export default class IcarusLinter extends BaseLinter {
 
   protected convertToSeverity(kind?: string, msg?: string): vscode.DiagnosticSeverity {
     const k = (kind ?? "").toLowerCase();
-    if (k === "warning") return vscode.DiagnosticSeverity.Warning;
-    if (k === "note") return vscode.DiagnosticSeverity.Information;
-    if (k === "error") return vscode.DiagnosticSeverity.Error;
-    if ((msg ?? "").toLowerCase().includes("syntax error")) return vscode.DiagnosticSeverity.Error;
+    if (k === "warning") {
+      return vscode.DiagnosticSeverity.Warning;
+    }
+    if (k === "note") {
+      return vscode.DiagnosticSeverity.Information;
+    }
+    if (k === "error") {
+      return vscode.DiagnosticSeverity.Error;
+    }
+    if ((msg ?? "").toLowerCase().includes("syntax error")) {
+      return vscode.DiagnosticSeverity.Error;
+    }
     return vscode.DiagnosticSeverity.Error;
   }
 
@@ -114,17 +122,25 @@ export default class IcarusLinter extends BaseLinter {
 
         for (const rawLine of output.split(/\r?\n/)) {
           const line = rawLine.trimEnd();
-          if (!line) continue;
+          if (!line) {
+            continue;
+          }
 
           if (startRe.test(line)) {
-            if (current) chunks.push(current);
+            if (current) {
+              chunks.push(current);
+            }
             current = line;
           } else {
             // concat with newline
-            if (current) current += "\n" + line;
+            if (current) {
+              current += "\n" + line;
+            }
           }
         }
-        if (current) chunks.push(current);
+        if (current) {
+          chunks.push(current);
+        }
 
         // 2) Consider each chunk as: file:line: [error|warning|note:] message
         const diagMap = new Map<string, vscode.Diagnostic[]>();
@@ -133,7 +149,9 @@ export default class IcarusLinter extends BaseLinter {
         for (const chunk of chunks) {
           const firstLine = chunk.split("\n", 1)[0];
           const m = firstLine.match(mainRe);
-          if (!m || !m.groups) continue;
+          if (!m || !m.groups) {
+            continue;
+          }
 
           const fileRaw = m.groups.file;
           const lineNum = Number(m.groups.line);
