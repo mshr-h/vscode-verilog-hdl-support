@@ -24,6 +24,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - Synopsys Design Constraints
   - Verilog Filelists (dot-F files)
   - Tcl
+- \[Experimental\]Integrated VCD viewer powered by [fliplot](https://github.com/raczben/fliplot)
 - Simple Snippets
 - Linting support from:
   - Icarus Verilog - `iverilog`
@@ -94,6 +95,10 @@ Add the installation path of Ctags binary in your `PATH` environment variable or
 - **Instantiate Module**
 
     Choose a module present in your workspace to instantiate it in the current file.
+
+- **Open Fliplot Waveform Viewer**
+
+    Open the embedded Fliplot waveform viewer and load a VCD file.
 
 ### Language Servers (Experimental)
 
@@ -181,6 +186,8 @@ You can check it by opening the **Output** pane in VS Code and choose _Verilog_ 
   - `configs/tcl.configuration.json` and `syntaxes/tcl.tmlanguage.json` are obtained from the repo.
 - [eirikpre/VSCode-SystemVerilog: SystemVerilog support in VS Code](https://github.com/eirikpre/VSCode-SystemVerilog)
   - SystemVerilog syntax is obtained from the repo.
+- [raczben/fliplot: HTML & Js based VCD viewer](https://github.com/raczben/fliplot)
+- [wavedrom/vcd-samples: sample VCD files](https://github.com/wavedrom/vcd-samples)
 
 ## Star History
 

@@ -19,7 +19,8 @@
     "Programming Languages",
     "Snippets",
     "Linters",
-    "Formatters"
+    "Formatters",
+    "Visualization"
   ],
   "icon": "images/icon.png",
   "main": "./dist/extension.js",
@@ -157,6 +158,16 @@
           ".f"
         ],
         "configuration": "./configs/verilog-filelist.configuration.json"
+      },
+      {
+        "id": "wavedump",
+        "extensions": [
+          ".vcd"
+        ],
+        "aliases": [
+          "Waveform Dump"
+        ],
+        "filenames": []
       }
     ],
     "grammars": [
@@ -658,6 +669,22 @@
       {
         "command": "verilog.lint",
         "title": "Verilog: Rerun lint tool"
+      },
+      {
+        "command": "verilog.openFliplot",
+        "title": "Verilog: Open Fliplot Waveform Viewer"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "verilog.fliplotEditor",
+        "displayName": "Fliplot Waveform Viewer",
+        "selector": [
+          {
+            "filenamePattern": "*.vcd"
+          }
+        ],
+        "priority": "default"
       }
     ]
   },

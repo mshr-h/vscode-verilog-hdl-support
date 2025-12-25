@@ -13,6 +13,8 @@ import * as FormatProvider from './providers/FormatProvider';
 import { ExtensionManager } from './extensionManager';
 import { initAllLanguageClients, stopAllLanguageClients } from './languageServer';
 import { createLogger, Logger } from './logger';
+import { FliplotPanel } from './fliplot/FliplotPanel';
+import { FliplotCustomEditor } from './fliplot/FliplotCustomEditor';
 
 export var logger: Logger; // Global logger
 var ctagsManager = new CtagsManager();
@@ -169,14 +171,34 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // Configure command to instantiate a module
-  vscode.commands.registerCommand(
-    'verilog.instantiateModule',
-    ModuleInstantiation.instantiateModuleInteract
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'verilog.instantiateModule',
+      ModuleInstantiation.instantiateModuleInteract
+    )
   );
 
   // Register command for manual linting
   lintManager = new LintManager(logger.getChild('LintManager'));
-  vscode.commands.registerCommand('verilog.lint', lintManager.runLintTool, lintManager);
+  context.subscriptions.push(
+    vscode.commands.registerCommand('verilog.lint', lintManager.runLintTool, lintManager)
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('verilog.openFliplot', () => {
+      FliplotPanel.show(context, logger.getChild('Fliplot'));
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.window.registerCustomEditorProvider(
+      FliplotCustomEditor.viewType,
+      new FliplotCustomEditor(context, logger.getChild('Fliplot')),
+      {
+        webviewOptions: { retainContextWhenHidden: true },
+      }
+    )
+  );
 
   // Configure language server
   vscode.workspace.onDidChangeConfiguration((event) => {
