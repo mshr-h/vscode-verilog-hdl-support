@@ -46,6 +46,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - [HDL Checker](https://github.com/suoto/hdl_checker)
   - [verible-verilog-ls](https://github.com/chipsalliance/verible)
   - [rust_hdl](https://github.com/VHDL-LS/rust_hdl)
+  - [tclsp](https://github.com/nmoroze/tclint)
 - Formatting support from:
   - [verilog-format](https://github.com/ericsonj/verilog-format)
   - [istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter)
@@ -108,6 +109,12 @@ If you encounter any problems even if it's not related to this feature, **deleti
 | [HDL Checker](https://github.com/suoto/hdl_checker)            | enabled       | enabled       | enabled       |
 | [verible-verilog-ls](https://github.com/chipsalliance/verible) | enabled       | enabled       | not supported |
 | [rust_hdl](https://github.com/VHDL-LS/rust_hdl)                | not supported | not supported | enabled       |
+
+Tcl support is provided by [tclsp](https://github.com/nmoroze/tclint) for Tcl/SDC/XDC/UPF files. Configure it under `verilog.languageServer.tclsp` and install `tclint` (provides the `tclsp` binary). Recommended install via `uv`:
+
+```sh
+uv tool install tclint
+```
 
 ### Formatting (Experimental)
 

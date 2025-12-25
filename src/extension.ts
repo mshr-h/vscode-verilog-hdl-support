@@ -12,6 +12,7 @@ import { BsvInfoProviderManger } from './BsvProvider';
 import * as ModuleInstantiation from './commands/ModuleInstantiation';
 import * as FormatProvider from './providers/FormatProvider';
 import { ExtensionManager } from './extensionManager';
+import { buildTclspInitializationOptions } from './languageServer/tclspOptions';
 import { createLogger, Logger } from './logger';
 
 export var logger: Logger; // Global logger
@@ -274,6 +275,17 @@ function initAllLanguageClients() {
     documentSelector: [
       { scheme: 'file', language: 'verilog' },
       { scheme: 'file', language: 'systemverilog' },
+    ],
+  });
+
+  // init tclsp
+  setupLanguageClient('tclsp', 'tclsp', [], [], {
+    initializationOptions: buildTclspInitializationOptions(),
+    documentSelector: [
+      { scheme: 'file', language: 'tcl' },
+      { scheme: 'file', language: 'sdc' },
+      { scheme: 'file', language: 'xdc' },
+      { scheme: 'file', language: 'upf' },
     ],
   });
 

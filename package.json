@@ -127,6 +127,17 @@
         "configuration": "./configs/tcl.configuration.json"
       },
       {
+        "id": "upf",
+        "aliases": [
+          "UPF",
+          "upf"
+        ],
+        "extensions": [
+          ".upf"
+        ],
+        "configuration": "./configs/tcl.configuration.json"
+      },
+      {
         "id": "xdc",
         "aliases": [
           "Xilinx Design Constraints"
@@ -186,6 +197,11 @@
       },
       {
         "language": "tcl",
+        "scopeName": "source.tcl",
+        "path": "./syntaxes/tcl.tmlanguage.json"
+      },
+      {
+        "language": "upf",
         "scopeName": "source.tcl",
         "path": "./syntaxes/tcl.tmlanguage.json"
       },
@@ -588,6 +604,30 @@
             "type": "string",
             "default": "",
             "description": "Add custom arguments for the verible-verilog-ls Language Server."
+          },
+          "verilog.languageServer.tclsp.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": false,
+            "description": "Enable tclsp Language Server for Tcl/SDC/XDC/UPF."
+          },
+          "verilog.languageServer.tclsp.path": {
+            "scope": "window",
+            "type": "string",
+            "default": "tclsp",
+            "description": "A path to the tclsp Language Server binary."
+          },
+          "verilog.languageServer.tclsp.arguments": {
+            "scope": "window",
+            "type": "string",
+            "default": "",
+            "description": "Add custom arguments for the tclsp Language Server."
+          },
+          "verilog.languageServer.tclsp.configPath": {
+            "scope": "window",
+            "type": "string",
+            "default": "",
+            "description": "Optional path to a tclint config file. Absolute paths are recommended; relative paths are resolved per workspace root."
           },
           "verilog.languageServer.rustHdl.enabled": {
             "scope": "window",
