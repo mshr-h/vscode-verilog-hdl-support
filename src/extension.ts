@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
-import { LanguageClient, LanguageClientOptions, Message, ServerOptions } from 'vscode-languageclient/node';
 
 import LintManager from './linter/LintManager';
 import { CtagsManager } from './ctags';
@@ -12,7 +11,7 @@ import { BsvInfoProviderManger } from './BsvProvider';
 import * as ModuleInstantiation from './commands/ModuleInstantiation';
 import * as FormatProvider from './providers/FormatProvider';
 import { ExtensionManager } from './extensionManager';
-import { buildTclspInitializationOptions } from './languageServer/tclspOptions';
+import { initAllLanguageClients, stopAllLanguageClients } from './languageServer';
 import { createLogger, Logger } from './logger';
 
 export var logger: Logger; // Global logger
@@ -20,7 +19,6 @@ var ctagsManager = new CtagsManager();
 let extensionID: string = 'mshr-h.veriloghdl';
 
 let lintManager: LintManager;
-let languageClients = new Map<string, LanguageClient>();
 
 export function activate(context: vscode.ExtensionContext) {
   logger = createLogger('Verilog');
@@ -186,124 +184,12 @@ export function activate(context: vscode.ExtensionContext) {
       return;
     }
     stopAllLanguageClients().finally(() => {
-      initAllLanguageClients();
+      initAllLanguageClients(logger);
     });
   });
-  initAllLanguageClients();
+  initAllLanguageClients(logger);
 
   logger.info(extensionID + ' activation finished.');
-}
-
-function setupLanguageClient(
-  name: string,
-  defaultPath: string,
-  serverArgs: string[],
-  serverDebugArgs: string[],
-  clientOptions: LanguageClientOptions
-) {
-  let settings = vscode.workspace.getConfiguration('verilog.languageServer.' + name);
-  let enabled: boolean = <boolean>settings.get('enabled', false);
-
-  let binPath = <string>settings.get('path', defaultPath);
-  let customArgs = <string>settings.get('arguments');
-
-  if (customArgs) {
-    serverArgs.push(customArgs);
-    serverDebugArgs.push(customArgs);
-  }
-
-  let serverOptions: ServerOptions = {
-    run: { command: binPath, args: serverArgs },
-    debug: { command: binPath, args: serverDebugArgs },
-  };
-
-  languageClients.set(
-    name,
-    new LanguageClient(name, name + ' language server', serverOptions, clientOptions)
-  );
-  if (!enabled) {
-    return;
-  }
-  const client = languageClients.get(name);
-  if (client) {
-    client.start();
-    logger.info('"' + name + '" language server started.');
-  }
-}
-
-function initAllLanguageClients() {
-  // init svls
-  setupLanguageClient('svls', 'svls', [], ['--debug'], {
-    documentSelector: [{ scheme: 'file', language: 'systemverilog' }],
-  });
-
-  // TODO: move to svls extension setting
-  let svlint_toml: string | undefined = vscode.workspace.getConfiguration('verilog.languageServer.svls').get('svlintTomlPath');
-  if (typeof svlint_toml !== undefined) {
-    process.env.SVLINT_CONFIG = svlint_toml;
-  }
-
-  // init veridian
-  setupLanguageClient('veridian', 'veridian', [], [], {
-    documentSelector: [{ scheme: 'file', language: 'systemverilog' }],
-  });
-
-  // init hdlChecker
-  setupLanguageClient('hdlChecker', 'hdl_checker', ['--lsp'], ['--lsp'], {
-    documentSelector: [
-      { scheme: 'file', language: 'verilog' },
-      { scheme: 'file', language: 'systemverilog' },
-      { scheme: 'file', language: 'vhdl' },
-    ],
-  });
-
-  // init verible-verilog-ls
-  setupLanguageClient('veribleVerilogLs', 'verible-verilog-ls', [], [], {
-    connectionOptions: {
-      messageStrategy: {
-        handleMessage: (message, next) => {
-          if (Message.isResponse(message) && message.result && typeof message.result === 'object' && 'capabilities' in message.result) {
-            const result = message.result as any;
-            delete result['capabilities']['diagnosticProvider'];
-            delete result['capabilities']['documentFormattingProvider'];
-            delete result['capabilities']['documentRangeFormattingProvider'];
-          }
-          next(message);
-        },
-      },
-    },
-    documentSelector: [
-      { scheme: 'file', language: 'verilog' },
-      { scheme: 'file', language: 'systemverilog' },
-    ],
-  });
-
-  // init tclsp
-  setupLanguageClient('tclsp', 'tclsp', [], [], {
-    initializationOptions: buildTclspInitializationOptions(),
-    documentSelector: [
-      { scheme: 'file', language: 'tcl' },
-      { scheme: 'file', language: 'sdc' },
-      { scheme: 'file', language: 'xdc' },
-      { scheme: 'file', language: 'upf' },
-    ],
-  });
-
-  // init rustHdl
-  setupLanguageClient('rustHdl', 'vhdl_ls', [], [], {
-    documentSelector: [{ scheme: 'file', language: 'vhdl' }],
-  });
-}
-
-function stopAllLanguageClients(): Promise<any> {
-  var p = [];
-  for (const [name, client] of languageClients) {
-    if (client.isRunning()) {
-      p.push(client.stop());
-      logger.info('"' + name + '" language server stopped.');
-    }
-  }
-  return Promise.all(p);
 }
 
 export function deactivate(): Promise<void> {
