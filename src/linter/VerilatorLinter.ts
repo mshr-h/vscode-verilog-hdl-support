@@ -108,19 +108,14 @@ export default class VerilatorLinter extends BaseLinter {
     this.logger.info('[verilator]   command: ' + command);
     this.logger.info('[verilator]   cwd    : ' + cwd);
 
-
-
     var _: child.ChildProcess = child.exec(
       command,
       { cwd: cwd },
       (_error: child.ExecException | null, _stdout: string, stderr: string) => {
-
         // basically DiagnosticsCollection but with ability to append diag lists
         let filesDiag = new Map();
 
         stderr.split(/\r?\n/g).forEach((line, _, stderrLines) => {
-
-
           // if lineIndex is 0 and it doesn't start with %Error or %Warning,
           // the whole loop would skip
           // and it is probably a system error (wrong file name/directory/something)
@@ -128,15 +123,12 @@ export default class VerilatorLinter extends BaseLinter {
 
           // parsing previous lines for message type
           // shouldn't be more than 5 or so
-          for (let lineIndex = _; lineIndex >= 0; lineIndex--)
-          {
-            if (stderrLines[lineIndex].startsWith("%Error"))
-            {
+          for (let lineIndex = _; lineIndex >= 0; lineIndex--) {
+            if (stderrLines[lineIndex].startsWith("%Error")) {
               lastDiagMessageType = "Error";
               break;
             }
-            if (stderrLines[lineIndex].startsWith("%Warning"))
-            {
+            if (stderrLines[lineIndex].startsWith("%Warning")) {
               lastDiagMessageType = "Warning";
               break;
             }
@@ -154,13 +146,12 @@ export default class VerilatorLinter extends BaseLinter {
           // also this might have some false positives
           // probably something like "stderr passthrough setting" would be a good idea
           if (!line.startsWith('%')) {
-            
+
             // allows for persistent 
             if (lastDiagMessageType === 'Warning') { this.logger.warn(line); }
-              else { this.logger.error(line); }
+            else { this.logger.error(line); }
             return;
           }
-
 
           // important match sections are named now:
           // severity - Error or Warning
@@ -177,7 +168,7 @@ export default class VerilatorLinter extends BaseLinter {
             /(-(?<errorCode>[A-Z0-9]+))?/.source + // matches error code like -PINNOTFOUND
 
             /: /.source + // ": " before file path or error message
-            
+
             // this one's a bit of a mess, but apparently one can't cleanly split regex match group between lines
             // and this is a large group since it matches file path and line and column numbers which may not exist at all
 
@@ -204,12 +195,10 @@ export default class VerilatorLinter extends BaseLinter {
           // stderr passthrough
           // probably better toggled with a parameter
           if (rex.groups["severity"] === "Error") { this.logger.error(line); }
-            else if (rex.groups["severity"] === "Warning") { this.logger.warn(line); }
+          else if (rex.groups["severity"] === "Warning") { this.logger.warn(line); }
 
-            // theoretically, this shoudn't "fire", but just in case
-            else { this.logger.error(line); }
-
-          
+          // theoretically, this shoudn't "fire", but just in case
+          else { this.logger.error(line); }
 
 
           // vscode problems are tied to files
@@ -217,7 +206,7 @@ export default class VerilatorLinter extends BaseLinter {
           if (!rex.groups["filePath"]) {
             return;
           }
-          
+
           // replacing "\\" and "\" with "/" for consistency
           if (isWindows) {
             rex.groups["filePath"] = rex.groups["filePath"].replace(/(\\\\)|(\\)/g, "/");
@@ -230,11 +219,9 @@ export default class VerilatorLinter extends BaseLinter {
 
           // if there isn't a list of errors for this file already, it
           // needs to be created
-          if (!filesDiag.has(rex.groups["filePath"]))
-          {
+          if (!filesDiag.has(rex.groups["filePath"])) {
             filesDiag.set(rex.groups["filePath"], []);
           }
-          
 
           if (rex && rex[0].length > 0) {
             let lineNum = Number(rex.groups["lineNumber"]) - 1;
@@ -263,14 +250,13 @@ export default class VerilatorLinter extends BaseLinter {
         // earlier errors are discarded
         this.diagnosticCollection.clear();
 
-        filesDiag.forEach((issuesArray, fileName) =>
-          {
-            let fileURI = vscode.Uri.file(fileName);
-            this.diagnosticCollection.set(
-              fileURI,
-              issuesArray
-            );
-          }
+        filesDiag.forEach((issuesArray, fileName) => {
+          let fileURI = vscode.Uri.file(fileName);
+          this.diagnosticCollection.set(
+            fileURI,
+            issuesArray
+          );
+        }
         );
       }
     );
