@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: lts/*
       - run: npm ci
-      - name: Install dependencies
+      - name: Install dependencies (macOS)
         run: |
           brew tap chipsalliance/verible
           brew install verible
@@ -27,6 +27,13 @@ jobs:
           brew install icarus-verilog
           brew install verilator
         if: runner.os == 'macOS'
+      - name: Install dependencies (Ubuntu)
+        run: |
+          sudo apt update
+          sudo apt install -y iverilog verilator
+          cargo install svls
+          cargo install --git https://github.com/vivekmalneedi/veridian.git
+        if: runner.os == 'Linux'
       - run: xvfb-run -a npm test
         if: runner.os == 'Linux'
       - run: npm test
