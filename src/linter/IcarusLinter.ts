@@ -176,6 +176,7 @@ export default class IcarusLinter extends BaseLinter {
           diagMap.set(fsPath, arr);
         }
 
+        this.diagnosticCollection.clear();
         for (const [fsPath, diags] of diagMap) {
           this.diagnosticCollection.set(vscode.Uri.file(fsPath), diags);
         }
