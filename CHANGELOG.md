@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.22.2] - 2025-12-30
+
+### Fixed
+
+- Fixed incorrect syntax highlighting for regex patterns in Tcl. [#551](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/551).
+
 ## [1.22.1] - 2025-12-26
 
 ### Fixed
