@@ -182,7 +182,7 @@ You can check it by opening the **Output** pane in VS Code and choose _Verilog_ 
 - [ericsonj/verilog-format](https://github.com/ericsonj/verilog-format)
 - [thomasrussellmurphy/istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter)
 - [slang C++ docs](https://sv-lang.com/)
-- [bitwisecook/vscode-tcl: Tcl for Visual Studio Code](https://github.com/bitwisecook/vscode-tcl)
+- [Digital-EDA/Digital-IDE: All in one vscode plugin for HDL development](https://github.com/Digital-EDA/Digital-IDE)
   - `configs/tcl.configuration.json` and `syntaxes/tcl.tmlanguage.json` are obtained from the repo.
 - [eirikpre/VSCode-SystemVerilog: SystemVerilog support in VS Code](https://github.com/eirikpre/VSCode-SystemVerilog)
   - SystemVerilog syntax is obtained from the repo.
