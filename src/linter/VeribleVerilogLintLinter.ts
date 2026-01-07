@@ -5,6 +5,7 @@ import * as path from 'path';
 import * as process from 'process';
 import BaseLinter from './BaseLinter';
 import { Logger } from '../logger';
+import { END_OF_LINE } from '../constants';
 
 let isWindows = process.platform === 'win32';
 
@@ -99,7 +100,7 @@ export default class VeribleVerilogLintLinter extends BaseLinter {
 
           let lineNum = Number(rex[2]) - 1;
           let colStart = Number(rex[3]) - 1;
-          let colEnd = rex[4] ? Number(rex[4]) - 1 : Number.MAX_VALUE;
+          let colEnd = rex[4] ? Number(rex[4]) - 1 : END_OF_LINE;
           let message = rex[5].trim();
           let ruleName = rex[6] ? rex[6].trim() : '';
 

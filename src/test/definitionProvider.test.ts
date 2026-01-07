@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { VerilogDefinitionProvider } from '../providers/DefinitionProvider';
 import { CtagsManager } from '../ctags';
 import { createLogger } from '../logger';
+import { END_OF_LINE } from '../constants';
 
 suite('DefinitionProvider', () => {
   test('returns definition links for found symbol', async () => {
@@ -14,7 +15,7 @@ suite('DefinitionProvider', () => {
 
     const targetRange = new vscode.Range(
       new vscode.Position(1, 0),
-      new vscode.Position(1, Number.MAX_VALUE)
+      new vscode.Position(1, END_OF_LINE)
     );
     const definitionLinks: vscode.DefinitionLink[] = [
       {

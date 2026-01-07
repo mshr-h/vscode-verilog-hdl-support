@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { VerilogHoverProvider } from '../providers/HoverProvider';
 import { CtagsManager } from '../ctags';
 import { createLogger } from '../logger';
+import { END_OF_LINE } from '../constants';
 
 suite('Hover Provider', () => {
   test('returns hover content for symbol definition', async () => {
@@ -14,7 +15,7 @@ suite('Hover Provider', () => {
 
     const targetRange = new vscode.Range(
       new vscode.Position(0, 0),
-      new vscode.Position(0, Number.MAX_VALUE)
+      new vscode.Position(0, END_OF_LINE)
     );
     const ctagsManager = {
       findSymbol: async () => [

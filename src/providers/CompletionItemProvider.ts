@@ -2,6 +2,7 @@
 import * as vscode from 'vscode';
 import { CtagsManager, Symbol } from '../ctags';
 import { Logger } from '../logger';
+import { END_OF_LINE } from '../constants';
 
 export class VerilogCompletionItemProvider implements vscode.CompletionItemProvider {
   private logger: Logger;
@@ -30,7 +31,7 @@ export class VerilogCompletionItemProvider implements vscode.CompletionItemProvi
       );
       let codeRange = new vscode.Range(
         symbol.startPosition,
-        new vscode.Position(symbol.startPosition.line, Number.MAX_VALUE)
+        new vscode.Position(symbol.startPosition.line, END_OF_LINE)
       );
       let code = document.getText(codeRange).trim();
       newItem.detail = symbol.type;

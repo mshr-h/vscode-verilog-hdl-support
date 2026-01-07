@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import * as child from 'child_process';
 import BaseLinter from './BaseLinter';
 import { Logger } from '../logger';
+import { END_OF_LINE } from '../constants';
 
 var isWindows = process.platform === 'win32';
 
@@ -84,7 +85,7 @@ export default class ModelsimLinter extends BaseLinter {
               let msg = m[10];
               diagnostics.push({
                 severity: this.convertToSeverity(m[2]),
-                range: new vscode.Range(lineNum, 0, lineNum, Number.MAX_VALUE),
+                range: new vscode.Range(lineNum, 0, lineNum, END_OF_LINE),
                 message: msg,
                 code: 'modelsim',
                 source: 'modelsim',
@@ -92,7 +93,7 @@ export default class ModelsimLinter extends BaseLinter {
             } catch (e) {
               diagnostics.push({
                 severity: vscode.DiagnosticSeverity.Information,
-                range: new vscode.Range(0, 0, 0, Number.MAX_VALUE),
+                range: new vscode.Range(0, 0, 0, END_OF_LINE),
                 message: line,
                 code: 'modelsim',
                 source: 'modelsim',

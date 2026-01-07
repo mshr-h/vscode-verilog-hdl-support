@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import {exec as execNonPromise} from 'child_process';
 import * as util from 'util';
 import { Logger } from './logger';
+import { END_OF_LINE } from './constants';
 const exec = util.promisify(execNonPromise);
 
 // Internal representation of a symbol
@@ -32,11 +33,11 @@ export class Symbol {
     this.parentScope = parentScope;
     this.parentType = parentType;
     this.isValid = isValid ?? false;
-    this.endPosition = new vscode.Position(endLine ?? startLine, Number.MAX_VALUE);
+    this.endPosition = new vscode.Position(endLine ?? startLine, END_OF_LINE);
   }
 
   setEndPosition(endLine: number) {
-    this.endPosition = new vscode.Position(endLine, Number.MAX_VALUE);
+    this.endPosition = new vscode.Position(endLine, END_OF_LINE);
     this.isValid = true;
   }
 
@@ -376,7 +377,7 @@ export class CtagsManager {
         targetUri: document.uri,
         targetRange: new vscode.Range(
           i.startPosition,
-          new vscode.Position(i.startPosition.line, Number.MAX_VALUE)
+          new vscode.Position(i.startPosition.line, END_OF_LINE)
         ),
         targetSelectionRange: new vscode.Range(i.startPosition, i.endPosition),
       };

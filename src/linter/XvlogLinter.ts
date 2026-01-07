@@ -4,6 +4,7 @@ import {exec, ExecException} from 'child_process';
 import * as path from 'path';
 import BaseLinter from './BaseLinter';
 import { Logger } from '../logger';
+import { END_OF_LINE } from '../constants';
 
 export default class XvlogLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
@@ -72,7 +73,7 @@ export default class XvlogLinter extends BaseLinter {
           severity: this.convertToSeverity(match[1]),
           code: match[2],
           message: '[' + match[2] + '] ' + match[3],
-          range: new vscode.Range(lineno, 0, lineno, Number.MAX_VALUE),
+          range: new vscode.Range(lineno, 0, lineno, END_OF_LINE),
           source: 'xvlog',
         };
 

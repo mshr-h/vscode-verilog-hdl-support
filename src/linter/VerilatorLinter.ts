@@ -5,6 +5,7 @@ import * as path from 'path';
 import * as process from 'process';
 import BaseLinter from './BaseLinter';
 import { Logger } from '../logger';
+import { END_OF_LINE } from '../constants';
 
 let isWindows = process.platform === 'win32';
 
@@ -235,7 +236,7 @@ export default class VerilatorLinter extends BaseLinter {
               // tied to a file
               filesDiag.get(rex.groups["filePath"]).push({
                 severity: this.convertToSeverity(rex.groups["severity"]),
-                range: new vscode.Range(lineNum, colNum, lineNum, Number.MAX_VALUE),
+                range: new vscode.Range(lineNum, colNum, lineNum, END_OF_LINE),
                 message: rex.groups["verboseError"],
                 code: rex.groups["errorCode"],
                 source: 'verilator',

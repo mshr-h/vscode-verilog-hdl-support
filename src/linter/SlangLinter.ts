@@ -5,6 +5,7 @@ import * as path from 'path';
 import * as process from 'process';
 import BaseLinter from './BaseLinter';
 import { Logger } from '../logger';
+import { END_OF_LINE } from '../constants';
 
 let isWindows = process.platform === 'win32';
 
@@ -124,7 +125,7 @@ export default class SlangLinter extends BaseLinter {
 
             diagnostics.push({
               severity: this.convertToSeverity(rex[4]),
-              range: new vscode.Range(lineNum, colNum, lineNum, Number.MAX_VALUE),
+              range: new vscode.Range(lineNum, colNum, lineNum, END_OF_LINE),
               message: rex[5],
               code: rex[7] ? rex[7] : 'error',
               source: 'slang',
