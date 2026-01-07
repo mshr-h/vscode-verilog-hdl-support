@@ -6,16 +6,39 @@ import { Logger } from './logger';
 import { END_OF_LINE } from './constants';
 const exec = util.promisify(execNonPromise);
 
-// Internal representation of a symbol
+/**
+ * Represents a symbol parsed from ctags output.
+ * Symbols include modules, functions, ports, nets, and other Verilog/SystemVerilog constructs.
+ */
 export class Symbol {
+  /** The name of the symbol (e.g., module name, signal name) */
   name: string;
+  /** The ctags type (e.g., 'module', 'function', 'port', 'net') */
   type: string;
+  /** The pattern from ctags output */
   pattern: string;
+  /** The starting position of the symbol in the document */
   startPosition: vscode.Position;
+  /** The ending position of the symbol in the document */
   endPosition: vscode.Position;
+  /** The parent scope name (e.g., the module containing this signal) */
   parentScope: string;
+  /** The type of the parent scope (e.g., 'module') */
   parentType: string;
+  /** Whether the symbol has a valid end position */
   isValid: boolean;
+
+  /**
+   * Creates a new Symbol instance.
+   * @param name - The symbol name
+   * @param type - The ctags type
+   * @param pattern - The pattern from ctags
+   * @param startLine - The line number where the symbol starts (0-indexed)
+   * @param parentScope - The name of the parent scope
+   * @param parentType - The type of the parent scope
+   * @param endLine - The line number where the symbol ends (optional)
+   * @param isValid - Whether the symbol has a valid end position (optional)
+   */
   constructor(
     name: string,
     type: string,
@@ -36,11 +59,19 @@ export class Symbol {
     this.endPosition = new vscode.Position(endLine ?? startLine, END_OF_LINE);
   }
 
+  /**
+   * Sets the end position of the symbol and marks it as valid.
+   * @param endLine - The line number where the symbol ends (0-indexed)
+   */
   setEndPosition(endLine: number) {
     this.endPosition = new vscode.Position(endLine, END_OF_LINE);
     this.isValid = true;
   }
 
+  /**
+   * Converts this Symbol to a VS Code DocumentSymbol for the outline view.
+   * @returns A DocumentSymbol representing this symbol
+   */
   getDocumentSymbol(): vscode.DocumentSymbol {
     let range = new vscode.Range(this.startPosition, this.endPosition);
     return new vscode.DocumentSymbol(
@@ -52,6 +83,12 @@ export class Symbol {
     );
   }
 
+  /**
+   * Determines if a symbol type can contain other symbols.
+   * Container types include modules, functions, classes, etc.
+   * @param type - The ctags type string
+   * @returns True if the type can contain child symbols
+   */
   static isContainer(type: string): boolean {
     switch (type) {
       case 'constant':
@@ -82,8 +119,12 @@ export class Symbol {
     return false;
   }
 
-  // types used by ctags
-  // taken from https://github.com/universal-ctags/ctags/blob/master/parsers/verilog.c
+  /**
+   * Maps a ctags type string to a VS Code SymbolKind.
+   * @param name - The ctags type string
+   * @returns The corresponding VS Code SymbolKind
+   * @see https://github.com/universal-ctags/ctags/blob/master/parsers/verilog.c
+   */
   static getSymbolKind(name: String): vscode.SymbolKind {
     switch (name) {
       case 'constant':
@@ -137,14 +178,25 @@ export class Symbol {
   }
 }
 
+/**
+ * Manages ctags execution and symbol parsing for a single document.
+ * Caches parsed symbols and re-indexes when the document is dirty.
+ */
 export class Ctags {
-  /// Symbol definitions (no rhs)
+  /** The list of parsed symbols */
   symbols: Symbol[];
+  /** The document being indexed */
   doc: vscode.TextDocument;
+  /** Whether the symbol cache needs to be rebuilt */
   isDirty: boolean;
   private logger: Logger;
   private ctagBinPath!: string;
 
+  /**
+   * Creates a new Ctags instance for a document.
+   * @param logger - The logger instance for output
+   * @param document - The document to index
+   */
   constructor(logger: Logger, document: vscode.TextDocument) {
     this.symbols = [];
     this.isDirty = true;
@@ -162,15 +214,27 @@ export class Ctags {
     );
   }
 
+  /**
+   * Clears the cached symbols and marks the cache as dirty.
+   */
   clearSymbols() {
     this.isDirty = true;
     this.symbols = [];
   }
 
+  /**
+   * Gets the list of parsed symbols.
+   * @returns The array of Symbol objects
+   */
   getSymbolsList(): Symbol[] {
     return this.symbols;
   }
 
+  /**
+   * Executes ctags on a file and returns the raw output.
+   * @param filepath - The path to the file to index
+   * @returns The ctags output as a string
+   */
   async execCtags(filepath: string): Promise<string> {
     let command: string = this.ctagBinPath + ' -f - --fields=+K --sort=no --excmd=n --fields-SystemVerilog=+{parameter} "' + filepath + '"';
     this.logger.info('Executing Command: ' + command);
@@ -194,6 +258,11 @@ export class Ctags {
     return Promise.resolve('');
   }
 
+  /**
+   * Parses a single line of ctags output into a Symbol.
+   * @param line - A line from ctags output
+   * @returns A Symbol object or undefined if parsing fails
+   */
   parseTagLine(line: string): Symbol | undefined {
     try {
       let name, type, pattern, lineNoStr, parentScope, parentType: string;
@@ -225,6 +294,11 @@ export class Ctags {
     return undefined;
   }
 
+  /**
+   * Builds the symbols list from ctags output.
+   * Parses the output and determines end positions using regex.
+   * @param tags - The raw ctags output
+   */
   async buildSymbolsList(tags: string): Promise<void> {
     try {
       if (this.isDirty) {
@@ -287,6 +361,9 @@ export class Ctags {
     }
   }
 
+  /**
+   * Indexes the document by running ctags and building the symbols list.
+   */
   async index(): Promise<void> {
     this.logger.info('indexing ', this.doc.uri.fsPath);
     
@@ -295,11 +372,19 @@ export class Ctags {
   }
 }
 
+/**
+ * Manages Ctags instances for multiple documents.
+ * Provides caching, configuration management, and symbol lookup across files.
+ */
 export class CtagsManager {
   private filemap: Map<vscode.TextDocument, Ctags> = new Map();
   private logger!: Logger;
   private enabled = false;
 
+  /**
+   * Configures the CtagsManager with a logger and sets up event listeners.
+   * @param logger - The logger instance for output
+   */
   configure(logger: Logger) {
     this.logger = logger;
     this.logger.info('ctags manager configure');
@@ -329,6 +414,11 @@ export class CtagsManager {
     }
   }
 
+  /**
+   * Gets or creates a Ctags instance for a document.
+   * @param doc - The document to get the Ctags instance for
+   * @returns The Ctags instance for the document
+   */
   getCtags(doc: vscode.TextDocument): Ctags {
     let ctags: Ctags | undefined = this.filemap.get(doc);
     if (ctags === undefined) {
@@ -337,10 +427,19 @@ export class CtagsManager {
     }
     return ctags;
   }
+
+  /**
+   * Handles document close events by removing the cached Ctags instance.
+   * @param doc - The document that was closed
+   */
   onClose(doc: vscode.TextDocument) {
     this.filemap.delete(doc);
   }
 
+  /**
+   * Handles document save events by invalidating the symbol cache.
+   * @param doc - The document that was saved
+   */
   onSave(doc: vscode.TextDocument) {
     this.logger.info('on save');
     if (!this.enabled) {
@@ -350,6 +449,11 @@ export class CtagsManager {
     ctags.clearSymbols();
   }
 
+  /**
+   * Gets all symbols for a document, indexing if necessary.
+   * @param doc - The document to get symbols for
+   * @returns An array of Symbol objects
+   */
   async getSymbols(doc: vscode.TextDocument): Promise<Symbol[]> {
     if (!this.enabled) {
       return [];
@@ -362,9 +466,12 @@ export class CtagsManager {
     return ctags.symbols;
   }
 
-
-
-  /// find a matching symbol in a single document
+  /**
+   * Finds symbol definitions matching a target text in a single document.
+   * @param document - The document to search in
+   * @param targetText - The symbol name to find
+   * @returns An array of DefinitionLink objects
+   */
   async findDefinition(document: vscode.TextDocument, targetText: string): Promise<vscode.DefinitionLink[]> {
     if (!this.enabled) {
       return [];
@@ -384,7 +491,13 @@ export class CtagsManager {
     });
   }
 
-  /// Finds a symbols definition, but also looks in targetText.sv to get module/interface defs
+  /**
+   * Finds symbol definitions at a position, searching the current document
+   * and related files (e.g., module.sv for module definitions).
+   * @param document - The document containing the position
+   * @param position - The position to look up
+   * @returns An array of DefinitionLink objects from all searched documents
+   */
   async findSymbol(document: vscode.TextDocument, position: vscode.Position): Promise<vscode.DefinitionLink[]> {
     if (!this.enabled) {
       return [];
