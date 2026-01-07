@@ -18,7 +18,6 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 - Syntax Highlighting
   - Verilog-HDL
   - SystemVerilog
-  - Bluespec SystemVerilog
   - VHDL
   - Verilog-AMS
   - Vivado UCF constraints
@@ -34,8 +33,6 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - Vivado Logical Simulation - `xvlog`
   - Slang - `slang`
   - Verible Verilog Lint - `verible-verilog-lint`
-- Linting support
-  - Bluespec SystemVerilog
 - Ctags Integration
   - Autocomplete
   - Document Symbols Outline
@@ -173,7 +170,6 @@ You can check it by opening the **Output** pane in VS Code and choose _Verilog_ 
 - [Textmate Package for Verilog](https://github.com/textmate/verilog.tmbundle)
 - [SublimeLinter-contrib-iverilog](https://github.com/jfcherng/SublimeLinter-contrib-iverilog)
 - [SublimeLinter-contrib-vlog](https://github.com/dave2pi/SublimeLinter-contrib-vlog)
-- [Sublime Text Bluespec SystemVerilog](https://github.com/thotypous/sublime-bsv)
 - [yangsu/sublime-vhdl](https://github.com/yangsu/sublime-vhdl)
 - [Sublime EDA](https://github.com/tschinz/sublime_eda)
 - [dalance/svls](https://github.com/dalance/svls)

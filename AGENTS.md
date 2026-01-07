@@ -5,7 +5,7 @@ This document provides guidance for AI coding agents working on the vscode-veril
 ## Project Overview
 
 This is a VS Code extension providing HDL (Hardware Description Language) support including:
-- **Syntax highlighting** for Verilog, SystemVerilog, Bluespec SystemVerilog (BSV), VHDL, Verilog-AMS, UCF, SDC, XDC, UPF, Tcl, and Verilog filelists
+- **Syntax highlighting** for Verilog, SystemVerilog, VHDL, Verilog-AMS, UCF, SDC, XDC, UPF, Tcl, and Verilog filelists
 - **Linting** via external tools (iverilog, verilator, modelsim, xvlog, slang, verible-verilog-lint)
 - **Language Server** integration (svls, veridian, hdl_checker, verible-verilog-ls, vhdl_ls, tclsp)
 - **Formatting** support (verilog-format, istyle-verilog-formatter, verible-verilog-format)
@@ -21,7 +21,6 @@ src/
 ├── logger.ts             # Hierarchical logging utility
 ├── ctags.ts              # Ctags integration for symbol parsing
 ├── hover.ts              # Hover information utilities
-├── BsvProvider.ts        # Bluespec SystemVerilog support
 ├── commands/             # VS Code command implementations
 │   └── ModuleInstantiation.ts
 ├── providers/            # VS Code language feature providers
@@ -48,7 +47,6 @@ src/
 ├── fliplot/              # VCD waveform viewer
 │   ├── FliplotPanel.ts   # Webview panel implementation
 │   └── FliplotCustomEditor.ts  # Custom editor for VCD files
-├── bsvLanguageServer/    # BSV language support
 └── test/                 # Test files (see Testing section)
 
 syntaxes/                 # TextMate grammar files (.tmLanguage.json/.yaml)
@@ -106,7 +104,6 @@ Tests are located in `src/test/` and use VS Code's test framework:
 - `iverilog.test.ts`, `verilator.test.ts`, `verible-verilog-lint.test.ts` - Linter tests
 - `languageServer.test.ts` - Language server tests
 - `moduleInstantiation.test.ts` - Module instantiation command tests
-- `bsv.test.ts` - Bluespec SystemVerilog tests
 - `tclsp.test.ts` - Tcl language server tests
 
 ## Code Style
@@ -177,7 +174,6 @@ Extension settings are defined in `package.json` under `contributes.configuratio
 
 ### Runtime
 - `vscode-languageclient` - Language Server Protocol client
-- `antlr4ts` - ANTLR4 runtime for BSV parsing
 - `semver` - Version comparison
 - `which` - Executable path resolution
 - `js-yaml` - YAML parsing (for syntaxes)

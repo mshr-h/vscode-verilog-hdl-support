@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 // import * as vscode from 'vscode';
 import * as vscode from 'vscode';
-import { BsvInfoProviderManger } from '../BsvProvider';
 import { CtagsManager, Symbol } from '../ctags';
 import { Logger } from '../logger';
 
@@ -39,23 +38,5 @@ export class VerilogHoverProvider implements vscode.HoverProvider {
     }
     this.logger.warn('Hover object not found');
     return undefined;
-  }
-}
-
-export class BsvHoverProvider implements vscode.HoverProvider {
-  private logger: Logger;
-
-  constructor(logger: Logger) {
-    this.logger = logger;
-  }
-
-  provideHover(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-    _token: vscode.CancellationToken
-  ): vscode.ProviderResult<vscode.Hover> {
-    const provider = BsvInfoProviderManger.getInstance().getProvider();
-    var hover = provider.getHover(document, position);
-    return hover;
   }
 }

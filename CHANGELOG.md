@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [Unreleased]
+
+### Removed
+
+- Removed Bluespec SystemVerilog (BSV) language support, including syntax highlighting, snippets, and language features.
+
 ## [1.22.2] - 2025-12-30
 
 ### Fixed

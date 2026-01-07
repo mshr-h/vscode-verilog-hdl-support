@@ -1,7 +1,7 @@
 {
   "name": "veriloghdl",
-  "displayName": "Verilog-HDL/SystemVerilog/Bluespec SystemVerilog",
-  "description": "Verilog-HDL/SystemVerilog/Bluespec SystemVerilog support for VS Code",
+  "displayName": "Verilog-HDL/SystemVerilog",
+  "description": "Verilog-HDL/SystemVerilog support for VS Code",
   "version": "1.22.2",
   "publisher": "mshr-h",
   "homepage": "https://github.com/mshr-h/vscode-verilog-hdl-support",
@@ -66,19 +66,6 @@
           ".SV"
         ],
         "configuration": "./configs/systemverilog.configuration.json"
-      },
-      {
-        "id": "bsv",
-        "aliases": [
-          "BluespecSystemVerilog",
-          "Bluespec SystemVerilog",
-          "BSV"
-        ],
-        "extensions": [
-          ".bsv",
-          ".BSV"
-        ],
-        "configuration": "./configs/BSV.configuration.json"
       },
       {
         "id": "vhdl",
@@ -187,11 +174,6 @@
         "path": "./syntaxes/systemverilog.tmLanguage.json"
       },
       {
-        "language": "bsv",
-        "scopeName": "source.bsv",
-        "path": "./syntaxes/BSV.tmLanguage.json"
-      },
-      {
         "language": "vhdl",
         "scopeName": "source.vhdl",
         "path": "./syntaxes/vhdl.tmLanguage.json"
@@ -258,10 +240,6 @@
       {
         "language": "systemverilog",
         "path": "./snippets/systemverilog.json"
-      },
-      {
-        "language": "bsv",
-        "path": "./snippets/bsv.json"
       }
     ],
     "configuration": [
@@ -701,12 +679,10 @@
     "check-types": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "test": "vscode-test",
-    "syntax": "js-yaml ./syntaxes/systemverilog.tmLanguage.yaml >./syntaxes/systemverilog.tmLanguage.json",
-    "makeBsv": "antlr4ts -visitor syntaxes/bsv.g4 -o src/bsvjs"
+    "syntax": "js-yaml ./syntaxes/systemverilog.tmLanguage.yaml >./syntaxes/systemverilog.tmLanguage.json"
   },
   "dependencies": {
     "@vscode/test-cli": "^0.0.12",
-    "antlr4ts": "^0.5.0-alpha.4",
     "js-yaml": "^4.1.1",
     "semver": "^7.7.3",
     "vscode-languageclient": "^9.0.1",
@@ -720,7 +696,6 @@
     "@typescript-eslint/eslint-plugin": "^8.39.1",
     "@typescript-eslint/parser": "^8.39.1",
     "@vscode/test-electron": "^2.5.2",
-    "antlr4ts-cli": "0.5.0-alpha.4",
     "esbuild": "^0.27.2",
     "eslint": "9.39.2",
     "eslint-config-prettier": "^10.1.8",

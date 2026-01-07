@@ -7,7 +7,6 @@ import * as DocumentSymbolProvider from './providers/DocumentSymbolProvider';
 import * as HoverProvider from './providers/HoverProvider';
 import * as DefinitionProvider from './providers/DefinitionProvider';
 import * as CompletionItemProvider from './providers/CompletionItemProvider';
-import { BsvInfoProviderManger } from './BsvProvider';
 import * as ModuleInstantiation from './commands/ModuleInstantiation';
 import * as FormatProvider from './providers/FormatProvider';
 import { ExtensionManager } from './extensionManager';
@@ -31,11 +30,6 @@ export function activate(context: vscode.ExtensionContext) {
     extMgr.showChangelogNotification();
   }
 
-  BsvInfoProviderManger.getInstance().onWorkspace(logger);
-  vscode.workspace.onDidChangeWorkspaceFolders((_e) => {
-    BsvInfoProviderManger.getInstance().onWorkspace(logger);
-  });
-
   // Configure ctags
   ctagsManager.configure(logger);
 
@@ -54,15 +48,6 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.languages.registerDocumentSymbolProvider(
       { scheme: 'file', language: 'systemverilog' },
       verilogDocumentSymbolProvider
-    )
-  );
-  let bsvDocumentSymbolProvider = new DocumentSymbolProvider.BsvDocumentSymbolProvider(
-    logger.getChild('BsvDocumentSymbolProvider')
-  );
-  context.subscriptions.push(
-    vscode.languages.registerDocumentSymbolProvider(
-      { scheme: 'file', language: 'bsv' },
-      bsvDocumentSymbolProvider
     )
   );
 
@@ -90,18 +75,6 @@ export function activate(context: vscode.ExtensionContext) {
       '='
     )
   );
-  let bsvCompletionItemProvider = new CompletionItemProvider.BsvCompletionItemProvider(
-    logger.getChild('BsvCompletionItemProvider')
-  );
-  context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(
-      { scheme: 'file', language: 'bsv' },
-      bsvCompletionItemProvider,
-      '.',
-      '(',
-      '='
-    )
-  );
 
   // Configure Hover Providers
   let verilogHoverProvider = new HoverProvider.VerilogHoverProvider(
@@ -120,10 +93,6 @@ export function activate(context: vscode.ExtensionContext) {
       verilogHoverProvider
     )
   );
-  let bsvHoverProvider = new HoverProvider.BsvHoverProvider(logger.getChild('BsvHoverProvider'));
-  context.subscriptions.push(
-    vscode.languages.registerHoverProvider({ scheme: 'file', language: 'bsv' }, bsvHoverProvider)
-  );
 
   // Configure Definition Providers
   let verilogDefinitionProvider = new DefinitionProvider.VerilogDefinitionProvider(
@@ -140,13 +109,6 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.languages.registerDefinitionProvider(
       { scheme: 'file', language: 'systemverilog' },
       verilogDefinitionProvider
-    )
-  );
-  let bsvDefinitionProvider = new DefinitionProvider.BsvDefinitionProvider();
-  context.subscriptions.push(
-    vscode.languages.registerDefinitionProvider(
-      { scheme: 'file', language: 'bsv' },
-      bsvDefinitionProvider
     )
   );
 
