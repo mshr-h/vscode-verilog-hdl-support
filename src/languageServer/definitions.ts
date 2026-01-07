@@ -25,10 +25,10 @@ export function createLanguageServerDefinitions(): LanguageServerDefinition[] {
       }),
       applyProcessEnv: () => {
         // TODO: move to svls extension setting
-        let svlint_toml: string | undefined = vscode.workspace
+        const svlint_toml: string | undefined = vscode.workspace
           .getConfiguration('verilog.languageServer.svls')
           .get('svlintTomlPath');
-        if (typeof svlint_toml !== undefined) {
+        if (svlint_toml !== undefined) {
           process.env.SVLINT_CONFIG = svlint_toml;
         }
       },

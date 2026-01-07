@@ -703,6 +703,7 @@
     "eslint-plugin-n": "17.21.3",
     "eslint-plugin-promise": "7.2.1",
     "glob": "^13.0.0",
+    "globals": "^17.0.0",
     "npm-run-all2": "^8.0.4",
     "ts-loader": "^9.5.1",
     "typescript": "5.5.4",
