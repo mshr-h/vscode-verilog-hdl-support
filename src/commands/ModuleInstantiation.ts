@@ -142,7 +142,8 @@ function instantiatePort(ports: string[]): string {
 }
 
 async function selectFile(currentDir?: string): Promise<string | undefined> {
-  currentDir = currentDir || vscode.workspace.rootPath;
+  const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  currentDir = currentDir || workspaceRoot;
 
   if (!currentDir) {
     return undefined;
@@ -150,7 +151,7 @@ async function selectFile(currentDir?: string): Promise<string | undefined> {
 
   let dirs = getDirectories(currentDir);
   // if is subdirectory, add '../'
-  if (currentDir !== vscode.workspace.rootPath) {
+  if (currentDir !== workspaceRoot) {
     dirs.unshift('..');
   }
   // all files ends with '.sv'

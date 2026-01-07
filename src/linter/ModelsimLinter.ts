@@ -49,8 +49,9 @@ export default class ModelsimLinter extends BaseLinter {
     let docUri: string = doc.uri.fsPath; //path of current doc
     let lastIndex: number = isWindows === true ? docUri.lastIndexOf('\\') : docUri.lastIndexOf('/');
     let docFolder = docUri.substr(0, lastIndex); //folder of current doc
+    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     let runLocation: string =
-      this.runAtFileLocation === true ? docFolder : (vscode.workspace.rootPath || docFolder); //choose correct location to run
+      this.runAtFileLocation === true ? docFolder : (workspaceRoot || docFolder); //choose correct location to run
     // no change needed for systemverilog
     let command: string =
       this.modelsimPath +
