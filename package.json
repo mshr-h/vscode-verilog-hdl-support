@@ -682,7 +682,6 @@
     "syntax": "js-yaml ./syntaxes/systemverilog.tmLanguage.yaml >./syntaxes/systemverilog.tmLanguage.json"
   },
   "dependencies": {
-    "@vscode/test-cli": "^0.0.12",
     "js-yaml": "^4.1.1",
     "semver": "^7.7.3",
     "vscode-languageclient": "^9.0.1",
@@ -695,6 +694,7 @@
     "@types/which": "^3.0.4",
     "@typescript-eslint/eslint-plugin": "^8.39.1",
     "@typescript-eslint/parser": "^8.39.1",
+    "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
     "esbuild": "^0.27.2",
     "eslint": "9.39.2",
@@ -705,7 +705,6 @@
     "glob": "^13.0.0",
     "globals": "^17.0.0",
     "npm-run-all2": "^8.0.4",
-    "ts-loader": "^9.5.1",
     "typescript": "5.5.4",
     "typescript-eslint": "^8.48.1"
   },
