@@ -38,16 +38,16 @@ export default class XvlogLinter extends BaseLinter {
     this.logger.warn(this.config.includePath.join(' '));
     args.push(this.config.arguments);
     args.push(`"${doc.fileName}"`);
-    let command: string = binPath + ' ' + args.join(' ');
+    const command: string = `${binPath  } ${  args.join(' ')}`;
 
     this.logger.info('[xvlog] Execute');
-    this.logger.info('[xvlog]   command: ' + command);
+    this.logger.info(`[xvlog]   command: ${  command}`);
 
     exec(command, (_error: ExecException | null, stdout: string, _stderr: string) => {
-      let diagnostics: vscode.Diagnostic[] = [];
+      const diagnostics: vscode.Diagnostic[] = [];
 
       stdout.split(/\r?\n/g).forEach((line) => {
-        let match = line.match(
+        const match = line.match(
           /^(ERROR|WARNING):\s+\[(VRFC\b[^\]]*)\]\s+(.*\S)\s+\[(.*):(\d+)\]\s*$/
         );
         if (!match) {
@@ -55,20 +55,20 @@ export default class XvlogLinter extends BaseLinter {
         }
 
         // Get filename and line number
-        let _filename = match[4];
-        let lineno = parseInt(match[5]) - 1;
+        const _filename = match[4];
+        const lineno = parseInt(match[5]) - 1;
 
-        let diagnostic: vscode.Diagnostic = {
+        const diagnostic: vscode.Diagnostic = {
           severity: this.convertToSeverity(match[1]),
           code: match[2],
-          message: '[' + match[2] + '] ' + match[3],
+          message: `[${  match[2]  }] ${  match[3]}`,
           range: new vscode.Range(lineno, 0, lineno, END_OF_LINE),
           source: 'xvlog',
         };
 
         diagnostics.push(diagnostic);
       });
-      this.logger.info(diagnostics.length + ' errors/warnings returned');
+      this.logger.info(`${diagnostics.length  } errors/warnings returned`);
       this.diagnosticCollection.set(doc.uri, diagnostics);
     });
   }

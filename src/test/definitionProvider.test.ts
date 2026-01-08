@@ -20,7 +20,7 @@ suite('DefinitionProvider', () => {
     const definitionLinks: vscode.DefinitionLink[] = [
       {
         targetUri: document.uri,
-        targetRange: targetRange,
+        targetRange,
         targetSelectionRange: targetRange,
       },
     ];

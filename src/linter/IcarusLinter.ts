@@ -56,7 +56,7 @@ export default class IcarusLinter extends BaseLinter {
     this.logger.info('Executing IcarusLinter.lint()');
 
     const binPath: string = path.join(this.config.linterInstalledPath, 'iverilog');
-    this.logger.info('iverilog binary path: ' + binPath);
+    this.logger.info(`iverilog binary path: ${  binPath}`);
 
     let args: string[] = [];
     args.push('-t null');
@@ -66,20 +66,20 @@ export default class IcarusLinter extends BaseLinter {
     if (standardArg) {
       args.push(standardArg);
     }
-    args = args.concat(this.config.includePath.map((p: string) => '-I "' + p + '"'));
+    args = args.concat(this.config.includePath.map((p: string) => `-I "${  p  }"`));
     args.push(this.config.arguments);
-    args.push('"' + doc.uri.fsPath + '"');
+    args.push(`"${  doc.uri.fsPath  }"`);
 
-    const command: string = binPath + ' ' + args.join(' ');
+    const command: string = `${binPath  } ${  args.join(' ')}`;
     const cwd: string = this.getWorkingDirectory(doc);
 
     this.logger.info('Execute');
     this.logger.info('  command: ', command);
     this.logger.info('  cwd    : ', cwd);
 
-    var _: child.ChildProcess = child.exec(
+    const _: child.ChildProcess = child.exec(
       command,
-      { cwd: cwd },
+      { cwd },
       (_error: child.ExecException | null, _stdout: string, stderr: string) => {
         // Parse output lines
         // the message is something like this
@@ -100,7 +100,7 @@ export default class IcarusLinter extends BaseLinter {
           return new vscode.Range(new vscode.Position(line, 0), new vscode.Position(line, 1));
         }
 
-        let output = stderr + "\n" + _stdout;
+        const output = `${stderr  }\n${  _stdout}`;
         // 1) Group messages (lines starting with "file:line:" are the beginning of a new message)
         const startRe = /^(.+?):(\d+):/;
         const chunks: string[] = [];
@@ -117,11 +117,9 @@ export default class IcarusLinter extends BaseLinter {
               chunks.push(current);
             }
             current = line;
-          } else {
+          } else if (current) {
             // concat with newline
-            if (current) {
-              current += "\n" + line;
-            }
+            current += `\n${  line}`;
           }
         }
         if (current) {
@@ -145,7 +143,7 @@ export default class IcarusLinter extends BaseLinter {
           const msgFirst = m.groups.msg ?? "";
 
           // If there are continuation lines in the chunk, include them in the message
-          const restLines = chunk.includes("\n") ? "\n" + chunk.split("\n").slice(1).join("\n") : "";
+          const restLines = chunk.includes("\n") ? `\n${  chunk.split("\n").slice(1).join("\n")}` : "";
           const message = (msgFirst + restLines).trim();
 
           const severity = this.convertToSeverity(kind, message);

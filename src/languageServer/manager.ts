@@ -20,12 +20,12 @@ export class LanguageServerManager {
     }
   }
 
-  stopAll(): Promise<any> {
-    const stops = [];
+  stopAll(): Promise<void[]> {
+    const stops: Promise<void>[] = [];
     for (const [name, client] of this.languageClients) {
       if (client.isRunning()) {
         stops.push(client.stop());
-        this.logger.info('"' + name + '" language server stopped.');
+        this.logger.info(`"${  name  }" language server stopped.`);
       }
     }
     return Promise.all(stops);
@@ -33,7 +33,7 @@ export class LanguageServerManager {
 
   private setupLanguageClient(definition: LanguageServerDefinition) {
     const settings = vscode.workspace.getConfiguration(
-      'verilog.languageServer.' + definition.name
+      `verilog.languageServer.${  definition.name}`
     );
     const enabled = settings.get('enabled', false) as boolean;
     const binPath = settings.get('path', definition.defaultPath) as string;
@@ -53,7 +53,7 @@ export class LanguageServerManager {
 
     const client = new LanguageClient(
       definition.name,
-      definition.name + ' language server',
+      `${definition.name  } language server`,
       serverOptions,
       definition.buildClientOptions()
     );
@@ -68,6 +68,6 @@ export class LanguageServerManager {
     }
 
     client.start();
-    this.logger.info('"' + definition.name + '" language server started.');
+    this.logger.info(`"${  definition.name  }" language server started.`);
   }
 }

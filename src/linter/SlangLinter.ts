@@ -7,7 +7,7 @@ import BaseLinter from './BaseLinter';
 import { Logger } from '../logger';
 import { END_OF_LINE } from '../constants';
 
-let isWindows = process.platform === 'win32';
+const isWindows = process.platform === 'win32';
 
 export default class SlangLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
@@ -62,7 +62,7 @@ export default class SlangLinter extends BaseLinter {
     args = args.concat(this.config.includePath.map((p: string) => `-I "${p}"`));
     args.push(this.config.arguments);
     args.push(`"${docUri}"`);
-    const command: string = binPath + ' ' + args.join(' ');
+    const command: string = `${binPath  } ${  args.join(' ')}`;
 
     const cwd: string = this.config.runAtFileLocation
       ? isWindows && this.useWSL
@@ -71,21 +71,21 @@ export default class SlangLinter extends BaseLinter {
       : vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? docFolder;
 
     this.logger.info('[slang] Execute');
-    this.logger.info('[slang]   command: ' + command);
-    this.logger.info('[slang]   cwd    : ' + cwd);
+    this.logger.info(`[slang]   command: ${  command}`);
+    this.logger.info(`[slang]   cwd    : ${  cwd}`);
 
-    var _: child.ChildProcess = child.exec(
+    const _: child.ChildProcess = child.exec(
       command,
-      { cwd: cwd },
+      { cwd },
       (_error: Error | null, _stdout: string, stderr: string) => {
-        let diagnostics: vscode.Diagnostic[] = [];
+        const diagnostics: vscode.Diagnostic[] = [];
         const re = /(.+?):(\d+):(\d+):\s(note|warning|error):\s(.*?)(\[-W(.*)\]|$)/;
         stderr.split(/\r?\n/g).forEach((line, _) => {
           if (line.search(re) === -1) {
             return;
           }
 
-          let rex = line.match(re);
+          const rex = line.match(re);
           if (!rex) {
             return;
           }
@@ -105,8 +105,8 @@ export default class SlangLinter extends BaseLinter {
           }
 
           if (rex && rex[0] && rex[0].length > 0) {
-            let lineNum = Number(rex[2]) - 1;
-            let colNum = Number(rex[3]) - 1;
+            const lineNum = Number(rex[2]) - 1;
+            const colNum = Number(rex[3]) - 1;
 
             diagnostics.push({
               severity: this.convertToSeverity(rex[4]),
@@ -117,7 +117,7 @@ export default class SlangLinter extends BaseLinter {
             });
             return;
           }
-          this.logger.warn('[slang] failed to parse error: ' + line);
+          this.logger.warn(`[slang] failed to parse error: ${  line}`);
         });
         this.logger.info(`[slang] ${diagnostics.length} errors/warnings returned`);
         this.diagnosticCollection.set(doc.uri, diagnostics);

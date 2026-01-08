@@ -73,7 +73,7 @@ export class Symbol {
    * @returns A DocumentSymbol representing this symbol
    */
   getDocumentSymbol(): vscode.DocumentSymbol {
-    let range = new vscode.Range(this.startPosition, this.endPosition);
+    const range = new vscode.Range(this.startPosition, this.endPosition);
     return new vscode.DocumentSymbol(
       this.name,
       this.type,
@@ -236,19 +236,19 @@ export class Ctags {
    * @returns The ctags output as a string
    */
   async execCtags(filepath: string): Promise<string> {
-    let command: string = this.ctagBinPath + ' -f - --fields=+K --sort=no --excmd=n --fields-SystemVerilog=+{parameter} "' + filepath + '"';
-    this.logger.info('Executing Command: ' + command);
+    const command: string = `${this.ctagBinPath  } -f - --fields=+K --sort=no --excmd=n --fields-SystemVerilog=+{parameter} "${  filepath  }"`;
+    this.logger.info(`Executing Command: ${  command}`);
     try {
       const {stdout, stderr} = await exec(command);
       if(stdout) {
         return stdout.toString();
       }
       if(stderr) {
-        this.logger.error('stderr> ' + stderr);
+        this.logger.error(`stderr> ${  stderr}`);
       }
     }
     catch (err) {
-      this.logger.error('Exception caught: ' + (err instanceof Error ? err.message : String(err)));
+      this.logger.error(`Exception caught: ${  err instanceof Error ? err.message : String(err)}`);
       if (err instanceof Error && err.stack) {
         this.logger.error(err.stack);
       }
@@ -265,12 +265,11 @@ export class Ctags {
    */
   parseTagLine(line: string): Symbol | undefined {
     try {
-      let name, type, pattern, lineNoStr, parentScope, parentType: string;
+      let type, parentScope, parentType: string;
       let scope: string[];
-      let lineNo: number;
-      let parts: string[] = line.split('\t');
-      name = parts[0];
-      pattern = parts[2];
+      const parts: string[] = line.split('\t');
+      const name = parts[0];
+      const pattern = parts[2];
       type = parts[3];
       // override "type" for parameters (See #102)
       if (parts.length === 6 && parts[5] === 'parameter:') {
@@ -284,12 +283,12 @@ export class Ctags {
         parentScope = '';
         parentType = '';
       }
-      lineNoStr = parts[2];
-      lineNo = Number(lineNoStr.slice(0, -2)) - 1;
+      const lineNoStr = parts[2];
+      const lineNo = Number(lineNoStr.slice(0, -2)) - 1;
       return new Symbol(name, type, pattern, lineNo, parentScope, parentType, lineNo, false);
     } catch (err) {
-      this.logger.error('Line Parser: ' + err);
-      this.logger.error('Line: ' + line);
+      this.logger.error(`Line Parser: ${  err}`);
+      this.logger.error(`Line: ${  line}`);
     }
     return undefined;
   }
@@ -308,10 +307,10 @@ export class Ctags {
           return;
         }
         // Parse ctags output
-        let lines: string[] = tags.split(/\r?\n/);
+        const lines: string[] = tags.split(/\r?\n/);
         lines.forEach((line) => {
           if (line !== '') {
-            let tag: Symbol | undefined = this.parseTagLine(line);
+            const tag: Symbol | undefined = this.parseTagLine(line);
             if (tag) {
               this.symbols.push(tag);
             }
@@ -321,15 +320,15 @@ export class Ctags {
         // end tags are not supported yet in ctags. So, using regex
         let match: RegExpExecArray | null;
         let endPosition: vscode.Position;
-        let text = this.doc.getText();
-        let eRegex: RegExp = /^(?![\r\n])\s*end(\w*)*[\s:]?/gm;
+        const text = this.doc.getText();
+        const eRegex: RegExp = /^(?![\r\n])\s*end(\w*)*[\s:]?/gm;
         while ((match = eRegex.exec(text))) {
           if (match && typeof match[1] !== 'undefined') {
             endPosition = this.doc.positionAt(match.index + match[0].length - 1);
             // get the starting symbols of the same type
             // doesn't check for begin...end blocks
             const matchType = match[1];
-            let s = this.symbols.filter(
+            const s = this.symbols.filter(
               (i) => i.type === matchType && i.startPosition.isBefore(endPosition) && !i.isValid
             );
             if (s.length > 0) {
@@ -338,7 +337,7 @@ export class Ctags {
               for (let i = 0; i < s.length; i++) {
                 max = s[i].startPosition.isAfter(max.startPosition) ? s[i] : max;
               }
-              for (let i of this.symbols) {
+              for (const i of this.symbols) {
                 if (
                   i.name === max.name &&
                   i.startPosition.isEqual(max.startPosition) &&
@@ -367,7 +366,7 @@ export class Ctags {
   async index(): Promise<void> {
     this.logger.info('indexing ', this.doc.uri.fsPath);
     
-    let output = await this.execCtags(this.doc.uri.fsPath);
+    const output = await this.execCtags(this.doc.uri.fsPath);
     await this.buildSymbolsList(output);
   }
 }
@@ -399,17 +398,17 @@ export class CtagsManager {
   }
 
   private updateConfig() {
-    let config = vscode.workspace.getConfiguration('verilog.ctags');
-    let nextEnabled = <boolean>config.get('enabled', false);
+    const config = vscode.workspace.getConfiguration('verilog.ctags');
+    const nextEnabled = <boolean>config.get('enabled', false);
     if (this.enabled !== nextEnabled) {
       this.enabled = nextEnabled;
-      this.logger.info('ctags enabled: ' + this.enabled);
+      this.logger.info(`ctags enabled: ${  this.enabled}`);
       this.invalidateCache();
     }
   }
 
   private invalidateCache() {
-    for (let ctags of this.filemap.values()) {
+    for (const ctags of this.filemap.values()) {
       ctags.clearSymbols();
     }
   }
@@ -445,7 +444,7 @@ export class CtagsManager {
     if (!this.enabled) {
       return;
     }
-    let ctags: Ctags = this.getCtags(doc);
+    const ctags: Ctags = this.getCtags(doc);
     ctags.clearSymbols();
   }
 
@@ -458,7 +457,7 @@ export class CtagsManager {
     if (!this.enabled) {
       return [];
     }
-    let ctags: Ctags = this.getCtags(doc);
+    const ctags: Ctags = this.getCtags(doc);
     // If dirty, re index and then build symbols
     if (ctags.isDirty) {
       await ctags.index();
@@ -476,19 +475,17 @@ export class CtagsManager {
     if (!this.enabled) {
       return [];
     }
-    let symbols: Symbol[] = await this.getSymbols(document);
-    let matchingSymbols = symbols.filter((sym) => sym.name === targetText);
+    const symbols: Symbol[] = await this.getSymbols(document);
+    const matchingSymbols = symbols.filter((sym) => sym.name === targetText);
 
-    return matchingSymbols.map((i) => {
-      return {
+    return matchingSymbols.map((i) => ({
         targetUri: document.uri,
         targetRange: new vscode.Range(
           i.startPosition,
           new vscode.Position(i.startPosition.line, END_OF_LINE)
         ),
         targetSelectionRange: new vscode.Range(i.startPosition, i.endPosition),
-      };
-    });
+      }));
   }
 
   /**
@@ -503,22 +500,22 @@ export class CtagsManager {
       return [];
     }
     
-    let textRange = document.getWordRangeAtPosition(position);
+    const textRange = document.getWordRangeAtPosition(position);
     if (!textRange || textRange.isEmpty) {
       return [];
     }
-    let targetText = document.getText(textRange);
+    const targetText = document.getText(textRange);
     
     // always search the current doc
-    let tasks = [this.findDefinition(document, targetText)];
+    const tasks = [this.findDefinition(document, targetText)];
 
     // if the previous character is :: or ., look up prev word
-    let prevChar = textRange.start.character - 1;
-    let prevCharRange = new vscode.Range(position.line, prevChar, position.line, prevChar+1);
-    let prevCharText = document.getText(prevCharRange);
+    const prevChar = textRange.start.character - 1;
+    const prevCharRange = new vscode.Range(position.line, prevChar, position.line, prevChar+1);
+    const prevCharText = document.getText(prevCharRange);
     let moduleToFind: string = targetText;
     if (prevCharText === '.' || prevCharText === ':') {
-      let prevWordRange = document.getWordRangeAtPosition(new vscode.Position(position.line, prevChar - 2));
+      const prevWordRange = document.getWordRangeAtPosition(new vscode.Position(position.line, prevChar - 2));
       if (prevWordRange) {
         moduleToFind = document.getText(prevWordRange);
       }
@@ -526,10 +523,10 @@ export class CtagsManager {
 
     // kick off async job for indexing for module.sv
     if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
-      let searchPattern = new vscode.RelativePattern(vscode.workspace.workspaceFolders[0], `**/${moduleToFind}.sv`);
-      let files = await vscode.workspace.findFiles(searchPattern);
+      const searchPattern = new vscode.RelativePattern(vscode.workspace.workspaceFolders[0], `**/${moduleToFind}.sv`);
+      const files = await vscode.workspace.findFiles(searchPattern);
       if (files.length !== 0) {
-        let file = await vscode.workspace.openTextDocument(files[0]);
+        const file = await vscode.workspace.openTextDocument(files[0]);
         tasks.push(this.findDefinition(file, targetText));
       }
     }

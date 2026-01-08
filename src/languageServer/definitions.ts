@@ -70,7 +70,7 @@ export function createLanguageServerDefinitions(): LanguageServerDefinition[] {
                 typeof message.result === 'object' &&
                 'capabilities' in message.result
               ) {
-                const result = message.result as any;
+                const result = message.result as Record<string, Record<string, unknown>>;
                 delete result['capabilities']['diagnosticProvider'];
                 delete result['capabilities']['documentFormattingProvider'];
                 delete result['capabilities']['documentRangeFormattingProvider'];

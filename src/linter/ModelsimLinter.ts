@@ -35,34 +35,34 @@ export default class ModelsimLinter extends BaseLinter {
     const cwd: string = this.getWorkingDirectory(doc);
     // no change needed for systemverilog
     const command: string =
-      this.config.linterInstalledPath +
-      'vlog -nologo -work ' +
-      this.modelsimWork +
-      ' "' +
-      doc.fileName +
-      '" ' +
-      this.config.arguments; //command to execute
-    var process: child.ChildProcess = child.exec(
+      `${this.config.linterInstalledPath 
+      }vlog -nologo -work ${ 
+      this.modelsimWork 
+      } "${ 
+      doc.fileName 
+      }" ${ 
+      this.config.arguments}`; //command to execute
+    child.exec(
       command,
-      { cwd: cwd },
+      { cwd },
       (_error: Error | null, stdout: string, _stderr: string) => {
-        let diagnostics: vscode.Diagnostic[] = [];
-        let lines = stdout.split(/\r?\n/g);
+        const diagnostics: vscode.Diagnostic[] = [];
+        const lines = stdout.split(/\r?\n/g);
 
         // ^\*\* (((Error)|(Warning))( \(suppressible\))?: )(\([a-z]+-[0-9]+\) )?([^\(]*\(([0-9]+)\): )(\([a-z]+-[0-9]+\) )?((((near|Unknown identifier|Undefined variable):? )?["']([\w:;\.]+)["'][ :.]*)?.*)
         // From https://github.com/dave2pi/SublimeLinter-contrib-vlog/blob/master/linter.py
-        let regexExp =
+        const regexExp =
           '^\\*\\* (((Error)|(Warning))( \\(suppressible\\))?: )(\\([a-z]+-[0-9]+\\) )?([^\\(]*)\\(([0-9]+)\\): (\\([a-z]+-[0-9]+\\) )?((((near|Unknown identifier|Undefined variable):? )?["\']([\\w:;\\.]+)["\'][ :.]*)?.*)';
         // Parse output lines
         lines.forEach((line, _) => {
           if (line.startsWith('**')) {
             try {
-              let m = line.match(regexExp);
+              const m = line.match(regexExp);
               if (!m || m[7] !== doc.fileName) {
                 return;
               }
-              let lineNum = parseInt(m[8]) - 1;
-              let msg = m[10];
+              const lineNum = parseInt(m[8]) - 1;
+              const msg = m[10];
               diagnostics.push({
                 severity: this.convertToSeverity(m[2]),
                 range: new vscode.Range(lineNum, 0, lineNum, END_OF_LINE),
@@ -70,7 +70,7 @@ export default class ModelsimLinter extends BaseLinter {
                 code: 'modelsim',
                 source: 'modelsim',
               });
-            } catch (e) {
+            } catch {
               diagnostics.push({
                 severity: vscode.DiagnosticSeverity.Information,
                 range: new vscode.Range(0, 0, 0, END_OF_LINE),
@@ -81,7 +81,7 @@ export default class ModelsimLinter extends BaseLinter {
             }
           }
         });
-        this.logger.info(diagnostics.length + ' errors/warnings returned');
+        this.logger.info(`${diagnostics.length  } errors/warnings returned`);
         this.diagnosticCollection.set(doc.uri, diagnostics);
       }
     );

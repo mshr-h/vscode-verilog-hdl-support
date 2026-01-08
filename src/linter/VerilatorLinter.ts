@@ -7,7 +7,7 @@ import BaseLinter from './BaseLinter';
 import { Logger } from '../logger';
 import { END_OF_LINE } from '../constants';
 
-let isWindows = process.platform === 'win32';
+const isWindows = process.platform === 'win32';
 
 export default class VerilatorLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
@@ -28,9 +28,9 @@ export default class VerilatorLinter extends BaseLinter {
   }
 
   protected splitTerms(line: string) {
-    let terms = line.split(':');
+    const terms = line.split(':');
 
-    for (var i = 0; i < terms.length; i++) {
+    for (let i = 0; i < terms.length; i++) {
       if (terms[i] === ' ') {
         terms.splice(i, 1);
         i--;
@@ -52,12 +52,12 @@ export default class VerilatorLinter extends BaseLinter {
   }
 
   protected lint(doc: vscode.TextDocument) {
-    let docUri: string = isWindows
+    const docUri: string = isWindows
       ? this.useWSL
         ? this.convertToWslPath(doc.uri.fsPath)
         : doc.uri.fsPath.replace(/\\/g, '/')
       : doc.uri.fsPath;
-    let docFolder: string = isWindows
+    const docFolder: string = isWindows
       ? this.useWSL
         ? this.convertToWslPath(path.dirname(doc.uri.fsPath))
         : path.dirname(doc.uri.fsPath).replace(/\\/g, '/')
@@ -83,18 +83,18 @@ export default class VerilatorLinter extends BaseLinter {
     args = args.concat(this.config.includePath.map((p: string) => `-I"${p}"`));
     args.push(this.config.arguments);
     args.push(`"${docUri}"`);
-    let command: string = binPath + ' ' + args.join(' ');
+    const command: string = `${binPath  } ${  args.join(' ')}`;
 
     this.logger.info('[verilator] Execute');
-    this.logger.info('[verilator]   command: ' + command);
-    this.logger.info('[verilator]   cwd    : ' + cwd);
+    this.logger.info(`[verilator]   command: ${  command}`);
+    this.logger.info(`[verilator]   cwd    : ${  cwd}`);
 
-    var _: child.ChildProcess = child.exec(
+    const _: child.ChildProcess = child.exec(
       command,
-      { cwd: cwd },
+      { cwd },
       (_error: child.ExecException | null, _stdout: string, stderr: string) => {
         // basically DiagnosticsCollection but with ability to append diag lists
-        let filesDiag = new Map();
+        const filesDiag = new Map();
 
         stderr.split(/\r?\n/g).forEach((line, _, stderrLines) => {
           // if lineIndex is 0 and it doesn't start with %Error or %Warning,
@@ -142,7 +142,7 @@ export default class VerilatorLinter extends BaseLinter {
           // columNumber - columnNumber
           // verboseError - error elaboration by verilator
 
-          let errorParserRegex = new RegExp(
+          const errorParserRegex = new RegExp(
             /%(?<severity>\w+)/.source + // matches "%Warning" or "%Error"
 
             // this matches errorcode with "-" before it, but the "-" doesn't go into ErrorCode match group
@@ -166,7 +166,7 @@ export default class VerilatorLinter extends BaseLinter {
             , "g"
           );
 
-          let rex = errorParserRegex.exec(line);
+          const rex = errorParserRegex.exec(line);
 
           // Check if rex or rex.groups is undefined
           if (!rex || !rex.groups) {
@@ -205,7 +205,7 @@ export default class VerilatorLinter extends BaseLinter {
           }
 
           if (rex && rex[0].length > 0) {
-            let lineNum = Number(rex.groups["lineNumber"]) - 1;
+            const lineNum = Number(rex.groups["lineNumber"]) - 1;
             let colNum = Number(rex.groups["columnNumber"]) - 1;
 
             colNum = isNaN(colNum) ? 0 : colNum; // for older Verilator versions (< 4.030 ~ish)
@@ -223,7 +223,7 @@ export default class VerilatorLinter extends BaseLinter {
               });
 
             }
-            return;
+            
           }
         });
 
@@ -232,7 +232,7 @@ export default class VerilatorLinter extends BaseLinter {
         this.diagnosticCollection.clear();
 
         filesDiag.forEach((issuesArray, fileName) => {
-          let fileURI = vscode.Uri.file(fileName);
+          const fileURI = vscode.Uri.file(fileName);
           this.diagnosticCollection.set(
             fileURI,
             issuesArray
