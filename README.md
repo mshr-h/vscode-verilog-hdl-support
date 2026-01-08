@@ -143,7 +143,12 @@ You can format the Verilog-HDL file by typing `Ctrl-Shift-p`, then select `Forma
 Entire file formatting is supported. Selected range formatting is not supported yet.
 All the settings for formatting is under `verilog.formatting` namespace.
 
-## [Guidelines for Contributing](./CONTRIBUTING.md)
+## Documentation
+
+- **[Contributing Guidelines](./CONTRIBUTING.md)** - How to contribute to this project
+- **[Architecture Overview](./docs/ARCHITECTURE.md)** - Understanding the codebase structure
+- **[Development Guide](./docs/DEVELOPMENT.md)** - Setting up development environment
+- **[Adding Features](./docs/ADDING_FEATURES.md)** - How to add new features
 
 ## Extension Development
 
