@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+
+- Comprehensive documentation for maintainability
+  - `docs/ARCHITECTURE.md`: Architecture overview in Japanese/English
+  - `docs/DEVELOPMENT.md`: Detailed development guide
+  - `docs/ADDING_FEATURES.md`: Step-by-step guide for adding new features
+  - `docs/TODO.md`: Known issues and improvement opportunities
+- Enhanced VS Code workspace configuration
+  - Added Prettier and EditorConfig to recommended extensions
+  - Improved formatting and linting settings
+- EditorConfig file for consistent code style across editors
+
+### Changed
+
+- Updated `README.md` with new documentation section and links
+- Improved `CONTRIBUTING.md` with more detailed guidelines and structure
+
+### Fixed
+
+- Security: Fixed npm dependencies vulnerabilities (brace-expansion, glob)
+
 ### Removed
 
 - Removed Bluespec SystemVerilog (BSV) language support, including syntax highlighting, snippets, and language features.
