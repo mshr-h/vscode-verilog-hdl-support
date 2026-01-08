@@ -5,41 +5,32 @@ import * as path from 'path';
 import * as process from 'process';
 import BaseLinter from './BaseLinter';
 import { Logger } from '../logger';
+import { END_OF_LINE } from '../constants';
 
-let isWindows = process.platform === 'win32';
+const isWindows = process.platform === 'win32';
 
 export default class VerilatorLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
-  private linterInstalledPath!: string;
-  private arguments!: string;
-  private includePath!: string[];
-  private runAtFileLocation!: boolean;
   private useWSL!: boolean;
 
   constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
     super('verilator', diagnosticCollection, logger);
-    vscode.workspace.onDidChangeConfiguration(() => {
-      this.updateConfig();
-    });
     this.updateConfig();
   }
 
-  private updateConfig() {
-    this.linterInstalledPath = <string>(
-      vscode.workspace.getConfiguration().get('verilog.linting.path')
-    );
+  protected override updateConfig() {
     this.configuration = vscode.workspace.getConfiguration('verilog.linting.verilator');
-    this.arguments = <string>this.configuration.get('arguments');
-    let path = <string[]>this.configuration.get('includePath');
-    this.includePath = path.map((includePath: string) => this.resolvePath(includePath));
-    this.runAtFileLocation = <boolean>this.configuration.get('runAtFileLocation');
-    this.useWSL = <boolean>this.configuration.get('useWSL');
+    this.config.arguments = this.configuration.get<string>('arguments', '');
+    const paths = this.configuration.get<string[]>('includePath', []);
+    this.config.includePath = this.resolveIncludePaths(paths);
+    this.config.runAtFileLocation = this.configuration.get<boolean>('runAtFileLocation', false);
+    this.useWSL = this.configuration.get<boolean>('useWSL', false);
   }
 
   protected splitTerms(line: string) {
-    let terms = line.split(':');
+    const terms = line.split(':');
 
-    for (var i = 0; i < terms.length; i++) {
+    for (let i = 0; i < terms.length; i++) {
       if (terms[i] === ' ') {
         terms.splice(i, 1);
         i--;
@@ -60,60 +51,50 @@ export default class VerilatorLinter extends BaseLinter {
     return vscode.DiagnosticSeverity.Information;
   }
 
-  private convertToWslPath(inputPath: string): string {
-    let cmd: string = `wsl wslpath '${inputPath}'`;
-    return child.execSync(cmd, {}).toString().replace(/\r?\n/g, '');
-  }
-
-  private convertFromWslPath(inputPath: string): string {
-    let cmd: string = `wsl wslpath -w '${inputPath}'`;
-    return child.execSync(cmd, {}).toString().replace(/\r?\n/g, '');
-  }
-
   protected lint(doc: vscode.TextDocument) {
-    let docUri: string = isWindows
+    const docUri: string = isWindows
       ? this.useWSL
         ? this.convertToWslPath(doc.uri.fsPath)
         : doc.uri.fsPath.replace(/\\/g, '/')
       : doc.uri.fsPath;
-    let docFolder: string = isWindows
+    const docFolder: string = isWindows
       ? this.useWSL
         ? this.convertToWslPath(path.dirname(doc.uri.fsPath))
         : path.dirname(doc.uri.fsPath).replace(/\\/g, '/')
       : path.dirname(doc.uri.fsPath);
-    let cwd: string = this.runAtFileLocation
+    const cwd: string = this.config.runAtFileLocation
       ? isWindows
         ? path.dirname(doc.uri.fsPath.replace(/\\/g, '/'))
         : docFolder
       : vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? docFolder;
-    let verilator: string = isWindows
+    const verilator: string = isWindows
       ? this.useWSL
         ? 'wsl verilator'
         : 'verilator_bin.exe'
       : 'verilator';
 
-    let binPath = path.join(this.linterInstalledPath, verilator);
+    const binPath = path.join(this.config.linterInstalledPath, verilator);
     let args: string[] = [];
     if (doc.languageId === 'systemverilog') {
       args.push('-sv');
     }
     args.push('--lint-only');
     args.push(`-I"${docFolder}"`);
-    args = args.concat(this.includePath.map((path: string) => `-I"${path}"`));
-    args.push(this.arguments);
+    args = args.concat(this.config.includePath.map((p: string) => `-I"${p}"`));
+    args.push(this.config.arguments);
     args.push(`"${docUri}"`);
-    let command: string = binPath + ' ' + args.join(' ');
+    const command: string = `${binPath  } ${  args.join(' ')}`;
 
     this.logger.info('[verilator] Execute');
-    this.logger.info('[verilator]   command: ' + command);
-    this.logger.info('[verilator]   cwd    : ' + cwd);
+    this.logger.info(`[verilator]   command: ${  command}`);
+    this.logger.info(`[verilator]   cwd    : ${  cwd}`);
 
-    var _: child.ChildProcess = child.exec(
+    const _: child.ChildProcess = child.exec(
       command,
-      { cwd: cwd },
+      { cwd },
       (_error: child.ExecException | null, _stdout: string, stderr: string) => {
         // basically DiagnosticsCollection but with ability to append diag lists
-        let filesDiag = new Map();
+        const filesDiag = new Map();
 
         stderr.split(/\r?\n/g).forEach((line, _, stderrLines) => {
           // if lineIndex is 0 and it doesn't start with %Error or %Warning,
@@ -161,7 +142,7 @@ export default class VerilatorLinter extends BaseLinter {
           // columNumber - columnNumber
           // verboseError - error elaboration by verilator
 
-          let errorParserRegex = new RegExp(
+          const errorParserRegex = new RegExp(
             /%(?<severity>\w+)/.source + // matches "%Warning" or "%Error"
 
             // this matches errorcode with "-" before it, but the "-" doesn't go into ErrorCode match group
@@ -185,7 +166,7 @@ export default class VerilatorLinter extends BaseLinter {
             , "g"
           );
 
-          let rex = errorParserRegex.exec(line);
+          const rex = errorParserRegex.exec(line);
 
           // Check if rex or rex.groups is undefined
           if (!rex || !rex.groups) {
@@ -224,7 +205,7 @@ export default class VerilatorLinter extends BaseLinter {
           }
 
           if (rex && rex[0].length > 0) {
-            let lineNum = Number(rex.groups["lineNumber"]) - 1;
+            const lineNum = Number(rex.groups["lineNumber"]) - 1;
             let colNum = Number(rex.groups["columnNumber"]) - 1;
 
             colNum = isNaN(colNum) ? 0 : colNum; // for older Verilator versions (< 4.030 ~ish)
@@ -235,14 +216,14 @@ export default class VerilatorLinter extends BaseLinter {
               // tied to a file
               filesDiag.get(rex.groups["filePath"]).push({
                 severity: this.convertToSeverity(rex.groups["severity"]),
-                range: new vscode.Range(lineNum, colNum, lineNum, Number.MAX_VALUE),
+                range: new vscode.Range(lineNum, colNum, lineNum, END_OF_LINE),
                 message: rex.groups["verboseError"],
                 code: rex.groups["errorCode"],
                 source: 'verilator',
               });
 
             }
-            return;
+            
           }
         });
 
@@ -251,7 +232,7 @@ export default class VerilatorLinter extends BaseLinter {
         this.diagnosticCollection.clear();
 
         filesDiag.forEach((issuesArray, fileName) => {
-          let fileURI = vscode.Uri.file(fileName);
+          const fileURI = vscode.Uri.file(fileName);
           this.diagnosticCollection.set(
             fileURI,
             issuesArray

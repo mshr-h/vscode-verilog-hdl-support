@@ -62,7 +62,7 @@ export default class LintManager {
   }
 
   configLinter() {
-    let linterName = vscode.workspace.getConfiguration('verilog.linting').get<string>('linter');
+    const linterName = vscode.workspace.getConfiguration('verilog.linting').get<string>('linter');
 
     if (this.linter !== null) {
       if (this.linter.name === linterName) {
@@ -77,11 +77,11 @@ export default class LintManager {
 
     this.linter = this.getLinterFromString(linterName);
     if (this.linter === null) {
-      this.logger.warn('Invalid linter name: ' + linterName);
+      this.logger.warn(`Invalid linter name: ${  linterName}`);
       return;
     }
 
-    this.logger.info('Using linter: ' + this.linter.name);
+    this.logger.info(`Using linter: ${  this.linter.name}`);
   }
 
   lint(doc: vscode.TextDocument) {
@@ -118,7 +118,7 @@ export default class LintManager {
       return;
     }
 
-    let linterStr: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(
+    const linterStr: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(
       [
         {
           label: 'iverilog',
@@ -161,12 +161,12 @@ export default class LintManager {
         title: 'Verilog-HDL/SystemVerilog: Running lint tool...',
       },
       async (_progress, _token) => {
-        let linter: BaseLinter | null = this.getLinterFromString(linterStr.label);
+        const linter: BaseLinter | null = this.getLinterFromString(linterStr.label);
         if (linter === null) {
-          this.logger.error('Cannot find linter name: ' + linterStr.label);
+          this.logger.error(`Cannot find linter name: ${  linterStr.label}`);
           return;
         }
-        this.logger.info('Using ' + linter.name + ' linter');
+        this.logger.info(`Using ${  linter.name  } linter`);
 
         linter.removeFileDiagnostics(editor.document);
         linter.startLint(editor.document);

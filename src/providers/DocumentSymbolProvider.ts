@@ -18,10 +18,10 @@ export class VerilogDocumentSymbolProvider implements vscode.DocumentSymbolProvi
     document: vscode.TextDocument,
     _token: vscode.CancellationToken
   ): Promise<vscode.DocumentSymbol[]> {
-    this.logger.info('[VerilogSymbol] Symbols Requested: ' + document.uri);
-    let symbols: Symbol[] = await this.ctagsManager.getSymbols(document);
+    this.logger.info(`[VerilogSymbol] Symbols Requested: ${  document.uri}`);
+    const symbols: Symbol[] = await this.ctagsManager.getSymbols(document);
     this.docSymbols = this.buildDocumentSymbolList(symbols);
-    this.logger.info(this.docSymbols.length + ' top-level symbols returned');
+    this.logger.info(`${this.docSymbols.length  } top-level symbols returned`);
     return this.docSymbols;
   }
 
@@ -63,7 +63,7 @@ export class VerilogDocumentSymbolProvider implements vscode.DocumentSymbolProvi
   // return false: if container not found
   findContainer(con: vscode.DocumentSymbol, sym: vscode.DocumentSymbol): boolean {
     let res: boolean = false;
-    for (let i of con.children) {
+    for (const i of con.children) {
       if (this.isContainer(i.kind) && i.range.contains(sym.range)) {
         res = this.findContainer(i, sym);
         if (res) {
@@ -81,7 +81,7 @@ export class VerilogDocumentSymbolProvider implements vscode.DocumentSymbolProvi
   // Build hierarchical DocumentSymbol[] from linear symbolsList[] using start and end position
   // TODO: Use parentscope/parenttype of symbol to construct hierarchical vscode.DocumentSymbol []
   buildDocumentSymbolList(symbolsList: Symbol[]): vscode.DocumentSymbol[] {
-    let list: vscode.DocumentSymbol[] = [];
+    const list: vscode.DocumentSymbol[] = [];
     symbolsList = symbolsList.sort((a, b): number => {
       if (a.startPosition.isBefore(b.startPosition)) {
         return -1;
@@ -92,8 +92,8 @@ export class VerilogDocumentSymbolProvider implements vscode.DocumentSymbolProvi
       return 0;
     });
     // Add each of the symbols in order
-    for (let i of symbolsList) {
-      let sym: vscode.DocumentSymbol = i.getDocumentSymbol();
+    for (const i of symbolsList) {
+      const sym: vscode.DocumentSymbol = i.getDocumentSymbol();
       // if no top level elements present
       if (list.length === 0) {
         list.push(sym);
@@ -101,7 +101,7 @@ export class VerilogDocumentSymbolProvider implements vscode.DocumentSymbolProvi
       } else {
         // find a parent among the top level element
         let done: boolean = false;
-        for (let j of list) {
+        for (const j of list) {
           if (this.isContainer(j.kind) && j.range.contains(sym.range)) {
             this.findContainer(j, sym);
             done = true;

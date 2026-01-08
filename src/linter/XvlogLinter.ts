@@ -4,29 +4,19 @@ import {exec, ExecException} from 'child_process';
 import * as path from 'path';
 import BaseLinter from './BaseLinter';
 import { Logger } from '../logger';
+import { END_OF_LINE } from '../constants';
 
 export default class XvlogLinter extends BaseLinter {
-  private configuration!: vscode.WorkspaceConfiguration;
-  private linterInstalledPath: string = '';
-  private arguments: string = '';
-  private includePath: string[] = [];
-
   constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
     super('xvlog', diagnosticCollection, logger);
-    vscode.workspace.onDidChangeConfiguration(() => {
-      this.updateConfig();
-    });
     this.updateConfig();
   }
 
-  private updateConfig() {
-    this.linterInstalledPath = <string>(
-      vscode.workspace.getConfiguration().get('verilog.linting.path')
-    );
-    this.configuration = vscode.workspace.getConfiguration('verilog.linting.xvlog');
-    this.arguments = <string>this.configuration.get('arguments');
-    let path = <string[]>this.configuration.get('includePath');
-    this.includePath = path.map((includePath: string) => this.resolvePath(includePath));
+  protected override updateConfig() {
+    const configuration = vscode.workspace.getConfiguration('verilog.linting.xvlog');
+    this.config.arguments = configuration.get<string>('arguments', '');
+    const paths = configuration.get<string[]>('includePath', []);
+    this.config.includePath = this.resolveIncludePaths(paths);
   }
 
   protected convertToSeverity(severityString: string): vscode.DiagnosticSeverity {
@@ -37,27 +27,27 @@ export default class XvlogLinter extends BaseLinter {
   }
 
   protected lint(doc: vscode.TextDocument) {
-    let binPath: string = path.join(this.linterInstalledPath, 'xvlog');
+    const binPath: string = path.join(this.config.linterInstalledPath, 'xvlog');
 
     let args: string[] = [];
     args.push('-nolog');
     if (doc.languageId === 'systemverilog') {
       args.push('-sv');
     }
-    args = args.concat(this.includePath.map((path: string) => `-i "${path}"`));
-    this.logger.warn(this.includePath.join(' '));
-    args.push(this.arguments);
+    args = args.concat(this.config.includePath.map((p: string) => `-i "${p}"`));
+    this.logger.warn(this.config.includePath.join(' '));
+    args.push(this.config.arguments);
     args.push(`"${doc.fileName}"`);
-    let command: string = binPath + ' ' + args.join(' ');
+    const command: string = `${binPath  } ${  args.join(' ')}`;
 
     this.logger.info('[xvlog] Execute');
-    this.logger.info('[xvlog]   command: ' + command);
+    this.logger.info(`[xvlog]   command: ${  command}`);
 
     exec(command, (_error: ExecException | null, stdout: string, _stderr: string) => {
-      let diagnostics: vscode.Diagnostic[] = [];
+      const diagnostics: vscode.Diagnostic[] = [];
 
       stdout.split(/\r?\n/g).forEach((line) => {
-        let match = line.match(
+        const match = line.match(
           /^(ERROR|WARNING):\s+\[(VRFC\b[^\]]*)\]\s+(.*\S)\s+\[(.*):(\d+)\]\s*$/
         );
         if (!match) {
@@ -65,20 +55,20 @@ export default class XvlogLinter extends BaseLinter {
         }
 
         // Get filename and line number
-        let _filename = match[4];
-        let lineno = parseInt(match[5]) - 1;
+        const _filename = match[4];
+        const lineno = parseInt(match[5]) - 1;
 
-        let diagnostic: vscode.Diagnostic = {
+        const diagnostic: vscode.Diagnostic = {
           severity: this.convertToSeverity(match[1]),
           code: match[2],
-          message: '[' + match[2] + '] ' + match[3],
-          range: new vscode.Range(lineno, 0, lineno, Number.MAX_VALUE),
+          message: `[${  match[2]  }] ${  match[3]}`,
+          range: new vscode.Range(lineno, 0, lineno, END_OF_LINE),
           source: 'xvlog',
         };
 
         diagnostics.push(diagnostic);
       });
-      this.logger.info(diagnostics.length + ' errors/warnings returned');
+      this.logger.info(`${diagnostics.length  } errors/warnings returned`);
       this.diagnosticCollection.set(doc.uri, diagnostics);
     });
   }

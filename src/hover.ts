@@ -18,26 +18,26 @@ export class HoverProvider implements vscode.HoverProvider {
     _token: vscode.CancellationToken
   ): vscode.Hover | undefined {
     // get word start and end
-    let textRange = document.getWordRangeAtPosition(position);
+    const textRange = document.getWordRangeAtPosition(position);
 
     // hover word
-    let targetText = document.getText(textRange);
+    const targetText = document.getText(textRange);
 
     if (targetText.search(this._excludedText) !== -1) {
       // systemverilog keywords
       return undefined;
-    } else {
+    } 
       // find declaration
-      let declarationText = this._findDeclaration(document, position, targetText);
+      const declarationText = this._findDeclaration(document, position, targetText);
       if (declarationText !== undefined) {
         return new vscode.Hover([
           { language: this.lang, value: declarationText.element },
           declarationText.comment,
         ]);
-      } else {
+      } 
         return undefined;
-      }
-    }
+      
+    
   }
 
   private _findDeclaration(
@@ -55,23 +55,23 @@ export class HoverProvider implements vscode.HoverProvider {
     
     const types = this.lang === 'systemverilog' ? systemverilogTypes : verilogTypes;
     const variableType = String.raw`\b(${types.join('|')})\b\s+`;
-    const variableTypeStart = '^' + variableType;
-    let paraType = String.raw`^\b(parameter|localparam)\b\s+\b${target}\b`;
+    const variableTypeStart = `^${  variableType}`;
+    const paraType = String.raw`^\b(parameter|localparam)\b\s+\b${target}\b`;
 
-    let regexTarget = RegExp(String.raw`\b${target}\b`);
-    let regexVariableType = RegExp(variableType, 'g');
-    let regexVariableTypeStart = RegExp(variableTypeStart);
-    let regexParaType = RegExp(paraType);
+    const regexTarget = RegExp(String.raw`\b${target}\b`);
+    const regexVariableType = RegExp(variableType, 'g');
+    const regexVariableTypeStart = RegExp(variableTypeStart);
+    const regexParaType = RegExp(paraType);
 
     // from previous line to first line
     for (let i = position.line - 1; i >= 0; i--) {
       // text at current line
-      let line = document.lineAt(i).text;
+      const line = document.lineAt(i).text;
       let element = line
         .replace(/\/\/.*/, '')
         .trim()
         .replace(/\s+/g, ' ');
-      let lastChar = element.charAt(element.length - 1);
+      const lastChar = element.charAt(element.length - 1);
       if (lastChar === ',' || lastChar === ';') {
         // remove last ',' or ';'
         element = element.substring(0, element.length - 1);
@@ -87,11 +87,11 @@ export class HoverProvider implements vscode.HoverProvider {
         if (subText.search(regexTarget) !== -1) {
           let comment = getPrefixedComment(document, i);
           if (comment) {
-            return { element: element, comment: comment };
-          } else {
+            return { element, comment };
+          } 
             comment = getSuffixedComment(document, i);
-            return { element: element, comment: comment };
-          }
+            return { element, comment };
+          
         }
       }
 
@@ -99,11 +99,11 @@ export class HoverProvider implements vscode.HoverProvider {
       if (element.search(regexParaType) !== -1) {
         let comment = getPrefixedComment(document, i);
         if (comment) {
-          return { element: element, comment: comment };
-        } else {
+          return { element, comment };
+        } 
           comment = getSuffixedComment(document, i);
-          return { element: element, comment: comment };
-        }
+          return { element, comment };
+        
       }
     }
     return { element: '', comment: '' };
@@ -114,11 +114,11 @@ function getPrefixedComment(document: vscode.TextDocument, lineNo: number) {
   let i = lineNo - 1;
   let buf = '';
   while (true) {
-    let line = document.lineAt(i).text.trim();
+    const line = document.lineAt(i).text.trim();
     if (!line.startsWith('//')) {
       break;
     }
-    buf = line.substring(3) + '\n' + buf;
+    buf = `${line.substring(3)  }\n${  buf}`;
     i--;
   }
   return buf;
@@ -126,11 +126,11 @@ function getPrefixedComment(document: vscode.TextDocument, lineNo: number) {
 
 function getSuffixedComment(document: vscode.TextDocument, lineNo: number): string {
   // Spearate comment after the declaration
-  let line = document.lineAt(lineNo).text;
-  let idx = line.indexOf('//');
+  const line = document.lineAt(lineNo).text;
+  const idx = line.indexOf('//');
   if (idx !== -1) {
     return line.substring(idx + 2).trim();
-  } else {
+  } 
     return '';
-  }
+  
 }

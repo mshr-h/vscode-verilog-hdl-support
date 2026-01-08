@@ -12,9 +12,9 @@ export function initAllLanguageClients(logger: Logger) {
   manager.initAll();
 }
 
-export function stopAllLanguageClients(): Promise<any> {
+export function stopAllLanguageClients(): Promise<void[]> {
   if (!manager) {
-    return Promise.resolve();
+    return Promise.resolve([]);
   }
   return manager.stopAll();
 }

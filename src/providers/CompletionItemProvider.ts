@@ -2,6 +2,7 @@
 import * as vscode from 'vscode';
 import { CtagsManager, Symbol } from '../ctags';
 import { Logger } from '../logger';
+import { END_OF_LINE } from '../constants';
 
 export class VerilogCompletionItemProvider implements vscode.CompletionItemProvider {
   private logger: Logger;
@@ -20,28 +21,28 @@ export class VerilogCompletionItemProvider implements vscode.CompletionItemProvi
     _context: vscode.CompletionContext
   ): Promise<vscode.CompletionItem[]> {
     this.logger.info('Completion items requested');
-    let items: vscode.CompletionItem[] = [];
+    const items: vscode.CompletionItem[] = [];
 
-    let symbols: Symbol[] = await this.ctagsManager.getSymbols(document);
+    const symbols: Symbol[] = await this.ctagsManager.getSymbols(document);
     symbols.forEach((symbol) => {
-      let newItem: vscode.CompletionItem = new vscode.CompletionItem(
+      const newItem: vscode.CompletionItem = new vscode.CompletionItem(
         symbol.name,
         this.getCompletionItemKind(symbol.type)
       );
-      let codeRange = new vscode.Range(
+      const codeRange = new vscode.Range(
         symbol.startPosition,
-        new vscode.Position(symbol.startPosition.line, Number.MAX_VALUE)
+        new vscode.Position(symbol.startPosition.line, END_OF_LINE)
       );
-      let code = document.getText(codeRange).trim();
+      const code = document.getText(codeRange).trim();
       newItem.detail = symbol.type;
-      let doc: string = '```systemverilog\n' + code + '\n```';
+      let doc: string = `\`\`\`systemverilog\n${  code  }\n\`\`\``;
       if (symbol.parentScope !== undefined && symbol.parentScope !== '') {
-        doc += '\nHierarchical Scope: ' + symbol.parentScope;
+        doc += `\nHierarchical Scope: ${  symbol.parentScope}`;
       }
       newItem.documentation = new vscode.MarkdownString(doc);
       items.push(newItem);
     });
-    this.logger.info(items.length + ' items requested');
+    this.logger.info(`${items.length  } items requested`);
     return items;
   }
 

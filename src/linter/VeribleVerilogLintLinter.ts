@@ -5,30 +5,20 @@ import * as path from 'path';
 import * as process from 'process';
 import BaseLinter from './BaseLinter';
 import { Logger } from '../logger';
+import { END_OF_LINE } from '../constants';
 
-let isWindows = process.platform === 'win32';
+const isWindows = process.platform === 'win32';
 
 export default class VeribleVerilogLintLinter extends BaseLinter {
-  private configuration!: vscode.WorkspaceConfiguration;
-  private linterInstalledPath!: string;
-  private arguments!: string;
-  private runAtFileLocation!: boolean;
-
   constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
     super('verible-verilog-lint', diagnosticCollection, logger);
-    vscode.workspace.onDidChangeConfiguration(() => {
-      this.updateConfig();
-    });
     this.updateConfig();
   }
 
-  private updateConfig() {
-    this.linterInstalledPath = <string>(
-      vscode.workspace.getConfiguration().get('verilog.linting.path')
-    );
-    this.configuration = vscode.workspace.getConfiguration('verilog.linting.veribleVerilogLint');
-    this.arguments = <string>this.configuration.get('arguments');
-    this.runAtFileLocation = <boolean>this.configuration.get('runAtFileLocation');
+  protected override updateConfig() {
+    const configuration = vscode.workspace.getConfiguration('verilog.linting.veribleVerilogLint');
+    this.config.arguments = configuration.get<string>('arguments', '');
+    this.config.runAtFileLocation = configuration.get<boolean>('runAtFileLocation', false);
   }
 
   protected convertToSeverity(message: string): vscode.DiagnosticSeverity {
@@ -45,31 +35,28 @@ export default class VeribleVerilogLintLinter extends BaseLinter {
   protected lint(doc: vscode.TextDocument) {
     this.logger.info('Executing VeribleVerilogLintLinter.lint()');
 
-    let binName = isWindows ? 'verible-verilog-lint.exe' : 'verible-verilog-lint';
-    let binPath: string = path.join(this.linterInstalledPath, binName);
-    this.logger.info('verible-verilog-lint binary path: ' + binPath);
+    const binName = isWindows ? 'verible-verilog-lint.exe' : 'verible-verilog-lint';
+    const binPath: string = path.join(this.config.linterInstalledPath, binName);
+    this.logger.info(`verible-verilog-lint binary path: ${  binPath}`);
 
-    let docUri: string = doc.uri.fsPath;
-    let docFolder: string = path.dirname(docUri);
-    let cwd: string = this.runAtFileLocation
-      ? docFolder
-      : vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? docFolder;
+    const docUri: string = doc.uri.fsPath;
+    const cwd: string = this.getWorkingDirectory(doc);
 
-    let args: string[] = [];
-    args.push(this.arguments);
+    const args: string[] = [];
+    args.push(this.config.arguments);
     args.push(`"${docUri}"`);
 
-    let command: string = binPath + ' ' + args.join(' ');
+    const command: string = `${binPath  } ${  args.join(' ')}`;
 
     this.logger.info('[verible-verilog-lint] Execute');
-    this.logger.info('[verible-verilog-lint]   command: ' + command);
-    this.logger.info('[verible-verilog-lint]   cwd    : ' + cwd);
+    this.logger.info(`[verible-verilog-lint]   command: ${  command}`);
+    this.logger.info(`[verible-verilog-lint]   cwd    : ${  cwd}`);
 
-    var _: child.ChildProcess = child.exec(
+    const _: child.ChildProcess = child.exec(
       command,
-      { cwd: cwd },
+      { cwd },
       (_error: child.ExecException | null, stdout: string, stderr: string) => {
-        let diagnostics: vscode.Diagnostic[] = [];
+        const diagnostics: vscode.Diagnostic[] = [];
         const output = [stdout, stderr].filter((value) => value.length > 0).join('\n');
         const re = /^(.*?):(\d+):(\d+)(?:-(\d+))?:\s*(.*?)(?:\s*\[(.+?)\])?$/;
 
@@ -78,12 +65,12 @@ export default class VeribleVerilogLintLinter extends BaseLinter {
             return;
           }
 
-          let rex = line.match(re);
+          const rex = line.match(re);
           if (!rex) {
             return;
           }
 
-          let filePath = rex[1];
+          const filePath = rex[1];
           let resolvedPath = path.isAbsolute(filePath) ? filePath : path.join(cwd, filePath);
           if (isWindows) {
             resolvedPath = resolvedPath.replace(/\\/g, '/');
@@ -97,16 +84,16 @@ export default class VeribleVerilogLintLinter extends BaseLinter {
             return;
           }
 
-          let lineNum = Number(rex[2]) - 1;
-          let colStart = Number(rex[3]) - 1;
-          let colEnd = rex[4] ? Number(rex[4]) - 1 : Number.MAX_VALUE;
-          let message = rex[5].trim();
-          let ruleName = rex[6] ? rex[6].trim() : '';
+          const lineNum = Number(rex[2]) - 1;
+          const colStart = Number(rex[3]) - 1;
+          const colEnd = rex[4] ? Number(rex[4]) - 1 : END_OF_LINE;
+          const message = rex[5].trim();
+          const ruleName = rex[6] ? rex[6].trim() : '';
 
           diagnostics.push({
             severity: this.convertToSeverity(message),
             range: new vscode.Range(lineNum, colStart, lineNum, colEnd),
-            message: message,
+            message,
             code: ruleName.length > 0 ? ruleName : 'verible-verilog-lint',
             source: 'verible-verilog-lint',
           });

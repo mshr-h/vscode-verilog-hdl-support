@@ -14,7 +14,7 @@ class TemporaryFile {
   constructor(prefix: string, ext: string) {
     this.path = path.join(
       os.tmpdir(),
-      prefix + '-' + crypto.randomBytes(16).toString('hex') + '.tmp' + ext
+      `${prefix  }-${  crypto.randomBytes(16).toString('hex')  }.tmp${  ext}`
     );
   }
 
@@ -46,7 +46,7 @@ abstract class FileBasedFormattingEditProvider implements vscode.DocumentFormatt
     this.namespace = namespace;
     this.logger = logger;
     this.tmpFileExt = tmpFileExt;
-    this.config = vscode.workspace.getConfiguration('verilog.formatting.' + namespace);
+    this.config = vscode.workspace.getConfiguration(`verilog.formatting.${  namespace}`);
   }
 
   // should be implemented to match formatter's argument
@@ -58,20 +58,20 @@ abstract class FileBasedFormattingEditProvider implements vscode.DocumentFormatt
     _token: vscode.CancellationToken
   ): vscode.ProviderResult<vscode.TextEdit[]> {
     // create temporary file and copy document to it
-    let tempFile: TemporaryFile = new TemporaryFile(this.namespace, this.tmpFileExt);
+    const tempFile: TemporaryFile = new TemporaryFile(this.namespace, this.tmpFileExt);
     tempFile.writeFileSync(document.getText(), { flag: 'w' });
-    this.logger.info('Temp file created at:' + tempFile.path);
+    this.logger.info(`Temp file created at:${  tempFile.path}`);
 
-    let args: string[] = this.prepareArgument(tempFile.path);
+    const args: string[] = this.prepareArgument(tempFile.path);
 
     // execute command
-    let binPath: string = this.config.get('path', '');
-    this.logger.info('Executing command: ' + binPath + ' ' + args.join(' '));
+    const binPath: string = this.config.get('path', '');
+    this.logger.info(`Executing command: ${  binPath  } ${  args.join(' ')}`);
     try {
       const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
       execFileSync(binPath, args, cwd ? { cwd } : undefined);
-      let formattedText: string = tempFile.readFileSync({ encoding: 'utf-8' });
-      let wholeFileRange: vscode.Range = new vscode.Range(
+      const formattedText: string = tempFile.readFileSync({ encoding: 'utf-8' });
+      const wholeFileRange: vscode.Range = new vscode.Range(
         document.positionAt(0),
         document.positionAt(document.getText().length)
       );
@@ -90,8 +90,8 @@ abstract class FileBasedFormattingEditProvider implements vscode.DocumentFormatt
 }
 class VerilogFormatEditProvider extends FileBasedFormattingEditProvider {
   prepareArgument(tmpFilepath: string): string[] {
-    var args: string[] = ['-f', tmpFilepath];
-    let settingsPath: string = <string>this.config.get('settings', '');
+    const args: string[] = ['-f', tmpFilepath];
+    const settingsPath: string = <string>this.config.get('settings', '');
     if (settingsPath !== '' && fs.existsSync(settingsPath)) {
       args.push('-s');
       args.push(settingsPath);
@@ -102,11 +102,11 @@ class VerilogFormatEditProvider extends FileBasedFormattingEditProvider {
 
 class IStyleVerilogFormatterEditProvider extends FileBasedFormattingEditProvider {
   prepareArgument(tmpFilepath: string): string[] {
-    let customArgs: string = <string>this.config.get('arguments', '');
-    let formatStyle: string = <string>this.config.get('style', 'Indent only');
+    const customArgs: string = <string>this.config.get('arguments', '');
+    const formatStyle: string = <string>this.config.get('style', 'Indent only');
 
     // -n means not to create a .orig file
-    var args: string[] = ['-n'];
+    let args: string[] = ['-n'];
     if (customArgs.length > 0) {
       args = args.concat(customArgs.split(' '));
     }
@@ -129,9 +129,9 @@ class IStyleVerilogFormatterEditProvider extends FileBasedFormattingEditProvider
 }
 class VeribleVerilogFormatEditProvider extends FileBasedFormattingEditProvider {
   prepareArgument(tmpFilepath: string): string[] {
-    let customArgs: string = <string>this.config.get('arguments', '');
+    const customArgs: string = <string>this.config.get('arguments', '');
 
-    var args: string[] = ['--inplace'];
+    let args: string[] = ['--inplace'];
     if (customArgs.length > 0) {
       args = args.concat(customArgs.split(' '));
     }
@@ -152,17 +152,17 @@ export class VerilogFormatProvider implements vscode.DocumentFormattingEditProvi
     _options: vscode.FormattingOptions,
     _token: vscode.CancellationToken
   ): vscode.ProviderResult<vscode.TextEdit[]> {
-    let settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration(
+    const settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration(
       'verilog.formatting.verilogHDL'
     );
-    let formatter: string = <string>settings.get('formatter', '');
-    let verilogFormatter = new VerilogFormatEditProvider('verilogFormat', '.v', this.logger);
-    let iStyleVerilogFormatter = new IStyleVerilogFormatterEditProvider(
+    const formatter: string = <string>settings.get('formatter', '');
+    const verilogFormatter = new VerilogFormatEditProvider('verilogFormat', '.v', this.logger);
+    const iStyleVerilogFormatter = new IStyleVerilogFormatterEditProvider(
       'iStyleVerilogFormatter',
       '.v',
       this.logger
     );
-    let veribleVerilogFormatter = new VeribleVerilogFormatEditProvider(
+    const veribleVerilogFormatter = new VeribleVerilogFormatEditProvider(
       'veribleVerilogFormatter',
       '.v',
       this.logger
@@ -192,11 +192,11 @@ export class SystemVerilogFormatProvider implements vscode.DocumentFormattingEdi
     _options: vscode.FormattingOptions,
     _token: vscode.CancellationToken
   ): vscode.ProviderResult<vscode.TextEdit[]> {
-    let settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration(
+    const settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration(
       'verilog.formatting.systemVerilog'
     );
-    let formatter: string = <string>settings.get('formatter', '');
-    let veribleVerilogFormatter = new VeribleVerilogFormatEditProvider(
+    const formatter: string = <string>settings.get('formatter', '');
+    const veribleVerilogFormatter = new VeribleVerilogFormatEditProvider(
       'veribleVerilogFormatter',
       '.sv',
       this.logger

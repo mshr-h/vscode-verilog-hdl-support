@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
-// import * as vscode from 'vscode';
 import * as vscode from 'vscode';
-import { CtagsManager, Symbol } from '../ctags';
+import { CtagsManager } from '../ctags';
 import { Logger } from '../logger';
 
 export class VerilogHoverProvider implements vscode.HoverProvider {
@@ -20,9 +19,9 @@ export class VerilogHoverProvider implements vscode.HoverProvider {
     _token: vscode.CancellationToken
   ): Promise<vscode.Hover | undefined> {
     this.logger.info('Hover requested');
-    let matches: vscode.DefinitionLink[] = await this.ctagsManager.findSymbol(document, position);
+    const matches: vscode.DefinitionLink[] = await this.ctagsManager.findSymbol(document, position);
     // find symbol
-    for (let i of matches) {
+    for (const i of matches) {
       // returns the first found tag. Disregards others
       // TODO: very basic hover implementation. Can be extended
       let doc = document;
@@ -30,8 +29,8 @@ export class VerilogHoverProvider implements vscode.HoverProvider {
         doc = await vscode.workspace.openTextDocument(i.targetUri);
       }
       // make a range 5 more lines
-      let code = doc.getText(i.targetRange).trim();
-      let hoverText: vscode.MarkdownString = new vscode.MarkdownString();
+      const code = doc.getText(i.targetRange).trim();
+      const hoverText: vscode.MarkdownString = new vscode.MarkdownString();
       hoverText.appendCodeblock(code, document.languageId);
       this.logger.info('Hover object returned');
       return new vscode.Hover(hoverText);

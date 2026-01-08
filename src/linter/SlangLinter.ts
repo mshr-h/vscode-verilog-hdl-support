@@ -5,35 +5,26 @@ import * as path from 'path';
 import * as process from 'process';
 import BaseLinter from './BaseLinter';
 import { Logger } from '../logger';
+import { END_OF_LINE } from '../constants';
 
-let isWindows = process.platform === 'win32';
+const isWindows = process.platform === 'win32';
 
 export default class SlangLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
-  private linterInstalledPath!: string;
-  private arguments!: string;
-  private includePath!: string[];
-  private runAtFileLocation!: boolean;
   private useWSL!: boolean;
 
   constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
     super('slang', diagnosticCollection, logger);
-    vscode.workspace.onDidChangeConfiguration(() => {
-      this.updateConfig();
-    });
     this.updateConfig();
   }
 
-  private updateConfig() {
-    this.linterInstalledPath = <string>(
-      vscode.workspace.getConfiguration().get('verilog.linting.path')
-    );
+  protected override updateConfig() {
     this.configuration = vscode.workspace.getConfiguration('verilog.linting.slang');
-    this.arguments = <string>this.configuration.get('arguments');
-    let path = <string[]>this.configuration.get('includePath');
-    this.includePath = path.map((includePath: string) => this.resolvePath(includePath));
-    this.runAtFileLocation = <boolean>this.configuration.get('runAtFileLocation');
-    this.useWSL = <boolean>this.configuration.get('useWSL');
+    this.config.arguments = this.configuration.get<string>('arguments', '');
+    const paths = this.configuration.get<string[]>('includePath', []);
+    this.config.includePath = this.resolveIncludePaths(paths);
+    this.config.runAtFileLocation = this.configuration.get<boolean>('runAtFileLocation', false);
+    this.useWSL = this.configuration.get<boolean>('useWSL', false);
   }
 
   protected convertToSeverity(severityString: string): vscode.DiagnosticSeverity {
@@ -45,16 +36,11 @@ export default class SlangLinter extends BaseLinter {
     return vscode.DiagnosticSeverity.Information;
   }
 
-  private convertToWslPath(inputPath: string): string {
-    let cmd: string = `wsl wslpath '${inputPath}'`;
-    return child.execSync(cmd, {}).toString().replace(/\r?\n/g, '');
-  }
-
   protected lint(doc: vscode.TextDocument) {
     // TODO: Refactoring
     let docUri: string = doc.uri.fsPath;
     let docFolder: string = path.dirname(docUri);
-    let cwdWin: string = path.dirname(docUri);
+    const cwdWin: string = path.dirname(docUri);
     if (isWindows) {
       if (this.useWSL) {
         docUri = this.convertToWslPath(docUri);
@@ -68,38 +54,38 @@ export default class SlangLinter extends BaseLinter {
       }
     }
 
-    let slang: string = isWindows ? (this.useWSL ? 'wsl slang' : 'slang.exe') : 'slang';
+    const slang: string = isWindows ? (this.useWSL ? 'wsl slang' : 'slang.exe') : 'slang';
 
-    let binPath = path.join(this.linterInstalledPath, slang);
+    const binPath = path.join(this.config.linterInstalledPath, slang);
     let args: string[] = [];
     args.push(`-I "${docFolder}"`);
-    args = args.concat(this.includePath.map((path: string) => `-I "${path}"`));
-    args.push(this.arguments);
+    args = args.concat(this.config.includePath.map((p: string) => `-I "${p}"`));
+    args.push(this.config.arguments);
     args.push(`"${docUri}"`);
-    let command: string = binPath + ' ' + args.join(' ');
+    const command: string = `${binPath  } ${  args.join(' ')}`;
 
-    let cwd: string = this.runAtFileLocation
-      ? isWindows
+    const cwd: string = this.config.runAtFileLocation
+      ? isWindows && this.useWSL
         ? cwdWin
         : docFolder
       : vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? docFolder;
 
     this.logger.info('[slang] Execute');
-    this.logger.info('[slang]   command: ' + command);
-    this.logger.info('[slang]   cwd    : ' + cwd);
+    this.logger.info(`[slang]   command: ${  command}`);
+    this.logger.info(`[slang]   cwd    : ${  cwd}`);
 
-    var _: child.ChildProcess = child.exec(
+    const _: child.ChildProcess = child.exec(
       command,
-      { cwd: cwd },
+      { cwd },
       (_error: Error | null, _stdout: string, stderr: string) => {
-        let diagnostics: vscode.Diagnostic[] = [];
+        const diagnostics: vscode.Diagnostic[] = [];
         const re = /(.+?):(\d+):(\d+):\s(note|warning|error):\s(.*?)(\[-W(.*)\]|$)/;
         stderr.split(/\r?\n/g).forEach((line, _) => {
           if (line.search(re) === -1) {
             return;
           }
 
-          let rex = line.match(re);
+          const rex = line.match(re);
           if (!rex) {
             return;
           }
@@ -119,19 +105,19 @@ export default class SlangLinter extends BaseLinter {
           }
 
           if (rex && rex[0] && rex[0].length > 0) {
-            let lineNum = Number(rex[2]) - 1;
-            let colNum = Number(rex[3]) - 1;
+            const lineNum = Number(rex[2]) - 1;
+            const colNum = Number(rex[3]) - 1;
 
             diagnostics.push({
               severity: this.convertToSeverity(rex[4]),
-              range: new vscode.Range(lineNum, colNum, lineNum, Number.MAX_VALUE),
+              range: new vscode.Range(lineNum, colNum, lineNum, END_OF_LINE),
               message: rex[5],
               code: rex[7] ? rex[7] : 'error',
               source: 'slang',
             });
             return;
           }
-          this.logger.warn('[slang] failed to parse error: ' + line);
+          this.logger.warn(`[slang] failed to parse error: ${  line}`);
         });
         this.logger.info(`[slang] ${diagnostics.length} errors/warnings returned`);
         this.diagnosticCollection.set(doc.uri, diagnostics);

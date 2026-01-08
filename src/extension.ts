@@ -15,17 +15,17 @@ import { createLogger, Logger } from './logger';
 import { FliplotPanel } from './fliplot/FliplotPanel';
 import { FliplotCustomEditor } from './fliplot/FliplotCustomEditor';
 
-export var logger: Logger; // Global logger
-var ctagsManager = new CtagsManager();
-let extensionID: string = 'mshr-h.veriloghdl';
+export let logger: Logger; // Global logger
+const ctagsManager = new CtagsManager();
+const extensionID: string = 'mshr-h.veriloghdl';
 
 let lintManager: LintManager;
 
 export function activate(context: vscode.ExtensionContext) {
   logger = createLogger('Verilog');
-  logger.info(extensionID + ' is now active.');
+  logger.info(`${extensionID  } is now active.`);
 
-  let extMgr = new ExtensionManager(context, extensionID, logger.getChild('ExtensionManager'));
+  const extMgr = new ExtensionManager(context, extensionID, logger.getChild('ExtensionManager'));
   if (extMgr.isVersionUpdated()) {
     extMgr.showChangelogNotification();
   }
@@ -34,7 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
   ctagsManager.configure(logger);
 
   // Configure Document Symbol Provider
-  let verilogDocumentSymbolProvider = new DocumentSymbolProvider.VerilogDocumentSymbolProvider(
+  const verilogDocumentSymbolProvider = new DocumentSymbolProvider.VerilogDocumentSymbolProvider(
     logger.getChild('VerilogDocumentSymbolProvider'),
     ctagsManager,
   );
@@ -53,7 +53,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Configure Completion Item Provider
   // Trigger on ".", "(", "="
-  let verilogCompletionItemProvider = new CompletionItemProvider.VerilogCompletionItemProvider(
+  const verilogCompletionItemProvider = new CompletionItemProvider.VerilogCompletionItemProvider(
     logger.getChild('VerilogCompletionItemProvider'),
     ctagsManager,
   );
@@ -77,7 +77,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // Configure Hover Providers
-  let verilogHoverProvider = new HoverProvider.VerilogHoverProvider(
+  const verilogHoverProvider = new HoverProvider.VerilogHoverProvider(
     logger.getChild('VerilogHoverProvider'),
     ctagsManager,
   );
@@ -95,7 +95,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // Configure Definition Providers
-  let verilogDefinitionProvider = new DefinitionProvider.VerilogDefinitionProvider(
+  const verilogDefinitionProvider = new DefinitionProvider.VerilogDefinitionProvider(
     logger.getChild('VerilogDefinitionProvider'),
     ctagsManager
   );
@@ -113,7 +113,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // Configure Format Provider
-  let verilogFormatProvider = new FormatProvider.VerilogFormatProvider(
+  const verilogFormatProvider = new FormatProvider.VerilogFormatProvider(
     logger.getChild('VerilogFormatProvider')
   );
   context.subscriptions.push(
@@ -122,7 +122,7 @@ export function activate(context: vscode.ExtensionContext) {
       verilogFormatProvider
     )
   );
-  let systemVerilogFormatProvider = new FormatProvider.SystemVerilogFormatProvider(
+  const systemVerilogFormatProvider = new FormatProvider.SystemVerilogFormatProvider(
     logger.getChild('SystemVerilogFormatProvider')
   );
   context.subscriptions.push(
@@ -173,10 +173,10 @@ export function activate(context: vscode.ExtensionContext) {
   });
   initAllLanguageClients(logger);
 
-  logger.info(extensionID + ' activation finished.');
+  logger.info(`${extensionID  } activation finished.`);
 }
 
-export function deactivate(): Promise<void> {
+export async function deactivate(): Promise<void> {
   logger.info('Deactivated');
-  return stopAllLanguageClients();
+  await stopAllLanguageClients();
 }
