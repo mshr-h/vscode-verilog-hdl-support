@@ -1,7 +1,20 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as child from 'child_process';
 import { Logger } from '../logger';
+
+/** Common configuration interface for linters */
+export interface LinterConfig {
+  /** Path where the linter binary is installed */
+  linterInstalledPath: string;
+  /** Additional command-line arguments */
+  arguments: string;
+  /** Include paths for the linter */
+  includePath: string[];
+  /** Whether to run the linter at the file location */
+  runAtFileLocation: boolean;
+}
 
 /**
  * Abstract base class for all linters.
@@ -15,6 +28,13 @@ export default abstract class BaseLinter {
   name: string;
   /** The logger instance for output */
   protected logger: Logger;
+  /** Common linter configuration */
+  protected config: LinterConfig = {
+    linterInstalledPath: '',
+    arguments: '',
+    includePath: [],
+    runAtFileLocation: false,
+  };
 
   /**
    * Creates a new BaseLinter instance.
@@ -26,6 +46,30 @@ export default abstract class BaseLinter {
     this.diagnosticCollection = diagnosticCollection;
     this.name = name;
     this.logger = logger;
+
+    // Register configuration change listener
+    vscode.workspace.onDidChangeConfiguration(() => {
+      this.loadBaseConfig();
+      this.updateConfig();
+    });
+    this.loadBaseConfig();
+  }
+
+  /**
+   * Loads the base configuration common to all linters.
+   */
+  protected loadBaseConfig(): void {
+    this.config.linterInstalledPath = vscode.workspace
+      .getConfiguration()
+      .get<string>('verilog.linting.path', '');
+  }
+
+  /**
+   * Updates linter-specific configuration.
+   * Subclasses should override this to load their specific settings.
+   */
+  protected updateConfig(): void {
+    // Override in subclasses
   }
 
   /**
@@ -41,6 +85,48 @@ export default abstract class BaseLinter {
       return inputPath;
     }
     return path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, inputPath);
+  }
+
+  /**
+   * Resolves an array of include paths to absolute paths.
+   * @param paths - Array of paths to resolve
+   * @returns Array of resolved absolute paths
+   */
+  protected resolveIncludePaths(paths: string[]): string[] {
+    return paths.map((p) => this.resolvePath(p));
+  }
+
+  /**
+   * Gets the working directory for the linter based on configuration.
+   * @param doc - The document being linted
+   * @returns The working directory path
+   */
+  protected getWorkingDirectory(doc: vscode.TextDocument): string {
+    const docFolder = path.dirname(doc.uri.fsPath);
+    if (this.config.runAtFileLocation) {
+      return docFolder;
+    }
+    return vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? docFolder;
+  }
+
+  /**
+   * Converts a Windows path to WSL path format.
+   * @param inputPath - The Windows path to convert
+   * @returns The WSL path
+   */
+  protected convertToWslPath(inputPath: string): string {
+    const cmd = `wsl wslpath '${inputPath}'`;
+    return child.execSync(cmd, {}).toString().replace(/\r?\n/g, '');
+  }
+
+  /**
+   * Converts a WSL path back to Windows path format.
+   * @param inputPath - The WSL path to convert
+   * @returns The Windows path
+   */
+  protected convertFromWslPath(inputPath: string): string {
+    const cmd = `wsl wslpath -w '${inputPath}'`;
+    return child.execSync(cmd, {}).toString().replace(/\r?\n/g, '');
   }
 
   /**

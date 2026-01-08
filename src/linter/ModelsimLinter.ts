@@ -5,34 +5,19 @@ import BaseLinter from './BaseLinter';
 import { Logger } from '../logger';
 import { END_OF_LINE } from '../constants';
 
-var isWindows = process.platform === 'win32';
-
 export default class ModelsimLinter extends BaseLinter {
-  private modelsimPath!: string;
-  private modelsimArgs!: string;
   private modelsimWork!: string;
-  private runAtFileLocation!: boolean;
 
   constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
     super('modelsim', diagnosticCollection, logger);
-    vscode.workspace.onDidChangeConfiguration(() => {
-      this.getConfig();
-    });
-    this.getConfig();
+    this.updateConfig();
   }
 
-  private getConfig() {
-    this.modelsimPath = <string>vscode.workspace.getConfiguration().get('verilog.linting.path');
-    //get custom arguments
-    this.modelsimArgs = <string>(
-      vscode.workspace.getConfiguration().get('verilog.linting.modelsim.arguments')
-    );
-    this.modelsimWork = <string>(
-      vscode.workspace.getConfiguration().get('verilog.linting.modelsim.work')
-    );
-    this.runAtFileLocation = <boolean>(
-      vscode.workspace.getConfiguration().get('verilog.linting.modelsim.runAtFileLocation')
-    );
+  protected override updateConfig() {
+    const configuration = vscode.workspace.getConfiguration('verilog.linting.modelsim');
+    this.config.arguments = configuration.get<string>('arguments', '');
+    this.modelsimWork = configuration.get<string>('work', '');
+    this.config.runAtFileLocation = configuration.get<boolean>('runAtFileLocation', false);
   }
 
   protected convertToSeverity(severityString: string): vscode.DiagnosticSeverity {
@@ -47,24 +32,19 @@ export default class ModelsimLinter extends BaseLinter {
 
   protected lint(doc: vscode.TextDocument) {
     this.logger.info('modelsim lint requested');
-    let docUri: string = doc.uri.fsPath; //path of current doc
-    let lastIndex: number = isWindows === true ? docUri.lastIndexOf('\\') : docUri.lastIndexOf('/');
-    let docFolder = docUri.substr(0, lastIndex); //folder of current doc
-    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-    let runLocation: string =
-      this.runAtFileLocation === true ? docFolder : (workspaceRoot || docFolder); //choose correct location to run
+    const cwd: string = this.getWorkingDirectory(doc);
     // no change needed for systemverilog
-    let command: string =
-      this.modelsimPath +
+    const command: string =
+      this.config.linterInstalledPath +
       'vlog -nologo -work ' +
       this.modelsimWork +
       ' "' +
       doc.fileName +
       '" ' +
-      this.modelsimArgs; //command to execute
+      this.config.arguments; //command to execute
     var process: child.ChildProcess = child.exec(
       command,
-      { cwd: runLocation },
+      { cwd: cwd },
       (_error: Error | null, stdout: string, _stderr: string) => {
         let diagnostics: vscode.Diagnostic[] = [];
         let lines = stdout.split(/\r?\n/g);

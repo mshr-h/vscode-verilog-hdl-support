@@ -11,30 +11,20 @@ let isWindows = process.platform === 'win32';
 
 export default class VerilatorLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
-  private linterInstalledPath!: string;
-  private arguments!: string;
-  private includePath!: string[];
-  private runAtFileLocation!: boolean;
   private useWSL!: boolean;
 
   constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
     super('verilator', diagnosticCollection, logger);
-    vscode.workspace.onDidChangeConfiguration(() => {
-      this.updateConfig();
-    });
     this.updateConfig();
   }
 
-  private updateConfig() {
-    this.linterInstalledPath = <string>(
-      vscode.workspace.getConfiguration().get('verilog.linting.path')
-    );
+  protected override updateConfig() {
     this.configuration = vscode.workspace.getConfiguration('verilog.linting.verilator');
-    this.arguments = <string>this.configuration.get('arguments');
-    let path = <string[]>this.configuration.get('includePath');
-    this.includePath = path.map((includePath: string) => this.resolvePath(includePath));
-    this.runAtFileLocation = <boolean>this.configuration.get('runAtFileLocation');
-    this.useWSL = <boolean>this.configuration.get('useWSL');
+    this.config.arguments = this.configuration.get<string>('arguments', '');
+    const paths = this.configuration.get<string[]>('includePath', []);
+    this.config.includePath = this.resolveIncludePaths(paths);
+    this.config.runAtFileLocation = this.configuration.get<boolean>('runAtFileLocation', false);
+    this.useWSL = this.configuration.get<boolean>('useWSL', false);
   }
 
   protected splitTerms(line: string) {
@@ -61,16 +51,6 @@ export default class VerilatorLinter extends BaseLinter {
     return vscode.DiagnosticSeverity.Information;
   }
 
-  private convertToWslPath(inputPath: string): string {
-    let cmd: string = `wsl wslpath '${inputPath}'`;
-    return child.execSync(cmd, {}).toString().replace(/\r?\n/g, '');
-  }
-
-  private convertFromWslPath(inputPath: string): string {
-    let cmd: string = `wsl wslpath -w '${inputPath}'`;
-    return child.execSync(cmd, {}).toString().replace(/\r?\n/g, '');
-  }
-
   protected lint(doc: vscode.TextDocument) {
     let docUri: string = isWindows
       ? this.useWSL
@@ -82,26 +62,26 @@ export default class VerilatorLinter extends BaseLinter {
         ? this.convertToWslPath(path.dirname(doc.uri.fsPath))
         : path.dirname(doc.uri.fsPath).replace(/\\/g, '/')
       : path.dirname(doc.uri.fsPath);
-    let cwd: string = this.runAtFileLocation
+    const cwd: string = this.config.runAtFileLocation
       ? isWindows
         ? path.dirname(doc.uri.fsPath.replace(/\\/g, '/'))
         : docFolder
       : vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? docFolder;
-    let verilator: string = isWindows
+    const verilator: string = isWindows
       ? this.useWSL
         ? 'wsl verilator'
         : 'verilator_bin.exe'
       : 'verilator';
 
-    let binPath = path.join(this.linterInstalledPath, verilator);
+    const binPath = path.join(this.config.linterInstalledPath, verilator);
     let args: string[] = [];
     if (doc.languageId === 'systemverilog') {
       args.push('-sv');
     }
     args.push('--lint-only');
     args.push(`-I"${docFolder}"`);
-    args = args.concat(this.includePath.map((path: string) => `-I"${path}"`));
-    args.push(this.arguments);
+    args = args.concat(this.config.includePath.map((p: string) => `-I"${p}"`));
+    args.push(this.config.arguments);
     args.push(`"${docUri}"`);
     let command: string = binPath + ' ' + args.join(' ');
 

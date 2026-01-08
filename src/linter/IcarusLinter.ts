@@ -5,7 +5,7 @@ import * as path from 'path';
 import BaseLinter from './BaseLinter';
 import { Logger } from '../logger';
 
-let standardToArg: Map<string, string> = new Map<string, string>([
+const standardToArg: Map<string, string> = new Map<string, string>([
   ['Verilog-95', '-g1995'],
   ['Verilog-2001', '-g2001'],
   ['Verilog-2005', '-g2005'],
@@ -16,33 +16,23 @@ let standardToArg: Map<string, string> = new Map<string, string>([
 
 export default class IcarusLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
-  private linterInstalledPath!: string;
-  private arguments!: string;
-  private includePath!: string[];
   private standards!: Map<string, string>;
-  private runAtFileLocation!: boolean;
 
   constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
     super('iverilog', diagnosticCollection, logger);
-    vscode.workspace.onDidChangeConfiguration(() => {
-      this.updateConfig();
-    });
     this.updateConfig();
   }
 
-  private updateConfig() {
-    this.linterInstalledPath = <string>(
-      vscode.workspace.getConfiguration().get('verilog.linting.path')
-    );
+  protected override updateConfig() {
     this.configuration = vscode.workspace.getConfiguration('verilog.linting.iverilog');
-    this.arguments = <string>this.configuration.get('arguments');
-    let path = <string[]>this.configuration.get('includePath');
-    this.includePath = path.map((includePath: string) => this.resolvePath(includePath));
+    this.config.arguments = this.configuration.get<string>('arguments', '');
+    const paths = this.configuration.get<string[]>('includePath', []);
+    this.config.includePath = this.resolveIncludePaths(paths);
+    this.config.runAtFileLocation = this.configuration.get<boolean>('runAtFileLocation', false);
     this.standards = new Map<string, string>([
       ['verilog', this.configuration.get('verilogHDL.standard') || ''],
       ['systemverilog', this.configuration.get('systemVerilog.standard') || ''],
     ]);
-    this.runAtFileLocation = <boolean>this.configuration.get('runAtFileLocation');
   }
 
   protected convertToSeverity(kind?: string, msg?: string): vscode.DiagnosticSeverity {
@@ -65,7 +55,7 @@ export default class IcarusLinter extends BaseLinter {
   protected lint(doc: vscode.TextDocument) {
     this.logger.info('Executing IcarusLinter.lint()');
 
-    let binPath: string = path.join(this.linterInstalledPath, 'iverilog');
+    const binPath: string = path.join(this.config.linterInstalledPath, 'iverilog');
     this.logger.info('iverilog binary path: ' + binPath);
 
     let args: string[] = [];
@@ -76,16 +66,12 @@ export default class IcarusLinter extends BaseLinter {
     if (standardArg) {
       args.push(standardArg);
     }
-    args = args.concat(this.includePath.map((path: string) => '-I "' + path + '"'));
-    args.push(this.arguments);
+    args = args.concat(this.config.includePath.map((p: string) => '-I "' + p + '"'));
+    args.push(this.config.arguments);
     args.push('"' + doc.uri.fsPath + '"');
 
-    let command: string = binPath + ' ' + args.join(' ');
-
-    let cwd: string =
-      this.runAtFileLocation || vscode.workspace.workspaceFolders === undefined
-        ? path.dirname(doc.uri.fsPath)
-        : vscode.workspace.workspaceFolders[0].uri.fsPath;
+    const command: string = binPath + ' ' + args.join(' ');
+    const cwd: string = this.getWorkingDirectory(doc);
 
     this.logger.info('Execute');
     this.logger.info('  command: ', command);
