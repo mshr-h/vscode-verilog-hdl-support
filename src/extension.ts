@@ -11,31 +11,31 @@ import * as ModuleInstantiation from './commands/ModuleInstantiation';
 import * as FormatProvider from './providers/FormatProvider';
 import { ExtensionManager } from './extensionManager';
 import { initAllLanguageClients, stopAllLanguageClients } from './languageServer';
-import { createLogger, Logger } from './logger';
+import { bootstrapLogging, disposeLogging, getExtensionLogger } from './logging';
 import { FliplotPanel } from './fliplot/FliplotPanel';
 import { FliplotCustomEditor } from './fliplot/FliplotCustomEditor';
 
-export let logger: Logger; // Global logger
-const ctagsManager = new CtagsManager();
+let ctagsManager: CtagsManager | undefined;
 const extensionID: string = 'mshr-h.veriloghdl';
 
 let lintManager: LintManager;
 
-export function activate(context: vscode.ExtensionContext) {
-  logger = createLogger('Verilog');
-  logger.info(`${extensionID  } is now active.`);
+export async function activate(context: vscode.ExtensionContext) {
+  await bootstrapLogging();
 
-  const extMgr = new ExtensionManager(context, extensionID, logger.getChild('ExtensionManager'));
+  const logger = getExtensionLogger();
+  logger.info("Extension activating", { extensionId: extensionID });
+
+  const extMgr = new ExtensionManager(context, extensionID);
   if (extMgr.isVersionUpdated()) {
     extMgr.showChangelogNotification();
   }
 
-  // Configure ctags
-  ctagsManager.configure(logger);
+  ctagsManager = new CtagsManager();
+  ctagsManager.configure();
 
   // Configure Document Symbol Provider
   const verilogDocumentSymbolProvider = new DocumentSymbolProvider.VerilogDocumentSymbolProvider(
-    logger.getChild('VerilogDocumentSymbolProvider'),
     ctagsManager,
   );
   context.subscriptions.push(
@@ -54,7 +54,6 @@ export function activate(context: vscode.ExtensionContext) {
   // Configure Completion Item Provider
   // Trigger on ".", "(", "="
   const verilogCompletionItemProvider = new CompletionItemProvider.VerilogCompletionItemProvider(
-    logger.getChild('VerilogCompletionItemProvider'),
     ctagsManager,
   );
   context.subscriptions.push(
@@ -78,7 +77,6 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Configure Hover Providers
   const verilogHoverProvider = new HoverProvider.VerilogHoverProvider(
-    logger.getChild('VerilogHoverProvider'),
     ctagsManager,
   );
   context.subscriptions.push(
@@ -96,7 +94,6 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Configure Definition Providers
   const verilogDefinitionProvider = new DefinitionProvider.VerilogDefinitionProvider(
-    logger.getChild('VerilogDefinitionProvider'),
     ctagsManager
   );
   context.subscriptions.push(
@@ -113,18 +110,14 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // Configure Format Provider
-  const verilogFormatProvider = new FormatProvider.VerilogFormatProvider(
-    logger.getChild('VerilogFormatProvider')
-  );
+  const verilogFormatProvider = new FormatProvider.VerilogFormatProvider();
   context.subscriptions.push(
     vscode.languages.registerDocumentFormattingEditProvider(
       { scheme: 'file', language: 'verilog' },
       verilogFormatProvider
     )
   );
-  const systemVerilogFormatProvider = new FormatProvider.SystemVerilogFormatProvider(
-    logger.getChild('SystemVerilogFormatProvider')
-  );
+  const systemVerilogFormatProvider = new FormatProvider.SystemVerilogFormatProvider();
   context.subscriptions.push(
     vscode.languages.registerDocumentFormattingEditProvider(
       { scheme: 'file', language: 'systemverilog' },
@@ -141,21 +134,21 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // Register command for manual linting
-  lintManager = new LintManager(logger.getChild('LintManager'));
+  lintManager = new LintManager();
   context.subscriptions.push(
     vscode.commands.registerCommand('verilog.lint', lintManager.runLintTool, lintManager)
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand('verilog.openFliplot', () => {
-      FliplotPanel.show(context, logger.getChild('Fliplot'));
+      FliplotPanel.show(context);
     })
   );
 
   context.subscriptions.push(
     vscode.window.registerCustomEditorProvider(
       FliplotCustomEditor.viewType,
-      new FliplotCustomEditor(context, logger.getChild('Fliplot')),
+      new FliplotCustomEditor(context),
       {
         webviewOptions: { retainContextWhenHidden: true },
       }
@@ -168,15 +161,17 @@ export function activate(context: vscode.ExtensionContext) {
       return;
     }
     stopAllLanguageClients().finally(() => {
-      initAllLanguageClients(logger);
+      initAllLanguageClients();
     });
   });
-  initAllLanguageClients(logger);
+  initAllLanguageClients();
 
-  logger.info(`${extensionID  } activation finished.`);
+  logger.info("Extension activated", { extensionId: extensionID });
 }
 
 export async function deactivate(): Promise<void> {
-  logger.info('Deactivated');
+  const logger = getExtensionLogger();
+  logger.info("Extension deactivating");
   await stopAllLanguageClients();
+  await disposeLogging();
 }

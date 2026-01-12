@@ -3,7 +3,6 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { VerilogDefinitionProvider } from '../providers/DefinitionProvider';
 import { CtagsManager } from '../ctags';
-import { createLogger } from '../logger';
 import { END_OF_LINE } from '../constants';
 
 suite('DefinitionProvider', () => {
@@ -29,8 +28,7 @@ suite('DefinitionProvider', () => {
       findSymbol: async () => definitionLinks,
     } as unknown as CtagsManager;
 
-    const logger = createLogger('DefinitionTest');
-    const provider = new VerilogDefinitionProvider(logger, ctagsManager);
+    const provider = new VerilogDefinitionProvider(ctagsManager);
     const tokenSource = new vscode.CancellationTokenSource();
 
     // Position on 'sig' in the assign statement
@@ -55,8 +53,7 @@ suite('DefinitionProvider', () => {
       findSymbol: async () => [],
     } as unknown as CtagsManager;
 
-    const logger = createLogger('DefinitionEmptyTest');
-    const provider = new VerilogDefinitionProvider(logger, ctagsManager);
+    const provider = new VerilogDefinitionProvider(ctagsManager);
     const tokenSource = new vscode.CancellationTokenSource();
 
     const result = await provider.provideDefinition(
@@ -95,8 +92,7 @@ suite('DefinitionProvider', () => {
       findSymbol: async () => definitionLinks,
     } as unknown as CtagsManager;
 
-    const logger = createLogger('DefinitionMultiTest');
-    const provider = new VerilogDefinitionProvider(logger, ctagsManager);
+    const provider = new VerilogDefinitionProvider(ctagsManager);
     const tokenSource = new vscode.CancellationTokenSource();
 
     const result = await provider.provideDefinition(

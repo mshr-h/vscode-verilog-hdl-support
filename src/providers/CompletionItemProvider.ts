@@ -1,15 +1,13 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
 import { CtagsManager, Symbol } from '../ctags';
-import { Logger } from '../logger';
+import { getExtensionLogger } from '../logging';
 import { END_OF_LINE } from '../constants';
 
 export class VerilogCompletionItemProvider implements vscode.CompletionItemProvider {
-  private logger: Logger;
+  private readonly logger = getExtensionLogger('Provider', 'CompletionItem');
   private ctagsManager: CtagsManager;
-  constructor(logger: Logger,
-    ctagsManager: CtagsManager){
-    this.logger = logger;
+  constructor(ctagsManager: CtagsManager) {
     this.ctagsManager = ctagsManager;
   }
 
@@ -20,7 +18,7 @@ export class VerilogCompletionItemProvider implements vscode.CompletionItemProvi
     _token: vscode.CancellationToken,
     _context: vscode.CompletionContext
   ): Promise<vscode.CompletionItem[]> {
-    this.logger.info('Completion items requested');
+    this.logger.info("Completion items requested", { uri: document.uri.toString() });
     const items: vscode.CompletionItem[] = [];
 
     const symbols: Symbol[] = await this.ctagsManager.getSymbols(document);
@@ -42,7 +40,7 @@ export class VerilogCompletionItemProvider implements vscode.CompletionItemProvi
       newItem.documentation = new vscode.MarkdownString(doc);
       items.push(newItem);
     });
-    this.logger.info(`${items.length  } items requested`);
+    this.logger.info("Completion items returned", { count: items.length });
     return items;
   }
 

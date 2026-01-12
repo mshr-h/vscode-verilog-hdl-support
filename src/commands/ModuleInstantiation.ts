@@ -3,7 +3,9 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Ctags, Symbol } from '../ctags';
-import { logger } from '../extension';
+import { getExtensionLogger } from '../logging';
+
+const logger = () => getExtensionLogger('Command', 'ModuleInstantiation');
 
 export function instantiateModuleInteract() {
   if (!isCtagsEnabled()) {
@@ -41,8 +43,9 @@ export async function instantiateModule(srcpath: string): Promise<vscode.Snippet
       return undefined;
     }
     const file: vscode.TextDocument = vscode.window.activeTextEditor.document;
-    const ctags: ModuleTags = new ModuleTags(logger, file);
-    logger.info('Executing ctags for module instantiation');
+    const log = logger();
+    const ctags: ModuleTags = new ModuleTags(log, file);
+    log.info`Executing ctags for module instantiation`;
     const output = await ctags.execCtags(srcpath);
     await ctags.buildSymbolsList(output);
     let module: Symbol | undefined;
@@ -83,12 +86,12 @@ export async function instantiateModule(srcpath: string): Promise<vscode.Snippet
         tag.type === 'parameter' && tag.parentType === 'module' && tag.parentScope === scope
     );
     parametersName = params.map((tag) => tag.name);
-    logger.info(`Module name: ${  module.name}`);
+    log.info`Module name: ${module.name}`;
     let paramString = ``;
     if (parametersName.length > 0) {
       paramString = `\n#(\n${instantiatePort(parametersName)})\n`;
     }
-    logger.info(`portsName: ${  portsName.toString()}`);
+    log.info`portsName: ${portsName.toString()}`;
     return new vscode.SnippetString()
         .appendText(`${module.name  } `)
         .appendText(paramString)

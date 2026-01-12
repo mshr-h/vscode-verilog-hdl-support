@@ -682,13 +682,14 @@
     "syntax": "js-yaml ./syntaxes/systemverilog.tmLanguage.yaml >./syntaxes/systemverilog.tmLanguage.json"
   },
   "dependencies": {
-    "@vscode/test-cli": "^0.0.12",
+    "@logtape/logtape": "^1.3.6",
     "js-yaml": "^4.1.1",
     "semver": "^7.7.3",
     "vscode-languageclient": "^9.0.1",
     "which": "^6.0.0"
   },
   "devDependencies": {
+    "@vscode/test-cli": "^0.0.12",
     "@types/node": "~25.0.3",
     "@types/semver": "^7.7.1",
     "@types/vscode": "^1.107.0",

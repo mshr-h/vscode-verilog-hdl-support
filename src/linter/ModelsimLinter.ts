@@ -2,14 +2,13 @@
 import * as vscode from 'vscode';
 import * as child from 'child_process';
 import BaseLinter from './BaseLinter';
-import { Logger } from '../logger';
 import { END_OF_LINE } from '../constants';
 
 export default class ModelsimLinter extends BaseLinter {
   private modelsimWork!: string;
 
-  constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
-    super('modelsim', diagnosticCollection, logger);
+  constructor(diagnosticCollection: vscode.DiagnosticCollection) {
+    super('modelsim', diagnosticCollection);
     this.updateConfig();
   }
 
@@ -31,7 +30,7 @@ export default class ModelsimLinter extends BaseLinter {
   }
 
   protected lint(doc: vscode.TextDocument) {
-    this.logger.info('modelsim lint requested');
+    this.logger.info`modelsim lint requested`;
     const cwd: string = this.getWorkingDirectory(doc);
     // no change needed for systemverilog
     const command: string =
@@ -81,7 +80,7 @@ export default class ModelsimLinter extends BaseLinter {
             }
           }
         });
-        this.logger.info(`${diagnostics.length  } errors/warnings returned`);
+        this.logger.info`${diagnostics.length} errors/warnings returned`;
         this.diagnosticCollection.set(doc.uri, diagnostics);
       }
     );

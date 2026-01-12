@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
 import { LanguageClient, ServerOptions } from 'vscode-languageclient/node';
-
-import { Logger } from '../logger';
+import { getExtensionLogger } from '../logging';
 import { LanguageServerDefinition } from './definitions';
 
 export class LanguageServerManager {
   private languageClients = new Map<string, LanguageClient>();
+  private readonly logger = getExtensionLogger('LanguageServer', 'Manager');
 
-  constructor(
-    private readonly logger: Logger,
-    private readonly definitions: LanguageServerDefinition[]
-  ) {}
+  constructor(private readonly definitions: LanguageServerDefinition[]) {}
 
   initAll() {
     this.languageClients.clear();
@@ -25,7 +22,7 @@ export class LanguageServerManager {
     for (const [name, client] of this.languageClients) {
       if (client.isRunning()) {
         stops.push(client.stop());
-        this.logger.info(`"${  name  }" language server stopped.`);
+        this.logger.info`"${name}" language server stopped.`;
       }
     }
     return Promise.all(stops);
@@ -68,6 +65,6 @@ export class LanguageServerManager {
     }
 
     client.start();
-    this.logger.info(`"${  definition.name  }" language server started.`);
+    this.logger.info`"${definition.name}" language server started.`;
   }
 }

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 import * as assert from 'assert';
 
-import { createLogger } from '../logger';
 import { createLanguageServerDefinitions } from '../languageServer/definitions';
 import { initAllLanguageClients, stopAllLanguageClients } from '../languageServer';
 
@@ -32,8 +31,7 @@ suite('Language Server smoke', () => {
   });
 
   test('initializes and stops without enabled servers', async () => {
-    const logger = createLogger('Verilog-LS-Test');
-    initAllLanguageClients(logger);
+    initAllLanguageClients();
     await stopAllLanguageClients();
   });
 });

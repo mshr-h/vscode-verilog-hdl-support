@@ -6,7 +6,6 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import which from 'which';
 import VeribleVerilogLintLinter from '../linter/VeribleVerilogLintLinter';
-import { createLogger } from '../logger';
 
 async function waitForDiagnostics(
   collection: vscode.DiagnosticCollection,
@@ -50,8 +49,7 @@ suite('Verible Verilog Lint', () => {
 
       const diagnostics = vscode.languages.createDiagnosticCollection('verible-verilog-lint-test');
       const linter = new VeribleVerilogLintLinter(
-        diagnostics,
-        createLogger('VeribleVerilogLintTest')
+        diagnostics
       );
       const document = await vscode.workspace.openTextDocument(tempFilePath);
 
