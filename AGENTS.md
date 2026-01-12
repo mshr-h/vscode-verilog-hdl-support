@@ -5,12 +5,14 @@ This document provides guidance for AI coding agents working on the vscode-veril
 ## Project Overview
 
 This is a VS Code extension providing HDL (Hardware Description Language) support including:
-- **Syntax highlighting** for Verilog, SystemVerilog, VHDL, Verilog-AMS, UCF, SDC, XDC, UPF, Tcl, and Verilog filelists
+- **Syntax highlighting** for Verilog, SystemVerilog, VHDL, Verilog-AMS, UCF, SDC, XDC, UPF, Tcl, Verilog filelists, and VCD
 - **Linting** via external tools (iverilog, verilator, modelsim, xvlog, slang, verible-verilog-lint)
 - **Language Server** integration (svls, veridian, hdl_checker, verible-verilog-ls, vhdl_ls, tclsp)
 - **Formatting** support (verilog-format, istyle-verilog-formatter, verible-verilog-format)
 - **Ctags integration** for symbols, hover, definitions, and completions
-- **VCD waveform viewer** (Fliplot)
+- **VCD waveform viewer** via a VS Code Custom Editor (Fliplot)
+
+The source of truth for “what the extension supports” is `package.json` under `contributes.*`.
 
 ## Repository Structure
 
@@ -18,9 +20,11 @@ This is a VS Code extension providing HDL (Hardware Description Language) suppor
 src/
 ├── extension.ts          # Extension entry point, activates all features
 ├── extensionManager.ts   # Manages extension lifecycle and version updates
-├── logger.ts             # Hierarchical logging utility
+├── logging.ts            # LogTape logging bootstrap + helpers
+├── logtape-vscode-sink.ts# LogTape sink implementation for VS Code Output
+├── constants.ts          # Shared constants
 ├── ctags.ts              # Ctags integration for symbol parsing
-├── hover.ts              # Hover information utilities
+├── hover.ts              # Legacy/utility hover helpers (providers are in providers/)
 ├── commands/             # VS Code command implementations
 │   └── ModuleInstantiation.ts
 ├── providers/            # VS Code language feature providers
@@ -38,7 +42,6 @@ src/
 │   ├── SlangLinter.ts
 │   ├── VeribleVerilogLintLinter.ts
 │   ├── XvlogLinter.ts
-│   └── plugins/          # Linter plugins
 ├── languageServer/       # Language server client management
 │   ├── index.ts          # Exports init/stop functions
 │   ├── definitions.ts    # Language server definitions
@@ -54,6 +57,7 @@ configs/                  # Language configuration files
 snippets/                 # Code snippets for each language
 media/fliplot/            # Fliplot web assets
 language_examples/        # Example HDL files for testing
+surfer/                   # Waveform tooling/assets (used by Fliplot)
 ```
 
 ## Development Setup
@@ -69,10 +73,14 @@ npm install
 
 ### Build Commands
 ```bash
-npm run compile         # Full build (TypeScript + esbuild bundling)
+npm run compile         # Typecheck + lint + esbuild bundle
 npm run watch           # Watch mode for development
 npm run watch:tsc       # Watch TypeScript compilation only
 npm run watch:esbuild   # Watch esbuild bundling only
+npm run package         # Production bundle (used for VSIX publish)
+npm run compile-tests   # Compile test sources to out/
+npm run pretest         # Compile-tests + bundle + lint
+npm run syntax          # Regenerate syntaxes/systemverilog.tmLanguage.json from YAML
 ```
 
 ### Development Workflow
@@ -82,10 +90,80 @@ npm run watch:esbuild   # Watch esbuild bundling only
 
 ## Build System
 
-- **TypeScript**: Compiled with `tsc` to `out/` directory (type checking)
-- **esbuild**: Bundles to `dist/extension.js` (the actual extension entry point)
+- **TypeScript**: Used primarily for type checking during dev (`tsc --noEmit`). Tests are compiled to `out/` via `npm run compile-tests`.
+- **esbuild**: Bundles the extension entry point to `dist/extension.js` (the actual extension entry point)
 - **Entry point**: `src/extension.ts` → bundled to `dist/extension.js`
 - **Config**: `tsconfig.json` (strict mode enabled)
+
+## Contributes Surface (Complete)
+
+The extension’s user-facing surface is defined in `package.json` under `contributes.*`.
+
+### Language IDs
+
+The contributed language IDs are:
+
+- `verilog`
+- `verilogams`
+- `systemverilog`
+- `vhdl`
+- `ucf`
+- `sdc`
+- `tcl`
+- `upf`
+- `xdc`
+- `verilog-filelist`
+- `wavedump` (for `.vcd`)
+
+### Grammars / Scopes
+
+TextMate grammars (and key scopes) are contributed via `contributes.grammars`:
+
+- `verilog` → `source.verilog` → `syntaxes/verilog.tmLanguage.json`
+- `verilogams` → `source.verilogams` → `syntaxes/verilogams.tmLanguage.json`
+- `systemverilog` → `source.systemverilog` → `syntaxes/systemverilog.tmLanguage.json`
+- `vhdl` → `source.vhdl` → `syntaxes/vhdl.tmLanguage.json`
+- `ucf` → `source.ucfconstraints` → `syntaxes/ucf.tmLanguage.json`
+- `sdc` → `source.sdc` → `syntaxes/sdc.tmLanguage.json`
+- `tcl` → `source.tcl` → `syntaxes/tcl.tmlanguage.json`
+- `upf` → `source.tcl` → `syntaxes/tcl.tmlanguage.json` (shares Tcl scope)
+- `xdc` → `source.sdc` → `syntaxes/sdc.tmLanguage.json` (shares SDC scope)
+- `verilog-filelist` → `source.verilog-filelist` → `syntaxes/verilog-filelist.tmLanguage.json`
+
+Markdown codeblock injection grammar:
+
+- `syntaxes/codeblock.json` injects into `text.html.markdown` and embeds Verilog/SystemVerilog blocks.
+
+Note: `syntaxes/systemverilog.tmLanguage.yaml` is a source file; the contributed grammar is the generated JSON.
+
+### Commands
+
+Contributed commands:
+
+- `verilog.instantiateModule` — Instantiate Module
+- `verilog.lint` — Rerun lint tool
+- `verilog.openFliplot` — Open Fliplot Waveform Viewer
+
+### Custom Editors
+
+- `verilog.fliplotEditor` registered for `*.vcd` (default priority)
+
+### Snippets
+
+Snippets are contributed under:
+
+- `snippets/verilog.json`
+- `snippets/verilogams.json`
+- `snippets/systemverilog.json`
+
+### Settings / Configuration
+
+Settings live under `contributes.configuration` and are grouped by:
+
+- `verilog.ctags.*`
+- `verilog.formatting.*`
+- `verilog.linting.*`
+- `verilog.languageServer.*`
 
 ## Testing
 
@@ -125,7 +203,7 @@ npm run lint           # Run ESLint
 
 ### Conventions
 - All source files should have `// SPDX-License-Identifier: MIT` header
-- Use the `Logger` class for logging (see `src/logger.ts`)
+- Use LogTape via `getExtensionLogger()` (see `src/logging.ts`)
 - Providers follow VS Code's provider pattern
 - Linters extend `BaseLinter` abstract class
 
@@ -156,10 +234,16 @@ Extension settings are defined in `package.json` under `contributes.configuratio
 
 ## Release Process
 
+This repo uses a tag-driven publish workflow.
+
 1. Update version in `package.json`
-2. Update `CHANGELOG.md` with changes
-3. Build and test
-4. Package with `vsce package`
+2. Update `CHANGELOG.md` (and any other release notes expected by contributors)
+3. Push a Git tag (e.g. `vX.Y.Z`)
+4. GitHub Actions publishes on tag push via `.github/workflows/publish-marketplace.yml` (Open VSX + VS Marketplace)
+
+CI packaging:
+
+- `.github/workflows/ci.yml` runs tests on PR/push, runs `npx @vscode/vsce package`, and uploads the VSIX artifact on Linux.
 
 ## Important Files
 
@@ -169,6 +253,8 @@ Extension settings are defined in `package.json` under `contributes.configuratio
 - `esbuild.js` - Build script for bundling
 - `CHANGELOG.md` - Version history
 - `CONTRIBUTING.md` - Contribution guidelines
+- `.github/workflows/ci.yml` - CI tests + VSIX packaging artifact
+- `.github/workflows/publish-marketplace.yml` - Tag-driven publishing workflow
 
 ## Dependencies
 
