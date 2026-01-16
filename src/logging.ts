@@ -23,7 +23,7 @@ export async function bootstrapLogging(): Promise<void> {
   await configure({
     sinks: { vscode: vscodeSink },
     filters: {},
-    loggers: [{ category: [ROOT_LOGGER_CATEGORY], level: 'debug', sinks: ['vscode'] }],
+    loggers: [{ category: [ROOT_LOGGER_CATEGORY], lowestLevel: 'debug', sinks: ['vscode'] }],
   });
   configured = true;
 }

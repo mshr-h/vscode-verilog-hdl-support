@@ -36,7 +36,7 @@ export class LogCapture {
     await configure({
       sinks: { test: this.records.push.bind(this.records) },
       filters: {},
-      loggers: [{ category: [ROOT_LOGGER_CATEGORY], sinks: ['test'], level: 'debug' }],
+      loggers: [{ category: [ROOT_LOGGER_CATEGORY], sinks: ['test'], lowestLevel: 'debug' }],
     });
   }
 
