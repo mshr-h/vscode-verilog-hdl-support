@@ -3,12 +3,11 @@ import * as vscode from 'vscode';
 import {exec, ExecException} from 'child_process';
 import * as path from 'path';
 import BaseLinter from './BaseLinter';
-import { Logger } from '../logger';
 import { END_OF_LINE } from '../constants';
 
 export default class XvlogLinter extends BaseLinter {
-  constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
-    super('xvlog', diagnosticCollection, logger);
+  constructor(diagnosticCollection: vscode.DiagnosticCollection) {
+    super('xvlog', diagnosticCollection);
     this.updateConfig();
   }
 
@@ -35,13 +34,12 @@ export default class XvlogLinter extends BaseLinter {
       args.push('-sv');
     }
     args = args.concat(this.config.includePath.map((p: string) => `-i "${p}"`));
-    this.logger.warn(this.config.includePath.join(' '));
+    this.logger.warn`${this.config.includePath.join(' ')}`;
     args.push(this.config.arguments);
     args.push(`"${doc.fileName}"`);
     const command: string = `${binPath  } ${  args.join(' ')}`;
 
-    this.logger.info('[xvlog] Execute');
-    this.logger.info(`[xvlog]   command: ${  command}`);
+    this.logger.info("Executing", { command });
 
     exec(command, (_error: ExecException | null, stdout: string, _stderr: string) => {
       const diagnostics: vscode.Diagnostic[] = [];
@@ -68,7 +66,7 @@ export default class XvlogLinter extends BaseLinter {
 
         diagnostics.push(diagnostic);
       });
-      this.logger.info(`${diagnostics.length  } errors/warnings returned`);
+      this.logger.info`${diagnostics.length} errors/warnings returned`;
       this.diagnosticCollection.set(doc.uri, diagnostics);
     });
   }

@@ -2,7 +2,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as child from 'child_process';
-import { Logger } from '../logger';
+import { type Logger } from '@logtape/logtape';
+import { getExtensionLogger } from '../logging';
 
 /** Common configuration interface for linters */
 export interface LinterConfig {
@@ -40,12 +41,11 @@ export default abstract class BaseLinter {
    * Creates a new BaseLinter instance.
    * @param name - The name of the linter
    * @param diagnosticCollection - The VS Code diagnostic collection
-   * @param logger - The logger instance
    */
-  constructor(name: string, diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
+  constructor(name: string, diagnosticCollection: vscode.DiagnosticCollection) {
     this.diagnosticCollection = diagnosticCollection;
     this.name = name;
-    this.logger = logger;
+    this.logger = getExtensionLogger('Linter', name);
 
     // Register configuration change listener
     vscode.workspace.onDidChangeConfiguration(() => {

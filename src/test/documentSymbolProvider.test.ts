@@ -3,7 +3,6 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { VerilogDocumentSymbolProvider } from '../providers/DocumentSymbolProvider';
 import { CtagsManager, Symbol } from '../ctags';
-import { createLogger } from '../logger';
 
 suite('DocumentSymbolProvider', () => {
   test('provides document symbols for module', async () => {
@@ -21,8 +20,7 @@ suite('DocumentSymbolProvider', () => {
       getSymbols: async () => symbols,
     } as unknown as CtagsManager;
 
-    const logger = createLogger('DocumentSymbolTest');
-    const provider = new VerilogDocumentSymbolProvider(logger, ctagsManager);
+    const provider = new VerilogDocumentSymbolProvider(ctagsManager);
     const tokenSource = new vscode.CancellationTokenSource();
     const result = await provider.provideDocumentSymbols(document, tokenSource.token);
 
@@ -54,8 +52,7 @@ suite('DocumentSymbolProvider', () => {
       getSymbols: async () => symbols,
     } as unknown as CtagsManager;
 
-    const logger = createLogger('DocumentSymbolHierarchyTest');
-    const provider = new VerilogDocumentSymbolProvider(logger, ctagsManager);
+    const provider = new VerilogDocumentSymbolProvider(ctagsManager);
     const tokenSource = new vscode.CancellationTokenSource();
     const result = await provider.provideDocumentSymbols(document, tokenSource.token);
 
@@ -77,8 +74,7 @@ suite('DocumentSymbolProvider', () => {
       getSymbols: async () => [],
     } as unknown as CtagsManager;
 
-    const logger = createLogger('DocumentSymbolEmptyTest');
-    const provider = new VerilogDocumentSymbolProvider(logger, ctagsManager);
+    const provider = new VerilogDocumentSymbolProvider(ctagsManager);
     const tokenSource = new vscode.CancellationTokenSource();
     const result = await provider.provideDocumentSymbols(document, tokenSource.token);
 
@@ -87,8 +83,7 @@ suite('DocumentSymbolProvider', () => {
 
   test('isContainer returns correct values for symbol kinds', () => {
     const ctagsManager = {} as unknown as CtagsManager;
-    const logger = createLogger('IsContainerTest');
-    const provider = new VerilogDocumentSymbolProvider(logger, ctagsManager);
+    const provider = new VerilogDocumentSymbolProvider(ctagsManager);
 
     // Container types should return true
     assert.strictEqual(provider.isContainer(vscode.SymbolKind.Module), true);
@@ -119,8 +114,7 @@ suite('DocumentSymbolProvider', () => {
       getSymbols: async () => symbols,
     } as unknown as CtagsManager;
 
-    const logger = createLogger('DocumentSymbolMultiModuleTest');
-    const provider = new VerilogDocumentSymbolProvider(logger, ctagsManager);
+    const provider = new VerilogDocumentSymbolProvider(ctagsManager);
     const tokenSource = new vscode.CancellationTokenSource();
     const result = await provider.provideDocumentSymbols(document, tokenSource.token);
 

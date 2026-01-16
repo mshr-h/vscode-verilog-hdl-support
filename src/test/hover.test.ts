@@ -3,7 +3,6 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { VerilogHoverProvider } from '../providers/HoverProvider';
 import { CtagsManager } from '../ctags';
-import { createLogger } from '../logger';
 import { END_OF_LINE } from '../constants';
 
 suite('Hover Provider', () => {
@@ -27,7 +26,7 @@ suite('Hover Provider', () => {
       ],
     } as unknown as CtagsManager;
 
-    const provider = new VerilogHoverProvider(createLogger('HoverTest'), ctagsManager);
+    const provider = new VerilogHoverProvider(ctagsManager);
     const hover = await provider.provideHover(
       document,
       new vscode.Position(0, 8),

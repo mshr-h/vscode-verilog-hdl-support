@@ -6,8 +6,6 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import which from 'which';
-import * as extension from '../extension';
-import { createLogger } from '../logger';
 import { instantiateModule } from '../commands/ModuleInstantiation';
 
 suite('Module Instantiation', () => {
@@ -49,8 +47,6 @@ suite('Module Instantiation', () => {
       this.skip();
       return;
     }
-
-    (extension as { logger: unknown }).logger = createLogger('ModuleInstantiationTest');
 
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'ctags-inst-'));
     const tempFilePath = path.join(tempRoot, 'mod.sv');

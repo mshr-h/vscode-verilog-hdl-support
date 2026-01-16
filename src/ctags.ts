@@ -2,7 +2,8 @@
 import * as vscode from 'vscode';
 import {exec as execNonPromise} from 'child_process';
 import * as util from 'util';
-import { Logger } from './logger';
+import { type Logger } from '@logtape/logtape';
+import { getExtensionLogger } from './logging';
 import { END_OF_LINE } from './constants';
 const exec = util.promisify(execNonPromise);
 
@@ -237,21 +238,18 @@ export class Ctags {
    */
   async execCtags(filepath: string): Promise<string> {
     const command: string = `${this.ctagBinPath  } -f - --fields=+K --sort=no --excmd=n --fields-SystemVerilog=+{parameter} "${  filepath  }"`;
-    this.logger.info(`Executing Command: ${  command}`);
+    this.logger.info`Executing Command: ${command}`;
     try {
       const {stdout, stderr} = await exec(command);
       if(stdout) {
         return stdout.toString();
       }
       if(stderr) {
-        this.logger.error(`stderr> ${  stderr}`);
+        this.logger.error`stderr> ${stderr}`;
       }
     }
     catch (err) {
-      this.logger.error(`Exception caught: ${  err instanceof Error ? err.message : String(err)}`);
-      if (err instanceof Error && err.stack) {
-        this.logger.error(err.stack);
-      }
+      this.logger.error`Exception caught: ${err}`;
     }
 
     // Return empty promise if ctags path is not set to avoid errors when indexing
@@ -287,8 +285,8 @@ export class Ctags {
       const lineNo = Number(lineNoStr.slice(0, -2)) - 1;
       return new Symbol(name, type, pattern, lineNo, parentScope, parentType, lineNo, false);
     } catch (err) {
-      this.logger.error(`Line Parser: ${  err}`);
-      this.logger.error(`Line: ${  line}`);
+      this.logger.error`Line Parser: ${err}`;
+      this.logger.error`Line: ${line}`;
     }
     return undefined;
   }
@@ -301,9 +299,9 @@ export class Ctags {
   async buildSymbolsList(tags: string): Promise<void> {
     try {
       if (this.isDirty) {
-        this.logger.info('building symbols');
+        this.logger.info`building symbols`;
         if (tags === '') {
-          this.logger.error('No output from ctags');
+          this.logger.error`No output from ctags`;
           return;
         }
         // Parse ctags output
@@ -353,10 +351,7 @@ export class Ctags {
         this.isDirty = false;
       }
     } catch (err) {
-      this.logger.error(String(err));
-      if (err instanceof Error && err.stack) {
-        this.logger.error(err.stack);
-      }
+      this.logger.error`${err}`;
     }
   }
 
@@ -364,7 +359,7 @@ export class Ctags {
    * Indexes the document by running ctags and building the symbols list.
    */
   async index(): Promise<void> {
-    this.logger.info('indexing ', this.doc.uri.fsPath);
+    this.logger.info`indexing ${this.doc.uri.fsPath}`;
     
     const output = await this.execCtags(this.doc.uri.fsPath);
     await this.buildSymbolsList(output);
@@ -377,16 +372,14 @@ export class Ctags {
  */
 export class CtagsManager {
   private filemap: Map<vscode.TextDocument, Ctags> = new Map();
-  private logger!: Logger;
+  private readonly logger = getExtensionLogger('Ctags', 'Manager');
   private enabled = false;
 
   /**
-   * Configures the CtagsManager with a logger and sets up event listeners.
-   * @param logger - The logger instance for output
+   * Configures the CtagsManager and sets up event listeners.
    */
-  configure(logger: Logger) {
-    this.logger = logger;
-    this.logger.info('ctags manager configure');
+  configure() {
+    this.logger.info`ctags manager configure`;
     this.updateConfig();
     vscode.workspace.onDidSaveTextDocument(this.onSave.bind(this));
     vscode.workspace.onDidCloseTextDocument(this.onClose.bind(this));
@@ -402,7 +395,7 @@ export class CtagsManager {
     const nextEnabled = <boolean>config.get('enabled', false);
     if (this.enabled !== nextEnabled) {
       this.enabled = nextEnabled;
-      this.logger.info(`ctags enabled: ${  this.enabled}`);
+      this.logger.info`ctags enabled: ${this.enabled}`;
       this.invalidateCache();
     }
   }
@@ -440,7 +433,7 @@ export class CtagsManager {
    * @param doc - The document that was saved
    */
   onSave(doc: vscode.TextDocument) {
-    this.logger.info('on save');
+    this.logger.info`on save`;
     if (!this.enabled) {
       return;
     }

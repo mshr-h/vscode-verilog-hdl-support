@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
 import { SemVer } from 'semver';
-import { Logger } from './logger';
+import { getExtensionLogger } from './logging';
 
 interface PackageJSON {
   version: string;
@@ -13,15 +13,16 @@ export class ExtensionManager {
   private extensionID: string;
   private packageJSON: PackageJSON;
   private extensionPath: string;
-  private logger: Logger;
+  private readonly logger = getExtensionLogger('Core', 'ExtensionManager');
 
-  constructor(context: vscode.ExtensionContext, extensionID: string, logger: Logger) {
+  constructor(context: vscode.ExtensionContext, extensionID: string) {
     this.context = context;
     this.extensionID = extensionID;
-    this.logger = logger;
     const extension = vscode.extensions.getExtension(this.extensionID);
     if (!extension) {
-      throw new Error(`Extension ${extensionID} not found`);
+      const errorMessage = `Extension ${extensionID} not found`;
+      this.logger.fatal("Extension not found", { extensionId: extensionID });
+      throw new Error(errorMessage);
     }
     this.packageJSON = extension.packageJSON;
     this.extensionPath = extension.extensionPath;
@@ -33,12 +34,10 @@ export class ExtensionManager {
 
     // update version value
     this.context.globalState.update('version', currentVersion.version);
-    this.logger.info(
-      `previousVersion: ${ 
-        JSON.stringify(previousVersion.version) 
-        }, currentVersion: ${ 
-        JSON.stringify(currentVersion.version)}`
-    );
+    this.logger.info("Version check", {
+      previousVersion: previousVersion.version,
+      currentVersion: currentVersion.version,
+    });
 
     return previousVersion < currentVersion;
   }

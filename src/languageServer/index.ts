@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
-import { Logger } from '../logger';
 import { createLanguageServerDefinitions } from './definitions';
 import { LanguageServerManager } from './manager';
 
 let manager: LanguageServerManager | undefined;
 
-export function initAllLanguageClients(logger: Logger) {
+export function initAllLanguageClients() {
   if (!manager) {
-    manager = new LanguageServerManager(logger, createLanguageServerDefinitions());
+    manager = new LanguageServerManager(createLanguageServerDefinitions());
   }
   manager.initAll();
 }
