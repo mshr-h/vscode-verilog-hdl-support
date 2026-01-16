@@ -66,7 +66,7 @@ export default class XvlogLinter extends BaseLinter {
 
         diagnostics.push(diagnostic);
       });
-      this.logger.info`${diagnostics.length} errors/warnings returned`;
+      this.logger.info(`${diagnostics.length} errors/warnings returned`);
       this.diagnosticCollection.set(doc.uri, diagnostics);
     });
   }
