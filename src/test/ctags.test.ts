@@ -3,7 +3,6 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { VerilogCompletionItemProvider } from '../providers/CompletionItemProvider';
 import { CtagsManager, Symbol } from '../ctags';
-import { createLogger } from '../logger';
 
 suite('Ctags Completion', () => {
   test('ctags completion items include symbols and docs', async () => {
@@ -21,8 +20,7 @@ suite('Ctags Completion', () => {
       getSymbols: async () => symbols,
     } as unknown as CtagsManager;
 
-    const logger = createLogger('CompletionTest');
-    const provider = new VerilogCompletionItemProvider(logger, ctagsManager);
+    const provider = new VerilogCompletionItemProvider(ctagsManager);
     const tokenSource = new vscode.CancellationTokenSource();
     const items = await provider.provideCompletionItems(
       document,
@@ -62,8 +60,7 @@ suite('Ctags Completion', () => {
       getSymbols: async () => symbols,
     } as unknown as CtagsManager;
 
-    const logger = createLogger('CompletionTestKinds');
-    const provider = new VerilogCompletionItemProvider(logger, ctagsManager);
+    const provider = new VerilogCompletionItemProvider(ctagsManager);
     const tokenSource = new vscode.CancellationTokenSource();
     const items = await provider.provideCompletionItems(
       document,
@@ -100,8 +97,7 @@ suite('Ctags Completion', () => {
       getSymbols: async () => symbols,
     } as unknown as CtagsManager;
 
-    const logger = createLogger('CompletionTestParamsPorts');
-    const provider = new VerilogCompletionItemProvider(logger, ctagsManager);
+    const provider = new VerilogCompletionItemProvider(ctagsManager);
     const tokenSource = new vscode.CancellationTokenSource();
     const items = await provider.provideCompletionItems(
       document,
@@ -139,8 +135,7 @@ suite('Ctags Completion', () => {
       getSymbols: async () => symbols,
     } as unknown as CtagsManager;
 
-    const logger = createLogger('CompletionTestKinds2');
-    const provider = new VerilogCompletionItemProvider(logger, ctagsManager);
+    const provider = new VerilogCompletionItemProvider(ctagsManager);
     const tokenSource = new vscode.CancellationTokenSource();
     const items = await provider.provideCompletionItems(
       document,
@@ -173,8 +168,7 @@ suite('Ctags Completion', () => {
       getSymbols: async () => symbols,
     } as unknown as CtagsManager;
 
-    const logger = createLogger('CompletionTestScopesOrder');
-    const provider = new VerilogCompletionItemProvider(logger, ctagsManager);
+    const provider = new VerilogCompletionItemProvider(ctagsManager);
     const tokenSource = new vscode.CancellationTokenSource();
     const items = await provider.provideCompletionItems(
       document,
@@ -213,8 +207,7 @@ suite('Ctags Completion', () => {
       getSymbols: async () => symbols,
     } as unknown as CtagsManager;
 
-    const logger = createLogger('CompletionTestTypes');
-    const provider = new VerilogCompletionItemProvider(logger, ctagsManager);
+    const provider = new VerilogCompletionItemProvider(ctagsManager);
     const tokenSource = new vscode.CancellationTokenSource();
     const items = await provider.provideCompletionItems(
       document,

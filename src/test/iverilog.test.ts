@@ -6,7 +6,6 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import which from 'which';
 import IcarusLinter from '../linter/IcarusLinter';
-import { createLogger } from '../logger';
 
 async function waitForDiagnostics(
   collection: vscode.DiagnosticCollection,
@@ -33,7 +32,7 @@ suite('Icarus Linter', () => {
     }
 
     const diagnostics = vscode.languages.createDiagnosticCollection('iverilog-severity-test');
-    const linter = new TestLinter(diagnostics, createLogger('IcarusSeverityTest'));
+    const linter = new TestLinter(diagnostics);
 
     assert.strictEqual(linter.mapSeverity('error'), vscode.DiagnosticSeverity.Error);
     assert.strictEqual(linter.mapSeverity('warning'), vscode.DiagnosticSeverity.Warning);
@@ -66,7 +65,7 @@ suite('Icarus Linter', () => {
       await iverilogConfig.update('runAtFileLocation', true, vscode.ConfigurationTarget.Global);
 
       const diagnostics = vscode.languages.createDiagnosticCollection('iverilog-test');
-      const linter = new IcarusLinter(diagnostics, createLogger('IcarusLinterTest'));
+      const linter = new IcarusLinter(diagnostics);
       const document = await vscode.workspace.openTextDocument(tempFilePath);
 
       linter.startLint(document);

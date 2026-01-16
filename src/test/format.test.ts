@@ -7,7 +7,6 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import which from 'which';
 import { SystemVerilogFormatProvider } from '../providers/FormatProvider';
-import { createLogger } from '../logger';
 
 suite('Formatting', () => {
   test('verible-verilog-format formats via configured binary', async function () {
@@ -46,7 +45,7 @@ suite('Formatting', () => {
         content: input,
       });
 
-      const provider = new SystemVerilogFormatProvider(createLogger('FormatTest'));
+      const provider = new SystemVerilogFormatProvider();
       const tokenSource = new vscode.CancellationTokenSource();
       const edits = await provider.provideDocumentFormattingEdits(
         document,

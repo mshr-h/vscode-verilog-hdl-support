@@ -4,7 +4,6 @@ import * as child from 'child_process';
 import * as path from 'path';
 import * as process from 'process';
 import BaseLinter from './BaseLinter';
-import { Logger } from '../logger';
 import { END_OF_LINE } from '../constants';
 
 const isWindows = process.platform === 'win32';
@@ -13,8 +12,8 @@ export default class VerilatorLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
   private useWSL!: boolean;
 
-  constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
-    super('verilator', diagnosticCollection, logger);
+  constructor(diagnosticCollection: vscode.DiagnosticCollection) {
+    super('verilator', diagnosticCollection);
     this.updateConfig();
   }
 
@@ -85,9 +84,7 @@ export default class VerilatorLinter extends BaseLinter {
     args.push(`"${docUri}"`);
     const command: string = `${binPath  } ${  args.join(' ')}`;
 
-    this.logger.info('[verilator] Execute');
-    this.logger.info(`[verilator]   command: ${  command}`);
-    this.logger.info(`[verilator]   cwd    : ${  cwd}`);
+    this.logger.info("Executing", { command, cwd });
 
     const _: child.ChildProcess = child.exec(
       command,
@@ -129,8 +126,8 @@ export default class VerilatorLinter extends BaseLinter {
           if (!line.startsWith('%')) {
 
             // allows for persistent 
-            if (lastDiagMessageType === 'Warning') { this.logger.warn(line); }
-            else { this.logger.error(line); }
+            if (lastDiagMessageType === 'Warning') { this.logger.warn`${line}`; }
+            else { this.logger.error`${line}`; }
             return;
           }
 
@@ -175,11 +172,11 @@ export default class VerilatorLinter extends BaseLinter {
 
           // stderr passthrough
           // probably better toggled with a parameter
-          if (rex.groups["severity"] === "Error") { this.logger.error(line); }
-          else if (rex.groups["severity"] === "Warning") { this.logger.warn(line); }
+          if (rex.groups["severity"] === "Error") { this.logger.error`${line}`; }
+          else if (rex.groups["severity"] === "Warning") { this.logger.warn`${line}`; }
 
           // theoretically, this shoudn't "fire", but just in case
-          else { this.logger.error(line); }
+          else { this.logger.error`${line}`; }
 
 
           // vscode problems are tied to files

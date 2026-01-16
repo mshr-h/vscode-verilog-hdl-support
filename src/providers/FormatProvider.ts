@@ -5,7 +5,8 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as crypto from 'crypto';
 import * as path from 'path';
-import { Logger } from '../logger';
+import { type Logger } from '@logtape/logtape';
+import { getExtensionLogger } from '../logging';
 
 // handle temporary file
 class TemporaryFile {
@@ -60,13 +61,13 @@ abstract class FileBasedFormattingEditProvider implements vscode.DocumentFormatt
     // create temporary file and copy document to it
     const tempFile: TemporaryFile = new TemporaryFile(this.namespace, this.tmpFileExt);
     tempFile.writeFileSync(document.getText(), { flag: 'w' });
-    this.logger.info(`Temp file created at:${  tempFile.path}`);
+    this.logger.info("Temp file created", { path: tempFile.path });
 
     const args: string[] = this.prepareArgument(tempFile.path);
 
     // execute command
     const binPath: string = this.config.get('path', '');
-    this.logger.info(`Executing command: ${  binPath  } ${  args.join(' ')}`);
+    this.logger.info("Executing formatter", { binPath, args });
     try {
       const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
       execFileSync(binPath, args, cwd ? { cwd } : undefined);
@@ -78,9 +79,9 @@ abstract class FileBasedFormattingEditProvider implements vscode.DocumentFormatt
       tempFile.dispose();
       return [vscode.TextEdit.replace(wholeFileRange, formattedText)];
     } catch (err) {
-      this.logger.error(String(err));
+      this.logger.error("Formatter execution failed", { error: String(err) });
       if (err instanceof Error && err.stack) {
-        this.logger.error(err.stack);
+        this.logger.error("Stack trace", { stack: err.stack });
       }
     }
 
@@ -141,11 +142,7 @@ class VeribleVerilogFormatEditProvider extends FileBasedFormattingEditProvider {
 }
 
 export class VerilogFormatProvider implements vscode.DocumentFormattingEditProvider {
-  private logger: Logger;
-
-  constructor(logger: Logger) {
-    this.logger = logger;
-  }
+  private readonly logger = getExtensionLogger('Provider', 'Format', 'Verilog');
 
   provideDocumentFormattingEdits(
     document: vscode.TextDocument,
@@ -181,11 +178,7 @@ export class VerilogFormatProvider implements vscode.DocumentFormattingEditProvi
 }
 
 export class SystemVerilogFormatProvider implements vscode.DocumentFormattingEditProvider {
-  private logger: Logger;
-
-  constructor(logger: Logger) {
-    this.logger = logger;
-  }
+  private readonly logger = getExtensionLogger('Provider', 'Format', 'SystemVerilog');
 
   provideDocumentFormattingEdits(
     document: vscode.TextDocument,

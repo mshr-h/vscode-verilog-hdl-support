@@ -1,19 +1,17 @@
 // SPDX-License-Identifier: MIT
 import * as path from 'path';
 import * as vscode from 'vscode';
-
-import { Logger } from '../logger';
+import { getExtensionLogger } from '../logging';
 import { FliplotPanel } from './FliplotPanel';
 
 export class FliplotCustomEditor implements vscode.CustomTextEditorProvider {
   static readonly viewType = 'verilog.fliplotEditor';
 
   private readonly context: vscode.ExtensionContext;
-  private readonly logger: Logger;
+  private readonly logger = getExtensionLogger('Fliplot', 'CustomEditor');
 
-  constructor(context: vscode.ExtensionContext, logger: Logger) {
+  constructor(context: vscode.ExtensionContext) {
     this.context = context;
-    this.logger = logger;
   }
 
   async resolveCustomTextEditor(
@@ -68,6 +66,6 @@ export class FliplotCustomEditor implements vscode.CustomTextEditorProvider {
       changeDisposable.dispose();
     });
 
-    this.logger.info(`Fliplot custom editor opened: ${document.uri.fsPath}`);
+    this.logger.info("Custom editor opened", { path: document.uri.fsPath });
   }
 }

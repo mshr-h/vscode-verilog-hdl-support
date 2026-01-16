@@ -3,7 +3,6 @@ import * as vscode from 'vscode';
 import * as child from 'child_process';
 import * as path from 'path';
 import BaseLinter from './BaseLinter';
-import { Logger } from '../logger';
 
 const standardToArg: Map<string, string> = new Map<string, string>([
   ['Verilog-95', '-g1995'],
@@ -18,8 +17,8 @@ export default class IcarusLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
   private standards!: Map<string, string>;
 
-  constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
-    super('iverilog', diagnosticCollection, logger);
+  constructor(diagnosticCollection: vscode.DiagnosticCollection) {
+    super('iverilog', diagnosticCollection);
     this.updateConfig();
   }
 
@@ -53,10 +52,10 @@ export default class IcarusLinter extends BaseLinter {
   }
 
   protected lint(doc: vscode.TextDocument) {
-    this.logger.info('Executing IcarusLinter.lint()');
+    this.logger.info`Executing IcarusLinter.lint()`;
 
     const binPath: string = path.join(this.config.linterInstalledPath, 'iverilog');
-    this.logger.info(`iverilog binary path: ${  binPath}`);
+    this.logger.info`iverilog binary path: ${binPath}`;
 
     let args: string[] = [];
     args.push('-t null');
@@ -73,9 +72,7 @@ export default class IcarusLinter extends BaseLinter {
     const command: string = `${binPath  } ${  args.join(' ')}`;
     const cwd: string = this.getWorkingDirectory(doc);
 
-    this.logger.info('Execute');
-    this.logger.info('  command: ', command);
-    this.logger.info('  cwd    : ', cwd);
+    this.logger.info("Executing", { command, cwd });
 
     const _: child.ChildProcess = child.exec(
       command,

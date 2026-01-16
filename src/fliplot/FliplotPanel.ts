@@ -1,19 +1,18 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
-
-import { Logger } from '../logger';
+import { getExtensionLogger } from '../logging';
 
 export class FliplotPanel {
   private static currentPanel: FliplotPanel | undefined;
 
   private readonly panel: vscode.WebviewPanel;
   private readonly extensionUri: vscode.Uri;
-  private readonly logger: Logger;
+  private readonly logger = getExtensionLogger('Fliplot', 'Panel');
   private readonly disposables: vscode.Disposable[] = [];
   private isReady = false;
   private pendingVcd: { content: string; title?: string } | null = null;
 
-  static show(context: vscode.ExtensionContext, logger: Logger): FliplotPanel {
+  static show(context: vscode.ExtensionContext): FliplotPanel {
     const column = vscode.window.activeTextEditor?.viewColumn ?? vscode.ViewColumn.One;
     if (FliplotPanel.currentPanel) {
       FliplotPanel.currentPanel.panel.reveal(column);
@@ -30,14 +29,13 @@ export class FliplotPanel {
       }
     );
 
-    FliplotPanel.currentPanel = new FliplotPanel(panel, context.extensionUri, logger);
+    FliplotPanel.currentPanel = new FliplotPanel(panel, context.extensionUri);
     return FliplotPanel.currentPanel;
   }
 
-  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, logger: Logger) {
+  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
     this.panel = panel;
     this.extensionUri = extensionUri;
-    this.logger = logger;
     this.panel.webview.html = FliplotPanel.buildHtml(this.panel.webview, this.extensionUri);
 
     this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
@@ -55,12 +53,12 @@ export class FliplotPanel {
       null,
       this.disposables
     );
-    this.logger.info('Fliplot panel opened.');
+    this.logger.info("Fliplot panel opened");
   }
 
   dispose() {
     FliplotPanel.currentPanel = undefined;
-    this.logger.info('Fliplot panel disposed.');
+    this.logger.info("Fliplot panel disposed");
     while (this.disposables.length) {
       const disposable = this.disposables.pop();
       if (disposable) {

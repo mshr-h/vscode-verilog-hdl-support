@@ -4,7 +4,6 @@ import * as child from 'child_process';
 import * as path from 'path';
 import * as process from 'process';
 import BaseLinter from './BaseLinter';
-import { Logger } from '../logger';
 import { END_OF_LINE } from '../constants';
 
 const isWindows = process.platform === 'win32';
@@ -13,8 +12,8 @@ export default class SlangLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
   private useWSL!: boolean;
 
-  constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
-    super('slang', diagnosticCollection, logger);
+  constructor(diagnosticCollection: vscode.DiagnosticCollection) {
+    super('slang', diagnosticCollection);
     this.updateConfig();
   }
 
@@ -44,10 +43,10 @@ export default class SlangLinter extends BaseLinter {
     if (isWindows) {
       if (this.useWSL) {
         docUri = this.convertToWslPath(docUri);
-        this.logger.info(`Rewrote docUri to ${docUri} for WSL`);
+        this.logger.info`Rewrote docUri to ${docUri} for WSL`;
 
         docFolder = this.convertToWslPath(docFolder);
-        this.logger.info(`Rewrote docFolder to ${docFolder} for WSL`);
+        this.logger.info`Rewrote docFolder to ${docFolder} for WSL`;
       } else {
         docUri = docUri.replace(/\\/g, '/');
         docFolder = docFolder.replace(/\\/g, '/');
@@ -70,9 +69,7 @@ export default class SlangLinter extends BaseLinter {
         : docFolder
       : vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? docFolder;
 
-    this.logger.info('[slang] Execute');
-    this.logger.info(`[slang]   command: ${  command}`);
-    this.logger.info(`[slang]   cwd    : ${  cwd}`);
+    this.logger.info("Executing", { command, cwd });
 
     const _: child.ChildProcess = child.exec(
       command,
@@ -94,7 +91,7 @@ export default class SlangLinter extends BaseLinter {
           if (isWindows) {
             if (this.useWSL) {
               filePath = this.convertToWslPath(filePath);
-              this.logger.info(`Rewrote filePath to ${filePath} for WSL`);
+              this.logger.info`Rewrote filePath to ${filePath} for WSL`;
             } else {
               filePath = filePath.replace(/\\/g, '/');
             }
@@ -117,9 +114,9 @@ export default class SlangLinter extends BaseLinter {
             });
             return;
           }
-          this.logger.warn(`[slang] failed to parse error: ${  line}`);
+          this.logger.warn`failed to parse error: ${line}`;
         });
-        this.logger.info(`[slang] ${diagnostics.length} errors/warnings returned`);
+        this.logger.info`${diagnostics.length} errors/warnings returned`;
         this.diagnosticCollection.set(doc.uri, diagnostics);
       }
     );

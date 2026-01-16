@@ -1,16 +1,14 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
 import { CtagsManager } from '../ctags';
-import { Logger } from '../logger';
+import { getExtensionLogger } from '../logging';
 
 
 
 export class VerilogDefinitionProvider implements vscode.DefinitionProvider {
-  private logger: Logger;
+  private readonly logger = getExtensionLogger('Provider', 'Definition');
   private ctagsManager: CtagsManager;
-  constructor(logger: Logger,
-    ctagsManager: CtagsManager){
-    this.logger = logger;
+  constructor(ctagsManager: CtagsManager) {
     this.ctagsManager = ctagsManager;
   }
 
@@ -19,10 +17,10 @@ export class VerilogDefinitionProvider implements vscode.DefinitionProvider {
     position: vscode.Position,
     _token: vscode.CancellationToken
   ): Promise<vscode.DefinitionLink[] | undefined> {
-    this.logger.info(`Definitions Requested: ${  document.uri}`);
+    this.logger.info("Definitions requested", { uri: document.uri.toString() });
     // find all matching symbols
     const definitions: vscode.DefinitionLink[] = await this.ctagsManager.findSymbol(document, position);
-    this.logger.info(`${definitions.length  } definitions returned`);
+    this.logger.info("Definitions returned", { count: definitions.length });
     return definitions;
   }
 }

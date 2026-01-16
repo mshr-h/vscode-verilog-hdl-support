@@ -4,14 +4,13 @@ import * as child from 'child_process';
 import * as path from 'path';
 import * as process from 'process';
 import BaseLinter from './BaseLinter';
-import { Logger } from '../logger';
 import { END_OF_LINE } from '../constants';
 
 const isWindows = process.platform === 'win32';
 
 export default class VeribleVerilogLintLinter extends BaseLinter {
-  constructor(diagnosticCollection: vscode.DiagnosticCollection, logger: Logger) {
-    super('verible-verilog-lint', diagnosticCollection, logger);
+  constructor(diagnosticCollection: vscode.DiagnosticCollection) {
+    super('verible-verilog-lint', diagnosticCollection);
     this.updateConfig();
   }
 
@@ -33,12 +32,11 @@ export default class VeribleVerilogLintLinter extends BaseLinter {
   }
 
   protected lint(doc: vscode.TextDocument) {
-    this.logger.info('Executing VeribleVerilogLintLinter.lint()');
+    this.logger.info`Executing VeribleVerilogLintLinter.lint()`;
 
     const binName = isWindows ? 'verible-verilog-lint.exe' : 'verible-verilog-lint';
     const binPath: string = path.join(this.config.linterInstalledPath, binName);
-    this.logger.info(`verible-verilog-lint binary path: ${  binPath}`);
-
+    this.logger.info`verible-verilog-lint binary path: ${binPath}`;
     const docUri: string = doc.uri.fsPath;
     const cwd: string = this.getWorkingDirectory(doc);
 
@@ -48,9 +46,7 @@ export default class VeribleVerilogLintLinter extends BaseLinter {
 
     const command: string = `${binPath  } ${  args.join(' ')}`;
 
-    this.logger.info('[verible-verilog-lint] Execute');
-    this.logger.info(`[verible-verilog-lint]   command: ${  command}`);
-    this.logger.info(`[verible-verilog-lint]   cwd    : ${  cwd}`);
+    this.logger.info("Executing", { command, cwd });
 
     const _: child.ChildProcess = child.exec(
       command,
@@ -99,9 +95,7 @@ export default class VeribleVerilogLintLinter extends BaseLinter {
           });
         });
 
-        this.logger.info(
-          `[verible-verilog-lint] ${diagnostics.length} errors/warnings returned`
-        );
+        this.logger.info`${diagnostics.length} errors/warnings returned`;
         this.diagnosticCollection.set(doc.uri, diagnostics);
       }
     );
