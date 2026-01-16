@@ -16,7 +16,7 @@ export class VerilogHoverProvider implements vscode.HoverProvider {
     position: vscode.Position,
     _token: vscode.CancellationToken
   ): Promise<vscode.Hover | undefined> {
-    this.logger.info("Hover requested", { uri: document.uri.toString() });
+    this.logger.info(`Hover requested for ${document.uri.toString()}`);
     const matches: vscode.DefinitionLink[] = await this.ctagsManager.findSymbol(document, position);
     // find symbol
     for (const i of matches) {
