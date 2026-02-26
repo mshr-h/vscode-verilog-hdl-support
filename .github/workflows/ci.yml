@@ -43,6 +43,6 @@ jobs:
       - run: npx @vscode/vsce package
       - name: upload vsix package
         if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           path: veriloghdl-*.vsix
