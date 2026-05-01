@@ -74,7 +74,7 @@
         "variable": {
             "patterns": [
                 {
-                    "begin": "(\\$(?:(?:\\:\\:)?[a-zA-Z0-9_]+)+)\\(",
+                    "begin": "(\\$(?:(?:\\:\\:)?[a-zA-Z0-9_]++)+)\\(",
                     "beginCaptures": {
                         "1": {
                             "name": "variable.other.tcl"
@@ -92,7 +92,7 @@
                 },
                 {
                     "name": "variable.other.tcl",
-                    "match": "\\$(?:(?:\\:\\:)?[a-zA-Z0-9_]+)+"
+                    "match": "\\$(?:(?:\\:\\:)?[a-zA-Z0-9_]++)+"
                 },
                 {
                     "name": "variable.other.tcl",
