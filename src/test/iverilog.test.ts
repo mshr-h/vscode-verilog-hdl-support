@@ -5,7 +5,11 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import which from 'which';
-import IcarusLinter from '../linter/IcarusLinter';
+import IcarusLinter, {
+  buildIcarusArgs,
+  parseIcarusDiagnostics,
+  splitCommandLineArgs,
+} from '../linter/IcarusLinter';
 
 async function waitForDiagnostics(
   collection: vscode.DiagnosticCollection,
@@ -24,6 +28,110 @@ async function waitForDiagnostics(
 }
 
 suite('Icarus Linter', () => {
+  test('splits custom command-line arguments', () => {
+    assert.deepStrictEqual(splitCommandLineArgs(''), []);
+    assert.deepStrictEqual(splitCommandLineArgs('  -Wall   -DNAME=VALUE  '), [
+      '-Wall',
+      '-DNAME=VALUE',
+    ]);
+    assert.deepStrictEqual(
+      splitCommandLineArgs('-DMSG="hello world" -I \'quoted include\' "-DNAME=foo bar"'),
+      ['-DMSG=hello world', '-I', 'quoted include', '-DNAME=foo bar']
+    );
+    assert.deepStrictEqual(splitCommandLineArgs('-DNAME=\\"quoted\\" "unterminated value'), [
+      '-DNAME="quoted"',
+      'unterminated value',
+    ]);
+  });
+
+  test('builds argv without shell quoting', () => {
+    const includePath = path.join(os.tmpdir(), 'iverilog include path');
+    const documentPath = path.join(os.tmpdir(), 'iverilog source path', 'bad file.v');
+    const args = buildIcarusArgs({
+      languageId: 'systemverilog',
+      standards: new Map<string, string>([
+        ['verilog', 'Verilog-2005'],
+        ['systemverilog', 'SystemVerilog2012'],
+      ]),
+      includePaths: [includePath],
+      customArguments: '-Wall -DMSG="hello world"',
+      documentPath,
+    });
+
+    assert.deepStrictEqual(args, [
+      '-t',
+      'null',
+      '-g2012',
+      '-I',
+      includePath,
+      '-Wall',
+      '-DMSG=hello world',
+      documentPath,
+    ]);
+    assert.ok(!args.some((arg) => arg.startsWith('-I "')), 'Include path must not be shell quoted');
+    assert.ok(!args.includes(`"${documentPath}"`), 'Document path must not be shell quoted');
+  });
+
+  test('builds Verilog standard arg and omits unknown language standard', () => {
+    const standards = new Map<string, string>([
+      ['verilog', 'Verilog-95'],
+      ['systemverilog', 'SystemVerilog2005'],
+    ]);
+
+    assert.deepStrictEqual(
+      buildIcarusArgs({
+        languageId: 'verilog',
+        standards,
+        includePaths: [],
+        customArguments: '',
+        documentPath: '/tmp/test.v',
+      }),
+      ['-t', 'null', '-g1995', '/tmp/test.v']
+    );
+    assert.deepStrictEqual(
+      buildIcarusArgs({
+        languageId: 'vhdl',
+        standards,
+        includePaths: [],
+        customArguments: '',
+        documentPath: '/tmp/test.v',
+      }),
+      ['-t', 'null', '/tmp/test.v']
+    );
+  });
+
+  test('parses Icarus diagnostics with colons and continuation lines', async () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'iverilog-parse-'));
+    const tempFilePath = path.join(tempRoot, 'bad.v');
+    fs.writeFileSync(tempFilePath, ['module bad;', 'wire a;', 'endmodule'].join('\n'));
+
+    try {
+      const document = await vscode.workspace.openTextDocument(tempFilePath);
+      const output = [
+        'bad.v:1: syntax error',
+        'bad.v:2: error: Module test was already declared here: ./float_add.v:6',
+        '       extra context line',
+        `${tempFilePath}:3: warning: trailing text`,
+      ].join('\n');
+
+      const diagMap = parseIcarusDiagnostics(output, tempRoot, document);
+      const diagnostics = diagMap.get(tempFilePath) ?? [];
+
+      assert.strictEqual(diagnostics.length, 3);
+      assert.strictEqual(diagnostics[0].message, 'syntax error');
+      assert.strictEqual(diagnostics[0].severity, vscode.DiagnosticSeverity.Error);
+      assert.strictEqual(
+        diagnostics[1].message,
+        'Module test was already declared here: ./float_add.v:6\n       extra context line'
+      );
+      assert.strictEqual(diagnostics[1].range.start.line, 1);
+      assert.strictEqual(diagnostics[2].severity, vscode.DiagnosticSeverity.Warning);
+      assert.ok(diagnostics.every((diagnostic) => diagnostic.source === 'iverilog'));
+    } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   test('maps severity strings to diagnostics', () => {
     class TestLinter extends IcarusLinter {
       public mapSeverity(value: string): vscode.DiagnosticSeverity {
