@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+
+- Improved Ctags execution by streaming output through a shared tool runner, avoiding maxBuffer failures on large HDL files.
+
 ### Removed
 
 - Removed Bluespec SystemVerilog (BSV) language support, including syntax highlighting, snippets, and language features.

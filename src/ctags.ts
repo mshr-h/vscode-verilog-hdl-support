@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
-import {exec as execNonPromise} from 'child_process';
-import * as util from 'util';
 import { type Logger } from '@logtape/logtape';
 import { getExtensionLogger } from './logging';
 import { END_OF_LINE } from './constants';
-const exec = util.promisify(execNonPromise);
+import { runTool, ToolRunError, type ToolRunResult } from './tools/ToolRunner';
 
 /**
  * Represents a symbol parsed from ctags output.
@@ -192,6 +190,7 @@ export class Ctags {
   isDirty: boolean;
   private logger: Logger;
   private ctagBinPath!: string;
+  private indexingPromise?: Promise<void>;
 
   /**
    * Creates a new Ctags instance for a document.
@@ -237,23 +236,42 @@ export class Ctags {
    * @returns The ctags output as a string
    */
   async execCtags(filepath: string): Promise<string> {
-    const command: string = `${this.ctagBinPath  } -f - --fields=+K --sort=no --excmd=n --fields-SystemVerilog=+{parameter} "${  filepath  }"`;
-    this.logger.info`Executing Command: ${command}`;
+    this.logger.info`Executing ctags: ${this.ctagBinPath} ${this.getCtagsArgs(filepath).join(' ')}`;
     try {
-      const {stdout, stderr} = await exec(command);
-      if(stdout) {
-        return stdout.toString();
+      const result = await runTool({
+        command: this.ctagBinPath,
+        args: this.getCtagsArgs(filepath),
+        collectStdout: true,
+        collectStderr: true,
+      });
+      if (result.exitCode === 0) {
+        if (result.stdout === '') {
+          this.logger.info`ctags completed with no output for ${filepath}`;
+        }
+        return result.stdout;
       }
-      if(stderr) {
-        this.logger.error`stderr> ${stderr}`;
+      if (result.stderr !== '') {
+        this.logger.warn`ctags stderr: ${result.stderr}`;
       }
-    }
-    catch (err) {
-      this.logger.error`Exception caught: ${err}`;
+      this.logger.warn`ctags exited with code ${result.exitCode} for ${filepath}`;
+    } catch (err) {
+      this.logCtagsError(filepath, err);
     }
 
     // Return empty promise if ctags path is not set to avoid errors when indexing
     return Promise.resolve('');
+  }
+
+  protected getCtagsArgs(filepath: string): string[] {
+    return [
+      '-f',
+      '-',
+      '--fields=+K',
+      '--sort=no',
+      '--excmd=n',
+      '--fields-SystemVerilog=+{parameter}',
+      filepath,
+    ];
   }
 
   /**
@@ -291,6 +309,52 @@ export class Ctags {
     return undefined;
   }
 
+  protected addTagLine(line: string): void {
+    if (line === '') {
+      return;
+    }
+    const tag: Symbol | undefined = this.parseTagLine(line);
+    if (tag) {
+      this.symbols.push(tag);
+    }
+  }
+
+  protected finalizeSymbolRanges(): void {
+    // end tags are not supported yet in ctags. So, using regex
+    let match: RegExpExecArray | null;
+    let endPosition: vscode.Position;
+    const text = this.doc.getText();
+    const eRegex: RegExp = /^(?![\r\n])\s*end(\w*)*[\s:]?/gm;
+    while ((match = eRegex.exec(text))) {
+      if (match && typeof match[1] !== 'undefined') {
+        endPosition = this.doc.positionAt(match.index + match[0].length - 1);
+        // get the starting symbols of the same type
+        // doesn't check for begin...end blocks
+        const matchType = match[1];
+        const s = this.symbols.filter(
+          (i) => i.type === matchType && i.startPosition.isBefore(endPosition) && !i.isValid
+        );
+        if (s.length > 0) {
+          // get the symbol nearest to the end tag
+          let max: Symbol = s[0];
+          for (let i = 0; i < s.length; i++) {
+            max = s[i].startPosition.isAfter(max.startPosition) ? s[i] : max;
+          }
+          for (const i of this.symbols) {
+            if (
+              i.name === max.name &&
+              i.startPosition.isEqual(max.startPosition) &&
+              i.type === max.type
+            ) {
+              i.setEndPosition(endPosition.line);
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
   /**
    * Builds the symbols list from ctags output.
    * Parses the output and determines end positions using regex.
@@ -300,54 +364,19 @@ export class Ctags {
     try {
       if (this.isDirty) {
         this.logger.info`building symbols`;
+        this.symbols = [];
         if (tags === '') {
-          this.logger.error`No output from ctags`;
+          this.logger.info`ctags completed with no tags`;
+          this.isDirty = false;
           return;
         }
         // Parse ctags output
         const lines: string[] = tags.split(/\r?\n/);
         lines.forEach((line) => {
-          if (line !== '') {
-            const tag: Symbol | undefined = this.parseTagLine(line);
-            if (tag) {
-              this.symbols.push(tag);
-            }
-          }
+          this.addTagLine(line);
         });
 
-        // end tags are not supported yet in ctags. So, using regex
-        let match: RegExpExecArray | null;
-        let endPosition: vscode.Position;
-        const text = this.doc.getText();
-        const eRegex: RegExp = /^(?![\r\n])\s*end(\w*)*[\s:]?/gm;
-        while ((match = eRegex.exec(text))) {
-          if (match && typeof match[1] !== 'undefined') {
-            endPosition = this.doc.positionAt(match.index + match[0].length - 1);
-            // get the starting symbols of the same type
-            // doesn't check for begin...end blocks
-            const matchType = match[1];
-            const s = this.symbols.filter(
-              (i) => i.type === matchType && i.startPosition.isBefore(endPosition) && !i.isValid
-            );
-            if (s.length > 0) {
-              // get the symbol nearest to the end tag
-              let max: Symbol = s[0];
-              for (let i = 0; i < s.length; i++) {
-                max = s[i].startPosition.isAfter(max.startPosition) ? s[i] : max;
-              }
-              for (const i of this.symbols) {
-                if (
-                  i.name === max.name &&
-                  i.startPosition.isEqual(max.startPosition) &&
-                  i.type === max.type
-                ) {
-                  i.setEndPosition(endPosition.line);
-                  break;
-                }
-              }
-            }
-          }
-        }
+        this.finalizeSymbolRanges();
         this.isDirty = false;
       }
     } catch (err) {
@@ -355,14 +384,68 @@ export class Ctags {
     }
   }
 
+  protected async runCtagsStreaming(filepath: string): Promise<ToolRunResult> {
+    let tagCount = 0;
+    const result = await runTool({
+      command: this.ctagBinPath,
+      args: this.getCtagsArgs(filepath),
+      collectStderr: true,
+      onStdoutLine: (line) => {
+        if (line !== '') {
+          tagCount++;
+        }
+        this.addTagLine(line);
+      },
+    });
+    if (result.exitCode === 0 && tagCount === 0) {
+      this.logger.info`ctags completed with no tags for ${filepath}`;
+    }
+    return result;
+  }
+
+  private async rebuildIndex(): Promise<void> {
+    this.logger.info`indexing ${this.doc.uri.fsPath}`;
+    this.symbols = [];
+    try {
+      const result = await this.runCtagsStreaming(this.doc.uri.fsPath);
+      if (result.exitCode === 0) {
+        this.finalizeSymbolRanges();
+        this.isDirty = false;
+        return;
+      }
+      if (result.stderr !== '') {
+        this.logger.warn`ctags stderr: ${result.stderr}`;
+      }
+      this.logger.warn`ctags exited with code ${result.exitCode} for ${this.doc.uri.fsPath}`;
+      this.symbols = [];
+    } catch (err) {
+      this.symbols = [];
+      this.logCtagsError(this.doc.uri.fsPath, err);
+    }
+  }
+
+  private logCtagsError(filepath: string, err: unknown): void {
+    if (err instanceof ToolRunError) {
+      this.logger.warn`ctags failed for ${filepath}: ${err.message}`;
+      return;
+    }
+    this.logger.error`ctags exception for ${filepath}: ${err}`;
+  }
+
   /**
    * Indexes the document by running ctags and building the symbols list.
    */
   async index(): Promise<void> {
-    this.logger.info`indexing ${this.doc.uri.fsPath}`;
-    
-    const output = await this.execCtags(this.doc.uri.fsPath);
-    await this.buildSymbolsList(output);
+    if (!this.isDirty) {
+      return;
+    }
+    if (this.indexingPromise) {
+      return this.indexingPromise;
+    }
+    this.indexingPromise = this.rebuildIndex().finally(() => {
+      this.indexingPromise = undefined;
+    });
+    return this.indexingPromise;
   }
 }
 

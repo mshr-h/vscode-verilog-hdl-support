@@ -2,7 +2,45 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { VerilogCompletionItemProvider } from '../providers/CompletionItemProvider';
-import { CtagsManager, Symbol } from '../ctags';
+import { Ctags, CtagsManager, Symbol } from '../ctags';
+import { getExtensionLogger } from '../logging';
+
+suite('Ctags Parsing', () => {
+  test('builds symbols from ctags output without invoking ctags binary', async () => {
+    const document = await vscode.workspace.openTextDocument({
+      language: 'systemverilog',
+      content: [
+        'module top #(parameter int WIDTH = 8) (input logic clk);',
+        'logic sig;',
+        'endmodule',
+      ].join('\n'),
+    });
+    const ctags = new Ctags(getExtensionLogger('Test', 'Ctags'), document);
+    const tags = [
+      'top\ttop.sv\t1;"\tmodule',
+      'WIDTH\ttop.sv\t1;"\tconstant\tmodule:top\tparameter:',
+      'clk\ttop.sv\t1;"\tport\tmodule:top',
+      'sig\ttop.sv\t2;"\tnet\tmodule:top',
+    ].join('\n');
+
+    await ctags.buildSymbolsList(tags);
+
+    assert.strictEqual(ctags.symbols.length, 4);
+    const module = ctags.symbols.find((symbol) => symbol.name === 'top');
+    const parameter = ctags.symbols.find((symbol) => symbol.name === 'WIDTH');
+    const port = ctags.symbols.find((symbol) => symbol.name === 'clk');
+    const net = ctags.symbols.find((symbol) => symbol.name === 'sig');
+
+    assert.ok(module, 'Expected module symbol');
+    assert.ok(parameter, 'Expected parameter symbol');
+    assert.ok(port, 'Expected port symbol');
+    assert.ok(net, 'Expected net symbol');
+    assert.strictEqual(parameter?.type, 'parameter');
+    assert.strictEqual(port?.parentScope, 'top');
+    assert.strictEqual(module?.endPosition.line, 2);
+    assert.strictEqual(module?.isValid, true);
+  });
+});
 
 suite('Ctags Completion', () => {
   test('ctags completion items include symbols and docs', async () => {
