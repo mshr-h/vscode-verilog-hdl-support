@@ -8,7 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
-- Improved Ctags execution by streaming output through a shared tool runner, avoiding maxBuffer failures on large HDL files.
+- Improved Ctags execution by streaming output through a shared tool runner, avoiding maxBuffer failures on large HDL files. [#562](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/562)
+- Fix state explosion during backtracking in variable regex [#559](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/559)
 
 ### Removed
 
