@@ -5,7 +5,12 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import which from 'which';
-import VerilatorLinter from '../linter/VerilatorLinter';
+import VerilatorLinter, {
+  buildVerilatorArgs,
+  buildVerilatorCommand,
+  getVerilatorPaths,
+  parseVerilatorDiagnostics,
+} from '../linter/VerilatorLinter';
 
 async function waitForDiagnostics(
   collection: vscode.DiagnosticCollection,
@@ -104,6 +109,185 @@ endmodule
 `;
 
 suite('Verilator Linter', () => {
+  test('builds non-Windows command and args without shell quoting', () => {
+    const documentPath = '/tmp/verilator source/top file.sv';
+    const docFolder = '/tmp/verilator source';
+    const includePath = '/tmp/verilator include';
+    const commandInfo = buildVerilatorCommand({
+      isWindows: false,
+      useWSL: false,
+      linterInstalledPath: '/tools/bin',
+    });
+    const args = commandInfo.leadingArgs.concat(
+      buildVerilatorArgs({
+        languageId: 'systemverilog',
+        docFolder,
+        includePaths: [includePath],
+        customArguments: '--timing --top-module "top mod"',
+        documentPath,
+      })
+    );
+
+    assert.strictEqual(commandInfo.command, '/tools/bin/verilator');
+    assert.deepStrictEqual(args, [
+      '-sv',
+      '--lint-only',
+      `-I${docFolder}`,
+      `-I${includePath}`,
+      '--timing',
+      '--top-module',
+      'top mod',
+      documentPath,
+    ]);
+    assert.ok(!args.some((arg) => arg.includes('"')), 'Args must not contain manual quotes');
+  });
+
+  test('builds Verilog args without SystemVerilog flag', () => {
+    const args = buildVerilatorArgs({
+      languageId: 'verilog',
+      docFolder: '/tmp/rtl',
+      includePaths: [],
+      customArguments: '',
+      documentPath: '/tmp/rtl/top.v',
+    });
+
+    assert.deepStrictEqual(args, ['--lint-only', '-I/tmp/rtl', '/tmp/rtl/top.v']);
+  });
+
+  test('builds Windows command and slash-normalized generated paths without WSL', () => {
+    const commandInfo = buildVerilatorCommand({
+      isWindows: true,
+      useWSL: false,
+      linterInstalledPath: 'C:\\tools',
+    });
+    const paths = getVerilatorPaths({
+      documentPath: 'C:\\workspace\\rtl dir\\top file.sv',
+      isWindows: true,
+      useWSL: false,
+      runAtFileLocation: true,
+    });
+    const args = commandInfo.leadingArgs.concat(
+      buildVerilatorArgs({
+        languageId: 'systemverilog',
+        docFolder: paths.docFolder,
+        includePaths: ['C:\\workspace\\include dir'],
+        customArguments: '',
+        documentPath: paths.docUri,
+      })
+    );
+
+    assert.strictEqual(commandInfo.command, 'C:\\tools\\verilator_bin.exe');
+    assert.strictEqual(paths.docUri, 'C:/workspace/rtl dir/top file.sv');
+    assert.strictEqual(paths.docFolder, 'C:/workspace/rtl dir');
+    assert.strictEqual(paths.cwd, 'C:/workspace/rtl dir');
+    assert.deepStrictEqual(args, [
+      '-sv',
+      '--lint-only',
+      '-IC:/workspace/rtl dir',
+      '-IC:\\workspace\\include dir',
+      'C:/workspace/rtl dir/top file.sv',
+    ]);
+    assert.ok(!args.some((arg) => arg.includes('"')), 'Args must not contain manual quotes');
+  });
+
+  test('builds Windows WSL command with converted generated paths', () => {
+    const commandInfo = buildVerilatorCommand({
+      isWindows: true,
+      useWSL: true,
+      linterInstalledPath: '',
+    });
+    const paths = getVerilatorPaths({
+      documentPath: 'C:\\workspace\\rtl\\top.sv',
+      isWindows: true,
+      useWSL: true,
+      runAtFileLocation: true,
+      convertToWslPath: (inputPath) =>
+        inputPath.replace(/^C:\\/, '/mnt/c/').replace(/\\/g, '/'),
+    });
+    const args = commandInfo.leadingArgs.concat(
+      buildVerilatorArgs({
+        languageId: 'systemverilog',
+        docFolder: paths.docFolder,
+        includePaths: [],
+        customArguments: '--trace',
+        documentPath: paths.docUri,
+      })
+    );
+
+    assert.strictEqual(commandInfo.command, 'wsl');
+    assert.strictEqual(args[0], 'verilator');
+    assert.strictEqual(paths.docUri, '/mnt/c/workspace/rtl/top.sv');
+    assert.strictEqual(paths.docFolder, '/mnt/c/workspace/rtl');
+    assert.strictEqual(paths.cwd, 'C:/workspace/rtl');
+    assert.deepStrictEqual(args, [
+      'verilator',
+      '-sv',
+      '--lint-only',
+      '-I/mnt/c/workspace/rtl',
+      '--trace',
+      '/mnt/c/workspace/rtl/top.sv',
+    ]);
+  });
+
+  test('parses Verilator diagnostics for errors, warnings, paths, and colons', () => {
+    const sourcePath = '/tmp/verilator space-test/top file.sv';
+    const stderr = [
+      `%Error-NEEDTIMINGOPT: ${sourcePath}:3:12: Use --timing or --no-timing to specify how delays should be handled: more detail`,
+      '%Warning-WIDTH: /tmp/rtl/warn.v:7:5: Operator expects 8 bits on the LHS, but RHS generates 1 bit',
+      '                : ... note line',
+    ].join('\n');
+    const diagnostics = parseVerilatorDiagnostics({
+      stderr,
+      isWindows: false,
+      useWSL: false,
+    });
+
+    const sourceDiagnostics = diagnostics.get(sourcePath) ?? [];
+    const warningDiagnostics = diagnostics.get('/tmp/rtl/warn.v') ?? [];
+
+    assert.strictEqual(sourceDiagnostics.length, 1);
+    assert.strictEqual(sourceDiagnostics[0].severity, vscode.DiagnosticSeverity.Error);
+    assert.strictEqual(sourceDiagnostics[0].code, 'NEEDTIMINGOPT');
+    assert.strictEqual(sourceDiagnostics[0].range.start.line, 2);
+    assert.strictEqual(sourceDiagnostics[0].range.start.character, 11);
+    assert.strictEqual(
+      sourceDiagnostics[0].message,
+      'Use --timing or --no-timing to specify how delays should be handled: more detail'
+    );
+    assert.strictEqual(sourceDiagnostics[0].source, 'verilator');
+
+    assert.strictEqual(warningDiagnostics.length, 1);
+    assert.strictEqual(warningDiagnostics[0].severity, vscode.DiagnosticSeverity.Warning);
+    assert.strictEqual(warningDiagnostics[0].code, 'WIDTH');
+  });
+
+  test('converts WSL diagnostic paths back to Windows paths', () => {
+    const diagnostics = parseVerilatorDiagnostics({
+      stderr: '%Error: /mnt/c/workspace/rtl/top.sv:4:2: syntax error, unexpected endmodule',
+      isWindows: true,
+      useWSL: true,
+      convertFromWslPath: (inputPath) =>
+        inputPath.replace(/^\/mnt\/c\//, 'C:/').replace(/\//g, '\\'),
+    });
+
+    const windowsPath = 'C:\\workspace\\rtl\\top.sv';
+    const sourceDiagnostics = diagnostics.get(windowsPath) ?? [];
+    assert.strictEqual(sourceDiagnostics.length, 1);
+    assert.strictEqual(sourceDiagnostics[0].source, 'verilator');
+    assert.strictEqual(sourceDiagnostics[0].range.start.line, 3);
+    assert.strictEqual(sourceDiagnostics[0].range.start.character, 1);
+  });
+
+  test('does not import child_process or call exec in VerilatorLinter', () => {
+    const source = fs.readFileSync(
+      path.join(__dirname, '..', 'linter', 'VerilatorLinter.js'),
+      'utf8'
+    );
+
+    assert.ok(!source.includes('child_process'), 'VerilatorLinter must not import child_process');
+    assert.ok(!source.includes('child.exec'), 'VerilatorLinter must not call child_process.exec');
+  });
+
   test('reports diagnostics for syntax errors', async function () {
     this.timeout(10000);
     const verilatorPath = which.sync('verilator', { nothrow: true });

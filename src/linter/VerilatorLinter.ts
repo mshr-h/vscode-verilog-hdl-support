@@ -1,16 +1,223 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
-import * as child from 'child_process';
 import * as path from 'path';
 import * as process from 'process';
 import BaseLinter from './BaseLinter';
 import { END_OF_LINE } from '../constants';
+import { runTool, ToolRunError } from '../tools/ToolRunner';
+import { splitCommandLineArgs } from './IcarusLinter';
 
 const isWindows = process.platform === 'win32';
+
+export interface VerilatorCommandOptions {
+  isWindows: boolean;
+  useWSL: boolean;
+  linterInstalledPath: string;
+}
+
+export interface VerilatorCommand {
+  command: string;
+  leadingArgs: string[];
+}
+
+export interface VerilatorPathOptions {
+  documentPath: string;
+  isWindows: boolean;
+  useWSL: boolean;
+  runAtFileLocation: boolean;
+  workspaceFolder?: string;
+  convertToWslPath?: (inputPath: string) => string;
+}
+
+export interface VerilatorPaths {
+  docUri: string;
+  docFolder: string;
+  cwd: string;
+}
+
+export interface BuildVerilatorArgsOptions {
+  languageId: string;
+  docFolder: string;
+  includePaths: string[];
+  customArguments: string;
+  documentPath: string;
+}
+
+export interface ParseVerilatorDiagnosticsOptions {
+  stderr: string;
+  isWindows: boolean;
+  useWSL: boolean;
+  convertFromWslPath?: (inputPath: string) => string;
+  onPassthrough?: (severity: 'Error' | 'Warning', line: string) => void;
+}
+
+export function buildVerilatorCommand(options: VerilatorCommandOptions): VerilatorCommand {
+  const joinPath = options.isWindows ? path.win32.join : path.join;
+  if (options.isWindows && options.useWSL) {
+    return {
+      command: joinPath(options.linterInstalledPath, 'wsl'),
+      leadingArgs: ['verilator'],
+    };
+  }
+
+  const executable = options.isWindows ? 'verilator_bin.exe' : 'verilator';
+  return {
+    command: joinPath(options.linterInstalledPath, executable),
+    leadingArgs: [],
+  };
+}
+
+export function getVerilatorPaths(options: VerilatorPathOptions): VerilatorPaths {
+  const convertToWslPath = options.convertToWslPath ?? ((inputPath: string) => inputPath);
+  const dirname = options.isWindows ? path.win32.dirname : path.dirname;
+  const rawDocFolder = dirname(options.documentPath);
+  const docUri = options.isWindows
+    ? options.useWSL
+      ? convertToWslPath(options.documentPath)
+      : options.documentPath.replace(/\\/g, '/')
+    : options.documentPath;
+  const docFolder = options.isWindows
+    ? options.useWSL
+      ? convertToWslPath(rawDocFolder)
+      : rawDocFolder.replace(/\\/g, '/')
+    : rawDocFolder;
+
+  // Preserve the previous Windows/WSL cwd behavior. Generated Verilator paths are
+  // converted for args, while cwd stays in the host VS Code filesystem.
+  const cwd = options.runAtFileLocation
+    ? options.isWindows
+      ? dirname(options.documentPath.replace(/\\/g, '/'))
+      : docFolder
+    : options.workspaceFolder ?? docFolder;
+
+  return { docUri, docFolder, cwd };
+}
+
+export function buildVerilatorArgs(options: BuildVerilatorArgsOptions): string[] {
+  const args: string[] = [];
+  if (options.languageId === 'systemverilog') {
+    args.push('-sv');
+  }
+  args.push('--lint-only');
+  args.push(`-I${options.docFolder}`);
+  args.push(...options.includePaths.map((includePath) => `-I${includePath}`));
+  args.push(...splitCommandLineArgs(options.customArguments));
+  args.push(options.documentPath);
+  return args;
+}
+
+function convertVerilatorSeverity(severityString: string): vscode.DiagnosticSeverity {
+  if (severityString.startsWith('Error')) {
+    return vscode.DiagnosticSeverity.Error;
+  } else if (severityString.startsWith('Warning')) {
+    return vscode.DiagnosticSeverity.Warning;
+  }
+  return vscode.DiagnosticSeverity.Information;
+}
+
+export function parseVerilatorDiagnostics(
+  options: ParseVerilatorDiagnosticsOptions
+): Map<string, vscode.Diagnostic[]> {
+  // basically DiagnosticsCollection but with ability to append diag lists
+  const filesDiag = new Map<string, vscode.Diagnostic[]>();
+  const errorParserRegex = new RegExp(
+    /%(?<severity>\w+)/.source + // matches "%Warning" or "%Error"
+
+    // this matches errorcode with "-" before it, but the "-" doesn't go into ErrorCode match group
+    /(-(?<errorCode>[A-Z0-9]+))?/.source + // matches error code like -PINNOTFOUND
+
+    /: /.source + // ": " before file path or error message
+
+    // note: end of file path is detected using file extension at the end of it.
+    // This also allows spaces in paths.
+    /((?<filePath>(\S| )+(?<fileExtension>(\.svh)|(\.sv)|(\.SV)|(\.vh)|(\.vl)|(\.v))):((?<lineNumber>\d+):)?((?<columnNumber>\d+):)? )?/.source +
+
+    // matches error message produced by Verilator
+    /(?<verboseError>.*)/.source
+  );
+  const stderrLines = options.stderr.split(/\r?\n/g);
+
+  stderrLines.forEach((line, lineIndex) => {
+    // if lineIndex is 0 and it doesn't start with %Error or %Warning,
+    // the whole loop would skip and it is probably a system error.
+    let lastDiagMessageType: 'Error' | 'Warning' = "Error";
+
+    // parsing previous lines for message type; shouldn't be more than 5 or so
+    for (let prevLineIndex = lineIndex; prevLineIndex >= 0; prevLineIndex--) {
+      if (stderrLines[prevLineIndex].startsWith("%Error")) {
+        lastDiagMessageType = "Error";
+        break;
+      }
+      if (stderrLines[prevLineIndex].startsWith("%Warning")) {
+        lastDiagMessageType = "Warning";
+        break;
+      }
+    }
+
+    // Remove superfluous NUL from line head
+    while (line.startsWith('\0')) {
+      line = line.slice(1);
+    }
+
+    if (!line.startsWith('%')) {
+      if (line !== '') {
+        options.onPassthrough?.(lastDiagMessageType, line);
+      }
+      return;
+    }
+
+    const rex = errorParserRegex.exec(line);
+
+    // Check if rex or rex.groups is undefined
+    if (!rex || !rex.groups) {
+      return;
+    }
+
+    // vscode problems are tied to files; if there isn't a file name, no point going further
+    let filePath = rex.groups["filePath"];
+    if (!filePath) {
+      return;
+    }
+
+    // replacing "\\" and "\" with "/" for consistency
+    if (options.isWindows) {
+      filePath = filePath.replace(/(\\\\)|(\\)/g, "/");
+
+      // if WSL is used, convert the path to Windows format
+      if (options.useWSL && options.convertFromWslPath) {
+        filePath = options.convertFromWslPath(filePath);
+      }
+    }
+
+    // if there isn't a list of errors for this file already, it needs to be created
+    if (!filesDiag.has(filePath)) {
+      filesDiag.set(filePath, []);
+    }
+
+    const lineNum = Number(rex.groups["lineNumber"]) - 1;
+    let colNum = Number(rex.groups["columnNumber"]) - 1;
+
+    colNum = isNaN(colNum) ? 0 : colNum; // for older Verilator versions (< 4.030 ~ish)
+
+    if (!isNaN(lineNum)) {
+      // appending diagnostic message to an array of messages tied to a file
+      filesDiag.get(filePath)?.push({
+        severity: convertVerilatorSeverity(rex.groups["severity"]),
+        range: new vscode.Range(lineNum, colNum, lineNum, END_OF_LINE),
+        message: rex.groups["verboseError"],
+        code: rex.groups["errorCode"],
+        source: 'verilator',
+      });
+    }
+  });
+
+  return filesDiag;
+}
 
 export default class VerilatorLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
   private useWSL!: boolean;
+  private readonly diagnosticUris: Set<string> = new Set<string>();
 
   constructor(diagnosticCollection: vscode.DiagnosticCollection) {
     super('verilator', diagnosticCollection);
@@ -42,201 +249,96 @@ export default class VerilatorLinter extends BaseLinter {
   }
 
   protected convertToSeverity(severityString: string): vscode.DiagnosticSeverity {
-    if (severityString.startsWith('Error')) {
-      return vscode.DiagnosticSeverity.Error;
-    } else if (severityString.startsWith('Warning')) {
-      return vscode.DiagnosticSeverity.Warning;
-    }
-    return vscode.DiagnosticSeverity.Information;
+    return convertVerilatorSeverity(severityString);
   }
 
   protected lint(doc: vscode.TextDocument) {
-    const docUri: string = isWindows
-      ? this.useWSL
-        ? this.convertToWslPath(doc.uri.fsPath)
-        : doc.uri.fsPath.replace(/\\/g, '/')
-      : doc.uri.fsPath;
-    const docFolder: string = isWindows
-      ? this.useWSL
-        ? this.convertToWslPath(path.dirname(doc.uri.fsPath))
-        : path.dirname(doc.uri.fsPath).replace(/\\/g, '/')
-      : path.dirname(doc.uri.fsPath);
-    const cwd: string = this.config.runAtFileLocation
-      ? isWindows
-        ? path.dirname(doc.uri.fsPath.replace(/\\/g, '/'))
-        : docFolder
-      : vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? docFolder;
-    const verilator: string = isWindows
-      ? this.useWSL
-        ? 'wsl verilator'
-        : 'verilator_bin.exe'
-      : 'verilator';
-
-    const binPath = path.join(this.config.linterInstalledPath, verilator);
-    let args: string[] = [];
-    if (doc.languageId === 'systemverilog') {
-      args.push('-sv');
-    }
-    args.push('--lint-only');
-    args.push(`-I"${docFolder}"`);
-    args = args.concat(this.config.includePath.map((p: string) => `-I"${p}"`));
-    args.push(this.config.arguments);
-    args.push(`"${docUri}"`);
-    const command: string = `${binPath  } ${  args.join(' ')}`;
-
-    this.logger.info("Executing", { command, cwd });
-
-    const _: child.ChildProcess = child.exec(
-      command,
-      { cwd },
-      (_error: child.ExecException | null, _stdout: string, stderr: string) => {
-        // basically DiagnosticsCollection but with ability to append diag lists
-        const filesDiag = new Map();
-
-        stderr.split(/\r?\n/g).forEach((line, _, stderrLines) => {
-          // if lineIndex is 0 and it doesn't start with %Error or %Warning,
-          // the whole loop would skip
-          // and it is probably a system error (wrong file name/directory/something)
-          let lastDiagMessageType: string = "Error";
-
-          // parsing previous lines for message type
-          // shouldn't be more than 5 or so
-          for (let lineIndex = _; lineIndex >= 0; lineIndex--) {
-            if (stderrLines[lineIndex].startsWith("%Error")) {
-              lastDiagMessageType = "Error";
-              break;
-            }
-            if (stderrLines[lineIndex].startsWith("%Warning")) {
-              lastDiagMessageType = "Warning";
-              break;
-            }
-          }
-
-          // Remove superfluous NUL from line head
-          while (line.startsWith('\0')) {
-            line = line.slice(1);
-          }
-
-          // first line would be normal stderr output like "directory name is invalid"
-          // others are verilator sort of "highlighting" the issue, the block with "^~~~~"
-          // this can actually be used for better error/warning highlighting
-
-          // also this might have some false positives
-          // probably something like "stderr passthrough setting" would be a good idea
-          if (!line.startsWith('%')) {
-
-            // allows for persistent 
-            if (lastDiagMessageType === 'Warning') { this.logger.warn`${line}`; }
-            else { this.logger.error`${line}`; }
-            return;
-          }
-
-          // important match sections are named now:
-          // severity - Error or Warning
-          // errorCode - error code, if there is one, something like PINNOTFOUND
-          // filePath - full path to the file, including it's name and extension
-          // lineNumber - line number
-          // columNumber - columnNumber
-          // verboseError - error elaboration by verilator
-
-          const errorParserRegex = new RegExp(
-            /%(?<severity>\w+)/.source + // matches "%Warning" or "%Error"
-
-            // this matches errorcode with "-" before it, but the "-" doesn't go into ErrorCode match group
-            /(-(?<errorCode>[A-Z0-9]+))?/.source + // matches error code like -PINNOTFOUND
-
-            /: /.source + // ": " before file path or error message
-
-            // this one's a bit of a mess, but apparently one can't cleanly split regex match group between lines
-            // and this is a large group since it matches file path and line and column numbers which may not exist at all
-
-            // note: end of file path is detected using file extension at the end of it
-            // this also allows for spaces in path.
-            // (neiter Linux, nor Windows actually prohibits it, and Verilator handles spaces just fine)
-            // In my testing, didn't lead cause any problems, but it potentially can
-            // extension names are placed so that longest one is first and has highest priority
-
-            /((?<filePath>(\S| )+(?<fileExtension>(\.svh)|(\.sv)|(\.SV)|(\.vh)|(\.vl)|(\.v))):((?<lineNumber>\d+):)?((?<columnNumber>\d+):)? )?/.source +
-
-            // matches error message produced by Verilator
-            /(?<verboseError>.*)/.source
-            , "g"
-          );
-
-          const rex = errorParserRegex.exec(line);
-
-          // Check if rex or rex.groups is undefined
-          if (!rex || !rex.groups) {
-            return;
-          }
-
-          // stderr passthrough
-          // probably better toggled with a parameter
-          if (rex.groups["severity"] === "Error") { this.logger.error`${line}`; }
-          else if (rex.groups["severity"] === "Warning") { this.logger.warn`${line}`; }
-
-          // theoretically, this shoudn't "fire", but just in case
-          else { this.logger.error`${line}`; }
-
-
-          // vscode problems are tied to files
-          // if there isn't a file name, no point going further
-          if (!rex.groups["filePath"]) {
-            return;
-          }
-
-          // replacing "\\" and "\" with "/" for consistency
-          if (isWindows) {
-            rex.groups["filePath"] = rex.groups["filePath"].replace(/(\\\\)|(\\)/g, "/");
-
-            // if WSL is used, convert the path to Windows format
-            if (this.useWSL) {
-              rex.groups["filePath"] = this.convertFromWslPath(rex.groups["filePath"]);
-            }
-          }
-
-          // if there isn't a list of errors for this file already, it
-          // needs to be created
-          if (!filesDiag.has(rex.groups["filePath"])) {
-            filesDiag.set(rex.groups["filePath"], []);
-          }
-
-          if (rex && rex[0].length > 0) {
-            const lineNum = Number(rex.groups["lineNumber"]) - 1;
-            let colNum = Number(rex.groups["columnNumber"]) - 1;
-
-            colNum = isNaN(colNum) ? 0 : colNum; // for older Verilator versions (< 4.030 ~ish)
-
-            if (!isNaN(lineNum)) {
-
-              // appending diagnostic message to an array of messages
-              // tied to a file
-              filesDiag.get(rex.groups["filePath"]).push({
-                severity: this.convertToSeverity(rex.groups["severity"]),
-                range: new vscode.Range(lineNum, colNum, lineNum, END_OF_LINE),
-                message: rex.groups["verboseError"],
-                code: rex.groups["errorCode"],
-                source: 'verilator',
-              });
-
-            }
-            
-          }
-        });
-
-        // since error parsing has been redone "from the ground up"
-        // earlier errors are discarded
-        this.diagnosticCollection.clear();
-
-        filesDiag.forEach((issuesArray, fileName) => {
-          const fileURI = vscode.Uri.file(fileName);
-          this.diagnosticCollection.set(
-            fileURI,
-            issuesArray
-          );
-        }
-        );
-      }
+    const paths = getVerilatorPaths({
+      documentPath: doc.uri.fsPath,
+      isWindows,
+      useWSL: this.useWSL,
+      runAtFileLocation: this.config.runAtFileLocation,
+      workspaceFolder: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath,
+      convertToWslPath: (inputPath) => this.convertToWslPath(inputPath),
+    });
+    const commandInfo = buildVerilatorCommand({
+      isWindows,
+      useWSL: this.useWSL,
+      linterInstalledPath: this.config.linterInstalledPath,
+    });
+    const args = commandInfo.leadingArgs.concat(
+      buildVerilatorArgs({
+        languageId: doc.languageId,
+        docFolder: paths.docFolder,
+        includePaths: this.config.includePath,
+        customArguments: this.config.arguments,
+        documentPath: paths.docUri,
+      })
     );
+
+    this.logger.info("Executing", { command: commandInfo.command, args, cwd: paths.cwd });
+
+    void this.runVerilator(commandInfo.command, args, paths.cwd, doc);
+  }
+
+  private async runVerilator(
+    command: string,
+    args: string[],
+    cwd: string,
+    doc: vscode.TextDocument
+  ): Promise<void> {
+    try {
+      const result = await runTool({
+        command,
+        args,
+        cwd,
+        collectStdout: true,
+        collectStderr: true,
+      });
+      const filesDiag = parseVerilatorDiagnostics({
+        stderr: result.stderr,
+        isWindows,
+        useWSL: this.useWSL,
+        convertFromWslPath: (inputPath) => this.convertFromWslPath(inputPath),
+        onPassthrough: (severity, line) => {
+          if (severity === 'Warning') {
+            this.logger.warn`${line}`;
+          } else {
+            this.logger.error`${line}`;
+          }
+        },
+      });
+
+      this.replaceDiagnostics(doc, filesDiag);
+    } catch (err) {
+      if (err instanceof ToolRunError) {
+        this.logger.error`verilator failed: ${err.message}`;
+      } else {
+        this.logger.error`verilator exception: ${err}`;
+      }
+      this.replaceDiagnostics(doc, new Map<string, vscode.Diagnostic[]>());
+    }
+  }
+
+  private replaceDiagnostics(
+    doc: vscode.TextDocument,
+    filesDiag: Map<string, vscode.Diagnostic[]>
+  ): void {
+    for (const fsPath of this.diagnosticUris) {
+      this.diagnosticCollection.delete(vscode.Uri.file(fsPath));
+    }
+    this.diagnosticUris.clear();
+
+    if (filesDiag.size === 0) {
+      this.diagnosticCollection.set(doc.uri, []);
+      this.diagnosticUris.add(doc.uri.fsPath);
+      return;
+    }
+
+    filesDiag.forEach((issuesArray, fileName) => {
+      const fileURI = vscode.Uri.file(fileName);
+      this.diagnosticCollection.set(fileURI, issuesArray);
+      this.diagnosticUris.add(fileName);
+    });
   }
 }
