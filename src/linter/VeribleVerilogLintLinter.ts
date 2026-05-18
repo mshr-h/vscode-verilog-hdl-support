@@ -1,12 +1,86 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
-import * as child from 'child_process';
 import * as path from 'path';
 import * as process from 'process';
 import BaseLinter from './BaseLinter';
 import { END_OF_LINE } from '../constants';
+import { runTool, ToolRunError } from '../tools/ToolRunner';
+import { splitCommandLineArgs } from './IcarusLinter';
 
 const isWindows = process.platform === 'win32';
+
+export interface BuildVeribleVerilogLintArgsOptions {
+  customArguments: string;
+  documentPath: string;
+}
+
+export interface ParseVeribleVerilogLintDiagnosticsOptions {
+  output: string;
+  cwd: string;
+  documentPath: string;
+  isWindows: boolean;
+}
+
+export function buildVeribleVerilogLintArgs(
+  options: BuildVeribleVerilogLintArgsOptions
+): string[] {
+  return [...splitCommandLineArgs(options.customArguments), options.documentPath];
+}
+
+function convertVeribleSeverity(message: string): vscode.DiagnosticSeverity {
+  const lower = message.toLowerCase();
+  if (lower.includes('error') || lower.includes('fatal') || lower.includes('syntax')) {
+    return vscode.DiagnosticSeverity.Error;
+  }
+  if (lower.includes('warning')) {
+    return vscode.DiagnosticSeverity.Warning;
+  }
+  return vscode.DiagnosticSeverity.Warning;
+}
+
+export function parseVeribleVerilogLintDiagnostics(
+  options: ParseVeribleVerilogLintDiagnosticsOptions
+): vscode.Diagnostic[] {
+  const diagnostics: vscode.Diagnostic[] = [];
+  const re = /^(.*?):(\d+):(\d+)(?:-(\d+))?:\s*(.*?)(?:\s*\[(.+?)\])?$/;
+  let docPath = options.documentPath;
+  if (options.isWindows) {
+    docPath = docPath.replace(/\\/g, '/');
+  }
+
+  options.output.split(/\r?\n/g).forEach((line) => {
+    const rex = line.match(re);
+    if (!rex) {
+      return;
+    }
+
+    const filePath = rex[1];
+    let resolvedPath = path.isAbsolute(filePath) ? filePath : path.join(options.cwd, filePath);
+    if (options.isWindows) {
+      resolvedPath = resolvedPath.replace(/\\/g, '/');
+    }
+
+    if (path.normalize(resolvedPath) !== path.normalize(docPath)) {
+      return;
+    }
+
+    const lineNum = Number(rex[2]) - 1;
+    const colStart = Number(rex[3]) - 1;
+    const colEnd = rex[4] ? Number(rex[4]) - 1 : END_OF_LINE;
+    const message = rex[5].trim();
+    const ruleName = rex[6] ? rex[6].trim() : '';
+
+    diagnostics.push({
+      severity: convertVeribleSeverity(message),
+      range: new vscode.Range(lineNum, colStart, lineNum, colEnd),
+      message,
+      code: ruleName.length > 0 ? ruleName : 'verible-verilog-lint',
+      source: 'verible-verilog-lint',
+    });
+  });
+
+  return diagnostics;
+}
 
 export default class VeribleVerilogLintLinter extends BaseLinter {
   constructor(diagnosticCollection: vscode.DiagnosticCollection) {
@@ -21,14 +95,7 @@ export default class VeribleVerilogLintLinter extends BaseLinter {
   }
 
   protected convertToSeverity(message: string): vscode.DiagnosticSeverity {
-    const lower = message.toLowerCase();
-    if (lower.includes('error') || lower.includes('fatal') || lower.includes('syntax')) {
-      return vscode.DiagnosticSeverity.Error;
-    }
-    if (lower.includes('warning')) {
-      return vscode.DiagnosticSeverity.Warning;
-    }
-    return vscode.DiagnosticSeverity.Warning;
+    return convertVeribleSeverity(message);
   }
 
   protected lint(doc: vscode.TextDocument) {
@@ -40,64 +107,46 @@ export default class VeribleVerilogLintLinter extends BaseLinter {
     const docUri: string = doc.uri.fsPath;
     const cwd: string = this.getWorkingDirectory(doc);
 
-    const args: string[] = [];
-    args.push(this.config.arguments);
-    args.push(`"${docUri}"`);
+    const args = buildVeribleVerilogLintArgs({
+      customArguments: this.config.arguments,
+      documentPath: docUri,
+    });
 
-    const command: string = `${binPath  } ${  args.join(' ')}`;
+    this.logger.info("Executing", { command: binPath, args, cwd });
 
-    this.logger.info("Executing", { command, cwd });
+    void this.runVeribleVerilogLint(binPath, args, cwd, doc);
+  }
 
-    const _: child.ChildProcess = child.exec(
-      command,
-      { cwd },
-      (_error: child.ExecException | null, stdout: string, stderr: string) => {
-        const diagnostics: vscode.Diagnostic[] = [];
-        const output = [stdout, stderr].filter((value) => value.length > 0).join('\n');
-        const re = /^(.*?):(\d+):(\d+)(?:-(\d+))?:\s*(.*?)(?:\s*\[(.+?)\])?$/;
-
-        output.split(/\r?\n/g).forEach((line, _) => {
-          if (line.search(re) === -1) {
-            return;
-          }
-
-          const rex = line.match(re);
-          if (!rex) {
-            return;
-          }
-
-          const filePath = rex[1];
-          let resolvedPath = path.isAbsolute(filePath) ? filePath : path.join(cwd, filePath);
-          if (isWindows) {
-            resolvedPath = resolvedPath.replace(/\\/g, '/');
-          }
-          let docPath = docUri;
-          if (isWindows) {
-            docPath = docPath.replace(/\\/g, '/');
-          }
-
-          if (path.normalize(resolvedPath) !== path.normalize(docPath)) {
-            return;
-          }
-
-          const lineNum = Number(rex[2]) - 1;
-          const colStart = Number(rex[3]) - 1;
-          const colEnd = rex[4] ? Number(rex[4]) - 1 : END_OF_LINE;
-          const message = rex[5].trim();
-          const ruleName = rex[6] ? rex[6].trim() : '';
-
-          diagnostics.push({
-            severity: this.convertToSeverity(message),
-            range: new vscode.Range(lineNum, colStart, lineNum, colEnd),
-            message,
-            code: ruleName.length > 0 ? ruleName : 'verible-verilog-lint',
-            source: 'verible-verilog-lint',
-          });
-        });
-
-        this.logger.info`${diagnostics.length} errors/warnings returned`;
-        this.diagnosticCollection.set(doc.uri, diagnostics);
+  private async runVeribleVerilogLint(
+    command: string,
+    args: string[],
+    cwd: string,
+    doc: vscode.TextDocument
+  ): Promise<void> {
+    try {
+      const result = await runTool({
+        command,
+        args,
+        cwd,
+        collectStdout: true,
+        collectStderr: true,
+      });
+      const output = [result.stdout, result.stderr].filter((value) => value.length > 0).join('\n');
+      const diagnostics = parseVeribleVerilogLintDiagnostics({
+        output,
+        cwd,
+        documentPath: doc.uri.fsPath,
+        isWindows,
+      });
+      this.logger.info`${diagnostics.length} errors/warnings returned`;
+      this.diagnosticCollection.set(doc.uri, diagnostics);
+    } catch (err) {
+      if (err instanceof ToolRunError) {
+        this.logger.error`verible-verilog-lint failed: ${err.message}`;
+      } else {
+        this.logger.error`verible-verilog-lint exception: ${err}`;
       }
-    );
+      this.diagnosticCollection.set(doc.uri, []);
+    }
   }
 }
