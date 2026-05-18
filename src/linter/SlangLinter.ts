@@ -7,6 +7,7 @@ import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from './IcarusLinter';
 import LinterDiagnosticManager from './LinterDiagnosticManager';
+import LintRunManager, { type LintRunHandle } from './LintRunManager';
 
 const isWindows = process.platform === 'win32';
 
@@ -152,8 +153,8 @@ export default class SlangLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
   private useWSL!: boolean;
 
-  constructor(diagnosticManager: LinterDiagnosticManager) {
-    super('slang', diagnosticManager);
+  constructor(diagnosticManager: LinterDiagnosticManager, runManager: LintRunManager) {
+    super('slang', diagnosticManager, runManager);
     this.updateConfig();
   }
 
@@ -170,7 +171,7 @@ export default class SlangLinter extends BaseLinter {
     return convertSlangSeverity(severityString);
   }
 
-  protected lint(doc: vscode.TextDocument) {
+  protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
     const paths = getSlangPaths({
       documentPath: doc.uri.fsPath,
       isWindows,
@@ -195,7 +196,7 @@ export default class SlangLinter extends BaseLinter {
 
     this.logger.info("Executing", { command: commandInfo.command, args, cwd: paths.cwd });
 
-    void this.runSlang(commandInfo.command, args, paths.cwd, paths.docUri, doc);
+    await this.runSlang(commandInfo.command, args, paths.cwd, paths.docUri, doc, run);
   }
 
   private async runSlang(
@@ -203,7 +204,8 @@ export default class SlangLinter extends BaseLinter {
     args: string[],
     cwd: string,
     documentPath: string,
-    doc: vscode.TextDocument
+    doc: vscode.TextDocument,
+    run: LintRunHandle
   ): Promise<void> {
     try {
       const result = await runTool({
@@ -212,7 +214,11 @@ export default class SlangLinter extends BaseLinter {
         cwd,
         collectStdout: true,
         collectStderr: true,
+        cancellationToken: run.cancellationToken,
       });
+      if (!run.isCurrent()) {
+        return;
+      }
       const diagnostics = parseSlangDiagnostics({
         stderr: result.stderr,
         documentPath,
@@ -221,14 +227,17 @@ export default class SlangLinter extends BaseLinter {
         convertToWslPath: (inputPath) => this.convertToWslPath(inputPath),
       });
       this.logger.info`${diagnostics.length} errors/warnings returned`;
-      this.publishDocumentDiagnostics(doc, diagnostics);
+      this.publishDocumentDiagnosticsIfCurrent(doc, run, diagnostics);
     } catch (err) {
+      if (err instanceof ToolRunError && err.reason === 'cancelled') {
+        return;
+      }
       if (err instanceof ToolRunError) {
         this.logger.error`slang failed: ${err.message}`;
       } else {
         this.logger.error`slang exception: ${err}`;
       }
-      this.publishDocumentDiagnostics(doc, []);
+      this.publishDocumentDiagnosticsIfCurrent(doc, run, []);
     }
   }
 }

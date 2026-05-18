@@ -6,6 +6,7 @@ import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from './IcarusLinter';
 import LinterDiagnosticManager from './LinterDiagnosticManager';
+import LintRunManager, { type LintRunHandle } from './LintRunManager';
 
 export interface BuildModelsimArgsOptions {
   workLibrary: string;
@@ -73,8 +74,8 @@ export function parseModelsimDiagnostics(
 export default class ModelsimLinter extends BaseLinter {
   private modelsimWork!: string;
 
-  constructor(diagnosticManager: LinterDiagnosticManager) {
-    super('modelsim', diagnosticManager);
+  constructor(diagnosticManager: LinterDiagnosticManager, runManager: LintRunManager) {
+    super('modelsim', diagnosticManager, runManager);
     this.updateConfig();
   }
 
@@ -89,7 +90,7 @@ export default class ModelsimLinter extends BaseLinter {
     return convertModelsimSeverity(severityString);
   }
 
-  protected lint(doc: vscode.TextDocument) {
+  protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
     this.logger.info`modelsim lint requested`;
     const cwd: string = this.getWorkingDirectory(doc);
     // no change needed for systemverilog
@@ -102,14 +103,15 @@ export default class ModelsimLinter extends BaseLinter {
 
     this.logger.info("Executing", { command, args, cwd });
 
-    void this.runModelsim(command, args, cwd, doc);
+    await this.runModelsim(command, args, cwd, doc, run);
   }
 
   private async runModelsim(
     command: string,
     args: string[],
     cwd: string,
-    doc: vscode.TextDocument
+    doc: vscode.TextDocument,
+    run: LintRunHandle
   ): Promise<void> {
     try {
       const result = await runTool({
@@ -118,17 +120,24 @@ export default class ModelsimLinter extends BaseLinter {
         cwd,
         collectStdout: true,
         collectStderr: true,
+        cancellationToken: run.cancellationToken,
       });
+      if (!run.isCurrent()) {
+        return;
+      }
       const diagnostics = parseModelsimDiagnostics(result.stdout, doc.fileName);
       this.logger.info`${diagnostics.length} errors/warnings returned`;
-      this.publishDocumentDiagnostics(doc, diagnostics);
+      this.publishDocumentDiagnosticsIfCurrent(doc, run, diagnostics);
     } catch (err) {
+      if (err instanceof ToolRunError && err.reason === 'cancelled') {
+        return;
+      }
       if (err instanceof ToolRunError) {
         this.logger.error`modelsim failed: ${err.message}`;
       } else {
         this.logger.error`modelsim exception: ${err}`;
       }
-      this.publishDocumentDiagnostics(doc, []);
+      this.publishDocumentDiagnosticsIfCurrent(doc, run, []);
     }
   }
 }

@@ -184,6 +184,15 @@ suite('Linter diagnostic publication regression', () => {
       assert.ok(!source.includes('diagnosticCollection.clear'), `${file} must not clear directly`);
       assert.ok(!source.includes('diagnosticCollection.set'), `${file} must not set directly`);
       assert.ok(!source.includes('diagnosticCollection.delete'), `${file} must not delete directly`);
+      assert.ok(!source.includes('.publishDiagnostics('), `${file} must publish with run checks`);
+      assert.ok(
+        !source.includes('.publishDocumentDiagnostics('),
+        `${file} must publish document diagnostics with run checks`
+      );
+
+      if (source.includes('runTool(')) {
+        assert.ok(source.includes('cancellationToken:'), `${file} must pass cancellationToken`);
+      }
     }
   });
 });

@@ -4,6 +4,7 @@ import * as path from 'path';
 import BaseLinter from './BaseLinter';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
 import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
+import LintRunManager, { type LintRunHandle } from './LintRunManager';
 
 const standardToArg: Map<string, string> = new Map<string, string>([
   ['Verilog-95', '-g1995'],
@@ -195,8 +196,8 @@ export default class IcarusLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
   private standards!: Map<string, string>;
 
-  constructor(diagnosticManager: LinterDiagnosticManager) {
-    super('iverilog', diagnosticManager);
+  constructor(diagnosticManager: LinterDiagnosticManager, runManager: LintRunManager) {
+    super('iverilog', diagnosticManager, runManager);
     this.updateConfig();
   }
 
@@ -216,7 +217,7 @@ export default class IcarusLinter extends BaseLinter {
     return convertIcarusSeverity(kind, msg);
   }
 
-  protected lint(doc: vscode.TextDocument) {
+  protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
     this.logger.info`Executing IcarusLinter.lint()`;
 
     const binPath: string = path.join(this.config.linterInstalledPath, 'iverilog');
@@ -233,14 +234,15 @@ export default class IcarusLinter extends BaseLinter {
 
     this.logger.info("Executing", { command: binPath, args, cwd });
 
-    void this.runIcarus(binPath, args, cwd, doc);
+    await this.runIcarus(binPath, args, cwd, doc, run);
   }
 
   private async runIcarus(
     command: string,
     args: string[],
     cwd: string,
-    doc: vscode.TextDocument
+    doc: vscode.TextDocument,
+    run: LintRunHandle
   ): Promise<void> {
     try {
       const result = await runTool({
@@ -249,25 +251,33 @@ export default class IcarusLinter extends BaseLinter {
         cwd,
         collectStdout: true,
         collectStderr: true,
+        cancellationToken: run.cancellationToken,
       });
+      if (!run.isCurrent()) {
+        return;
+      }
       // Parse output lines. Examples:
       // /home/ubuntu/project1/module_1.sv:3: syntax error"
       // /home/ubuntu/project1/property_1.sv:3: error: Invalid module instantiation"
       // test.v:8: error: Module test was already declared here: ./float_add.v:6
       const diagMap = parseIcarusDiagnostics(`${result.stderr  }\n${  result.stdout}`, cwd, doc);
-      this.replaceDiagnostics(doc, diagMap);
+      this.replaceDiagnostics(doc, run, diagMap);
     } catch (err) {
+      if (err instanceof ToolRunError && err.reason === 'cancelled') {
+        return;
+      }
       if (err instanceof ToolRunError) {
         this.logger.warn`iverilog failed: ${err.message}`;
       } else {
         this.logger.error`iverilog exception: ${err}`;
       }
-      this.replaceDiagnostics(doc, new Map<string, vscode.Diagnostic[]>());
+      this.replaceDiagnostics(doc, run, new Map<string, vscode.Diagnostic[]>());
     }
   }
 
   private replaceDiagnostics(
     doc: vscode.TextDocument,
+    run: LintRunHandle,
     diagMap: Map<string, vscode.Diagnostic[]>
   ): void {
     const diagnosticsByUri: DiagnosticMap = new Map();
@@ -275,6 +285,6 @@ export default class IcarusLinter extends BaseLinter {
       const uri = vscode.Uri.file(fsPath);
       diagnosticsByUri.set(uri.toString(), { uri, diagnostics: diags });
     }
-    this.publishDiagnostics(doc, diagnosticsByUri);
+    this.publishDiagnosticsIfCurrent(doc, run, diagnosticsByUri);
   }
 }

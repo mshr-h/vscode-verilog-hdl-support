@@ -6,6 +6,7 @@ import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from './IcarusLinter';
 import LinterDiagnosticManager from './LinterDiagnosticManager';
+import LintRunManager, { type LintRunHandle } from './LintRunManager';
 
 export interface BuildXvlogArgsOptions {
   languageId: string;
@@ -60,8 +61,8 @@ export function parseXvlogDiagnostics(stdout: string): vscode.Diagnostic[] {
 }
 
 export default class XvlogLinter extends BaseLinter {
-  constructor(diagnosticManager: LinterDiagnosticManager) {
-    super('xvlog', diagnosticManager);
+  constructor(diagnosticManager: LinterDiagnosticManager, runManager: LintRunManager) {
+    super('xvlog', diagnosticManager, runManager);
     this.updateConfig();
   }
 
@@ -76,7 +77,7 @@ export default class XvlogLinter extends BaseLinter {
     return convertXvlogSeverity(severityString);
   }
 
-  protected lint(doc: vscode.TextDocument) {
+  protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
     const binPath: string = path.join(this.config.linterInstalledPath, 'xvlog');
 
     const args = buildXvlogArgs({
@@ -90,14 +91,15 @@ export default class XvlogLinter extends BaseLinter {
 
     this.logger.info("Executing", { command: binPath, args, cwd });
 
-    void this.runXvlog(binPath, args, cwd, doc);
+    await this.runXvlog(binPath, args, cwd, doc, run);
   }
 
   private async runXvlog(
     command: string,
     args: string[],
     cwd: string,
-    doc: vscode.TextDocument
+    doc: vscode.TextDocument,
+    run: LintRunHandle
   ): Promise<void> {
     try {
       const result = await runTool({
@@ -106,17 +108,24 @@ export default class XvlogLinter extends BaseLinter {
         cwd,
         collectStdout: true,
         collectStderr: true,
+        cancellationToken: run.cancellationToken,
       });
+      if (!run.isCurrent()) {
+        return;
+      }
       const diagnostics = parseXvlogDiagnostics(result.stdout);
       this.logger.info(`${diagnostics.length} errors/warnings returned`);
-      this.publishDocumentDiagnostics(doc, diagnostics);
+      this.publishDocumentDiagnosticsIfCurrent(doc, run, diagnostics);
     } catch (err) {
+      if (err instanceof ToolRunError && err.reason === 'cancelled') {
+        return;
+      }
       if (err instanceof ToolRunError) {
         this.logger.error`xvlog failed: ${err.message}`;
       } else {
         this.logger.error`xvlog exception: ${err}`;
       }
-      this.publishDocumentDiagnostics(doc, []);
+      this.publishDocumentDiagnosticsIfCurrent(doc, run, []);
     }
   }
 }

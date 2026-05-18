@@ -100,6 +100,11 @@ export function runTool(options: ToolRunOptions): Promise<ToolRunResult> {
 
   logger.info`Executing tool: ${command} ${args.join(' ')}`;
 
+  if (cancellationToken?.isCancellationRequested) {
+    logger.warn`Tool run cancelled before start: ${command}`;
+    return Promise.reject(new ToolRunError('Tool run cancelled', command, args, 'cancelled'));
+  }
+
   return new Promise<ToolRunResult>((resolve, reject) => {
     let child: ChildProcessWithoutNullStreams;
     let settled = false;

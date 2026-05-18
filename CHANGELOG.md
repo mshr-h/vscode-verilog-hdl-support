@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Improved Ctags execution by streaming output through a shared tool runner, avoiding maxBuffer failures on large HDL files. [#562](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/562)
 - Migrated lint tool integrations to the shared ToolRunner for safer argument handling and improved path robustness. [#563](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/563), [#564](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/564)
 - Improved lint diagnostics management so rerunning one linter no longer clears unrelated diagnostics from other files or linter runs.
+- Added lint run cancellation and generation tracking so stale lint results no longer overwrite newer diagnostics.
 
 ### Removed
 
