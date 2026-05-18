@@ -6,6 +6,7 @@ import BaseLinter from './BaseLinter';
 import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from './IcarusLinter';
+import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
 
 const isWindows = process.platform === 'win32';
 
@@ -217,10 +218,9 @@ export function parseVerilatorDiagnostics(
 export default class VerilatorLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
   private useWSL!: boolean;
-  private readonly diagnosticUris: Set<string> = new Set<string>();
 
-  constructor(diagnosticCollection: vscode.DiagnosticCollection) {
-    super('verilator', diagnosticCollection);
+  constructor(diagnosticManager: LinterDiagnosticManager) {
+    super('verilator', diagnosticManager);
     this.updateConfig();
   }
 
@@ -324,21 +324,11 @@ export default class VerilatorLinter extends BaseLinter {
     doc: vscode.TextDocument,
     filesDiag: Map<string, vscode.Diagnostic[]>
   ): void {
-    for (const fsPath of this.diagnosticUris) {
-      this.diagnosticCollection.delete(vscode.Uri.file(fsPath));
-    }
-    this.diagnosticUris.clear();
-
-    if (filesDiag.size === 0) {
-      this.diagnosticCollection.set(doc.uri, []);
-      this.diagnosticUris.add(doc.uri.fsPath);
-      return;
-    }
-
+    const diagnosticsByUri: DiagnosticMap = new Map();
     filesDiag.forEach((issuesArray, fileName) => {
       const fileURI = vscode.Uri.file(fileName);
-      this.diagnosticCollection.set(fileURI, issuesArray);
-      this.diagnosticUris.add(fileName);
+      diagnosticsByUri.set(fileURI.toString(), { uri: fileURI, diagnostics: issuesArray });
     });
+    this.publishDiagnostics(doc, diagnosticsByUri);
   }
 }

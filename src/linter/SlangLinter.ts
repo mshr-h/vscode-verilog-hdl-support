@@ -6,6 +6,7 @@ import BaseLinter from './BaseLinter';
 import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from './IcarusLinter';
+import LinterDiagnosticManager from './LinterDiagnosticManager';
 
 const isWindows = process.platform === 'win32';
 
@@ -151,8 +152,8 @@ export default class SlangLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
   private useWSL!: boolean;
 
-  constructor(diagnosticCollection: vscode.DiagnosticCollection) {
-    super('slang', diagnosticCollection);
+  constructor(diagnosticManager: LinterDiagnosticManager) {
+    super('slang', diagnosticManager);
     this.updateConfig();
   }
 
@@ -220,14 +221,14 @@ export default class SlangLinter extends BaseLinter {
         convertToWslPath: (inputPath) => this.convertToWslPath(inputPath),
       });
       this.logger.info`${diagnostics.length} errors/warnings returned`;
-      this.diagnosticCollection.set(doc.uri, diagnostics);
+      this.publishDocumentDiagnostics(doc, diagnostics);
     } catch (err) {
       if (err instanceof ToolRunError) {
         this.logger.error`slang failed: ${err.message}`;
       } else {
         this.logger.error`slang exception: ${err}`;
       }
-      this.diagnosticCollection.set(doc.uri, []);
+      this.publishDocumentDiagnostics(doc, []);
     }
   }
 }

@@ -5,6 +5,7 @@ import BaseLinter from './BaseLinter';
 import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from './IcarusLinter';
+import LinterDiagnosticManager from './LinterDiagnosticManager';
 
 export interface BuildXvlogArgsOptions {
   languageId: string;
@@ -59,8 +60,8 @@ export function parseXvlogDiagnostics(stdout: string): vscode.Diagnostic[] {
 }
 
 export default class XvlogLinter extends BaseLinter {
-  constructor(diagnosticCollection: vscode.DiagnosticCollection) {
-    super('xvlog', diagnosticCollection);
+  constructor(diagnosticManager: LinterDiagnosticManager) {
+    super('xvlog', diagnosticManager);
     this.updateConfig();
   }
 
@@ -108,14 +109,14 @@ export default class XvlogLinter extends BaseLinter {
       });
       const diagnostics = parseXvlogDiagnostics(result.stdout);
       this.logger.info(`${diagnostics.length} errors/warnings returned`);
-      this.diagnosticCollection.set(doc.uri, diagnostics);
+      this.publishDocumentDiagnostics(doc, diagnostics);
     } catch (err) {
       if (err instanceof ToolRunError) {
         this.logger.error`xvlog failed: ${err.message}`;
       } else {
         this.logger.error`xvlog exception: ${err}`;
       }
-      this.diagnosticCollection.set(doc.uri, []);
+      this.publishDocumentDiagnostics(doc, []);
     }
   }
 }

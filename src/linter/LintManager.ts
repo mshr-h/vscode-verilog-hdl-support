@@ -8,18 +8,21 @@ import VerilatorLinter from './VerilatorLinter';
 import SlangLinter from './SlangLinter';
 import XvlogLinter from './XvlogLinter';
 import VeribleVerilogLintLinter from './VeribleVerilogLintLinter';
+import LinterDiagnosticManager from './LinterDiagnosticManager';
 
 export default class LintManager {
   private subscriptions: vscode.Disposable[];
 
   private linter: BaseLinter | null;
   private diagnosticCollection: vscode.DiagnosticCollection;
+  private diagnosticManager: LinterDiagnosticManager;
   private readonly logger = getExtensionLogger('Linter', 'Manager');
 
   constructor() {
     this.subscriptions = [];
     this.linter = null;
-    this.diagnosticCollection = vscode.languages.createDiagnosticCollection();
+    this.diagnosticCollection = vscode.languages.createDiagnosticCollection('verilog-lint');
+    this.diagnosticManager = new LinterDiagnosticManager(this.diagnosticCollection);
     vscode.workspace.onDidOpenTextDocument(this.lint, this, this.subscriptions);
     vscode.workspace.onDidSaveTextDocument(this.lint, this, this.subscriptions);
     vscode.workspace.onDidCloseTextDocument(this.removeFileDiagnostics, this, this.subscriptions);
@@ -35,17 +38,17 @@ export default class LintManager {
   getLinterFromString(name: string): BaseLinter | null {
     switch (name) {
       case 'iverilog':
-        return new IcarusLinter(this.diagnosticCollection);
+        return new IcarusLinter(this.diagnosticManager);
       case 'xvlog':
-        return new XvlogLinter(this.diagnosticCollection);
+        return new XvlogLinter(this.diagnosticManager);
       case 'modelsim':
-        return new ModelsimLinter(this.diagnosticCollection);
+        return new ModelsimLinter(this.diagnosticManager);
       case 'verilator':
-        return new VerilatorLinter(this.diagnosticCollection);
+        return new VerilatorLinter(this.diagnosticManager);
       case 'slang':
-        return new SlangLinter(this.diagnosticCollection);
+        return new SlangLinter(this.diagnosticManager);
       case 'verible-verilog-lint':
-        return new VeribleVerilogLintLinter(this.diagnosticCollection);
+        return new VeribleVerilogLintLinter(this.diagnosticManager);
       default:
         return null;
     }
@@ -53,24 +56,35 @@ export default class LintManager {
 
   configLinter() {
     const linterName = vscode.workspace.getConfiguration('verilog.linting').get<string>('linter');
+    const previousLinter = this.linter;
 
-    if (this.linter !== null) {
-      if (this.linter.name === linterName) {
+    if (previousLinter !== null) {
+      if (previousLinter.name === linterName) {
         return;
       }
     }
 
     if (linterName === undefined) {
+      if (previousLinter !== null) {
+        this.diagnosticManager.clearSource(previousLinter.name);
+        this.linter = null;
+      }
       this.logger.warn("Linter name is undefined");
       return;
     }
 
     this.linter = this.getLinterFromString(linterName);
     if (this.linter === null) {
+      if (previousLinter !== null) {
+        this.diagnosticManager.clearSource(previousLinter.name);
+      }
       this.logger.warn("Invalid linter name", { linter: linterName });
       return;
     }
 
+    if (previousLinter !== null) {
+      this.diagnosticManager.clearSource(previousLinter.name);
+    }
     this.logger.info("Linter configured", { linter: this.linter.name });
   }
 
@@ -89,10 +103,14 @@ export default class LintManager {
   }
 
   removeFileDiagnostics(doc: vscode.TextDocument) {
-    if (this.linter === null) {
-      return;
+    this.diagnosticManager.clearTargetUri(doc.uri);
+  }
+
+  dispose(): void {
+    for (const subscription of this.subscriptions) {
+      subscription.dispose();
     }
-    this.linter.removeFileDiagnostics(doc);
+    this.diagnosticManager.dispose();
   }
 
   async runLintTool() {

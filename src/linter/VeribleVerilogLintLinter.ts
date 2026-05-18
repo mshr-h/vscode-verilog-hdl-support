@@ -6,6 +6,7 @@ import BaseLinter from './BaseLinter';
 import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from './IcarusLinter';
+import LinterDiagnosticManager from './LinterDiagnosticManager';
 
 const isWindows = process.platform === 'win32';
 
@@ -83,8 +84,8 @@ export function parseVeribleVerilogLintDiagnostics(
 }
 
 export default class VeribleVerilogLintLinter extends BaseLinter {
-  constructor(diagnosticCollection: vscode.DiagnosticCollection) {
-    super('verible-verilog-lint', diagnosticCollection);
+  constructor(diagnosticManager: LinterDiagnosticManager) {
+    super('verible-verilog-lint', diagnosticManager);
     this.updateConfig();
   }
 
@@ -139,14 +140,14 @@ export default class VeribleVerilogLintLinter extends BaseLinter {
         isWindows,
       });
       this.logger.info`${diagnostics.length} errors/warnings returned`;
-      this.diagnosticCollection.set(doc.uri, diagnostics);
+      this.publishDocumentDiagnostics(doc, diagnostics);
     } catch (err) {
       if (err instanceof ToolRunError) {
         this.logger.error`verible-verilog-lint failed: ${err.message}`;
       } else {
         this.logger.error`verible-verilog-lint exception: ${err}`;
       }
-      this.diagnosticCollection.set(doc.uri, []);
+      this.publishDocumentDiagnostics(doc, []);
     }
   }
 }

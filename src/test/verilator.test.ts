@@ -5,6 +5,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import which from 'which';
+import LinterDiagnosticManager from '../linter/LinterDiagnosticManager';
 import VerilatorLinter, {
   buildVerilatorArgs,
   buildVerilatorCommand,
@@ -302,7 +303,7 @@ suite('Verilator Linter', () => {
     try {
       await withVerilatorConfig(verilatorPath, {}, async () => {
         const diagnostics = vscode.languages.createDiagnosticCollection('verilator-test');
-        const linter = new VerilatorLinter(diagnostics);
+        const linter = new VerilatorLinter(new LinterDiagnosticManager(diagnostics));
         const document = await vscode.workspace.openTextDocument(tempFilePath);
 
         linter.startLint(document);
@@ -333,7 +334,7 @@ suite('Verilator Linter', () => {
     try {
       await withVerilatorConfig(verilatorPath, { arguments: '-Wall' }, async () => {
         const diagnostics = vscode.languages.createDiagnosticCollection('verilator-warning-test');
-        const linter = new VerilatorLinter(diagnostics);
+        const linter = new VerilatorLinter(new LinterDiagnosticManager(diagnostics));
         const document = await vscode.workspace.openTextDocument(tempFilePath);
 
         linter.startLint(document);
@@ -363,7 +364,7 @@ suite('Verilator Linter', () => {
     try {
       await withVerilatorConfig(verilatorPath, {}, async () => {
         const diagnostics = vscode.languages.createDiagnosticCollection('verilator-space-test');
-        const linter = new VerilatorLinter(diagnostics);
+        const linter = new VerilatorLinter(new LinterDiagnosticManager(diagnostics));
         const document = await vscode.workspace.openTextDocument(tempFilePath);
 
         linter.startLint(document);
@@ -394,7 +395,7 @@ suite('Verilator Linter', () => {
     try {
       await withVerilatorConfig(verilatorPath, { includePath: [tempRoot] }, async () => {
         const diagnostics = vscode.languages.createDiagnosticCollection('verilator-include-test');
-        const linter = new VerilatorLinter(diagnostics);
+        const linter = new VerilatorLinter(new LinterDiagnosticManager(diagnostics));
         const document = await vscode.workspace.openTextDocument(tempFilePath);
 
         linter.startLint(document);
@@ -434,7 +435,7 @@ suite('Verilator Linter', () => {
           const diagnostics = vscode.languages.createDiagnosticCollection(
             'verilator-include-root-test'
           );
-          const linter = new VerilatorLinter(diagnostics);
+          const linter = new VerilatorLinter(new LinterDiagnosticManager(diagnostics));
           const document = await vscode.workspace.openTextDocument(tempFilePath);
 
           linter.startLint(document);

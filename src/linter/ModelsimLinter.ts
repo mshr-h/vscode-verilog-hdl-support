@@ -5,6 +5,7 @@ import BaseLinter from './BaseLinter';
 import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from './IcarusLinter';
+import LinterDiagnosticManager from './LinterDiagnosticManager';
 
 export interface BuildModelsimArgsOptions {
   workLibrary: string;
@@ -72,8 +73,8 @@ export function parseModelsimDiagnostics(
 export default class ModelsimLinter extends BaseLinter {
   private modelsimWork!: string;
 
-  constructor(diagnosticCollection: vscode.DiagnosticCollection) {
-    super('modelsim', diagnosticCollection);
+  constructor(diagnosticManager: LinterDiagnosticManager) {
+    super('modelsim', diagnosticManager);
     this.updateConfig();
   }
 
@@ -120,14 +121,14 @@ export default class ModelsimLinter extends BaseLinter {
       });
       const diagnostics = parseModelsimDiagnostics(result.stdout, doc.fileName);
       this.logger.info`${diagnostics.length} errors/warnings returned`;
-      this.diagnosticCollection.set(doc.uri, diagnostics);
+      this.publishDocumentDiagnostics(doc, diagnostics);
     } catch (err) {
       if (err instanceof ToolRunError) {
         this.logger.error`modelsim failed: ${err.message}`;
       } else {
         this.logger.error`modelsim exception: ${err}`;
       }
-      this.diagnosticCollection.set(doc.uri, []);
+      this.publishDocumentDiagnostics(doc, []);
     }
   }
 }

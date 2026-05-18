@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as child from 'child_process';
 import { type Logger } from '@logtape/logtape';
 import { getExtensionLogger } from '../logging';
+import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
 
 /** Common configuration interface for linters */
 export interface LinterConfig {
@@ -23,8 +24,8 @@ export interface LinterConfig {
  * and reporting diagnostics to VS Code.
  */
 export default abstract class BaseLinter {
-  /** The diagnostic collection for reporting issues */
-  protected diagnosticCollection: vscode.DiagnosticCollection;
+  /** The diagnostic manager for reporting issues */
+  protected diagnosticManager: LinterDiagnosticManager;
   /** The name of the linter */
   name: string;
   /** The logger instance for output */
@@ -40,10 +41,10 @@ export default abstract class BaseLinter {
   /**
    * Creates a new BaseLinter instance.
    * @param name - The name of the linter
-   * @param diagnosticCollection - The VS Code diagnostic collection
+   * @param diagnosticManager - The linter diagnostic manager
    */
-  constructor(name: string, diagnosticCollection: vscode.DiagnosticCollection) {
-    this.diagnosticCollection = diagnosticCollection;
+  constructor(name: string, diagnosticManager: LinterDiagnosticManager) {
+    this.diagnosticManager = diagnosticManager;
     this.name = name;
     this.logger = getExtensionLogger('Linter', name);
 
@@ -142,7 +143,29 @@ export default abstract class BaseLinter {
    * @param doc - The document to clear diagnostics for
    */
   public removeFileDiagnostics(doc: vscode.TextDocument) {
-    this.diagnosticCollection.delete(doc.uri);
+    this.diagnosticManager.clearOwner(this.name, doc.uri);
+  }
+
+  protected publishDiagnostics(
+    ownerDoc: vscode.TextDocument,
+    diagnosticsByUri: DiagnosticMap
+  ): void {
+    // TODO: Add per-owner run generation tracking to avoid slower stale runs overwriting newer ones.
+    this.diagnosticManager.replaceRunDiagnostics(this.name, ownerDoc.uri, diagnosticsByUri);
+  }
+
+  protected publishDocumentDiagnostics(
+    ownerDoc: vscode.TextDocument,
+    diagnostics: vscode.Diagnostic[]
+  ): void {
+    const diagnosticsByUri: DiagnosticMap = new Map();
+    if (diagnostics.length > 0) {
+      diagnosticsByUri.set(ownerDoc.uri.toString(), {
+        uri: ownerDoc.uri,
+        diagnostics,
+      });
+    }
+    this.publishDiagnostics(ownerDoc, diagnosticsByUri);
   }
 
   /**

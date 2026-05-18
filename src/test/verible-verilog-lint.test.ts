@@ -5,6 +5,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import which from 'which';
+import LinterDiagnosticManager from '../linter/LinterDiagnosticManager';
 import VeribleVerilogLintLinter, {
   buildVeribleVerilogLintArgs,
   parseVeribleVerilogLintDiagnostics,
@@ -90,7 +91,7 @@ suite('Verible Verilog Lint', () => {
 
       const diagnostics = vscode.languages.createDiagnosticCollection('verible-verilog-lint-test');
       const linter = new VeribleVerilogLintLinter(
-        diagnostics
+        new LinterDiagnosticManager(diagnostics)
       );
       const document = await vscode.workspace.openTextDocument(tempFilePath);
 
