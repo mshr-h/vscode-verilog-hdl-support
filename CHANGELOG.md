@@ -10,8 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 - Fix state explosion during backtracking in variable regex [#559](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/559)
 - Improved Ctags execution by streaming output through a shared tool runner, avoiding maxBuffer failures on large HDL files. [#562](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/562)
-- Migrated Icarus Verilog lint execution to the shared ToolRunner for safer argument handling and improved path robustness. [#563](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/563)
-- Migrated lint tool integrations to the shared ToolRunner for safer argument handling and improved path robustness.
+- Migrated lint tool integrations to the shared ToolRunner for safer argument handling and improved path robustness. [#563](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/563), [#564](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/564)
 
 ### Removed
 
