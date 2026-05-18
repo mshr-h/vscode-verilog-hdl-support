@@ -6,6 +6,8 @@ import BaseLinter from './BaseLinter';
 import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from './IcarusLinter';
+import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
+import LintRunManager, { type LintRunHandle } from './LintRunManager';
 
 const isWindows = process.platform === 'win32';
 
@@ -217,10 +219,9 @@ export function parseVerilatorDiagnostics(
 export default class VerilatorLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
   private useWSL!: boolean;
-  private readonly diagnosticUris: Set<string> = new Set<string>();
 
-  constructor(diagnosticCollection: vscode.DiagnosticCollection) {
-    super('verilator', diagnosticCollection);
+  constructor(diagnosticManager: LinterDiagnosticManager, runManager: LintRunManager) {
+    super('verilator', diagnosticManager, runManager);
     this.updateConfig();
   }
 
@@ -252,7 +253,7 @@ export default class VerilatorLinter extends BaseLinter {
     return convertVerilatorSeverity(severityString);
   }
 
-  protected lint(doc: vscode.TextDocument) {
+  protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
     const paths = getVerilatorPaths({
       documentPath: doc.uri.fsPath,
       isWindows,
@@ -278,14 +279,15 @@ export default class VerilatorLinter extends BaseLinter {
 
     this.logger.info("Executing", { command: commandInfo.command, args, cwd: paths.cwd });
 
-    void this.runVerilator(commandInfo.command, args, paths.cwd, doc);
+    await this.runVerilator(commandInfo.command, args, paths.cwd, doc, run);
   }
 
   private async runVerilator(
     command: string,
     args: string[],
     cwd: string,
-    doc: vscode.TextDocument
+    doc: vscode.TextDocument,
+    run: LintRunHandle
   ): Promise<void> {
     try {
       const result = await runTool({
@@ -294,7 +296,11 @@ export default class VerilatorLinter extends BaseLinter {
         cwd,
         collectStdout: true,
         collectStderr: true,
+        cancellationToken: run.cancellationToken,
       });
+      if (!run.isCurrent()) {
+        return;
+      }
       const filesDiag = parseVerilatorDiagnostics({
         stderr: result.stderr,
         isWindows,
@@ -309,36 +315,30 @@ export default class VerilatorLinter extends BaseLinter {
         },
       });
 
-      this.replaceDiagnostics(doc, filesDiag);
+      this.replaceDiagnostics(doc, run, filesDiag);
     } catch (err) {
+      if (err instanceof ToolRunError && err.reason === 'cancelled') {
+        return;
+      }
       if (err instanceof ToolRunError) {
         this.logger.error`verilator failed: ${err.message}`;
       } else {
         this.logger.error`verilator exception: ${err}`;
       }
-      this.replaceDiagnostics(doc, new Map<string, vscode.Diagnostic[]>());
+      this.replaceDiagnostics(doc, run, new Map<string, vscode.Diagnostic[]>());
     }
   }
 
   private replaceDiagnostics(
     doc: vscode.TextDocument,
+    run: LintRunHandle,
     filesDiag: Map<string, vscode.Diagnostic[]>
   ): void {
-    for (const fsPath of this.diagnosticUris) {
-      this.diagnosticCollection.delete(vscode.Uri.file(fsPath));
-    }
-    this.diagnosticUris.clear();
-
-    if (filesDiag.size === 0) {
-      this.diagnosticCollection.set(doc.uri, []);
-      this.diagnosticUris.add(doc.uri.fsPath);
-      return;
-    }
-
+    const diagnosticsByUri: DiagnosticMap = new Map();
     filesDiag.forEach((issuesArray, fileName) => {
       const fileURI = vscode.Uri.file(fileName);
-      this.diagnosticCollection.set(fileURI, issuesArray);
-      this.diagnosticUris.add(fileName);
+      diagnosticsByUri.set(fileURI.toString(), { uri: fileURI, diagnostics: issuesArray });
     });
+    this.publishDiagnosticsIfCurrent(doc, run, diagnosticsByUri);
   }
 }

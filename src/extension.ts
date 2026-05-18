@@ -135,6 +135,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Register command for manual linting
   lintManager = new LintManager();
+  context.subscriptions.push(lintManager);
   context.subscriptions.push(
     vscode.commands.registerCommand('verilog.lint', lintManager.runLintTool, lintManager)
   );

@@ -6,6 +6,8 @@ import BaseLinter from './BaseLinter';
 import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from './IcarusLinter';
+import LinterDiagnosticManager from './LinterDiagnosticManager';
+import LintRunManager, { type LintRunHandle } from './LintRunManager';
 
 const isWindows = process.platform === 'win32';
 
@@ -83,8 +85,8 @@ export function parseVeribleVerilogLintDiagnostics(
 }
 
 export default class VeribleVerilogLintLinter extends BaseLinter {
-  constructor(diagnosticCollection: vscode.DiagnosticCollection) {
-    super('verible-verilog-lint', diagnosticCollection);
+  constructor(diagnosticManager: LinterDiagnosticManager, runManager: LintRunManager) {
+    super('verible-verilog-lint', diagnosticManager, runManager);
     this.updateConfig();
   }
 
@@ -98,7 +100,7 @@ export default class VeribleVerilogLintLinter extends BaseLinter {
     return convertVeribleSeverity(message);
   }
 
-  protected lint(doc: vscode.TextDocument) {
+  protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
     this.logger.info`Executing VeribleVerilogLintLinter.lint()`;
 
     const binName = isWindows ? 'verible-verilog-lint.exe' : 'verible-verilog-lint';
@@ -114,14 +116,15 @@ export default class VeribleVerilogLintLinter extends BaseLinter {
 
     this.logger.info("Executing", { command: binPath, args, cwd });
 
-    void this.runVeribleVerilogLint(binPath, args, cwd, doc);
+    await this.runVeribleVerilogLint(binPath, args, cwd, doc, run);
   }
 
   private async runVeribleVerilogLint(
     command: string,
     args: string[],
     cwd: string,
-    doc: vscode.TextDocument
+    doc: vscode.TextDocument,
+    run: LintRunHandle
   ): Promise<void> {
     try {
       const result = await runTool({
@@ -130,7 +133,11 @@ export default class VeribleVerilogLintLinter extends BaseLinter {
         cwd,
         collectStdout: true,
         collectStderr: true,
+        cancellationToken: run.cancellationToken,
       });
+      if (!run.isCurrent()) {
+        return;
+      }
       const output = [result.stdout, result.stderr].filter((value) => value.length > 0).join('\n');
       const diagnostics = parseVeribleVerilogLintDiagnostics({
         output,
@@ -139,14 +146,17 @@ export default class VeribleVerilogLintLinter extends BaseLinter {
         isWindows,
       });
       this.logger.info`${diagnostics.length} errors/warnings returned`;
-      this.diagnosticCollection.set(doc.uri, diagnostics);
+      this.publishDocumentDiagnosticsIfCurrent(doc, run, diagnostics);
     } catch (err) {
+      if (err instanceof ToolRunError && err.reason === 'cancelled') {
+        return;
+      }
       if (err instanceof ToolRunError) {
         this.logger.error`verible-verilog-lint failed: ${err.message}`;
       } else {
         this.logger.error`verible-verilog-lint exception: ${err}`;
       }
-      this.diagnosticCollection.set(doc.uri, []);
+      this.publishDocumentDiagnosticsIfCurrent(doc, run, []);
     }
   }
 }

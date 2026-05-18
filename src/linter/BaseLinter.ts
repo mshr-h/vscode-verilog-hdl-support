@@ -4,6 +4,8 @@ import * as path from 'path';
 import * as child from 'child_process';
 import { type Logger } from '@logtape/logtape';
 import { getExtensionLogger } from '../logging';
+import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
+import LintRunManager, { type LintRunHandle } from './LintRunManager';
 
 /** Common configuration interface for linters */
 export interface LinterConfig {
@@ -23,8 +25,9 @@ export interface LinterConfig {
  * and reporting diagnostics to VS Code.
  */
 export default abstract class BaseLinter {
-  /** The diagnostic collection for reporting issues */
-  protected diagnosticCollection: vscode.DiagnosticCollection;
+  /** The diagnostic manager for reporting issues */
+  protected diagnosticManager: LinterDiagnosticManager;
+  protected runManager: LintRunManager;
   /** The name of the linter */
   name: string;
   /** The logger instance for output */
@@ -40,10 +43,16 @@ export default abstract class BaseLinter {
   /**
    * Creates a new BaseLinter instance.
    * @param name - The name of the linter
-   * @param diagnosticCollection - The VS Code diagnostic collection
+   * @param diagnosticManager - The linter diagnostic manager
+   * @param runManager - The linter run manager
    */
-  constructor(name: string, diagnosticCollection: vscode.DiagnosticCollection) {
-    this.diagnosticCollection = diagnosticCollection;
+  constructor(
+    name: string,
+    diagnosticManager: LinterDiagnosticManager,
+    runManager: LintRunManager
+  ) {
+    this.diagnosticManager = diagnosticManager;
+    this.runManager = runManager;
     this.name = name;
     this.logger = getExtensionLogger('Linter', name);
 
@@ -133,8 +142,15 @@ export default abstract class BaseLinter {
    * Starts the linting process for a document.
    * @param doc - The document to lint
    */
-  public startLint(doc: vscode.TextDocument) {
-    this.lint(doc);
+  public async startLint(doc: vscode.TextDocument): Promise<void> {
+    const run = this.runManager.beginRun(this.name, doc.uri);
+    try {
+      await this.lint(doc, run);
+    } catch (err) {
+      this.logger.error`Unexpected lint error: ${err}`;
+    } finally {
+      this.runManager.finishRun(run);
+    }
   }
 
   /**
@@ -142,7 +158,37 @@ export default abstract class BaseLinter {
    * @param doc - The document to clear diagnostics for
    */
   public removeFileDiagnostics(doc: vscode.TextDocument) {
-    this.diagnosticCollection.delete(doc.uri);
+    this.diagnosticManager.clearOwner(this.name, doc.uri);
+  }
+
+  protected publishDiagnosticsIfCurrent(
+    ownerDoc: vscode.TextDocument,
+    run: LintRunHandle,
+    diagnosticsByUri: DiagnosticMap
+  ): void {
+    if (!run.isCurrent()) {
+      this.logger.info("Skipping stale lint diagnostics", {
+        ownerUri: ownerDoc.uri.toString(),
+        generation: run.generation,
+      });
+      return;
+    }
+    this.diagnosticManager.replaceRunDiagnostics(this.name, ownerDoc.uri, diagnosticsByUri);
+  }
+
+  protected publishDocumentDiagnosticsIfCurrent(
+    ownerDoc: vscode.TextDocument,
+    run: LintRunHandle,
+    diagnostics: vscode.Diagnostic[]
+  ): void {
+    const diagnosticsByUri: DiagnosticMap = new Map();
+    if (diagnostics.length > 0) {
+      diagnosticsByUri.set(ownerDoc.uri.toString(), {
+        uri: ownerDoc.uri,
+        diagnostics,
+      });
+    }
+    this.publishDiagnosticsIfCurrent(ownerDoc, run, diagnosticsByUri);
   }
 
   /**
@@ -158,5 +204,5 @@ export default abstract class BaseLinter {
    * Must be implemented by subclasses.
    * @param doc - The document to lint
    */
-  protected abstract lint(doc: vscode.TextDocument): void;
+  protected abstract lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void>;
 }

@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 import * as assert from 'assert';
-import { runTool } from '../tools/ToolRunner';
+import * as vscode from 'vscode';
+import { runTool, ToolRunError } from '../tools/ToolRunner';
 
-const nodeCommand = 'node';
+const nodeCommand = process.execPath;
 
 suite('ToolRunner', () => {
   test('handles stdout larger than child_process.exec maxBuffer', async () => {
@@ -66,5 +67,40 @@ suite('ToolRunner', () => {
 
     assert.strictEqual(result.exitCode, 0);
     assert.deepStrictEqual(lines, ['warn-one', 'warn-two']);
+  });
+
+  test('rejects before spawn when cancellation is already requested', async () => {
+    const tokenSource = new vscode.CancellationTokenSource();
+    tokenSource.cancel();
+
+    await assert.rejects(
+      runTool({
+        command: nodeCommand,
+        args: ['-e', "process.stdout.write('should not run')"],
+        cancellationToken: tokenSource.token,
+      }),
+      (err: unknown) => err instanceof ToolRunError && err.reason === 'cancelled'
+    );
+  });
+
+  test('cancels a running process promptly', async () => {
+    const tokenSource = new vscode.CancellationTokenSource();
+    const started = Date.now();
+    const run = runTool({
+      command: nodeCommand,
+      args: ['-e', "setInterval(() => process.stdout.write('tick\\n'), 20);"],
+      collectStdout: true,
+      cancellationToken: tokenSource.token,
+    });
+
+    setTimeout(() => {
+      tokenSource.cancel();
+    }, 50);
+
+    await assert.rejects(
+      run,
+      (err: unknown) => err instanceof ToolRunError && err.reason === 'cancelled'
+    );
+    assert.ok(Date.now() - started < 2000, 'Cancellation should finish promptly');
   });
 });
