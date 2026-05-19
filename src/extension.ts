@@ -8,6 +8,7 @@ import * as HoverProvider from './providers/HoverProvider';
 import * as DefinitionProvider from './providers/DefinitionProvider';
 import * as CompletionItemProvider from './providers/CompletionItemProvider';
 import * as ModuleInstantiation from './commands/ModuleInstantiation';
+import { registerDoctorCommand } from './commands/Doctor';
 import * as FormatProvider from './providers/FormatProvider';
 import { ExtensionManager } from './extensionManager';
 import { initAllLanguageClients, stopAllLanguageClients } from './languageServer';
@@ -145,6 +146,7 @@ export async function activate(context: vscode.ExtensionContext) {
       FliplotPanel.show(context);
     })
   );
+  context.subscriptions.push(registerDoctorCommand(context));
 
   context.subscriptions.push(
     vscode.window.registerCustomEditorProvider(

@@ -95,4 +95,20 @@ suite('Extension Test Suite', () => {
       'verilog.openFliplot command should be registered'
     );
   });
+
+  test('extension should register verilog.doctor command', async function () {
+    this.timeout(10000);
+    const extension = vscode.extensions.getExtension(EXTENSION_ID);
+    assert.ok(extension, 'Extension should be present');
+
+    if (!extension.isActive) {
+      await extension.activate();
+    }
+
+    const commands = await vscode.commands.getCommands(true);
+    assert.ok(
+      commands.includes('verilog.doctor'),
+      'verilog.doctor command should be registered'
+    );
+  });
 });
