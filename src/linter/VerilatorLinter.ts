@@ -5,6 +5,11 @@ import * as process from 'process';
 import BaseLinter from './BaseLinter';
 import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
+import {
+  convertFromWslPath,
+  convertToWslPath,
+  type WslPathConversionOptions,
+} from '../tools/WslPathConverter';
 import { splitCommandLineArgs } from './IcarusLinter';
 import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
@@ -45,12 +50,37 @@ export interface BuildVerilatorArgsOptions {
   documentPath: string;
 }
 
+export interface BuildVerilatorRunInputsOptions {
+  documentPath: string;
+  languageId: string;
+  isWindows: boolean;
+  useWSL: boolean;
+  runAtFileLocation: boolean;
+  workspaceFolder?: string;
+  linterInstalledPath: string;
+  includePaths: string[];
+  customArguments: string;
+  cancellationToken?: vscode.CancellationToken;
+  convertToWslPathFn?: typeof convertToWslPath;
+}
+
+export interface VerilatorRunInputs {
+  command: string;
+  args: string[];
+  cwd: string;
+}
+
 export interface ParseVerilatorDiagnosticsOptions {
   stderr: string;
   isWindows: boolean;
   useWSL: boolean;
-  convertFromWslPath?: (inputPath: string) => string;
   onPassthrough?: (severity: 'Error' | 'Warning', line: string) => void;
+}
+
+export interface ConvertDiagnosticPathsFromWslOptions {
+  cancellationToken?: vscode.CancellationToken;
+  wslCommand?: string;
+  convertFromWslPathFn?: typeof convertFromWslPath;
 }
 
 export function buildVerilatorCommand(options: VerilatorCommandOptions): VerilatorCommand {
@@ -106,6 +136,59 @@ export function buildVerilatorArgs(options: BuildVerilatorArgsOptions): string[]
   args.push(...splitCommandLineArgs(options.customArguments));
   args.push(options.documentPath);
   return args;
+}
+
+export async function buildVerilatorRunInputs(
+  options: BuildVerilatorRunInputsOptions
+): Promise<VerilatorRunInputs> {
+  const commandInfo = buildVerilatorCommand({
+    isWindows: options.isWindows,
+    useWSL: options.useWSL,
+    linterInstalledPath: options.linterInstalledPath,
+  });
+  const dirname = options.isWindows ? path.win32.dirname : path.dirname;
+  const rawDocFolder = dirname(options.documentPath);
+  let docUri = options.documentPath;
+  let docFolder = rawDocFolder;
+  let includePaths = options.includePaths;
+
+  if (options.isWindows) {
+    if (options.useWSL) {
+      const convert = options.convertToWslPathFn ?? convertToWslPath;
+      const conversionOptions: WslPathConversionOptions = {
+        cancellationToken: options.cancellationToken,
+        wslCommand: commandInfo.command,
+      };
+      docUri = await convert(options.documentPath, conversionOptions);
+      docFolder = await convert(rawDocFolder, conversionOptions);
+      includePaths = await Promise.all(
+        options.includePaths.map((includePath) => convert(includePath, conversionOptions))
+      );
+    } else {
+      docUri = options.documentPath.replace(/\\/g, '/');
+      docFolder = rawDocFolder.replace(/\\/g, '/');
+    }
+  }
+
+  // Preserve the previous Windows/WSL cwd behavior. Generated Verilator paths are
+  // converted for args, while cwd stays in the host VS Code filesystem.
+  const cwd = options.runAtFileLocation
+    ? options.isWindows
+      ? dirname(options.documentPath.replace(/\\/g, '/'))
+      : docFolder
+    : options.workspaceFolder ?? docFolder;
+
+  const args = commandInfo.leadingArgs.concat(
+    buildVerilatorArgs({
+      languageId: options.languageId,
+      docFolder,
+      includePaths,
+      customArguments: options.customArguments,
+      documentPath: docUri,
+    })
+  );
+
+  return { command: commandInfo.command, args, cwd };
 }
 
 function convertVerilatorSeverity(severityString: string): vscode.DiagnosticSeverity {
@@ -184,11 +267,6 @@ export function parseVerilatorDiagnostics(
     // replacing "\\" and "\" with "/" for consistency
     if (options.isWindows) {
       filePath = filePath.replace(/(\\\\)|(\\)/g, "/");
-
-      // if WSL is used, convert the path to Windows format
-      if (options.useWSL && options.convertFromWslPath) {
-        filePath = options.convertFromWslPath(filePath);
-      }
     }
 
     // if there isn't a list of errors for this file already, it needs to be created
@@ -214,6 +292,31 @@ export function parseVerilatorDiagnostics(
   });
 
   return filesDiag;
+}
+
+export async function convertDiagnosticPathsFromWsl(
+  filesDiag: Map<string, vscode.Diagnostic[]>,
+  options: ConvertDiagnosticPathsFromWslOptions = {}
+): Promise<Map<string, vscode.Diagnostic[]>> {
+  const convert = options.convertFromWslPathFn ?? convertFromWslPath;
+  const convertedPathBySource = new Map<string, string>();
+  const conversionOptions: WslPathConversionOptions = {
+    cancellationToken: options.cancellationToken,
+    wslCommand: options.wslCommand,
+  };
+
+  for (const filePath of filesDiag.keys()) {
+    convertedPathBySource.set(filePath, await convert(filePath, conversionOptions));
+  }
+
+  const convertedDiag = new Map<string, vscode.Diagnostic[]>();
+  for (const [filePath, diagnostics] of filesDiag) {
+    const convertedPath = convertedPathBySource.get(filePath) ?? filePath;
+    const existingDiagnostics = convertedDiag.get(convertedPath) ?? [];
+    convertedDiag.set(convertedPath, existingDiagnostics.concat(diagnostics));
+  }
+
+  return convertedDiag;
 }
 
 export default class VerilatorLinter extends BaseLinter {
@@ -254,32 +357,29 @@ export default class VerilatorLinter extends BaseLinter {
   }
 
   protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
-    const paths = getVerilatorPaths({
-      documentPath: doc.uri.fsPath,
-      isWindows,
-      useWSL: this.useWSL,
-      runAtFileLocation: this.config.runAtFileLocation,
-      workspaceFolder: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath,
-      convertToWslPath: (inputPath) => this.convertToWslPath(inputPath),
-    });
-    const commandInfo = buildVerilatorCommand({
-      isWindows,
-      useWSL: this.useWSL,
-      linterInstalledPath: this.config.linterInstalledPath,
-    });
-    const args = commandInfo.leadingArgs.concat(
-      buildVerilatorArgs({
+    try {
+      const inputs = await buildVerilatorRunInputs({
+        documentPath: doc.uri.fsPath,
         languageId: doc.languageId,
-        docFolder: paths.docFolder,
+        isWindows,
+        useWSL: this.useWSL,
+        runAtFileLocation: this.config.runAtFileLocation,
+        workspaceFolder: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath,
+        linterInstalledPath: this.config.linterInstalledPath,
         includePaths: this.config.includePath,
         customArguments: this.config.arguments,
-        documentPath: paths.docUri,
-      })
-    );
+        cancellationToken: run.cancellationToken,
+      });
+      if (!run.isCurrent()) {
+        return;
+      }
 
-    this.logger.info("Executing", { command: commandInfo.command, args, cwd: paths.cwd });
+      this.logger.info("Executing", { command: inputs.command, args: inputs.args, cwd: inputs.cwd });
 
-    await this.runVerilator(commandInfo.command, args, paths.cwd, doc, run);
+      await this.runVerilator(inputs.command, inputs.args, inputs.cwd, doc, run);
+    } catch (err) {
+      this.handleVerilatorFailure(err, doc, run);
+    }
   }
 
   private async runVerilator(
@@ -305,7 +405,6 @@ export default class VerilatorLinter extends BaseLinter {
         stderr: result.stderr,
         isWindows,
         useWSL: this.useWSL,
-        convertFromWslPath: (inputPath) => this.convertFromWslPath(inputPath),
         onPassthrough: (severity, line) => {
           if (severity === 'Warning') {
             this.logger.warn`${line}`;
@@ -315,18 +414,37 @@ export default class VerilatorLinter extends BaseLinter {
         },
       });
 
-      this.replaceDiagnostics(doc, run, filesDiag);
-    } catch (err) {
-      if (err instanceof ToolRunError && err.reason === 'cancelled') {
+      const resolvedFilesDiag =
+        isWindows && this.useWSL
+          ? await convertDiagnosticPathsFromWsl(filesDiag, {
+              cancellationToken: run.cancellationToken,
+              wslCommand: command,
+            })
+          : filesDiag;
+      if (!run.isCurrent()) {
         return;
       }
-      if (err instanceof ToolRunError) {
-        this.logger.error`verilator failed: ${err.message}`;
-      } else {
-        this.logger.error`verilator exception: ${err}`;
-      }
-      this.replaceDiagnostics(doc, run, new Map<string, vscode.Diagnostic[]>());
+
+      this.replaceDiagnostics(doc, run, resolvedFilesDiag);
+    } catch (err) {
+      this.handleVerilatorFailure(err, doc, run);
     }
+  }
+
+  private handleVerilatorFailure(
+    err: unknown,
+    doc: vscode.TextDocument,
+    run: LintRunHandle
+  ): void {
+    if (err instanceof ToolRunError && err.reason === 'cancelled') {
+      return;
+    }
+    if (err instanceof ToolRunError) {
+      this.logger.error`verilator failed: ${err.message}`;
+    } else {
+      this.logger.error`verilator exception: ${err}`;
+    }
+    this.replaceDiagnostics(doc, run, new Map<string, vscode.Diagnostic[]>());
   }
 
   private replaceDiagnostics(

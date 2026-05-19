@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 - Add Verilog: Doctor command to diagnose external tool configuration. [#567](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/567)
 
+### Changed
+
+- Refactored WSL path conversion for linting to use the shared async ToolRunner infrastructure instead of synchronous child process execution. [#568](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/568)
+
 ## [1.23.0] - 2026-05-18
 
 ### Fixed
