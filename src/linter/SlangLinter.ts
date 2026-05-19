@@ -5,6 +5,7 @@ import * as process from 'process';
 import BaseLinter from './BaseLinter';
 import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
+import { convertToWslPath, type WslPathConversionOptions } from '../tools/WslPathConverter';
 import { splitCommandLineArgs } from './IcarusLinter';
 import LinterDiagnosticManager from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
@@ -172,19 +173,12 @@ export default class SlangLinter extends BaseLinter {
   }
 
   protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
-    const paths = getSlangPaths({
-      documentPath: doc.uri.fsPath,
-      isWindows,
-      useWSL: this.useWSL,
-      runAtFileLocation: this.config.runAtFileLocation,
-      workspaceFolder: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath,
-      convertToWslPath: (inputPath) => this.convertToWslPath(inputPath),
-    });
     const commandInfo = buildSlangCommand({
       isWindows,
       useWSL: this.useWSL,
       linterInstalledPath: this.config.linterInstalledPath,
     });
+    const paths = await this.getRunPaths(doc.uri.fsPath, commandInfo.command, run);
     const args = commandInfo.leadingArgs.concat(
       buildSlangArgs({
         docFolder: paths.docFolder,
@@ -197,6 +191,39 @@ export default class SlangLinter extends BaseLinter {
     this.logger.info("Executing", { command: commandInfo.command, args, cwd: paths.cwd });
 
     await this.runSlang(commandInfo.command, args, paths.cwd, paths.docUri, doc, run);
+  }
+
+  private async getRunPaths(
+    documentPath: string,
+    wslCommand: string,
+    run: LintRunHandle
+  ): Promise<SlangPaths> {
+    const dirname = isWindows ? path.win32.dirname : path.dirname;
+    const rawDocFolder = dirname(documentPath);
+    let docUri = documentPath;
+    let docFolder = rawDocFolder;
+
+    if (isWindows) {
+      if (this.useWSL) {
+        const conversionOptions: WslPathConversionOptions = {
+          cancellationToken: run.cancellationToken,
+          wslCommand,
+        };
+        docUri = await convertToWslPath(documentPath, conversionOptions);
+        docFolder = await convertToWslPath(rawDocFolder, conversionOptions);
+      } else {
+        docUri = documentPath.replace(/\\/g, '/');
+        docFolder = rawDocFolder.replace(/\\/g, '/');
+      }
+    }
+
+    const cwd = this.config.runAtFileLocation
+      ? isWindows && this.useWSL
+        ? rawDocFolder
+        : docFolder
+      : vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? docFolder;
+
+    return { docUri, docFolder, cwd };
   }
 
   private async runSlang(
@@ -224,7 +251,6 @@ export default class SlangLinter extends BaseLinter {
         documentPath,
         isWindows,
         useWSL: this.useWSL,
-        convertToWslPath: (inputPath) => this.convertToWslPath(inputPath),
       });
       this.logger.info`${diagnostics.length} errors/warnings returned`;
       this.publishDocumentDiagnosticsIfCurrent(doc, run, diagnostics);

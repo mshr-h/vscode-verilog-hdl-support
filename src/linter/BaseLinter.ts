@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as child from 'child_process';
 import { type Logger } from '@logtape/logtape';
 import { getExtensionLogger } from '../logging';
 import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
@@ -116,26 +115,6 @@ export default abstract class BaseLinter {
       return docFolder;
     }
     return vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? docFolder;
-  }
-
-  /**
-   * Converts a Windows path to WSL path format.
-   * @param inputPath - The Windows path to convert
-   * @returns The WSL path
-   */
-  protected convertToWslPath(inputPath: string): string {
-    const cmd = `wsl wslpath '${inputPath}'`;
-    return child.execSync(cmd, {}).toString().replace(/\r?\n/g, '');
-  }
-
-  /**
-   * Converts a WSL path back to Windows path format.
-   * @param inputPath - The WSL path to convert
-   * @returns The Windows path
-   */
-  protected convertFromWslPath(inputPath: string): string {
-    const cmd = `wsl wslpath -w '${inputPath}'`;
-    return child.execSync(cmd, {}).toString().replace(/\r?\n/g, '');
   }
 
   /**
