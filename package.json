@@ -649,6 +649,10 @@
         "title": "Verilog: Rerun lint tool"
       },
       {
+        "command": "verilog.doctor",
+        "title": "Verilog: Doctor"
+      },
+      {
         "command": "verilog.openFliplot",
         "title": "Verilog: Open Fliplot Waveform Viewer"
       }

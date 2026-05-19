@@ -90,6 +90,10 @@ Add the installation path of Ctags binary in your `PATH` environment variable or
 
     Choose a lint tool from the list and run it manually. Useful if the code was changed by an external script or version control system.
 
+- **Verilog: Doctor**
+
+    Diagnose the configured external tools and write a report to the `Verilog Doctor` output channel. It checks Ctags, the selected linter, formatters, WSL setup, enabled language servers, include paths, and config files without running linting or formatting on user files.
+
 - **Instantiate Module**
 
     Choose a module present in your workspace to instantiate it in the current file.
