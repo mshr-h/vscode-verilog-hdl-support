@@ -158,7 +158,7 @@ suite('Verilator Linter', () => {
     assert.deepStrictEqual(args, ['--lint-only', '-I/tmp/rtl', '/tmp/rtl/top.v']);
   });
 
-  test('builds Windows command and slash-normalized generated paths without WSL', () => {
+  test('[windows] builds Windows command and slash-normalized generated paths without WSL', () => {
     const commandInfo = buildVerilatorCommand({
       isWindows: true,
       useWSL: false,
@@ -194,7 +194,7 @@ suite('Verilator Linter', () => {
     assert.ok(!args.some((arg) => arg.includes('"')), 'Args must not contain manual quotes');
   });
 
-  test('builds Windows WSL command with converted run input paths', async () => {
+  test('[windows] builds Windows WSL command with converted run input paths', async () => {
     const convertedInputs: string[] = [];
     const inputs = await buildVerilatorRunInputs({
       documentPath: 'C:\\workspace\\rtl\\top.sv',
@@ -267,7 +267,7 @@ suite('Verilator Linter', () => {
     assert.strictEqual(warningDiagnostics[0].code, 'WIDTH');
   });
 
-  test('converts WSL diagnostic paths back to Windows paths', async () => {
+  test('[windows] converts WSL diagnostic paths back to Windows paths', async () => {
     const diagnostics = parseVerilatorDiagnostics({
       stderr: '%Error: /mnt/c/workspace/rtl/top.sv:4:2: syntax error, unexpected endmodule',
       isWindows: true,
@@ -286,7 +286,7 @@ suite('Verilator Linter', () => {
     assert.strictEqual(sourceDiagnostics[0].range.start.character, 1);
   });
 
-  test('converts each unique WSL diagnostic path once and merges converted paths', async () => {
+  test('[windows] converts each unique WSL diagnostic path once and merges converted paths', async () => {
     const firstDiagnostic = new vscode.Diagnostic(
       new vscode.Range(0, 0, 0, 1),
       'first',

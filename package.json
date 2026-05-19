@@ -683,6 +683,7 @@
     "check-types": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "test": "vscode-test",
+    "test:windows": "vscode-test --config .vscode-test.windows.mjs --fgrep \"[windows]\"",
     "syntax": "js-yaml ./syntaxes/systemverilog.tmLanguage.yaml >./syntaxes/systemverilog.tmLanguage.json"
   },
   "dependencies": {
