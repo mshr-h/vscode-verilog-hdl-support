@@ -43,7 +43,7 @@ suite('Slang Linter', () => {
     assert.ok(!args.some((arg) => arg.includes('"')), 'Args must not contain manual quotes');
   });
 
-  test('builds Windows WSL command with converted generated paths', () => {
+  test('[windows] builds Windows WSL command with converted generated paths', () => {
     const commandInfo = buildSlangCommand({
       isWindows: true,
       useWSL: true,

@@ -15,7 +15,7 @@ function resultFor(options: ToolRunOptions, stdout: string, exitCode = 0, stderr
   };
 }
 
-suite('WslPathConverter', () => {
+suite('[windows] WslPathConverter', () => {
   test('convertToWslPath uses wslpath argv', async () => {
     const calls: ToolRunOptions[] = [];
     const fakeRunTool: typeof runTool = async (options) => {

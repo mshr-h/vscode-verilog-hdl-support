@@ -9,7 +9,7 @@ jobs:
     name: Upload vsix package
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
@@ -39,7 +39,14 @@ jobs:
         if: runner.os == 'Linux'
       - run: npm test
         if: runner.os == 'macOS'
+      - run: npm run compile-tests
+        if: runner.os == 'Windows'
       - run: npm run compile
+        if: runner.os == 'Windows'
+      - run: npm run test:windows
+        if: runner.os == 'Windows'
+      - run: npm run compile
+        if: runner.os != 'Windows'
       - run: npx @vscode/vsce package
       - name: upload vsix package
         if: runner.os == 'Linux'
