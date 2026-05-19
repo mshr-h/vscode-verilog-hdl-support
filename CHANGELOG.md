@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
-- Add Verilog: Doctor command to diagnose external tool configuration.
+- Add Verilog: Doctor command to diagnose external tool configuration. [#567](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/567)
 
 ## [1.23.0] - 2026-05-18
 
