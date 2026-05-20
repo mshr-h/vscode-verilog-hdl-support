@@ -204,8 +204,7 @@ export default class IcarusLinter extends BaseLinter {
   protected override updateConfig() {
     this.configuration = vscode.workspace.getConfiguration('verilog.linting.iverilog');
     this.config.arguments = this.configuration.get<string>('arguments', '');
-    const paths = this.configuration.get<string[]>('includePath', []);
-    this.config.includePath = this.resolveIncludePaths(paths);
+    this.config.includePath = this.configuration.get<string[]>('includePath', []);
     this.config.runAtFileLocation = this.configuration.get<boolean>('runAtFileLocation', false);
     this.standards = new Map<string, string>([
       ['verilog', this.configuration.get('verilogHDL.standard') || ''],
@@ -226,7 +225,7 @@ export default class IcarusLinter extends BaseLinter {
     const args = buildIcarusArgs({
       languageId: doc.languageId,
       standards: this.standards,
-      includePaths: this.config.includePath,
+      includePaths: this.resolveIncludePaths(this.config.includePath, doc),
       customArguments: this.config.arguments,
       documentPath: doc.uri.fsPath,
     });

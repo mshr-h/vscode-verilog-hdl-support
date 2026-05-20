@@ -6,9 +6,28 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import which from 'which';
-import { instantiateModule } from '../commands/ModuleInstantiation';
+import { instantiateModule, shouldShowParentDirectory } from '../commands/ModuleInstantiation';
 
 suite('Module Instantiation', () => {
+  test('uses the supplied workspace root for parent navigation decisions', () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'ctags-inst-root-'));
+    const firstRoot = path.join(tempRoot, 'first');
+    const activeRoot = path.join(tempRoot, 'active');
+    const activeDir = path.join(activeRoot, 'rtl');
+
+    try {
+      fs.mkdirSync(firstRoot, { recursive: true });
+      fs.mkdirSync(activeDir, { recursive: true });
+
+      assert.strictEqual(shouldShowParentDirectory(activeRoot, activeRoot), false);
+      assert.strictEqual(shouldShowParentDirectory(activeDir, activeRoot), true);
+      assert.strictEqual(shouldShowParentDirectory(activeDir, firstRoot), false);
+      assert.strictEqual(shouldShowParentDirectory(activeDir), false);
+    } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   test('skips instantiation when ctags is disabled', async function () {
     const ctagsConfig = vscode.workspace.getConfiguration('verilog.ctags');
     const previousEnabled = ctagsConfig.get('enabled');
