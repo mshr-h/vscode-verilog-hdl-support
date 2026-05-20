@@ -16,14 +16,16 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 ## Features
 
 - Syntax Highlighting
-  - Verilog-HDL
-  - SystemVerilog
-  - VHDL
-  - Verilog-AMS
-  - Vivado UCF constraints
-  - Synopsys Design Constraints
-  - Verilog Filelists (dot-F files)
-  - Tcl
+  - Verilog-HDL (`.v`, `.vh`, `.vl`)
+  - SystemVerilog (`.sv`, `.svh`, `.SV`)
+  - VHDL (`.vhd`, `.vhdl`, `.vho`)
+  - Verilog-AMS (`.vams`, `.va`)
+  - Vivado UCF constraints (`.ucf`)
+  - Synopsys Design Constraints (`.sdc`)
+  - Xilinx Design Constraints (`.xdc`)
+  - Unified Power Format (`.upf`)
+  - Verilog Filelists (`.f`)
+  - Tcl (`.tcl`, `.tm`, `.tk`)
 - \[Experimental\]Integrated VCD viewer powered by [fliplot](https://github.com/raczben/fliplot)
 - Simple Snippets
 - Linting support from:
@@ -109,7 +111,7 @@ Add the installation path of Ctags binary in your `PATH` environment variable or
 
 ### Language Servers (Experimental)
 
-We currently support the following Language Servers and enabled for Verilog-HDL, SystemVerilog and VHDL.
+We currently support the following Language Servers for Verilog-HDL, SystemVerilog, VHDL, and Tcl-based constraint files.
 You can enable multiple Language Servers at the same time.
 It might be pretty unstable because it's currently in the experimental support.
 If you encounter any problems even if it's not related to this feature, **deleting all the config may solve the problem**.
@@ -127,6 +129,8 @@ Install [svls](https://github.com/dalance/svls) via `cargo`:
 ```sh
 cargo install svls
 ```
+
+If `verilog.languageServer.svls.svlintTomlPath` is set, the extension passes it to the svls process as `SVLINT_CONFIG`.
 
 Install [vhdl_ls](https://github.com/VHDL-LS/rust_hdl) via `cargo`:
 

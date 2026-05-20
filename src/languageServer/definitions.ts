@@ -10,8 +10,18 @@ export type LanguageServerDefinition = {
   serverArgs: string[];
   serverDebugArgs: string[];
   buildClientOptions: () => LanguageClientOptions;
-  applyProcessEnv?: () => void;
+  buildEnv?: () => NodeJS.ProcessEnv | undefined;
 };
+
+export function buildSvlsEnv(): NodeJS.ProcessEnv | undefined {
+  const svlintToml: string = vscode.workspace
+    .getConfiguration('verilog.languageServer.svls')
+    .get('svlintTomlPath', '');
+  if (svlintToml === '') {
+    return undefined;
+  }
+  return { SVLINT_CONFIG: svlintToml };
+}
 
 export function createLanguageServerDefinitions(): LanguageServerDefinition[] {
   return [
@@ -23,15 +33,7 @@ export function createLanguageServerDefinitions(): LanguageServerDefinition[] {
       buildClientOptions: () => ({
         documentSelector: [{ scheme: 'file', language: 'systemverilog' }],
       }),
-      applyProcessEnv: () => {
-        // TODO: move to svls extension setting
-        const svlint_toml: string | undefined = vscode.workspace
-          .getConfiguration('verilog.languageServer.svls')
-          .get('svlintTomlPath');
-        if (svlint_toml !== undefined) {
-          process.env.SVLINT_CONFIG = svlint_toml;
-        }
-      },
+      buildEnv: buildSvlsEnv,
     },
     {
       name: 'veridian',

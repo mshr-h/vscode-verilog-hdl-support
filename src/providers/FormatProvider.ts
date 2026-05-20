@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
-import { execFileSync } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as crypto from 'crypto';
 import * as path from 'path';
 import { type Logger } from '@logtape/logtape';
 import { getExtensionLogger } from '../logging';
+import { runTool, ToolRunError } from '../tools/ToolRunner';
+import { splitCommandLineArgs } from '../utils/commandLine';
 import { getWorkspaceRootForDocument } from '../utils/workspace';
 
 // handle temporary file
@@ -37,6 +38,36 @@ class TemporaryFile {
   }
 }
 
+export function buildIStyleVerilogFormatterArgs(
+  tmpFilepath: string,
+  customArgs: string,
+  formatStyle: string
+): string[] {
+  const args: string[] = ['-n', ...splitCommandLineArgs(customArgs)];
+
+  // format style
+  switch (formatStyle) {
+    case 'ANSI':
+      args.push('--style=ansi');
+      break;
+    case 'K&R':
+      args.push('--style=kr');
+      break;
+    case 'GNU':
+      args.push('--style=gnu');
+      break;
+  }
+  args.push(tmpFilepath);
+  return args;
+}
+
+export function buildVeribleVerilogFormatArgs(
+  tmpFilepath: string,
+  customArgs: string
+): string[] {
+  return ['--inplace', ...splitCommandLineArgs(customArgs), tmpFilepath];
+}
+
 // Base class
 abstract class FileBasedFormattingEditProvider implements vscode.DocumentFormattingEditProvider {
   private namespace: string;
@@ -57,7 +88,7 @@ abstract class FileBasedFormattingEditProvider implements vscode.DocumentFormatt
   provideDocumentFormattingEdits(
     document: vscode.TextDocument,
     _options: vscode.FormattingOptions,
-    _token: vscode.CancellationToken
+    token: vscode.CancellationToken
   ): vscode.ProviderResult<vscode.TextEdit[]> {
     // create temporary file and copy document to it
     const tempFile: TemporaryFile = new TemporaryFile(this.namespace, this.tmpFileExt);
@@ -69,25 +100,52 @@ abstract class FileBasedFormattingEditProvider implements vscode.DocumentFormatt
     // execute command
     const binPath: string = this.config.get('path', '');
     this.logger.info("Executing formatter", { binPath, args });
+    return this.runFormatter(document, tempFile, binPath, args, token);
+  }
+
+  private async runFormatter(
+    document: vscode.TextDocument,
+    tempFile: TemporaryFile,
+    binPath: string,
+    args: string[],
+    token: vscode.CancellationToken
+  ): Promise<vscode.TextEdit[]> {
     try {
       const cwd = getWorkspaceRootForDocument(document);
-      execFileSync(binPath, args, cwd ? { cwd } : undefined);
+      const result = await runTool({
+        command: binPath,
+        args,
+        cwd,
+        collectStdout: true,
+        collectStderr: true,
+        cancellationToken: token,
+      });
+      if (result.exitCode !== 0) {
+        this.logger.error("Formatter exited with non-zero status", {
+          binPath,
+          exitCode: result.exitCode,
+          stderr: result.stderr,
+        });
+        return [];
+      }
       const formattedText: string = tempFile.readFileSync({ encoding: 'utf-8' });
       const wholeFileRange: vscode.Range = new vscode.Range(
         document.positionAt(0),
         document.positionAt(document.getText().length)
       );
-      tempFile.dispose();
       return [vscode.TextEdit.replace(wholeFileRange, formattedText)];
     } catch (err) {
+      if (err instanceof ToolRunError && err.reason === 'cancelled') {
+        return [];
+      }
       this.logger.error("Formatter execution failed", { error: String(err) });
       if (err instanceof Error && err.stack) {
         this.logger.error("Stack trace", { stack: err.stack });
       }
+      return [];
+    } finally {
+      tempFile.dispose();
     }
-
-    tempFile.dispose();
-    return [];
   }
 }
 class VerilogFormatEditProvider extends FileBasedFormattingEditProvider {
@@ -108,37 +166,13 @@ class IStyleVerilogFormatterEditProvider extends FileBasedFormattingEditProvider
     const formatStyle: string = <string>this.config.get('style', 'Indent only');
 
     // -n means not to create a .orig file
-    let args: string[] = ['-n'];
-    if (customArgs.length > 0) {
-      args = args.concat(customArgs.split(' '));
-    }
-
-    // format style
-    switch (formatStyle) {
-      case 'ANSI':
-        args.push('--style=ansi');
-        break;
-      case 'K&R':
-        args.push('--style=kr');
-        break;
-      case 'GNU':
-        args.push('--style=gnu');
-        break;
-    }
-    args.push(tmpFilepath);
-    return args;
+    return buildIStyleVerilogFormatterArgs(tmpFilepath, customArgs, formatStyle);
   }
 }
 class VeribleVerilogFormatEditProvider extends FileBasedFormattingEditProvider {
   prepareArgument(tmpFilepath: string): string[] {
     const customArgs: string = <string>this.config.get('arguments', '');
-
-    let args: string[] = ['--inplace'];
-    if (customArgs.length > 0) {
-      args = args.concat(customArgs.split(' '));
-    }
-    args.push(tmpFilepath);
-    return args;
+    return buildVeribleVerilogFormatArgs(tmpFilepath, customArgs);
   }
 }
 

@@ -13,11 +13,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Changed
 
 - Refactored WSL path conversion for linting to use the shared async ToolRunner infrastructure instead of synchronous child process execution. [#568](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/568)
+- Refactored formatter and language server external tool handling to use shared async execution and shared command-line argument parsing.
 
 ### Fixed
 
 - Fixed multi-root workspace handling for linting include paths, linter working directories, and module instantiation file browsing. [#570](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/570)
 - Fixed lifecycle cleanup for Ctags and linter instances so VS Code event listeners are disposed when their owning object is no longer used.
+- Fixed Tcl `.tm` and `.tk` file extension registration.
+- Fixed disabled language servers being instantiated and prevented svls `SVLINT_CONFIG` from mutating the extension host environment.
+
+### Removed
+
+- Removed the automatic update changelog notification and the unused direct `semver` dependency.
 
 ## [1.23.0] - 2026-05-18
 

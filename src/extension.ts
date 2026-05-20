@@ -10,7 +10,6 @@ import * as CompletionItemProvider from './providers/CompletionItemProvider';
 import * as ModuleInstantiation from './commands/ModuleInstantiation';
 import { registerDoctorCommand } from './commands/Doctor';
 import * as FormatProvider from './providers/FormatProvider';
-import { ExtensionManager } from './extensionManager';
 import { initAllLanguageClients, stopAllLanguageClients } from './languageServer';
 import { bootstrapLogging, disposeLogging, getExtensionLogger } from './logging';
 import { FliplotPanel } from './fliplot/FliplotPanel';
@@ -27,11 +26,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const logger = getExtensionLogger();
   logger.info("Extension activating", { extensionId: extensionID });
-
-  const extMgr = new ExtensionManager(context, extensionID);
-  if (extMgr.isVersionUpdated()) {
-    extMgr.showChangelogNotification();
-  }
 
   ctagsManager = new CtagsManager();
   ctagsManager.configure();

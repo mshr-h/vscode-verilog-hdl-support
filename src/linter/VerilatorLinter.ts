@@ -11,7 +11,7 @@ import {
   type WslPathConversionOptions,
 } from '../tools/WslPathConverter';
 import { getWorkspaceRootForDocument } from '../utils/workspace';
-import { splitCommandLineArgs } from './IcarusLinter';
+import { splitCommandLineArgs } from '../utils/commandLine';
 import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
 
