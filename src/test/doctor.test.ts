@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
 import * as assert from 'assert';
 import * as os from 'os';
+import * as path from 'path';
 import {
   buildLanguageServerChecks,
   buildLinterChecks,
   expandPathVariables,
   renderDoctorReport,
+  resolveConfigPath,
   type DoctorDependencies,
   type DoctorReport,
 } from '../commands/Doctor';
@@ -75,6 +77,19 @@ suite('Doctor', () => {
     assert.strictEqual(
       expandPathVariables('~/settings.toml'),
       `${os.homedir()}/settings.toml`
+    );
+  });
+
+  test('resolveConfigPath handles empty, absolute, and workspace-relative paths', () => {
+    assert.strictEqual(resolveConfigPath(''), '');
+    assert.strictEqual(resolveConfigPath('   '), '');
+
+    const absolutePath = path.join(os.tmpdir(), 'verilog-format.properties');
+    assert.strictEqual(resolveConfigPath(absolutePath, '/workspace'), absolutePath);
+    const workspaceFolder = path.join(os.tmpdir(), 'workspace');
+    assert.strictEqual(
+      resolveConfigPath('rtl/include', workspaceFolder),
+      path.join(workspaceFolder, 'rtl/include')
     );
   });
 

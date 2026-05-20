@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { spawn, type ChildProcessWithoutNullStreams } from 'child_process';
+import * as fs from 'fs';
+import * as path from 'path';
 import type * as vscode from 'vscode';
 import { getExtensionLogger } from '../logging';
 
@@ -50,6 +52,111 @@ export class ToolRunError extends Error {
 }
 
 const logger = getExtensionLogger('ToolRunner');
+const defaultWindowsPathExt = ['.COM', '.EXE', '.BAT', '.CMD'];
+
+interface WindowsCommandResolutionOptions {
+  env?: NodeJS.ProcessEnv;
+  existsSync?: (candidate: string) => boolean;
+}
+
+export interface ToolInvocation {
+  command: string;
+  args: string[];
+}
+
+function getEnvValue(env: NodeJS.ProcessEnv, key: string): string | undefined {
+  const exact = env[key];
+  if (exact !== undefined) {
+    return exact;
+  }
+  const lowerKey = key.toLowerCase();
+  const matchedKey = Object.keys(env).find((envKey) => envKey.toLowerCase() === lowerKey);
+  return matchedKey === undefined ? undefined : env[matchedKey];
+}
+
+function getWindowsPathExt(env: NodeJS.ProcessEnv): string[] {
+  const pathext = getEnvValue(env, 'PATHEXT');
+  if (!pathext) {
+    return defaultWindowsPathExt;
+  }
+  return pathext
+    .split(';')
+    .map((extension) => extension.trim())
+    .filter((extension) => extension.length > 0)
+    .map((extension) => (extension.startsWith('.') ? extension : `.${extension}`));
+}
+
+function getWindowsPathDirs(env: NodeJS.ProcessEnv): string[] {
+  return (getEnvValue(env, 'PATH') ?? '')
+    .split(';')
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+}
+
+function hasWindowsPathSeparator(command: string): boolean {
+  return command.includes('\\') || command.includes('/');
+}
+
+function getWindowsCommandCandidates(command: string, env: NodeJS.ProcessEnv): string[] {
+  const extension = path.win32.extname(command);
+  if (extension.length > 0) {
+    return [command];
+  }
+  return [command, ...getWindowsPathExt(env).map((pathExt) => `${command}${pathExt}`)];
+}
+
+export function isWindowsBatchFile(command: string): boolean {
+  const extension = path.win32.extname(command).toLowerCase();
+  return extension === '.bat' || extension === '.cmd';
+}
+
+export function resolveWindowsCommand(
+  command: string,
+  options: WindowsCommandResolutionOptions = {}
+): string {
+  const env = options.env ?? process.env;
+  const existsSync = options.existsSync ?? fs.existsSync;
+  const candidates = getWindowsCommandCandidates(command, env);
+
+  if (hasWindowsPathSeparator(command)) {
+    return candidates.find((candidate) => existsSync(candidate)) ?? command;
+  }
+
+  for (const dir of getWindowsPathDirs(env)) {
+    for (const candidate of candidates) {
+      const candidatePath = path.win32.join(dir, candidate);
+      if (existsSync(candidatePath)) {
+        return candidatePath;
+      }
+    }
+  }
+  return command;
+}
+
+export function buildWindowsBatchInvocation(command: string, args: string[]): ToolInvocation {
+  return {
+    command: 'cmd.exe',
+    args: ['/d', '/s', '/c', 'call', command, ...args],
+  };
+}
+
+export function buildToolInvocation(
+  command: string,
+  args: string[],
+  env?: NodeJS.ProcessEnv,
+  platform: NodeJS.Platform = process.platform,
+  existsSync: (candidate: string) => boolean = fs.existsSync
+): ToolInvocation {
+  if (platform !== 'win32') {
+    return { command, args };
+  }
+
+  const resolvedCommand = resolveWindowsCommand(command, { env, existsSync });
+  if (isWindowsBatchFile(resolvedCommand)) {
+    return buildWindowsBatchInvocation(resolvedCommand, args);
+  }
+  return { command: resolvedCommand, args };
+}
 
 class LineBuffer {
   private buffer = '';
@@ -98,7 +205,14 @@ export function runTool(options: ToolRunOptions): Promise<ToolRunResult> {
     cancellationToken,
   } = options;
 
-  logger.info`Executing tool: ${command} ${args.join(' ')}`;
+  const invocation = buildToolInvocation(command, args, env);
+
+  logger.info("Executing tool", {
+    command,
+    args,
+    resolvedCommand: invocation.command,
+    resolvedArgs: invocation.args,
+  });
 
   if (cancellationToken?.isCancellationRequested) {
     logger.warn`Tool run cancelled before start: ${command}`;
@@ -134,7 +248,7 @@ export function runTool(options: ToolRunOptions): Promise<ToolRunResult> {
     };
 
     try {
-      child = spawn(command, args, { cwd, env });
+      child = spawn(invocation.command, invocation.args, { cwd, env });
     } catch (err) {
       settled = true;
       cleanup();
