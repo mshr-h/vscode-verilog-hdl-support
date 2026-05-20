@@ -71,6 +71,7 @@ export default class LintManager {
       if (previousLinter !== null) {
         this.runManager.cancelSource(previousLinter.name);
         this.diagnosticManager.clearSource(previousLinter.name);
+        previousLinter.dispose();
         this.linter = null;
       }
       this.logger.warn("Linter name is undefined");
@@ -82,6 +83,7 @@ export default class LintManager {
       if (previousLinter !== null) {
         this.runManager.cancelSource(previousLinter.name);
         this.diagnosticManager.clearSource(previousLinter.name);
+        previousLinter.dispose();
       }
       this.logger.warn("Invalid linter name", { linter: linterName });
       return;
@@ -90,6 +92,7 @@ export default class LintManager {
     if (previousLinter !== null) {
       this.runManager.cancelSource(previousLinter.name);
       this.diagnosticManager.clearSource(previousLinter.name);
+      previousLinter.dispose();
     }
     this.logger.info("Linter configured", { linter: this.linter.name });
   }
@@ -117,6 +120,11 @@ export default class LintManager {
     this.runManager.cancelAll();
     for (const subscription of this.subscriptions) {
       subscription.dispose();
+    }
+    this.subscriptions.length = 0;
+    if (this.linter !== null) {
+      this.linter.dispose();
+      this.linter = null;
     }
     this.diagnosticManager.dispose();
   }
@@ -184,8 +192,12 @@ export default class LintManager {
         }
         this.logger.info("Running linter", { linter: linter.name });
 
-        linter.removeFileDiagnostics(editor.document);
-        await linter.startLint(editor.document);
+        try {
+          linter.removeFileDiagnostics(editor.document);
+          await linter.startLint(editor.document);
+        } finally {
+          linter.dispose();
+        }
       }
     );
   }
