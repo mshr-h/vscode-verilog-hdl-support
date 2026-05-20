@@ -2,6 +2,7 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import BaseLinter from '../linter/BaseLinter';
+import LintManager from '../linter/LintManager';
 import LinterDiagnosticManager, { type DiagnosticSink } from '../linter/LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from '../linter/LintRunManager';
 
@@ -107,6 +108,34 @@ function createHarness(sourceId?: string): {
 }
 
 suite('BaseLinter run management', () => {
+  test('BaseLinter.dispose is idempotent', () => {
+    const { linter } = createHarness();
+
+    assert.doesNotThrow(() => {
+      linter.dispose();
+      linter.dispose();
+    });
+  });
+
+  test('LintManager.dispose disposes active linter', () => {
+    const manager = new LintManager();
+    let disposeCount = 0;
+    const existingLinter = (manager as any).linter as BaseLinter | null;
+    existingLinter?.dispose();
+    (manager as any).linter = {
+      name: 'fake-linter',
+      dispose: () => {
+        disposeCount++;
+      },
+    } as BaseLinter;
+
+    manager.dispose();
+    manager.dispose();
+
+    assert.strictEqual(disposeCount, 1);
+    assert.strictEqual((manager as any).linter, null);
+  });
+
   test('stale run cannot publish diagnostics', async () => {
     const { sink, linter, doc } = createHarness();
     const firstDeferred = new Deferred();

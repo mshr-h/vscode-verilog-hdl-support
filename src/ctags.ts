@@ -182,7 +182,7 @@ export class Symbol {
  * Manages ctags execution and symbol parsing for a single document.
  * Caches parsed symbols and re-indexes when the document is dirty.
  */
-export class Ctags {
+export class Ctags implements vscode.Disposable {
   /** The list of parsed symbols */
   symbols: Symbol[];
   /** The document being indexed */
@@ -192,6 +192,8 @@ export class Ctags {
   private logger: Logger;
   private ctagBinPath!: string;
   private indexingPromise?: Promise<void>;
+  private readonly disposables: vscode.Disposable[] = [];
+  private disposed = false;
 
   /**
    * Creates a new Ctags instance for a document.
@@ -203,10 +205,26 @@ export class Ctags {
     this.isDirty = true;
     this.logger = logger;
     this.doc = document;
-    vscode.workspace.onDidChangeConfiguration(() => {
-      this.updateConfig();
-    });
+    this.disposables.push(
+      vscode.workspace.onDidChangeConfiguration((event) => {
+        if (event.affectsConfiguration('verilog.ctags')) {
+          this.updateConfig();
+        }
+      })
+    );
     this.updateConfig();
+  }
+
+  dispose(): void {
+    if (this.disposed) {
+      return;
+    }
+    this.disposed = true;
+    for (const disposable of this.disposables) {
+      disposable.dispose();
+    }
+    this.disposables.length = 0;
+    this.symbols = [];
   }
 
   private updateConfig() {
@@ -219,6 +237,9 @@ export class Ctags {
    * Clears the cached symbols and marks the cache as dirty.
    */
   clearSymbols() {
+    if (this.disposed) {
+      return;
+    }
     this.isDirty = true;
     this.symbols = [];
   }
@@ -311,7 +332,7 @@ export class Ctags {
   }
 
   protected addTagLine(line: string): void {
-    if (line === '') {
+    if (this.disposed || line === '') {
       return;
     }
     const tag: Symbol | undefined = this.parseTagLine(line);
@@ -321,6 +342,9 @@ export class Ctags {
   }
 
   protected finalizeSymbolRanges(): void {
+    if (this.disposed) {
+      return;
+    }
     // end tags are not supported yet in ctags. So, using regex
     let match: RegExpExecArray | null;
     let endPosition: vscode.Position;
@@ -362,11 +386,17 @@ export class Ctags {
    * @param tags - The raw ctags output
    */
   async buildSymbolsList(tags: string): Promise<void> {
+    if (this.disposed) {
+      return;
+    }
     try {
       if (this.isDirty) {
         this.logger.info`building symbols`;
         this.symbols = [];
         if (tags === '') {
+          if (this.disposed) {
+            return;
+          }
           this.logger.info`ctags completed with no tags`;
           this.isDirty = false;
           return;
@@ -377,7 +407,13 @@ export class Ctags {
           this.addTagLine(line);
         });
 
+        if (this.disposed) {
+          return;
+        }
         this.finalizeSymbolRanges();
+        if (this.disposed) {
+          return;
+        }
         this.isDirty = false;
       }
     } catch (err) {
@@ -405,12 +441,21 @@ export class Ctags {
   }
 
   private async rebuildIndex(): Promise<void> {
+    if (this.disposed) {
+      return;
+    }
     this.logger.info`indexing ${this.doc.uri.fsPath}`;
     this.symbols = [];
     try {
       const result = await this.runCtagsStreaming(this.doc.uri.fsPath);
+      if (this.disposed) {
+        return;
+      }
       if (result.exitCode === 0) {
         this.finalizeSymbolRanges();
+        if (this.disposed) {
+          return;
+        }
         this.isDirty = false;
         return;
       }
@@ -420,6 +465,9 @@ export class Ctags {
       this.logger.warn`ctags exited with code ${result.exitCode} for ${this.doc.uri.fsPath}`;
       this.symbols = [];
     } catch (err) {
+      if (this.disposed) {
+        return;
+      }
       this.symbols = [];
       this.logCtagsError(this.doc.uri.fsPath, err);
     }
@@ -437,7 +485,7 @@ export class Ctags {
    * Indexes the document by running ctags and building the symbols list.
    */
   async index(): Promise<void> {
-    if (!this.isDirty) {
+    if (this.disposed || !this.isDirty) {
       return;
     }
     if (this.indexingPromise) {
@@ -454,24 +502,35 @@ export class Ctags {
  * Manages Ctags instances for multiple documents.
  * Provides caching, configuration management, and symbol lookup across files.
  */
-export class CtagsManager {
+export class CtagsManager implements vscode.Disposable {
   private filemap: Map<vscode.TextDocument, Ctags> = new Map();
   private readonly logger = getExtensionLogger('Ctags', 'Manager');
+  private readonly subscriptions: vscode.Disposable[] = [];
   private enabled = false;
+  private disposed = false;
 
   /**
    * Configures the CtagsManager and sets up event listeners.
    */
   configure() {
+    if (this.disposed) {
+      return;
+    }
+    if (this.subscriptions.length > 0) {
+      this.updateConfig();
+      return;
+    }
     this.logger.info`ctags manager configure`;
     this.updateConfig();
-    vscode.workspace.onDidSaveTextDocument(this.onSave.bind(this));
-    vscode.workspace.onDidCloseTextDocument(this.onClose.bind(this));
-    vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration('verilog.ctags')) {
-        this.updateConfig();
-      }
-    });
+    this.subscriptions.push(
+      vscode.workspace.onDidSaveTextDocument(this.onSave.bind(this)),
+      vscode.workspace.onDidCloseTextDocument(this.onClose.bind(this)),
+      vscode.workspace.onDidChangeConfiguration((event) => {
+        if (event.affectsConfiguration('verilog.ctags')) {
+          this.updateConfig();
+        }
+      })
+    );
   }
 
   private updateConfig() {
@@ -485,6 +544,9 @@ export class CtagsManager {
   }
 
   private invalidateCache() {
+    if (this.disposed) {
+      return;
+    }
     for (const ctags of this.filemap.values()) {
       ctags.clearSymbols();
     }
@@ -496,6 +558,11 @@ export class CtagsManager {
    * @returns The Ctags instance for the document
    */
   getCtags(doc: vscode.TextDocument): Ctags {
+    if (this.disposed) {
+      const ctags = new Ctags(this.logger, doc);
+      ctags.dispose();
+      return ctags;
+    }
     let ctags: Ctags | undefined = this.filemap.get(doc);
     if (ctags === undefined) {
       ctags = new Ctags(this.logger, doc);
@@ -509,7 +576,11 @@ export class CtagsManager {
    * @param doc - The document that was closed
    */
   onClose(doc: vscode.TextDocument) {
-    this.filemap.delete(doc);
+    const ctags = this.filemap.get(doc);
+    if (ctags) {
+      ctags.dispose();
+      this.filemap.delete(doc);
+    }
   }
 
   /**
@@ -518,7 +589,7 @@ export class CtagsManager {
    */
   onSave(doc: vscode.TextDocument) {
     this.logger.info`on save`;
-    if (!this.enabled) {
+    if (this.disposed || !this.enabled) {
       return;
     }
     const ctags: Ctags = this.getCtags(doc);
@@ -531,7 +602,7 @@ export class CtagsManager {
    * @returns An array of Symbol objects
    */
   async getSymbols(doc: vscode.TextDocument): Promise<Symbol[]> {
-    if (!this.enabled) {
+    if (this.disposed || !this.enabled) {
       return [];
     }
     const ctags: Ctags = this.getCtags(doc);
@@ -549,7 +620,7 @@ export class CtagsManager {
    * @returns An array of DefinitionLink objects
    */
   async findDefinition(document: vscode.TextDocument, targetText: string): Promise<vscode.DefinitionLink[]> {
-    if (!this.enabled) {
+    if (this.disposed || !this.enabled) {
       return [];
     }
     const symbols: Symbol[] = await this.getSymbols(document);
@@ -573,7 +644,7 @@ export class CtagsManager {
    * @returns An array of DefinitionLink objects from all searched documents
    */
   async findSymbol(document: vscode.TextDocument, position: vscode.Position): Promise<vscode.DefinitionLink[]> {
-    if (!this.enabled) {
+    if (this.disposed || !this.enabled) {
       return [];
     }
     
@@ -612,5 +683,20 @@ export class CtagsManager {
     // TODO: use promise.race
     const results: vscode.DefinitionLink[][] = await Promise.all(tasks);
     return results.reduce((acc, val) => acc.concat(val), []);
+  }
+
+  dispose(): void {
+    if (this.disposed) {
+      return;
+    }
+    this.disposed = true;
+    for (const subscription of this.subscriptions) {
+      subscription.dispose();
+    }
+    this.subscriptions.length = 0;
+    for (const ctags of this.filemap.values()) {
+      ctags.dispose();
+    }
+    this.filemap.clear();
   }
 }

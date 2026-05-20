@@ -122,9 +122,13 @@ export default class LintManager {
 
   dispose(): void {
     this.runManager.cancelAll();
-    this.linter?.dispose();
     for (const subscription of this.subscriptions) {
       subscription.dispose();
+    }
+    this.subscriptions.length = 0;
+    if (this.linter !== null) {
+      this.linter.dispose();
+      this.linter = null;
     }
     this.diagnosticManager.dispose();
   }

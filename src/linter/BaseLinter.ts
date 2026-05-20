@@ -23,15 +23,16 @@ export interface LinterConfig {
  * Provides common functionality for running external linting tools
  * and reporting diagnostics to VS Code.
  */
-export default abstract class BaseLinter {
+export default abstract class BaseLinter implements vscode.Disposable {
   /** The diagnostic manager for reporting issues */
   protected diagnosticManager: LinterDiagnosticManager;
   protected runManager: LintRunManager;
-  private readonly subscriptions: vscode.Disposable[] = [];
   /** The name of the linter */
   name: string;
   /** The logger instance for output */
   protected logger: Logger;
+  private readonly disposables: vscode.Disposable[] = [];
+  private disposed = false;
   /** Common linter configuration */
   protected config: LinterConfig = {
     linterInstalledPath: '',
@@ -57,13 +58,26 @@ export default abstract class BaseLinter {
     this.logger = getExtensionLogger('Linter', name);
 
     // Register configuration change listener
-    this.subscriptions.push(
-      vscode.workspace.onDidChangeConfiguration(() => {
-        this.loadBaseConfig();
-        this.updateConfig();
+    this.disposables.push(
+      vscode.workspace.onDidChangeConfiguration((event) => {
+        if (event.affectsConfiguration('verilog.linting')) {
+          this.loadBaseConfig();
+          this.updateConfig();
+        }
       })
     );
     this.loadBaseConfig();
+  }
+
+  public dispose(): void {
+    if (this.disposed) {
+      return;
+    }
+    this.disposed = true;
+    for (const disposable of this.disposables) {
+      disposable.dispose();
+    }
+    this.disposables.length = 0;
   }
 
   /**
@@ -123,12 +137,6 @@ export default abstract class BaseLinter {
    */
   public removeFileDiagnostics(doc: vscode.TextDocument) {
     this.diagnosticManager.clearOwner(this.name, doc.uri);
-  }
-
-  public dispose(): void {
-    for (const subscription of this.subscriptions) {
-      subscription.dispose();
-    }
   }
 
   protected publishDiagnosticsIfCurrent(
