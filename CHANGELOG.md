@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [Unreleased]
+
+### Fixed
+
+- Fixed multi-root workspace handling for linting include paths, linter working directories, and module instantiation file browsing. [#570](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/570)
+
 ## [1.23.2] - 2026-05-21
 
 ### Added
