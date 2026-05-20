@@ -9,6 +9,7 @@ import { runTool, ToolRunError, type ToolRunOptions, type ToolRunResult } from '
 import { buildSlangCommand } from '../linter/SlangLinter';
 import { buildVerilatorCommand } from '../linter/VerilatorLinter';
 import { expandPathVariables, resolveConfigPath } from '../utils/configPath';
+import { getWorkspaceFolderForUri } from '../utils/workspace';
 
 export { expandPathVariables, resolveConfigPath } from '../utils/configPath';
 
@@ -145,8 +146,10 @@ export async function buildDoctorReport(
   token?: vscode.CancellationToken
 ): Promise<DoctorReport> {
   const activeDocument = vscode.window.activeTextEditor?.document;
-  const activeWorkspaceFolder = resolveWorkspaceFolderForUri(activeDocument?.uri);
-  const fallbackWorkspaceFolder = activeWorkspaceFolder ?? vscode.workspace.workspaceFolders?.[0];
+  const activeWorkspaceFolder = activeDocument
+    ? getWorkspaceFolderForUri(activeDocument.uri)
+    : undefined;
+  const fallbackWorkspaceFolder = activeWorkspaceFolder ?? (vscode.workspace.workspaceFolders ?? []).at(0);
   const workspaceFolderPath = fallbackWorkspaceFolder?.uri.fsPath;
   const workspaceFolderPaths = (vscode.workspace.workspaceFolders ?? []).map(
     (folder) => folder.uri.fsPath
@@ -212,15 +215,6 @@ export function renderDoctorReport(report: DoctorReport): string {
   lines.push('');
 
   return lines.join('\n');
-}
-
-export function resolveWorkspaceFolderForUri(
-  uri?: vscode.Uri
-): vscode.WorkspaceFolder | undefined {
-  if (!uri) {
-    return undefined;
-  }
-  return vscode.workspace.getWorkspaceFolder(uri);
 }
 
 export function createDefaultDoctorDependencies(): DoctorDependencies {
@@ -359,7 +353,7 @@ export async function buildLanguageServerChecks(
     const candidatePaths =
       configFile.resolvePerWorkspace && (options.workspaceFolders?.length ?? 0) > 0
         ? (options.workspaceFolders ?? []).map((folder) => resolveConfigPath(configFile.path, folder))
-        : [resolveConfigPath(configFile.path, options.workspaceFolders?.[0])];
+        : [resolveConfigPath(configFile.path, options.workspaceFolders?.at(0))];
     for (const candidatePath of candidatePaths) {
       if (candidatePath.length === 0) {
         continue;

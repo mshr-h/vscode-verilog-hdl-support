@@ -6,6 +6,7 @@ import BaseLinter from './BaseLinter';
 import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { convertToWslPath, type WslPathConversionOptions } from '../tools/WslPathConverter';
+import { getWorkspaceRootForDocument } from '../utils/workspace';
 import { splitCommandLineArgs } from './IcarusLinter';
 import LinterDiagnosticManager from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
@@ -162,8 +163,7 @@ export default class SlangLinter extends BaseLinter {
   protected override updateConfig() {
     this.configuration = vscode.workspace.getConfiguration('verilog.linting.slang');
     this.config.arguments = this.configuration.get<string>('arguments', '');
-    const paths = this.configuration.get<string[]>('includePath', []);
-    this.config.includePath = this.resolveIncludePaths(paths);
+    this.config.includePath = this.configuration.get<string[]>('includePath', []);
     this.config.runAtFileLocation = this.configuration.get<boolean>('runAtFileLocation', false);
     this.useWSL = this.configuration.get<boolean>('useWSL', false);
   }
@@ -178,11 +178,16 @@ export default class SlangLinter extends BaseLinter {
       useWSL: this.useWSL,
       linterInstalledPath: this.config.linterInstalledPath,
     });
-    const paths = await this.getRunPaths(doc.uri.fsPath, commandInfo.command, run);
+    const paths = await this.getRunPaths(
+      doc.uri.fsPath,
+      getWorkspaceRootForDocument(doc),
+      commandInfo.command,
+      run
+    );
     const args = commandInfo.leadingArgs.concat(
       buildSlangArgs({
         docFolder: paths.docFolder,
-        includePaths: this.config.includePath,
+        includePaths: this.resolveIncludePaths(this.config.includePath, doc),
         customArguments: this.config.arguments,
         documentPath: paths.docUri,
       })
@@ -195,6 +200,7 @@ export default class SlangLinter extends BaseLinter {
 
   private async getRunPaths(
     documentPath: string,
+    workspaceFolder: string | undefined,
     wslCommand: string,
     run: LintRunHandle
   ): Promise<SlangPaths> {
@@ -221,7 +227,7 @@ export default class SlangLinter extends BaseLinter {
       ? isWindows && this.useWSL
         ? rawDocFolder
         : docFolder
-      : vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? docFolder;
+      : workspaceFolder ?? docFolder;
 
     return { docUri, docFolder, cwd };
   }
