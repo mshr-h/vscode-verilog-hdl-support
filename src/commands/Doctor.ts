@@ -454,6 +454,7 @@ async function buildLintingSectionFromConfiguration(
   const lintConfig = vscode.workspace.getConfiguration('verilog.linting');
   const linter = lintConfig.get<string>('linter', 'none');
   const linterPath = lintConfig.get<string>('path', '');
+  const linterSpec = linter === 'none' ? undefined : getLinterSpec(linter);
   const specificConfig = linter === 'none' ? undefined : getLinterSpecificConfiguration(linter);
 
   const checks = await buildLinterChecks(
@@ -464,11 +465,12 @@ async function buildLintingSectionFromConfiguration(
       includePath: specificConfig?.get<string[]>('includePath', []),
       arguments: specificConfig?.get<string>('arguments', ''),
       runAtFileLocation: specificConfig?.get<boolean>('runAtFileLocation', false),
-      useWSL:
-        linter === 'verilator' || linter === 'slang'
-          ? specificConfig?.get<boolean>('useWSL', false)
-          : undefined,
-      modelsimWork: linter === 'modelsim' ? specificConfig?.get<string>('work', '') : undefined,
+      useWSL: linterSpec?.configKeys.useWSL
+        ? specificConfig?.get<boolean>(linterSpec.configKeys.useWSL, false)
+        : undefined,
+      modelsimWork: linterSpec?.configKeys.work
+        ? specificConfig?.get<string>(linterSpec.configKeys.work, '')
+        : undefined,
       isWindows: process.platform === 'win32',
     },
     deps,

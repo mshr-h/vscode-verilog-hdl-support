@@ -3,6 +3,25 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { Message, type LanguageClientOptions } from 'vscode-languageclient/node';
 import { buildTclspInitializationOptions } from '../languageServer/tclspOptions';
+import type BaseLinter from '../linter/BaseLinter';
+import type { DiagnosticMap } from '../linter/LinterDiagnosticManager';
+import type LinterDiagnosticManager from '../linter/LinterDiagnosticManager';
+import type LintRunManager from '../linter/LintRunManager';
+import type { ToolRunResult } from './ToolRunner';
+import {
+  buildIcarusArgs,
+  buildModelsimArgs,
+  buildVeribleVerilogLintArgs,
+  buildXvlogArgs,
+  convertIcarusSeverity,
+  convertModelsimSeverity,
+  convertVeribleSeverity,
+  convertXvlogSeverity,
+  parseIcarusDiagnostics,
+  parseModelsimDiagnostics,
+  parseVeribleVerilogLintDiagnostics,
+  parseXvlogDiagnostics,
+} from '../linter/genericLintParsers';
 
 export type ToolKind = 'linter' | 'formatter' | 'languageServer';
 
@@ -26,6 +45,56 @@ export interface LinterSpec {
   supportedLanguages: string[];
   versionArgs: string[];
   buildCommand: (ctx: ToolContext) => ToolCommand;
+}
+
+export interface LinterConfigKeys {
+  arguments?: string;
+  includePath?: string;
+  runAtFileLocation?: string;
+  useWSL?: string;
+  work?: string;
+}
+
+export interface LinterExecutionContext {
+  document: vscode.TextDocument;
+  config: {
+    linterInstalledPath: string;
+    arguments: string;
+    includePath: string[];
+    runAtFileLocation: boolean;
+  };
+  specificConfig: vscode.WorkspaceConfiguration;
+  cwd: string;
+  isWindows: boolean;
+  cancellationToken?: vscode.CancellationToken;
+  resolveIncludePaths: (paths: string[]) => string[];
+}
+
+export interface LinterRunInput {
+  command: string;
+  args: string[];
+  cwd: string;
+}
+
+export type LinterDiagnosticResult =
+  | { kind: 'singleFile'; diagnostics: vscode.Diagnostic[] }
+  | { kind: 'multiFile'; diagnosticsByUri: DiagnosticMap };
+
+export interface LinterExecutionSpec extends LinterSpec {
+  executionMode: 'generic' | 'custom';
+  configKeys: LinterConfigKeys;
+  diagnosticMode: 'singleFile' | 'multiFile';
+  buildArgs: (ctx: LinterExecutionContext) => string[];
+  parseDiagnostics: (
+    result: ToolRunResult,
+    ctx: LinterExecutionContext,
+    runInput: LinterRunInput
+  ) => LinterDiagnosticResult | Promise<LinterDiagnosticResult>;
+  convertToSeverity?: (severityString: string) => vscode.DiagnosticSeverity;
+  createLinter?: (
+    diagnosticManager: LinterDiagnosticManager,
+    runManager: LintRunManager
+  ) => BaseLinter;
 }
 
 export interface FormatterSpec {
@@ -65,7 +134,16 @@ export function buildSvlsEnv(): NodeJS.ProcessEnv | undefined {
   return { SVLINT_CONFIG: svlintToml };
 }
 
-export const linterSpecs: readonly LinterSpec[] = [
+function toDiagnosticMap(diagMap: Map<string, vscode.Diagnostic[]>): DiagnosticMap {
+  const diagnosticsByUri: DiagnosticMap = new Map();
+  for (const [fsPath, diagnostics] of diagMap) {
+    const uri = vscode.Uri.file(fsPath);
+    diagnosticsByUri.set(uri.toString(), { uri, diagnostics });
+  }
+  return diagnosticsByUri;
+}
+
+export const linterSpecs: readonly LinterExecutionSpec[] = [
   {
     kind: 'linter',
     id: 'iverilog',
@@ -75,6 +153,31 @@ export const linterSpecs: readonly LinterSpec[] = [
     supportedLanguages: ['verilog', 'systemverilog'],
     versionArgs: ['-V'],
     buildCommand: (ctx) => ({ command: joinConfiguredPath(ctx, 'iverilog'), leadingArgs: [] }),
+    executionMode: 'generic',
+    configKeys: {
+      arguments: 'arguments',
+      includePath: 'includePath',
+      runAtFileLocation: 'runAtFileLocation',
+    },
+    diagnosticMode: 'multiFile',
+    buildArgs: (ctx) =>
+      buildIcarusArgs({
+        languageId: ctx.document.languageId,
+        standards: new Map<string, string>([
+          ['verilog', ctx.specificConfig.get('verilogHDL.standard') || ''],
+          ['systemverilog', ctx.specificConfig.get('systemVerilog.standard') || ''],
+        ]),
+        includePaths: ctx.resolveIncludePaths(ctx.config.includePath),
+        customArguments: ctx.config.arguments,
+        documentPath: ctx.document.uri.fsPath,
+      }),
+    parseDiagnostics: (result, ctx) => ({
+      kind: 'multiFile',
+      diagnosticsByUri: toDiagnosticMap(
+        parseIcarusDiagnostics(`${result.stderr  }\n${  result.stdout}`, ctx.cwd, ctx.document)
+      ),
+    }),
+    convertToSeverity: convertIcarusSeverity,
   },
   {
     kind: 'linter',
@@ -85,6 +188,24 @@ export const linterSpecs: readonly LinterSpec[] = [
     supportedLanguages: ['verilog', 'systemverilog'],
     versionArgs: ['--version'],
     buildCommand: (ctx) => ({ command: joinConfiguredPath(ctx, 'xvlog'), leadingArgs: [] }),
+    executionMode: 'generic',
+    configKeys: {
+      arguments: 'arguments',
+      includePath: 'includePath',
+    },
+    diagnosticMode: 'singleFile',
+    buildArgs: (ctx) =>
+      buildXvlogArgs({
+        languageId: ctx.document.languageId,
+        includePaths: ctx.resolveIncludePaths(ctx.config.includePath),
+        customArguments: ctx.config.arguments,
+        documentPath: ctx.document.fileName,
+      }),
+    parseDiagnostics: (result) => ({
+      kind: 'singleFile',
+      diagnostics: parseXvlogDiagnostics(result.stdout),
+    }),
+    convertToSeverity: convertXvlogSeverity,
   },
   {
     kind: 'linter',
@@ -95,6 +216,24 @@ export const linterSpecs: readonly LinterSpec[] = [
     supportedLanguages: ['verilog', 'systemverilog'],
     versionArgs: ['-version'],
     buildCommand: (ctx) => ({ command: joinConfiguredPath(ctx, 'vlog'), leadingArgs: [] }),
+    executionMode: 'generic',
+    configKeys: {
+      arguments: 'arguments',
+      runAtFileLocation: 'runAtFileLocation',
+      work: 'work',
+    },
+    diagnosticMode: 'singleFile',
+    buildArgs: (ctx) =>
+      buildModelsimArgs({
+        workLibrary: ctx.specificConfig.get<string>('work', ''),
+        customArguments: ctx.config.arguments,
+        documentPath: ctx.document.fileName,
+      }),
+    parseDiagnostics: (result, ctx) => ({
+      kind: 'singleFile',
+      diagnostics: parseModelsimDiagnostics(result.stdout, ctx.document.fileName),
+    }),
+    convertToSeverity: convertModelsimSeverity,
   },
   {
     kind: 'linter',
@@ -111,6 +250,16 @@ export const linterSpecs: readonly LinterSpec[] = [
             command: joinConfiguredPath(ctx, ctx.isWindows ? 'verilator_bin.exe' : 'verilator'),
             leadingArgs: [],
           },
+    executionMode: 'custom',
+    configKeys: {
+      arguments: 'arguments',
+      includePath: 'includePath',
+      runAtFileLocation: 'runAtFileLocation',
+      useWSL: 'useWSL',
+    },
+    diagnosticMode: 'multiFile',
+    buildArgs: () => [],
+    parseDiagnostics: () => ({ kind: 'multiFile', diagnosticsByUri: new Map() }),
   },
   {
     kind: 'linter',
@@ -127,6 +276,16 @@ export const linterSpecs: readonly LinterSpec[] = [
             command: joinConfiguredPath(ctx, ctx.isWindows ? 'slang.exe' : 'slang'),
             leadingArgs: [],
           },
+    executionMode: 'custom',
+    configKeys: {
+      arguments: 'arguments',
+      includePath: 'includePath',
+      runAtFileLocation: 'runAtFileLocation',
+      useWSL: 'useWSL',
+    },
+    diagnosticMode: 'singleFile',
+    buildArgs: () => [],
+    parseDiagnostics: () => ({ kind: 'singleFile', diagnostics: [] }),
   },
   {
     kind: 'linter',
@@ -143,6 +302,27 @@ export const linterSpecs: readonly LinterSpec[] = [
       ),
       leadingArgs: [],
     }),
+    executionMode: 'generic',
+    configKeys: {
+      arguments: 'arguments',
+      runAtFileLocation: 'runAtFileLocation',
+    },
+    diagnosticMode: 'singleFile',
+    buildArgs: (ctx) =>
+      buildVeribleVerilogLintArgs({
+        customArguments: ctx.config.arguments,
+        documentPath: ctx.document.uri.fsPath,
+      }),
+    parseDiagnostics: (result, ctx) => ({
+      kind: 'singleFile',
+      diagnostics: parseVeribleVerilogLintDiagnostics({
+        output: [result.stdout, result.stderr].filter((value) => value.length > 0).join('\n'),
+        cwd: ctx.cwd,
+        documentPath: ctx.document.uri.fsPath,
+        isWindows: ctx.isWindows,
+      }),
+    }),
+    convertToSeverity: convertVeribleSeverity,
   },
 ];
 
@@ -286,7 +466,7 @@ export const languageServerSpecs: readonly LanguageServerSpec[] = [
   },
 ];
 
-export function getLinterSpec(id: string): LinterSpec | undefined {
+export function getLinterSpec(id: string): LinterExecutionSpec | undefined {
   return linterSpecs.find((spec) => spec.id === id);
 }
 
