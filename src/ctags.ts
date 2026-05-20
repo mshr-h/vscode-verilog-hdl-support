@@ -4,6 +4,7 @@ import { type Logger } from '@logtape/logtape';
 import { getExtensionLogger } from './logging';
 import { END_OF_LINE } from './constants';
 import { runTool, ToolRunError, type ToolRunResult } from './tools/ToolRunner';
+import { getWorkspaceFolderForUri } from './utils/workspace';
 
 /**
  * Represents a symbol parsed from ctags output.
@@ -598,8 +599,9 @@ export class CtagsManager {
     }
 
     // kick off async job for indexing for module.sv
-    if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
-      const searchPattern = new vscode.RelativePattern(vscode.workspace.workspaceFolders[0], `**/${moduleToFind}.sv`);
+    const workspaceFolder = getWorkspaceFolderForUri(document.uri);
+    if (workspaceFolder) {
+      const searchPattern = new vscode.RelativePattern(workspaceFolder, `**/${moduleToFind}.sv`);
       const files = await vscode.workspace.findFiles(searchPattern);
       if (files.length !== 0) {
         const file = await vscode.workspace.openTextDocument(files[0]);

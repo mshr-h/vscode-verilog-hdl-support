@@ -7,6 +7,7 @@ import * as crypto from 'crypto';
 import * as path from 'path';
 import { type Logger } from '@logtape/logtape';
 import { getExtensionLogger } from '../logging';
+import { getWorkspaceRootForDocument } from '../utils/workspace';
 
 // handle temporary file
 class TemporaryFile {
@@ -69,7 +70,7 @@ abstract class FileBasedFormattingEditProvider implements vscode.DocumentFormatt
     const binPath: string = this.config.get('path', '');
     this.logger.info("Executing formatter", { binPath, args });
     try {
-      const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+      const cwd = getWorkspaceRootForDocument(document);
       execFileSync(binPath, args, cwd ? { cwd } : undefined);
       const formattedText: string = tempFile.readFileSync({ encoding: 'utf-8' });
       const wholeFileRange: vscode.Range = new vscode.Range(

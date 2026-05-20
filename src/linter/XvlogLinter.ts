@@ -69,8 +69,7 @@ export default class XvlogLinter extends BaseLinter {
   protected override updateConfig() {
     const configuration = vscode.workspace.getConfiguration('verilog.linting.xvlog');
     this.config.arguments = configuration.get<string>('arguments', '');
-    const paths = configuration.get<string[]>('includePath', []);
-    this.config.includePath = this.resolveIncludePaths(paths);
+    this.config.includePath = configuration.get<string[]>('includePath', []);
   }
 
   protected convertToSeverity(severityString: string): vscode.DiagnosticSeverity {
@@ -82,11 +81,10 @@ export default class XvlogLinter extends BaseLinter {
 
     const args = buildXvlogArgs({
       languageId: doc.languageId,
-      includePaths: this.config.includePath,
+      includePaths: this.resolveIncludePaths(this.config.includePath, doc),
       customArguments: this.config.arguments,
       documentPath: doc.fileName,
     });
-    this.logger.warn`${this.config.includePath.join(' ')}`;
     const cwd = this.getWorkingDirectory(doc);
 
     this.logger.info("Executing", { command: binPath, args, cwd });

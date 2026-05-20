@@ -9,7 +9,7 @@ suite('tclsp initialization options', () => {
     const inspect = config.inspect<string>('configPath');
     const previousGlobal = inspect?.globalValue;
     const previousWorkspace = inspect?.workspaceValue;
-    const folder = vscode.workspace.workspaceFolders?.[0];
+    const folder = (vscode.workspace.workspaceFolders ?? []).at(0);
     const hasWorkspace = Boolean(folder);
     let previousFolder: string | undefined;
     if (folder) {

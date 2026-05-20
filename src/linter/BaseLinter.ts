@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { type Logger } from '@logtape/logtape';
 import { getExtensionLogger } from '../logging';
+import { getWorkingDirectoryForDocument, resolvePathsForDocument } from '../utils/workspace';
 import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
 
@@ -81,27 +81,13 @@ export default abstract class BaseLinter {
   }
 
   /**
-   * Resolves a path to an absolute path, using the workspace root if relative.
-   * @param inputPath - The path to resolve
-   * @returns The absolute path
-   */
-  protected resolvePath(inputPath: string): string {
-    if (path.isAbsolute(inputPath)) {
-      return inputPath;
-    }
-    if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
-      return inputPath;
-    }
-    return path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, inputPath);
-  }
-
-  /**
    * Resolves an array of include paths to absolute paths.
    * @param paths - Array of paths to resolve
+   * @param doc - The document being linted
    * @returns Array of resolved absolute paths
    */
-  protected resolveIncludePaths(paths: string[]): string[] {
-    return paths.map((p) => this.resolvePath(p));
+  protected resolveIncludePaths(paths: string[], doc: vscode.TextDocument): string[] {
+    return resolvePathsForDocument(paths, doc);
   }
 
   /**
@@ -110,11 +96,7 @@ export default abstract class BaseLinter {
    * @returns The working directory path
    */
   protected getWorkingDirectory(doc: vscode.TextDocument): string {
-    const docFolder = path.dirname(doc.uri.fsPath);
-    if (this.config.runAtFileLocation) {
-      return docFolder;
-    }
-    return vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? docFolder;
+    return getWorkingDirectoryForDocument(doc, this.config.runAtFileLocation);
   }
 
   /**

@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Ctags, Symbol } from '../ctags';
 import { getExtensionLogger } from '../logging';
+import { getWorkspaceRootForDocument } from '../utils/workspace';
 
 const logger = () => getExtensionLogger('Command', 'ModuleInstantiation');
 
@@ -18,8 +19,10 @@ export function instantiateModuleInteract() {
     vscode.window.showErrorMessage('No active text editor found');
     return;
   }
-  const filePath = path.dirname(vscode.window.activeTextEditor.document.fileName);
-  selectFile(filePath).then((srcpath) => {
+  const activeDoc = vscode.window.activeTextEditor.document;
+  const filePath = path.dirname(activeDoc.uri.fsPath);
+  const workspaceRoot = getWorkspaceRootForDocument(activeDoc);
+  selectFile(filePath, workspaceRoot).then((srcpath) => {
     if (srcpath === undefined) {
       return;
     }
@@ -144,17 +147,13 @@ function instantiatePort(ports: string[]): string {
   return port;
 }
 
-async function selectFile(currentDir?: string): Promise<string | undefined> {
-  const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-  currentDir = currentDir || workspaceRoot;
-
-  if (!currentDir) {
-    return undefined;
-  }
-
+export async function selectFile(
+  currentDir: string,
+  workspaceRoot?: string
+): Promise<string | undefined> {
   const dirs = getDirectories(currentDir);
   // if is subdirectory, add '../'
-  if (currentDir !== workspaceRoot) {
+  if (shouldShowParentDirectory(currentDir, workspaceRoot)) {
     dirs.unshift('..');
   }
   // all files ends with '.sv'
@@ -186,11 +185,19 @@ async function selectFile(currentDir?: string): Promise<string | undefined> {
   // if is a directory
   const location = path.join(currentDir, selected.label);
   if (fs.statSync(location).isDirectory()) {
-    return selectFile(location);
+    return selectFile(location, workspaceRoot);
   }
 
   // return file path
   return location;
+}
+
+export function shouldShowParentDirectory(currentDir: string, workspaceRoot?: string): boolean {
+  if (!workspaceRoot) {
+    return false;
+  }
+  const relative = path.relative(path.resolve(workspaceRoot), path.resolve(currentDir));
+  return relative.length > 0 && !relative.startsWith('..') && !path.isAbsolute(relative);
 }
 
 function getDirectories(srcpath: string): string[] {
