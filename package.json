@@ -257,6 +257,31 @@
             "type": "string",
             "default": "ctags",
             "markdownDescription": "A path to the Ctags binary. Specify the binary name if it's in your `PATH`, or provide an absolute path to the executable."
+          },
+          "verilog.ctags.workspace.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Enable workspace-wide Ctags indexing for cross-file symbol lookup."
+          },
+          "verilog.ctags.workspace.include": {
+            "scope": "window",
+            "type": "string",
+            "default": "**/*.{v,vh,vl,sv,svh,SV}",
+            "markdownDescription": "Glob pattern for files included in workspace-wide Ctags indexing."
+          },
+          "verilog.ctags.workspace.exclude": {
+            "scope": "window",
+            "type": "string",
+            "default": "**/{.git,node_modules,out,dist,build,coverage,.vscode-test}/**",
+            "markdownDescription": "Glob pattern for files excluded from workspace-wide Ctags indexing."
+          },
+          "verilog.ctags.workspace.maxFiles": {
+            "scope": "window",
+            "type": "number",
+            "default": 2000,
+            "minimum": 1,
+            "markdownDescription": "Maximum number of files to index for workspace-wide Ctags lookup. If the workspace has more matching files, workspace indexing is skipped and current-file Ctags continues to work."
           }
         }
       },
@@ -651,6 +676,10 @@
       {
         "command": "verilog.doctor",
         "title": "Verilog: Doctor"
+      },
+      {
+        "command": "verilog.ctags.rebuildWorkspaceIndex",
+        "title": "Verilog: Rebuild Workspace Ctags Index"
       },
       {
         "command": "verilog.openFliplot",

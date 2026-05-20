@@ -15,6 +15,7 @@ import { initAllLanguageClients, stopAllLanguageClients } from './languageServer
 import { bootstrapLogging, disposeLogging, getExtensionLogger } from './logging';
 import { FliplotPanel } from './fliplot/FliplotPanel';
 import { FliplotCustomEditor } from './fliplot/FliplotCustomEditor';
+import { getWorkspaceFolderForUri } from './utils/workspace';
 
 let ctagsManager: CtagsManager | undefined;
 const extensionID: string = 'mshr-h.veriloghdl';
@@ -140,6 +141,27 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(lintManager);
   context.subscriptions.push(
     vscode.commands.registerCommand('verilog.lint', lintManager.runLintTool, lintManager)
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('verilog.ctags.rebuildWorkspaceIndex', async () => {
+      const activeEditor = vscode.window.activeTextEditor;
+      const workspaceFolder = activeEditor
+        ? getWorkspaceFolderForUri(activeEditor.document.uri)
+        : undefined;
+      await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: 'Rebuilding workspace Ctags index',
+          cancellable: true,
+        },
+        async (_progress, token) => {
+          await ctagsManager?.rebuildWorkspaceIndex(workspaceFolder, token);
+        }
+      );
+      const target = workspaceFolder ? workspaceFolder.name : 'all workspace folders';
+      void vscode.window.showInformationMessage(`Workspace Ctags index rebuilt for ${target}.`);
+    })
   );
 
   context.subscriptions.push(

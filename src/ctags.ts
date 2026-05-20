@@ -5,6 +5,7 @@ import { getExtensionLogger } from './logging';
 import { END_OF_LINE } from './constants';
 import { runTool, ToolRunError, type ToolRunResult } from './tools/ToolRunner';
 import { getWorkspaceFolderForUri } from './utils/workspace';
+import { WorkspaceCtagsIndex } from './ctagsWorkspaceIndex';
 
 /**
  * Represents a symbol parsed from ctags output.
@@ -179,6 +180,42 @@ export class Symbol {
 }
 
 /**
+ * Parses a single ctags output line into a Symbol.
+ * @param line - A line from ctags output
+ * @param logger - Logger used for parse diagnostics
+ * @returns A Symbol object or undefined if parsing fails
+ */
+export function parseCtagsTagLine(line: string, logger: Logger): Symbol | undefined {
+  try {
+    let type, parentScope, parentType: string;
+    let scope: string[];
+    const parts: string[] = line.split('\t');
+    const name = parts[0];
+    const pattern = parts[2];
+    type = parts[3];
+    // override "type" for parameters (See #102)
+    if (parts.length === 6 && parts[5] === 'parameter:') {
+      type = 'parameter';
+    }
+    if (parts.length >= 5) {
+      scope = parts[4].split(':');
+      parentType = scope[0];
+      parentScope = scope[1];
+    } else {
+      parentScope = '';
+      parentType = '';
+    }
+    const lineNoStr = parts[2];
+    const lineNo = Number(lineNoStr.slice(0, -2)) - 1;
+    return new Symbol(name, type, pattern, lineNo, parentScope, parentType, lineNo, false);
+  } catch (err) {
+    logger.error`Line Parser: ${err}`;
+    logger.error`Line: ${line}`;
+  }
+  return undefined;
+}
+
+/**
  * Manages ctags execution and symbol parsing for a single document.
  * Caches parsed symbols and re-indexes when the document is dirty.
  */
@@ -302,33 +339,7 @@ export class Ctags implements vscode.Disposable {
    * @returns A Symbol object or undefined if parsing fails
    */
   parseTagLine(line: string): Symbol | undefined {
-    try {
-      let type, parentScope, parentType: string;
-      let scope: string[];
-      const parts: string[] = line.split('\t');
-      const name = parts[0];
-      const pattern = parts[2];
-      type = parts[3];
-      // override "type" for parameters (See #102)
-      if (parts.length === 6 && parts[5] === 'parameter:') {
-        type = 'parameter';
-      }
-      if (parts.length >= 5) {
-        scope = parts[4].split(':');
-        parentType = scope[0];
-        parentScope = scope[1];
-      } else {
-        parentScope = '';
-        parentType = '';
-      }
-      const lineNoStr = parts[2];
-      const lineNo = Number(lineNoStr.slice(0, -2)) - 1;
-      return new Symbol(name, type, pattern, lineNo, parentScope, parentType, lineNo, false);
-    } catch (err) {
-      this.logger.error`Line Parser: ${err}`;
-      this.logger.error`Line: ${line}`;
-    }
-    return undefined;
+    return parseCtagsTagLine(line, this.logger);
   }
 
   protected addTagLine(line: string): void {
@@ -505,6 +516,7 @@ export class Ctags implements vscode.Disposable {
 export class CtagsManager implements vscode.Disposable {
   private filemap: Map<vscode.TextDocument, Ctags> = new Map();
   private readonly logger = getExtensionLogger('Ctags', 'Manager');
+  private readonly workspaceIndex = new WorkspaceCtagsIndex(this.logger);
   private readonly subscriptions: vscode.Disposable[] = [];
   private enabled = false;
   private disposed = false;
@@ -522,12 +534,14 @@ export class CtagsManager implements vscode.Disposable {
     }
     this.logger.info`ctags manager configure`;
     this.updateConfig();
+    this.workspaceIndex.configure();
     this.subscriptions.push(
       vscode.workspace.onDidSaveTextDocument(this.onSave.bind(this)),
       vscode.workspace.onDidCloseTextDocument(this.onClose.bind(this)),
       vscode.workspace.onDidChangeConfiguration((event) => {
         if (event.affectsConfiguration('verilog.ctags')) {
           this.updateConfig();
+          this.workspaceIndex.configure();
         }
       })
     );
@@ -550,6 +564,7 @@ export class CtagsManager implements vscode.Disposable {
     for (const ctags of this.filemap.values()) {
       ctags.clearSymbols();
     }
+    this.workspaceIndex.invalidateAll();
   }
 
   /**
@@ -594,6 +609,7 @@ export class CtagsManager implements vscode.Disposable {
     }
     const ctags: Ctags = this.getCtags(doc);
     ctags.clearSymbols();
+    this.workspaceIndex.invalidateUri(doc.uri);
   }
 
   /**
@@ -643,7 +659,11 @@ export class CtagsManager implements vscode.Disposable {
    * @param position - The position to look up
    * @returns An array of DefinitionLink objects from all searched documents
    */
-  async findSymbol(document: vscode.TextDocument, position: vscode.Position): Promise<vscode.DefinitionLink[]> {
+  async findSymbol(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    token?: vscode.CancellationToken
+  ): Promise<vscode.DefinitionLink[]> {
     if (this.disposed || !this.enabled) {
       return [];
     }
@@ -653,36 +673,51 @@ export class CtagsManager implements vscode.Disposable {
       return [];
     }
     const targetText = document.getText(textRange);
+    const qualifier = this.getQualifier(document, textRange);
     
-    // always search the current doc
-    const tasks = [this.findDefinition(document, targetText)];
-
-    // if the previous character is :: or ., look up prev word
-    const prevChar = textRange.start.character - 1;
-    const prevCharRange = new vscode.Range(position.line, prevChar, position.line, prevChar+1);
-    const prevCharText = document.getText(prevCharRange);
-    let moduleToFind: string = targetText;
-    if (prevCharText === '.' || prevCharText === ':') {
-      const prevWordRange = document.getWordRangeAtPosition(new vscode.Position(position.line, prevChar - 2));
-      if (prevWordRange) {
-        moduleToFind = document.getText(prevWordRange);
-      }
-    }
-
-    // kick off async job for indexing for module.sv
+    const results = await this.findDefinition(document, targetText);
     const workspaceFolder = getWorkspaceFolderForUri(document.uri);
     if (workspaceFolder) {
-      const searchPattern = new vscode.RelativePattern(workspaceFolder, `**/${moduleToFind}.sv`);
-      const files = await vscode.workspace.findFiles(searchPattern);
-      if (files.length !== 0) {
-        const file = await vscode.workspace.openTextDocument(files[0]);
-        tasks.push(this.findDefinition(file, targetText));
-      }
+      const workspaceResults = await this.workspaceIndex.findDefinitions(workspaceFolder, targetText, {
+        currentDocument: document,
+        qualifier,
+        token,
+      });
+      results.push(...workspaceResults);
     }
-    
-    // TODO: use promise.race
-    const results: vscode.DefinitionLink[][] = await Promise.all(tasks);
-    return results.reduce((acc, val) => acc.concat(val), []);
+
+    return dedupeDefinitionLinks(results);
+  }
+
+  private getQualifier(document: vscode.TextDocument, textRange: vscode.Range): string | undefined {
+    const prevChar = textRange.start.character - 1;
+    if (prevChar < 0) {
+      return undefined;
+    }
+    const prevCharText = document.getText(
+      new vscode.Range(textRange.start.line, prevChar, textRange.start.line, prevChar + 1)
+    );
+    if (prevCharText !== '.' && prevCharText !== ':') {
+      return undefined;
+    }
+    const qualifierPosition = prevCharText === ':'
+      ? new vscode.Position(textRange.start.line, Math.max(0, prevChar - 2))
+      : new vscode.Position(textRange.start.line, prevChar - 1);
+    const prevWordRange = document.getWordRangeAtPosition(qualifierPosition);
+    if (!prevWordRange) {
+      return undefined;
+    }
+    return document.getText(prevWordRange);
+  }
+
+  async rebuildWorkspaceIndex(
+    folder?: vscode.WorkspaceFolder,
+    token?: vscode.CancellationToken
+  ): Promise<void> {
+    if (this.disposed || !this.enabled) {
+      return;
+    }
+    await this.workspaceIndex.rebuild(folder, token);
   }
 
   dispose(): void {
@@ -698,5 +733,26 @@ export class CtagsManager implements vscode.Disposable {
       ctags.dispose();
     }
     this.filemap.clear();
+    this.workspaceIndex.dispose();
   }
+}
+
+export function dedupeDefinitionLinks(
+  links: readonly vscode.DefinitionLink[]
+): vscode.DefinitionLink[] {
+  const seen = new Set<string>();
+  const deduped: vscode.DefinitionLink[] = [];
+  for (const link of links) {
+    const key = [
+      link.targetUri.toString(),
+      link.targetRange.start.line,
+      link.targetSelectionRange?.start.line ?? link.targetRange.start.line,
+    ].join(':');
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    deduped.push(link);
+  }
+  return deduped;
 }

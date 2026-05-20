@@ -1,11 +1,33 @@
 // SPDX-License-Identifier: MIT
 import * as assert from 'assert';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { VerilogCompletionItemProvider } from '../providers/CompletionItemProvider';
-import { Ctags, CtagsManager, Symbol } from '../ctags';
+import { Ctags, CtagsManager, dedupeDefinitionLinks, parseCtagsTagLine, Symbol } from '../ctags';
 import { getExtensionLogger } from '../logging';
+import { isWorkspaceLookupSymbol } from '../ctagsWorkspaceIndex';
+import { END_OF_LINE } from '../constants';
 
 suite('Ctags Parsing', () => {
+  test('shared parser preserves symbol types, scopes, and line numbers', () => {
+    const logger = getExtensionLogger('Test', 'CtagsParser');
+    const moduleSymbol = parseCtagsTagLine('top\ttop.sv\t1;"\tmodule', logger);
+    const parameterSymbol = parseCtagsTagLine(
+      'WIDTH\ttop.sv\t2;"\tconstant\tmodule:top\tparameter:',
+      logger
+    );
+    const portSymbol = parseCtagsTagLine('clk\ttop.sv\t3;"\tport\tmodule:top', logger);
+
+    assert.strictEqual(moduleSymbol?.name, 'top');
+    assert.strictEqual(moduleSymbol?.type, 'module');
+    assert.strictEqual(moduleSymbol?.startPosition.line, 0);
+    assert.strictEqual(parameterSymbol?.type, 'parameter');
+    assert.strictEqual(parameterSymbol?.parentScope, 'top');
+    assert.strictEqual(parameterSymbol?.startPosition.line, 1);
+    assert.strictEqual(portSymbol?.type, 'port');
+    assert.strictEqual(portSymbol?.parentType, 'module');
+  });
+
   test('builds symbols from ctags output without invoking ctags binary', async () => {
     const document = await vscode.workspace.openTextDocument({
       language: 'systemverilog',
@@ -80,6 +102,107 @@ suite('Ctags Parsing', () => {
     assert.strictEqual(filemap.size, 0);
     assert.strictEqual(firstCtags.symbols.length, 0);
     assert.strictEqual(secondCtags.symbols.length, 0);
+  });
+
+  test('workspace lookup filter keeps unqualified results to top-level symbols', () => {
+    assert.strictEqual(
+      isWorkspaceLookupSymbol(new Symbol('child_module', 'module', '', 0, '', '', 0, false)),
+      true
+    );
+    assert.strictEqual(
+      isWorkspaceLookupSymbol(new Symbol('sig', 'net', '', 1, 'top', 'module', 1, false)),
+      false
+    );
+    assert.strictEqual(
+      isWorkspaceLookupSymbol(new Symbol('WIDTH', 'parameter', '', 1, 'pkg', 'package', 1, false)),
+      false
+    );
+  });
+
+  test('workspace lookup filter allows qualified package members', () => {
+    assert.strictEqual(
+      isWorkspaceLookupSymbol(
+        new Symbol('PARAM', 'parameter', '', 1, 'pkg', 'package', 1, false),
+        'pkg'
+      ),
+      true
+    );
+    assert.strictEqual(
+      isWorkspaceLookupSymbol(
+        new Symbol('PARAM', 'parameter', '', 1, 'other_pkg', 'package', 1, false),
+        'pkg'
+      ),
+      false
+    );
+  });
+
+  test('definition de-duplication removes repeated uri and line matches', () => {
+    const uri = vscode.Uri.file(path.join(process.cwd(), 'top.sv'));
+    const range = new vscode.Range(new vscode.Position(2, 0), new vscode.Position(2, END_OF_LINE));
+    const first = {
+      targetUri: uri,
+      targetRange: range,
+      targetSelectionRange: range,
+    };
+    const second = {
+      targetUri: uri,
+      targetRange: range,
+      targetSelectionRange: range,
+    };
+
+    assert.strictEqual(dedupeDefinitionLinks([first, second]).length, 1);
+  });
+
+  test('CtagsManager returns current-document definitions before workspace definitions', async () => {
+    const documentUri = vscode.Uri.file(
+      path.join(process.cwd(), 'src/test/fixtures/workspace-ctags/top.sv')
+    );
+    const document = await vscode.workspace.openTextDocument(documentUri);
+    const manager = new CtagsManager();
+    const localRange = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, END_OF_LINE));
+    const workspaceRange = new vscode.Range(
+      new vscode.Position(0, 0),
+      new vscode.Position(0, END_OF_LINE)
+    );
+    const workspaceUri = vscode.Uri.file(
+      path.join(process.cwd(), 'src/test/fixtures/workspace-ctags/child_module.sv')
+    );
+    const originalGetWorkspaceFolder = vscode.workspace.getWorkspaceFolder;
+
+    try {
+      (vscode.workspace as any).getWorkspaceFolder = () => ({
+        uri: vscode.Uri.file(process.cwd()),
+        name: 'vscode-verilog-hdl-support',
+        index: 0,
+      });
+      (manager as any).enabled = true;
+      manager.findDefinition = async () => [
+        {
+          targetUri: document.uri,
+          targetRange: localRange,
+          targetSelectionRange: localRange,
+        },
+      ];
+      (manager as any).workspaceIndex = {
+        findDefinitions: async () => [
+          {
+            targetUri: workspaceUri,
+            targetRange: workspaceRange,
+            targetSelectionRange: workspaceRange,
+          },
+        ],
+        dispose: () => undefined,
+      };
+
+      const results = await manager.findSymbol(document, new vscode.Position(1, 2));
+
+      assert.strictEqual(results.length, 2);
+      assert.strictEqual(results[0].targetUri.toString(), document.uri.toString());
+      assert.strictEqual(results[1].targetUri.toString(), workspaceUri.toString());
+    } finally {
+      (vscode.workspace as any).getWorkspaceFolder = originalGetWorkspaceFolder;
+      manager.dispose();
+    }
   });
 });
 
