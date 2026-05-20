@@ -68,30 +68,37 @@ export default class LintManager {
     }
 
     if (linterName === undefined) {
-      if (previousLinter !== null) {
-        this.runManager.cancelSource(previousLinter.name);
-        this.diagnosticManager.clearSource(previousLinter.name);
-        this.linter = null;
-      }
+      this.disposePreviousLinter(previousLinter);
+      this.linter = null;
       this.logger.warn("Linter name is undefined");
+      return;
+    }
+
+    if (linterName === 'none') {
+      this.disposePreviousLinter(previousLinter);
+      this.linter = null;
+      this.logger.info("Linter disabled");
       return;
     }
 
     this.linter = this.getLinterFromString(linterName);
     if (this.linter === null) {
-      if (previousLinter !== null) {
-        this.runManager.cancelSource(previousLinter.name);
-        this.diagnosticManager.clearSource(previousLinter.name);
-      }
+      this.disposePreviousLinter(previousLinter);
       this.logger.warn("Invalid linter name", { linter: linterName });
       return;
     }
 
-    if (previousLinter !== null) {
-      this.runManager.cancelSource(previousLinter.name);
-      this.diagnosticManager.clearSource(previousLinter.name);
-    }
+    this.disposePreviousLinter(previousLinter);
     this.logger.info("Linter configured", { linter: this.linter.name });
+  }
+
+  private disposePreviousLinter(previousLinter: BaseLinter | null): void {
+    if (previousLinter === null) {
+      return;
+    }
+    this.runManager.cancelSource(previousLinter.name);
+    this.diagnosticManager.clearSource(previousLinter.name);
+    previousLinter.dispose();
   }
 
   lint(doc: vscode.TextDocument) {
@@ -115,6 +122,7 @@ export default class LintManager {
 
   dispose(): void {
     this.runManager.cancelAll();
+    this.linter?.dispose();
     for (const subscription of this.subscriptions) {
       subscription.dispose();
     }
@@ -184,8 +192,12 @@ export default class LintManager {
         }
         this.logger.info("Running linter", { linter: linter.name });
 
-        linter.removeFileDiagnostics(editor.document);
-        await linter.startLint(editor.document);
+        try {
+          linter.removeFileDiagnostics(editor.document);
+          await linter.startLint(editor.document);
+        } finally {
+          linter.dispose();
+        }
       }
     );
   }

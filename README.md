@@ -54,6 +54,8 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 ## Usage Instructions
 
 - All linters expect the executable binary ( `iverilog` , `verilator` ...) to be present in the `PATH` environment variable, unless otherwise specified.
+- On Windows, Vivado `xvlog` can be discovered when it is provided as `xvlog.bat` or `xvlog.cmd` on `PATH` or under `verilog.linting.path`.
+- Set `verilog.linting.linter` to `none` to disable automatic linting without warnings.
 - While using `` `include`` directives, the path to the files should be relative to the workspace directory, unless`runAtFileLocation` is enabled (not supported by all linters)
 
 ### Ctags Integration
@@ -146,6 +148,7 @@ We currently support Verilog-HDL file formatting with the following formatters.
 You can format the Verilog-HDL file by typing `Ctrl-Shift-p`, then select `Format Document`.
 Entire file formatting is supported. Selected range formatting is not supported yet.
 All the settings for formatting is under `verilog.formatting` namespace.
+The `verilog.formatting.verilogFormat.settings` path supports `${env:VAR}` and `~` expansion, so values such as `${env:HOME}/.verilog-format.properties` and `~/.verilog-format.properties` can be used.
 
 ## [Guidelines for Contributing](./CONTRIBUTING.md)
 

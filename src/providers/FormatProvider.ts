@@ -7,6 +7,29 @@ import * as crypto from 'crypto';
 import * as path from 'path';
 import { type Logger } from '@logtape/logtape';
 import { getExtensionLogger } from '../logging';
+import { resolveConfigPath } from '../utils/configPath';
+
+function getWorkspaceRootForDocument(document: vscode.TextDocument): string | undefined {
+  return (
+    vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath ??
+    vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
+  );
+}
+
+export function buildVerilogFormatArgs(
+  tmpFilepath: string,
+  settingsPath: string,
+  workspaceFolder?: string,
+  existsSync: (candidate: string) => boolean = fs.existsSync
+): string[] {
+  const args: string[] = ['-f', tmpFilepath];
+  const resolvedSettingsPath = resolveConfigPath(settingsPath, workspaceFolder);
+  if (resolvedSettingsPath !== '' && existsSync(resolvedSettingsPath)) {
+    args.push('-s');
+    args.push(resolvedSettingsPath);
+  }
+  return args;
+}
 
 // handle temporary file
 class TemporaryFile {
@@ -51,7 +74,7 @@ abstract class FileBasedFormattingEditProvider implements vscode.DocumentFormatt
   }
 
   // should be implemented to match formatter's argument
-  protected abstract prepareArgument(tmpFilepath: string): string[];
+  protected abstract prepareArgument(document: vscode.TextDocument, tmpFilepath: string): string[];
 
   provideDocumentFormattingEdits(
     document: vscode.TextDocument,
@@ -63,7 +86,7 @@ abstract class FileBasedFormattingEditProvider implements vscode.DocumentFormatt
     tempFile.writeFileSync(document.getText(), { flag: 'w' });
     this.logger.info("Temp file created", { path: tempFile.path });
 
-    const args: string[] = this.prepareArgument(tempFile.path);
+    const args: string[] = this.prepareArgument(document, tempFile.path);
 
     // execute command
     const binPath: string = this.config.get('path', '');
@@ -90,19 +113,14 @@ abstract class FileBasedFormattingEditProvider implements vscode.DocumentFormatt
   }
 }
 class VerilogFormatEditProvider extends FileBasedFormattingEditProvider {
-  prepareArgument(tmpFilepath: string): string[] {
-    const args: string[] = ['-f', tmpFilepath];
+  prepareArgument(document: vscode.TextDocument, tmpFilepath: string): string[] {
     const settingsPath: string = <string>this.config.get('settings', '');
-    if (settingsPath !== '' && fs.existsSync(settingsPath)) {
-      args.push('-s');
-      args.push(settingsPath);
-    }
-    return args;
+    return buildVerilogFormatArgs(tmpFilepath, settingsPath, getWorkspaceRootForDocument(document));
   }
 }
 
 class IStyleVerilogFormatterEditProvider extends FileBasedFormattingEditProvider {
-  prepareArgument(tmpFilepath: string): string[] {
+  prepareArgument(_document: vscode.TextDocument, tmpFilepath: string): string[] {
     const customArgs: string = <string>this.config.get('arguments', '');
     const formatStyle: string = <string>this.config.get('style', 'Indent only');
 
@@ -129,7 +147,7 @@ class IStyleVerilogFormatterEditProvider extends FileBasedFormattingEditProvider
   }
 }
 class VeribleVerilogFormatEditProvider extends FileBasedFormattingEditProvider {
-  prepareArgument(tmpFilepath: string): string[] {
+  prepareArgument(_document: vscode.TextDocument, tmpFilepath: string): string[] {
     const customArgs: string = <string>this.config.get('arguments', '');
 
     let args: string[] = ['--inplace'];

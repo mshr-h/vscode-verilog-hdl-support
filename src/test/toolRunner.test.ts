@@ -1,11 +1,101 @@
 // SPDX-License-Identifier: MIT
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { runTool, ToolRunError } from '../tools/ToolRunner';
+import {
+  buildToolInvocation,
+  buildWindowsBatchInvocation,
+  isWindowsBatchFile,
+  resolveWindowsCommand,
+  runTool,
+  ToolRunError,
+} from '../tools/ToolRunner';
 
 const nodeCommand = process.execPath;
 
 suite('ToolRunner', () => {
+  test('resolves Windows command from PATH using PATHEXT', () => {
+    const env = {
+      PATH: 'C:\\Vivado\\bin;C:\\Other\\bin',
+      PATHEXT: '.EXE;.CMD;.BAT',
+    };
+    const resolved = resolveWindowsCommand('xvlog', {
+      env,
+      existsSync: (candidate) => candidate === 'C:\\Vivado\\bin\\xvlog.CMD',
+    });
+
+    assert.strictEqual(resolved, 'C:\\Vivado\\bin\\xvlog.CMD');
+  });
+
+  test('resolves Windows path command using PATHEXT in the same directory', () => {
+    const resolved = resolveWindowsCommand('C:\\Vivado\\bin\\xvlog', {
+      env: { PATHEXT: '.EXE;.CMD;.BAT' },
+      existsSync: (candidate) => candidate === 'C:\\Vivado\\bin\\xvlog.BAT',
+    });
+
+    assert.strictEqual(resolved, 'C:\\Vivado\\bin\\xvlog.BAT');
+  });
+
+  test('uses cmd.exe invocation only for Windows batch files', () => {
+    assert.strictEqual(isWindowsBatchFile('C:\\Vivado\\bin\\xvlog.cmd'), true);
+    assert.strictEqual(isWindowsBatchFile('C:\\Vivado\\bin\\xvlog.bat'), true);
+    assert.strictEqual(isWindowsBatchFile('C:\\Vivado\\bin\\xvlog.exe'), false);
+
+    const batchInvocation = buildWindowsBatchInvocation('C:\\Vivado\\bin\\xvlog.cmd', [
+      '-i',
+      'C:\\source dir',
+    ]);
+    assert.strictEqual(batchInvocation.command, 'cmd.exe');
+    assert.deepStrictEqual(batchInvocation.args, [
+      '/d',
+      '/s',
+      '/c',
+      'call',
+      'C:\\Vivado\\bin\\xvlog.cmd',
+      '-i',
+      'C:\\source dir',
+    ]);
+  });
+
+  test('keeps Windows exe invocation as a direct spawn', () => {
+    const invocation = buildToolInvocation(
+      'xvlog',
+      ['--version'],
+      {
+        PATH: 'C:\\Vivado\\bin',
+        PATHEXT: '.EXE;.CMD;.BAT',
+      },
+      'win32',
+      (candidate) => candidate === 'C:\\Vivado\\bin\\xvlog.EXE'
+    );
+
+    assert.strictEqual(invocation.command, 'C:\\Vivado\\bin\\xvlog.EXE');
+    assert.deepStrictEqual(invocation.args, ['--version']);
+  });
+
+  test('wraps resolved Windows batch command in cmd.exe', () => {
+    const invocation = buildToolInvocation(
+      'xvlog',
+      ['-i', 'C:\\source dir'],
+      {
+        PATH: 'C:\\Vivado\\bin',
+        PATHEXT: '.EXE;.CMD;.BAT',
+      },
+      'win32',
+      (candidate) => candidate === 'C:\\Vivado\\bin\\xvlog.BAT'
+    );
+
+    assert.strictEqual(invocation.command, 'cmd.exe');
+    assert.deepStrictEqual(invocation.args, [
+      '/d',
+      '/s',
+      '/c',
+      'call',
+      'C:\\Vivado\\bin\\xvlog.BAT',
+      '-i',
+      'C:\\source dir',
+    ]);
+  });
+
   test('handles stdout larger than child_process.exec maxBuffer', async () => {
     const lineCount = 75000;
     const script = [

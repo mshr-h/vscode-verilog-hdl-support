@@ -27,6 +27,7 @@ export default abstract class BaseLinter {
   /** The diagnostic manager for reporting issues */
   protected diagnosticManager: LinterDiagnosticManager;
   protected runManager: LintRunManager;
+  private readonly subscriptions: vscode.Disposable[] = [];
   /** The name of the linter */
   name: string;
   /** The logger instance for output */
@@ -56,10 +57,12 @@ export default abstract class BaseLinter {
     this.logger = getExtensionLogger('Linter', name);
 
     // Register configuration change listener
-    vscode.workspace.onDidChangeConfiguration(() => {
-      this.loadBaseConfig();
-      this.updateConfig();
-    });
+    this.subscriptions.push(
+      vscode.workspace.onDidChangeConfiguration(() => {
+        this.loadBaseConfig();
+        this.updateConfig();
+      })
+    );
     this.loadBaseConfig();
   }
 
@@ -138,6 +141,12 @@ export default abstract class BaseLinter {
    */
   public removeFileDiagnostics(doc: vscode.TextDocument) {
     this.diagnosticManager.clearOwner(this.name, doc.uri);
+  }
+
+  public dispose(): void {
+    for (const subscription of this.subscriptions) {
+      subscription.dispose();
+    }
   }
 
   protected publishDiagnosticsIfCurrent(

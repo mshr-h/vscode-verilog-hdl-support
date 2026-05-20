@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 import * as fs from 'fs';
-import * as os from 'os';
 import * as path from 'path';
 import * as process from 'process';
 import * as vscode from 'vscode';
@@ -9,6 +8,9 @@ import { getExtensionLogger } from '../logging';
 import { runTool, ToolRunError, type ToolRunOptions, type ToolRunResult } from '../tools/ToolRunner';
 import { buildSlangCommand } from '../linter/SlangLinter';
 import { buildVerilatorCommand } from '../linter/VerilatorLinter';
+import { expandPathVariables, resolveConfigPath } from '../utils/configPath';
+
+export { expandPathVariables, resolveConfigPath } from '../utils/configPath';
 
 export type DoctorStatus = 'ok' | 'warn' | 'error' | 'info';
 
@@ -219,27 +221,6 @@ export function resolveWorkspaceFolderForUri(
     return undefined;
   }
   return vscode.workspace.getWorkspaceFolder(uri);
-}
-
-export function expandPathVariables(input: string): string {
-  let expanded = input.replace(
-    /\$\{env:([^}]+)\}/g,
-    (_match, envName: string) => process.env[envName] ?? ''
-  );
-  if (expanded === '~') {
-    expanded = os.homedir();
-  } else if (expanded.startsWith(`~${path.sep}`) || expanded.startsWith('~/')) {
-    expanded = path.join(os.homedir(), expanded.slice(2));
-  }
-  return expanded;
-}
-
-export function resolveConfigPath(input: string, workspaceFolder?: string): string {
-  const expanded = expandPathVariables(input.trim());
-  if (expanded.length === 0 || path.isAbsolute(expanded) || !workspaceFolder) {
-    return expanded;
-  }
-  return path.join(workspaceFolder, expanded);
 }
 
 export function createDefaultDoctorDependencies(): DoctorDependencies {

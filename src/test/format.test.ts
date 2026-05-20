@@ -6,9 +6,36 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import which from 'which';
-import { SystemVerilogFormatProvider } from '../providers/FormatProvider';
+import { buildVerilogFormatArgs, SystemVerilogFormatProvider } from '../providers/FormatProvider';
 
 suite('Formatting', () => {
+  test('verilog-format settings path is expanded when the file exists', () => {
+    process.env.VERILOG_FORMAT_TEST_HOME = path.join(os.tmpdir(), 'format home');
+    const settingsPath = path.join(
+      process.env.VERILOG_FORMAT_TEST_HOME,
+      '.verilog-format.properties'
+    );
+    const args = buildVerilogFormatArgs(
+      '/tmp/input.v',
+      '${env:VERILOG_FORMAT_TEST_HOME}/.verilog-format.properties',
+      undefined,
+      (candidate) => candidate === settingsPath
+    );
+
+    assert.deepStrictEqual(args, ['-f', '/tmp/input.v', '-s', settingsPath]);
+  });
+
+  test('verilog-format settings argument is omitted when the file is missing', () => {
+    const args = buildVerilogFormatArgs(
+      '/tmp/input.v',
+      '~/.verilog-format.properties',
+      undefined,
+      () => false
+    );
+
+    assert.deepStrictEqual(args, ['-f', '/tmp/input.v']);
+  });
+
   test('verible-verilog-format formats via configured binary', async function () {
     const veriblePath = which.sync('verible-verilog-format', { nothrow: true });
     if (!veriblePath) {
