@@ -5,7 +5,7 @@ import { getExtensionLogger } from './logging';
 import { END_OF_LINE } from './constants';
 import { runTool, ToolRunError, type ToolRunResult } from './tools/ToolRunner';
 import { getWorkspaceFolderForUri } from './utils/workspace';
-import { WorkspaceCtagsIndex } from './ctagsWorkspaceIndex';
+import { type IndexedSymbol, WorkspaceCtagsIndex } from './ctagsWorkspaceIndex';
 
 /**
  * Represents a symbol parsed from ctags output.
@@ -718,6 +718,36 @@ export class CtagsManager implements vscode.Disposable {
       return;
     }
     await this.workspaceIndex.rebuild(folder, token);
+  }
+
+  async findTopLevelModules(
+    folder: vscode.WorkspaceFolder,
+    token?: vscode.CancellationToken
+  ): Promise<IndexedSymbol[]> {
+    if (this.disposed || !this.enabled) {
+      return [];
+    }
+    return this.workspaceIndex.findTopLevelModules(folder, token);
+  }
+
+  async findSymbolsInFile(
+    uri: vscode.Uri,
+    token?: vscode.CancellationToken
+  ): Promise<IndexedSymbol[]> {
+    if (this.disposed || !this.enabled) {
+      return [];
+    }
+    return this.workspaceIndex.findSymbolsInFile(uri, token);
+  }
+
+  async findModuleMembers(
+    moduleSymbol: IndexedSymbol,
+    token?: vscode.CancellationToken
+  ): Promise<{ ports: Symbol[]; parameters: Symbol[] }> {
+    if (this.disposed || !this.enabled) {
+      return { ports: [], parameters: [] };
+    }
+    return this.workspaceIndex.findModuleMembers(moduleSymbol, token);
   }
 
   dispose(): void {

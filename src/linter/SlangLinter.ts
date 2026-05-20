@@ -5,7 +5,7 @@ import * as process from 'process';
 import BaseLinter from './BaseLinter';
 import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
-import { convertToWslPath, type WslPathConversionOptions } from '../tools/WslPathConverter';
+import { ExecutionContext } from '../tools/ExecutionContext';
 import { getWorkspaceRootForDocument } from '../utils/workspace';
 import { splitCommandLineArgs } from '../utils/commandLine';
 import LinterDiagnosticManager from './LinterDiagnosticManager';
@@ -55,18 +55,14 @@ export interface ParseSlangDiagnosticsOptions {
 }
 
 export function buildSlangCommand(options: SlangCommandOptions): SlangCommand {
-  const joinPath = options.isWindows ? path.win32.join : path.join;
-  if (options.isWindows && options.useWSL) {
-    return {
-      command: joinPath(options.linterInstalledPath, 'wsl'),
-      leadingArgs: ['slang'],
-    };
-  }
-
-  return {
-    command: joinPath(options.linterInstalledPath, options.isWindows ? 'slang.exe' : 'slang'),
-    leadingArgs: [],
-  };
+  return new ExecutionContext({
+    isWindows: options.isWindows,
+    useWSL: options.useWSL,
+    linterInstalledPath: options.linterInstalledPath,
+    windowsExecutable: 'slang.exe',
+    unixExecutable: 'slang',
+    runAtFileLocation: false,
+  }).buildCommand();
 }
 
 export function getSlangPaths(options: SlangPathOptions): SlangPaths {
@@ -173,63 +169,33 @@ export default class SlangLinter extends BaseLinter {
   }
 
   protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
-    const commandInfo = buildSlangCommand({
+    const context = new ExecutionContext({
       isWindows,
       useWSL: this.useWSL,
       linterInstalledPath: this.config.linterInstalledPath,
+      windowsExecutable: 'slang.exe',
+      unixExecutable: 'slang',
+      runAtFileLocation: this.config.runAtFileLocation,
+      workspaceFolder: getWorkspaceRootForDocument(doc),
+      cancellationToken: run.cancellationToken,
+      cwdMode: 'hostRawForWsl',
     });
-    const paths = await this.getRunPaths(
-      doc.uri.fsPath,
-      getWorkspaceRootForDocument(doc),
-      commandInfo.command,
-      run
-    );
-    const args = commandInfo.leadingArgs.concat(
+    const prepared = await context.prepare({
+      documentPath: doc.uri.fsPath,
+      includePaths: this.resolveIncludePaths(this.config.includePath, doc),
+    });
+    const args = prepared.leadingArgs.concat(
       buildSlangArgs({
-        docFolder: paths.docFolder,
-        includePaths: this.resolveIncludePaths(this.config.includePath, doc),
+        docFolder: prepared.documentFolder,
+        includePaths: prepared.includePaths,
         customArguments: this.config.arguments,
-        documentPath: paths.docUri,
+        documentPath: prepared.documentPath,
       })
     );
 
-    this.logger.info("Executing", { command: commandInfo.command, args, cwd: paths.cwd });
+    this.logger.info("Executing", { command: prepared.command, args, cwd: prepared.cwd });
 
-    await this.runSlang(commandInfo.command, args, paths.cwd, paths.docUri, doc, run);
-  }
-
-  private async getRunPaths(
-    documentPath: string,
-    workspaceFolder: string | undefined,
-    wslCommand: string,
-    run: LintRunHandle
-  ): Promise<SlangPaths> {
-    const dirname = isWindows ? path.win32.dirname : path.dirname;
-    const rawDocFolder = dirname(documentPath);
-    let docUri = documentPath;
-    let docFolder = rawDocFolder;
-
-    if (isWindows) {
-      if (this.useWSL) {
-        const conversionOptions: WslPathConversionOptions = {
-          cancellationToken: run.cancellationToken,
-          wslCommand,
-        };
-        docUri = await convertToWslPath(documentPath, conversionOptions);
-        docFolder = await convertToWslPath(rawDocFolder, conversionOptions);
-      } else {
-        docUri = documentPath.replace(/\\/g, '/');
-        docFolder = rawDocFolder.replace(/\\/g, '/');
-      }
-    }
-
-    const cwd = this.config.runAtFileLocation
-      ? isWindows && this.useWSL
-        ? rawDocFolder
-        : docFolder
-      : workspaceFolder ?? docFolder;
-
-    return { docUri, docFolder, cwd };
+    await this.runSlang(prepared.command, args, prepared.cwd, prepared.documentPath, doc, run);
   }
 
   private async runSlang(

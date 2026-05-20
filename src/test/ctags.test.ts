@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import { VerilogCompletionItemProvider } from '../providers/CompletionItemProvider';
 import { Ctags, CtagsManager, dedupeDefinitionLinks, parseCtagsTagLine, Symbol } from '../ctags';
 import { getExtensionLogger } from '../logging';
-import { isWorkspaceLookupSymbol } from '../ctagsWorkspaceIndex';
+import { isWorkspaceLookupSymbol, WorkspaceCtagsIndex } from '../ctagsWorkspaceIndex';
 import { END_OF_LINE } from '../constants';
 
 suite('Ctags Parsing', () => {
@@ -202,6 +202,52 @@ suite('Ctags Parsing', () => {
     } finally {
       (vscode.workspace as any).getWorkspaceFolder = originalGetWorkspaceFolder;
       manager.dispose();
+    }
+  });
+
+  test('WorkspaceCtagsIndex query APIs return modules and module members', async () => {
+    const folder = {
+      uri: vscode.Uri.file(process.cwd()),
+      name: 'vscode-verilog-hdl-support',
+      index: 0,
+    };
+    const uri = vscode.Uri.file(path.join(process.cwd(), 'src/test/fixtures/workspace-ctags/top.sv'));
+    const moduleSymbol = { uri, symbol: new Symbol('top', 'module', '', 0, '', '', 0, false) };
+    const portSymbol = { uri, symbol: new Symbol('clk', 'port', '', 1, 'top', 'module', 1, false) };
+    const parameterSymbol = {
+      uri,
+      symbol: new Symbol('WIDTH', 'parameter', '', 1, 'top', 'module', 1, false),
+    };
+    const index = new WorkspaceCtagsIndex(getExtensionLogger('Test', 'WorkspaceCtagsIndex'));
+    const originalGetWorkspaceFolder = vscode.workspace.getWorkspaceFolder;
+
+    try {
+      (vscode.workspace as any).getWorkspaceFolder = () => folder;
+      (index as any).config.enabled = true;
+      (index as any).statesByFolderUri.set(folder.uri.toString(), {
+        folder,
+        symbolsByName: new Map([
+          ['top', [moduleSymbol]],
+          ['clk', [portSymbol]],
+          ['WIDTH', [parameterSymbol]],
+        ]),
+        filesByUri: new Map([[uri.toString(), [moduleSymbol, portSymbol, parameterSymbol]]]),
+        isDirty: false,
+        isBuilding: false,
+        skipped: false,
+      });
+
+      const modules = await index.findTopLevelModules(folder);
+      const symbols = await index.findSymbolsInFile(uri);
+      const members = await index.findModuleMembers(moduleSymbol);
+
+      assert.deepStrictEqual(modules, [moduleSymbol]);
+      assert.deepStrictEqual(symbols, [moduleSymbol, portSymbol, parameterSymbol]);
+      assert.deepStrictEqual(members.ports, [portSymbol.symbol]);
+      assert.deepStrictEqual(members.parameters, [parameterSymbol.symbol]);
+    } finally {
+      (vscode.workspace as any).getWorkspaceFolder = originalGetWorkspaceFolder;
+      index.dispose();
     }
   });
 });

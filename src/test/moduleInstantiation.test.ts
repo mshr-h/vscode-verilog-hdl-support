@@ -6,7 +6,14 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import which from 'which';
-import { instantiateModule, shouldShowParentDirectory } from '../commands/ModuleInstantiation';
+import {
+  buildInstantiationSnippet,
+  buildModuleQuickPickItems,
+  instantiateModule,
+  shouldShowParentDirectory,
+} from '../commands/ModuleInstantiation';
+import { Symbol } from '../ctags';
+import type { IndexedSymbol } from '../ctagsWorkspaceIndex';
 
 suite('Module Instantiation', () => {
   test('uses the supplied workspace root for parent navigation decisions', () => {
@@ -26,6 +33,42 @@ suite('Module Instantiation', () => {
     } finally {
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }
+  });
+
+  test('builds instantiation snippet with aligned parameters and ports', () => {
+    const snippet = buildInstantiationSnippet(
+      'my_mod',
+      ['clk', 'reset_n'],
+      ['WIDTH'],
+      '  '
+    ).value;
+
+    assert.ok(snippet.includes('my_mod '), 'Snippet should include module name');
+    assert.ok(snippet.includes('#('), 'Snippet should include parameter block');
+    assert.ok(snippet.includes('  .WIDTH (WIDTH )'), 'Snippet should align parameter mapping');
+    assert.ok(snippet.includes('  .clk     (clk     )'), 'Snippet should align short port');
+    assert.ok(snippet.includes('  .reset_n (reset_n )'), 'Snippet should include long port');
+    assert.ok(snippet.endsWith(');\n'), 'Snippet should close the instantiation');
+  });
+
+  test('builds module QuickPick items with relative file descriptions', () => {
+    const workspaceRoot = path.join(os.tmpdir(), 'workspace');
+    const workspaceFolder = {
+      uri: vscode.Uri.file(workspaceRoot),
+      name: 'workspace',
+      index: 0,
+    };
+    const moduleSymbol: IndexedSymbol = {
+      uri: vscode.Uri.file(path.join(workspaceRoot, 'rtl', 'top.sv')),
+      symbol: new Symbol('top', 'module', '', 0, '', '', 0, false),
+    };
+
+    const items = buildModuleQuickPickItems([moduleSymbol], workspaceFolder);
+
+    assert.strictEqual(items.length, 1);
+    assert.strictEqual(items[0].label, 'top');
+    assert.strictEqual(items[0].description, path.join('rtl', 'top.sv'));
+    assert.strictEqual(items[0].moduleSymbol, moduleSymbol);
   });
 
   test('skips instantiation when ctags is disabled', async function () {

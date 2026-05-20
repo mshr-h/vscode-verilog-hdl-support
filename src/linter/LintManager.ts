@@ -2,14 +2,9 @@
 import * as vscode from 'vscode';
 import { getExtensionLogger } from '../logging';
 import BaseLinter from './BaseLinter';
-import IcarusLinter from './IcarusLinter';
-import ModelsimLinter from './ModelsimLinter';
-import VerilatorLinter from './VerilatorLinter';
-import SlangLinter from './SlangLinter';
-import XvlogLinter from './XvlogLinter';
-import VeribleVerilogLintLinter from './VeribleVerilogLintLinter';
 import LinterDiagnosticManager from './LinterDiagnosticManager';
 import LintRunManager from './LintRunManager';
+import { createLinterById, getLinterQuickPickItems } from './factory';
 
 export default class LintManager {
   private subscriptions: vscode.Disposable[];
@@ -39,22 +34,7 @@ export default class LintManager {
   }
 
   getLinterFromString(name: string): BaseLinter | null {
-    switch (name) {
-      case 'iverilog':
-        return new IcarusLinter(this.diagnosticManager, this.runManager);
-      case 'xvlog':
-        return new XvlogLinter(this.diagnosticManager, this.runManager);
-      case 'modelsim':
-        return new ModelsimLinter(this.diagnosticManager, this.runManager);
-      case 'verilator':
-        return new VerilatorLinter(this.diagnosticManager, this.runManager);
-      case 'slang':
-        return new SlangLinter(this.diagnosticManager, this.runManager);
-      case 'verible-verilog-lint':
-        return new VeribleVerilogLintLinter(this.diagnosticManager, this.runManager);
-      default:
-        return null;
-    }
+    return createLinterById(name, this.diagnosticManager, this.runManager);
   }
 
   configLinter() {
@@ -143,32 +123,7 @@ export default class LintManager {
     }
 
     const linterStr: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(
-      [
-        {
-          label: 'iverilog',
-          description: 'Icarus Verilog',
-        },
-        {
-          label: 'xvlog',
-          description: 'Vivado Logical Simulator',
-        },
-        {
-          label: 'modelsim',
-          description: 'Modelsim',
-        },
-        {
-          label: 'verilator',
-          description: 'Verilator',
-        },
-        {
-          label: 'slang',
-          description: 'Slang',
-        },
-        {
-          label: 'verible-verilog-lint',
-          description: 'Verible Verilog Lint',
-        },
-      ],
+      getLinterQuickPickItems(),
       {
         matchOnDescription: true,
         placeHolder: 'Choose a linter to run',

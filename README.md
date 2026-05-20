@@ -64,8 +64,8 @@ This extension uses the tags created using Ctags to provide many of its features
 
 Enable this integration with the `verilog.ctags.enabled` setting.
 
-Workspace-wide lookup for Go to Definition, Peek Definition, and Hover is available with `verilog.ctags.workspace.enabled`.
-The workspace index is lazy and in-memory: it is built on first cross-file lookup or when you run **Verilog: Rebuild Workspace Ctags Index**, and it is not written to disk.
+Workspace-wide lookup for Go to Definition, Peek Definition, Hover, and module instantiation is available with `verilog.ctags.workspace.enabled`.
+The workspace index is lazy and in-memory: it is built on first cross-file lookup, module instantiation, or when you run **Verilog: Rebuild Workspace Ctags Index**, and it is not written to disk.
 Use `verilog.ctags.workspace.include` and `verilog.ctags.workspace.exclude` to control which files are indexed.
 If a workspace folder has more matching files than `verilog.ctags.workspace.maxFiles`, workspace indexing is skipped for that folder and current-file Ctags support continues to work.
 
@@ -103,7 +103,7 @@ Add the installation path of Ctags binary in your `PATH` environment variable or
 
 - **Instantiate Module**
 
-    Choose a module present in your workspace to instantiate it in the current file.
+    Choose a module from the workspace Ctags index and instantiate it in the current file.
 
 - **Open Fliplot Waveform Viewer**
 

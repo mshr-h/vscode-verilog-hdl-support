@@ -7,9 +7,12 @@ import * as vscode from 'vscode';
 import which = require('which');
 import { getExtensionLogger } from '../logging';
 import { runTool, ToolRunError, type ToolRunOptions, type ToolRunResult } from '../tools/ToolRunner';
-import { buildSlangCommand } from '../linter/SlangLinter';
-import { buildVerilatorCommand } from '../linter/VerilatorLinter';
 import { getWorkspaceFolderForUri } from '../utils/workspace';
+import {
+  getFormatterSpec,
+  getLinterSpec,
+  languageServerSpecs,
+} from '../tools/metadata';
 
 export type DoctorStatus = 'ok' | 'warn' | 'error' | 'info';
 
@@ -64,6 +67,7 @@ export interface LanguageServerDoctorOptions {
   enabled: boolean;
   path: string;
   arguments?: string;
+  versionArgs?: string[];
   configFiles?: Array<{ label: string; path: string; resolvePerWorkspace?: boolean }>;
   workspaceFolders?: string[];
 }
@@ -77,24 +81,6 @@ const statusLabels: Record<DoctorStatus, string> = {
   warn: '[WARN]',
   error: '[ERROR]',
   info: '[INFO]',
-};
-
-const linterVersionArgs = new Map<string, string[]>([
-  ['iverilog', ['-V']],
-  ['modelsim', ['-version']],
-  ['xvlog', ['--version']],
-  ['verilator', ['--version']],
-  ['slang', ['--version']],
-  ['verible-verilog-lint', ['--version']],
-]);
-
-const languageServerLabels: Record<string, string> = {
-  svls: 'svls',
-  veridian: 'veridian',
-  hdlChecker: 'hdlChecker',
-  veribleVerilogLs: 'verible-verilog-ls',
-  tclsp: 'tclsp',
-  rustHdl: 'vhdl_ls',
 };
 
 export function registerDoctorCommand(context: vscode.ExtensionContext): vscode.Disposable {
@@ -326,7 +312,7 @@ export async function buildLinterChecks(
     checks,
     'version',
     commandInfo.command,
-    commandInfo.leadingArgs.concat(linterVersionArgs.get(options.linter) ?? ['--version']),
+    commandInfo.leadingArgs.concat(getLinterSpec(options.linter)?.versionArgs ?? ['--version']),
     deps,
     token
   );
@@ -366,7 +352,7 @@ export async function buildLanguageServerChecks(
   }
 
   await appendBinaryChecks(checks, `${options.name} binary`, options.path, deps, token);
-  await appendVersionCheck(checks, 'version', options.path, ['--version'], deps, token);
+  await appendVersionCheck(checks, 'version', options.path, options.versionArgs ?? ['--version'], deps, token);
 
   for (const configFile of options.configFiles ?? []) {
     const candidatePaths =
@@ -537,25 +523,17 @@ async function buildLanguageServersSection(
   token?: vscode.CancellationToken
 ): Promise<DoctorSection> {
   const checks: DoctorCheck[] = [];
-  const serverNames = [
-    'svls',
-    'veridian',
-    'hdlChecker',
-    'veribleVerilogLs',
-    'tclsp',
-    'rustHdl',
-  ];
 
-  for (const name of serverNames) {
-    const config = vscode.workspace.getConfiguration(`verilog.languageServer.${name}`);
+  for (const spec of languageServerSpecs) {
+    const config = vscode.workspace.getConfiguration(`verilog.languageServer.${spec.configSection}`);
     const configFiles: LanguageServerDoctorOptions['configFiles'] = [];
-    if (name === 'svls') {
+    if (spec.id === 'svls') {
       const svlintTomlPath = config.get<string>('svlintTomlPath', '').trim();
       if (svlintTomlPath.length > 0) {
         configFiles.push({ label: 'svls.svlintTomlPath', path: svlintTomlPath });
       }
     }
-    if (name === 'tclsp') {
+    if (spec.id === 'tclsp') {
       const configPath = config.get<string>('configPath', '').trim();
       if (configPath.length > 0) {
         configFiles.push({
@@ -569,12 +547,13 @@ async function buildLanguageServersSection(
     checks.push(
       ...(await buildLanguageServerChecks(
         {
-          name: languageServerLabels[name] ?? name,
+          name: spec.label,
           enabled: config.get<boolean>('enabled', false),
-          path: config.get<string>('path', languageServerLabels[name] ?? name),
+          path: config.get<string>('path', spec.defaultExecutable),
           arguments: config.get<string>('arguments', ''),
           configFiles,
           workspaceFolders,
+          versionArgs: spec.versionArgs,
         },
         deps,
         token
@@ -599,7 +578,7 @@ function buildSummarySection(sections: DoctorSection[]): DoctorSection {
 }
 
 function getLinterSpecificConfiguration(linter: string): vscode.WorkspaceConfiguration {
-  const namespace = linter === 'verible-verilog-lint' ? 'veribleVerilogLint' : linter;
+  const namespace = getLinterSpec(linter)?.configSection ?? linter;
   return vscode.workspace.getConfiguration(`verilog.linting.${namespace}`);
 }
 
@@ -607,36 +586,11 @@ function buildLinterCommand(
   options: LinterDoctorOptions
 ): { command: string; leadingArgs: string[] } | undefined {
   const isWindows = options.isWindows ?? process.platform === 'win32';
-  switch (options.linter) {
-    case 'iverilog':
-      return { command: path.join(options.linterPath, 'iverilog'), leadingArgs: [] };
-    case 'modelsim':
-      return { command: path.join(options.linterPath, 'vlog'), leadingArgs: [] };
-    case 'xvlog':
-      return { command: path.join(options.linterPath, 'xvlog'), leadingArgs: [] };
-    case 'verilator':
-      return buildVerilatorCommand({
-        isWindows,
-        useWSL: options.useWSL ?? false,
-        linterInstalledPath: options.linterPath,
-      });
-    case 'slang':
-      return buildSlangCommand({
-        isWindows,
-        useWSL: options.useWSL ?? false,
-        linterInstalledPath: options.linterPath,
-      });
-    case 'verible-verilog-lint':
-      return {
-        command: path.join(
-          options.linterPath,
-          isWindows ? 'verible-verilog-lint.exe' : 'verible-verilog-lint'
-        ),
-        leadingArgs: [],
-      };
-    default:
-      return undefined;
-  }
+  return getLinterSpec(options.linter)?.buildCommand({
+    isWindows,
+    useWSL: options.useWSL ?? false,
+    configuredPath: options.linterPath,
+  });
 }
 
 async function appendFormatterChecks(
@@ -664,42 +618,29 @@ async function appendFormatterChecks(
 function getFormatterConfiguration(
   formatter: string
 ): { binaryName: string; path: string; extraChecks: DoctorCheck[] } | undefined {
-  switch (formatter) {
-    case 'verilog-format': {
-      const config = vscode.workspace.getConfiguration('verilog.formatting.verilogFormat');
-      return {
-        binaryName: 'verilog-format',
-        path: config.get<string>('path', 'verilog-format'),
-        extraChecks: [],
-      };
-    }
-    case 'iStyle': {
-      const config = vscode.workspace.getConfiguration('verilog.formatting.iStyleVerilogFormatter');
-      return {
-        binaryName: 'iStyle',
-        path: config.get<string>('path', 'iStyle'),
-        extraChecks: [
-          { status: 'info', message: `iStyle arguments = ${config.get<string>('arguments', '')}` },
-          { status: 'info', message: `iStyle style = ${config.get<string>('style', '')}` },
-        ],
-      };
-    }
-    case 'verible-verilog-format': {
-      const config = vscode.workspace.getConfiguration('verilog.formatting.veribleVerilogFormatter');
-      return {
-        binaryName: 'verible-verilog-format',
-        path: config.get<string>('path', 'verible-verilog-format'),
-        extraChecks: [
-          {
-            status: 'info',
-            message: `verible-verilog-format arguments = ${config.get<string>('arguments', '')}`,
-          },
-        ],
-      };
-    }
-    default:
-      return undefined;
+  const spec = getFormatterSpec(formatter);
+  if (!spec) {
+    return undefined;
   }
+  const config = vscode.workspace.getConfiguration(`verilog.formatting.${spec.configSection}`);
+  const extraChecks: DoctorCheck[] = [];
+  if (formatter === 'iStyle') {
+    extraChecks.push(
+      { status: 'info', message: `iStyle arguments = ${config.get<string>('arguments', '')}` },
+      { status: 'info', message: `iStyle style = ${config.get<string>('style', '')}` }
+    );
+  }
+  if (formatter === 'verible-verilog-format') {
+    extraChecks.push({
+      status: 'info',
+      message: `verible-verilog-format arguments = ${config.get<string>('arguments', '')}`,
+    });
+  }
+  return {
+    binaryName: spec.label,
+    path: config.get<string>('path', spec.defaultExecutable),
+    extraChecks,
+  };
 }
 
 async function appendBinaryChecks(

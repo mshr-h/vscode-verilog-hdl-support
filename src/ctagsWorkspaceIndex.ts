@@ -202,6 +202,84 @@ export class WorkspaceCtagsIndex implements vscode.Disposable {
       .map((candidate) => this.toDefinitionLink(candidate));
   }
 
+  async findTopLevelModules(
+    folder: vscode.WorkspaceFolder,
+    token?: vscode.CancellationToken
+  ): Promise<IndexedSymbol[]> {
+    if (this.disposed || !this.config.enabled) {
+      return [];
+    }
+    await this.ensureReadyForUri(folder.uri, token);
+    const state = this.statesByFolderUri.get(folder.uri.toString());
+    if (!state || state.skipped) {
+      return [];
+    }
+    const modules: IndexedSymbol[] = [];
+    for (const symbols of state.symbolsByName.values()) {
+      modules.push(
+        ...symbols.filter(
+          (candidate) =>
+            candidate.symbol.type === 'module' && candidate.symbol.parentScope === ''
+        )
+      );
+    }
+    return modules.sort((left, right) => {
+      const byName = left.symbol.name.localeCompare(right.symbol.name);
+      if (byName !== 0) {
+        return byName;
+      }
+      return left.uri.fsPath.localeCompare(right.uri.fsPath);
+    });
+  }
+
+  async findSymbolsInFile(
+    uri: vscode.Uri,
+    token?: vscode.CancellationToken
+  ): Promise<IndexedSymbol[]> {
+    if (this.disposed || !this.config.enabled) {
+      return [];
+    }
+    await this.ensureReadyForUri(uri, token);
+    const folder = getWorkspaceFolderForUri(uri);
+    if (!folder) {
+      return [];
+    }
+    const state = this.statesByFolderUri.get(folder.uri.toString());
+    if (!state || state.skipped) {
+      return [];
+    }
+    return state.filesByUri.get(uri.toString()) ?? [];
+  }
+
+  async findModuleMembers(
+    moduleSymbol: IndexedSymbol,
+    token?: vscode.CancellationToken
+  ): Promise<{ ports: Symbol[]; parameters: Symbol[] }> {
+    const symbols = await this.findSymbolsInFile(moduleSymbol.uri, token);
+    const scope =
+      moduleSymbol.symbol.parentScope !== ''
+        ? `${moduleSymbol.symbol.parentScope}.${moduleSymbol.symbol.name}`
+        : moduleSymbol.symbol.name;
+    return {
+      ports: symbols
+        .filter(
+          (candidate) =>
+            candidate.symbol.type === 'port' &&
+            candidate.symbol.parentType === 'module' &&
+            candidate.symbol.parentScope === scope
+        )
+        .map((candidate) => candidate.symbol),
+      parameters: symbols
+        .filter(
+          (candidate) =>
+            candidate.symbol.type === 'parameter' &&
+            candidate.symbol.parentType === 'module' &&
+            candidate.symbol.parentScope === scope
+        )
+        .map((candidate) => candidate.symbol),
+    };
+  }
+
   private readConfig(): WorkspaceCtagsConfig {
     const ctagsConfig = vscode.workspace.getConfiguration('verilog.ctags');
     const workspaceConfig = vscode.workspace.getConfiguration('verilog.ctags.workspace');
