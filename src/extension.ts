@@ -34,6 +34,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   ctagsManager = new CtagsManager();
   ctagsManager.configure();
+  context.subscriptions.push(ctagsManager);
 
   // Configure Document Symbol Provider
   const verilogDocumentSymbolProvider = new DocumentSymbolProvider.VerilogDocumentSymbolProvider(

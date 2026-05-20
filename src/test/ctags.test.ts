@@ -40,6 +40,47 @@ suite('Ctags Parsing', () => {
     assert.strictEqual(module?.endPosition.line, 2);
     assert.strictEqual(module?.isValid, true);
   });
+
+  test('CtagsManager.onClose disposes cached Ctags instance', async () => {
+    const document = await vscode.workspace.openTextDocument({
+      language: 'systemverilog',
+      content: 'module top; endmodule',
+    });
+    const manager = new CtagsManager();
+    const ctags = manager.getCtags(document);
+    ctags.symbols = [new Symbol('top', 'module', '', 0, '', '', 0, true)];
+
+    manager.onClose(document);
+
+    const filemap = (manager as any).filemap as Map<vscode.TextDocument, Ctags>;
+    assert.strictEqual(filemap.has(document), false);
+    assert.strictEqual(ctags.symbols.length, 0);
+    manager.dispose();
+  });
+
+  test('CtagsManager.dispose disposes cached Ctags instances and clears filemap', async () => {
+    const firstDocument = await vscode.workspace.openTextDocument({
+      language: 'systemverilog',
+      content: 'module first; endmodule',
+    });
+    const secondDocument = await vscode.workspace.openTextDocument({
+      language: 'systemverilog',
+      content: 'module second; endmodule',
+    });
+    const manager = new CtagsManager();
+    const firstCtags = manager.getCtags(firstDocument);
+    const secondCtags = manager.getCtags(secondDocument);
+    firstCtags.symbols = [new Symbol('first', 'module', '', 0, '', '', 0, true)];
+    secondCtags.symbols = [new Symbol('second', 'module', '', 0, '', '', 0, true)];
+
+    manager.dispose();
+    manager.dispose();
+
+    const filemap = (manager as any).filemap as Map<vscode.TextDocument, Ctags>;
+    assert.strictEqual(filemap.size, 0);
+    assert.strictEqual(firstCtags.symbols.length, 0);
+    assert.strictEqual(secondCtags.symbols.length, 0);
+  });
 });
 
 suite('Ctags Completion', () => {
