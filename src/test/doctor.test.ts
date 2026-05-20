@@ -16,16 +16,20 @@ function makeDeps(options: {
   existingPaths?: Set<string>;
   exitCode?: number;
   output?: string;
+  onRunTool?: (options: ToolRunOptions) => void;
 }): DoctorDependencies {
   return {
-    runTool: async (toolOptions: ToolRunOptions): Promise<ToolRunResult> => ({
-      exitCode: options.exitCode ?? 0,
-      signal: null,
-      stdout: options.output ?? 'tool version 1.0\n',
-      stderr: '',
-      command: toolOptions.command,
-      args: toolOptions.args,
-    }),
+    runTool: async (toolOptions: ToolRunOptions): Promise<ToolRunResult> => {
+      options.onRunTool?.(toolOptions);
+      return {
+        exitCode: options.exitCode ?? 0,
+        signal: null,
+        stdout: options.output ?? 'tool version 1.0\n',
+        stderr: '',
+        command: toolOptions.command,
+        args: toolOptions.args,
+      };
+    },
     resolveExecutable: async (command: string) => options.executables?.[command],
     exists: (inputPath: string) => options.existingPaths?.has(inputPath) ?? false,
   };
@@ -91,6 +95,39 @@ suite('Doctor', () => {
     );
 
     assert.ok(checks.some((check) => check.status === 'error' && check.message.includes('iverilog')));
+  });
+
+  test('linter none produces info without probing binaries', async () => {
+    let probeCount = 0;
+    const checks = await buildLinterChecks(
+      {
+        linter: 'none',
+        linterPath: '',
+      },
+      makeDeps({ onRunTool: () => probeCount++ })
+    );
+
+    assert.ok(checks.some((check) => check.message.includes('no linter selected')));
+    assert.strictEqual(probeCount, 0);
+  });
+
+  test('linter version args come from registry metadata', async () => {
+    const probeArgs: string[][] = [];
+    await buildLinterChecks(
+      {
+        linter: 'iverilog',
+        linterPath: '',
+        arguments: '',
+        includePath: [],
+        runAtFileLocation: false,
+      },
+      makeDeps({
+        executables: { iverilog: '/usr/bin/iverilog' },
+        onRunTool: (options) => probeArgs.push(options.args),
+      })
+    );
+
+    assert.deepStrictEqual(probeArgs, [['-V']]);
   });
 
   test('disabled language server produces info, not error', async () => {

@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 - Refactored WSL path conversion for linting to use the shared async ToolRunner infrastructure instead of synchronous child process execution. [#568](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/568)
 - Refactored formatter and language server external tool handling to use shared async execution and shared command-line argument parsing.
+- Refactored linter, formatter, and language-server integration metadata into shared registries while preserving existing settings.
+- Module instantiation now selects modules from the workspace Ctags index instead of browsing files and running a separate per-file Ctags flow.
 
 ### Fixed
 

@@ -7,9 +7,9 @@ import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
 import {
   convertFromWslPath,
-  convertToWslPath,
   type WslPathConversionOptions,
 } from '../tools/WslPathConverter';
+import { ExecutionContext } from '../tools/ExecutionContext';
 import { getWorkspaceRootForDocument } from '../utils/workspace';
 import { splitCommandLineArgs } from '../utils/commandLine';
 import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
@@ -62,7 +62,7 @@ export interface BuildVerilatorRunInputsOptions {
   includePaths: string[];
   customArguments: string;
   cancellationToken?: vscode.CancellationToken;
-  convertToWslPathFn?: typeof convertToWslPath;
+  convertToWslPathFn?: (inputPath: string, options?: WslPathConversionOptions) => Promise<string>;
 }
 
 export interface VerilatorRunInputs {
@@ -85,19 +85,14 @@ export interface ConvertDiagnosticPathsFromWslOptions {
 }
 
 export function buildVerilatorCommand(options: VerilatorCommandOptions): VerilatorCommand {
-  const joinPath = options.isWindows ? path.win32.join : path.join;
-  if (options.isWindows && options.useWSL) {
-    return {
-      command: joinPath(options.linterInstalledPath, 'wsl'),
-      leadingArgs: ['verilator'],
-    };
-  }
-
-  const executable = options.isWindows ? 'verilator_bin.exe' : 'verilator';
-  return {
-    command: joinPath(options.linterInstalledPath, executable),
-    leadingArgs: [],
-  };
+  return new ExecutionContext({
+    isWindows: options.isWindows,
+    useWSL: options.useWSL,
+    linterInstalledPath: options.linterInstalledPath,
+    windowsExecutable: 'verilator_bin.exe',
+    unixExecutable: 'verilator',
+    runAtFileLocation: false,
+  }).buildCommand();
 }
 
 export function getVerilatorPaths(options: VerilatorPathOptions): VerilatorPaths {
@@ -142,54 +137,34 @@ export function buildVerilatorArgs(options: BuildVerilatorArgsOptions): string[]
 export async function buildVerilatorRunInputs(
   options: BuildVerilatorRunInputsOptions
 ): Promise<VerilatorRunInputs> {
-  const commandInfo = buildVerilatorCommand({
+  const context = new ExecutionContext({
     isWindows: options.isWindows,
     useWSL: options.useWSL,
     linterInstalledPath: options.linterInstalledPath,
+    windowsExecutable: 'verilator_bin.exe',
+    unixExecutable: 'verilator',
+    runAtFileLocation: options.runAtFileLocation,
+    workspaceFolder: options.workspaceFolder,
+    cancellationToken: options.cancellationToken,
+    cwdMode: 'hostNormalizedOnWindows',
+    convertToWslPathFn: options.convertToWslPathFn,
   });
-  const dirname = options.isWindows ? path.win32.dirname : path.dirname;
-  const rawDocFolder = dirname(options.documentPath);
-  let docUri = options.documentPath;
-  let docFolder = rawDocFolder;
-  let includePaths = options.includePaths;
+  const prepared = await context.prepare({
+    documentPath: options.documentPath,
+    includePaths: options.includePaths,
+  });
 
-  if (options.isWindows) {
-    if (options.useWSL) {
-      const convert = options.convertToWslPathFn ?? convertToWslPath;
-      const conversionOptions: WslPathConversionOptions = {
-        cancellationToken: options.cancellationToken,
-        wslCommand: commandInfo.command,
-      };
-      docUri = await convert(options.documentPath, conversionOptions);
-      docFolder = await convert(rawDocFolder, conversionOptions);
-      includePaths = await Promise.all(
-        options.includePaths.map((includePath) => convert(includePath, conversionOptions))
-      );
-    } else {
-      docUri = options.documentPath.replace(/\\/g, '/');
-      docFolder = rawDocFolder.replace(/\\/g, '/');
-    }
-  }
-
-  // Preserve the previous Windows/WSL cwd behavior. Generated Verilator paths are
-  // converted for args, while cwd stays in the host VS Code filesystem.
-  const cwd = options.runAtFileLocation
-    ? options.isWindows
-      ? dirname(options.documentPath.replace(/\\/g, '/'))
-      : docFolder
-    : options.workspaceFolder ?? docFolder;
-
-  const args = commandInfo.leadingArgs.concat(
+  const args = prepared.leadingArgs.concat(
     buildVerilatorArgs({
       languageId: options.languageId,
-      docFolder,
-      includePaths,
+      docFolder: prepared.documentFolder,
+      includePaths: prepared.includePaths,
       customArguments: options.customArguments,
-      documentPath: docUri,
+      documentPath: prepared.documentPath,
     })
   );
 
-  return { command: commandInfo.command, args, cwd };
+  return { command: prepared.command, args, cwd: prepared.cwd };
 }
 
 function convertVerilatorSeverity(severityString: string): vscode.DiagnosticSeverity {

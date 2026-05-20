@@ -1,107 +1,148 @@
 // SPDX-License-Identifier: MIT
-import * as vscode from 'vscode';
-import * as fs from 'fs';
 import * as path from 'path';
-import { Ctags, Symbol } from '../ctags';
+import * as vscode from 'vscode';
+import { Ctags, CtagsManager, Symbol } from '../ctags';
+import { type IndexedSymbol } from '../ctagsWorkspaceIndex';
 import { getExtensionLogger } from '../logging';
-import { getWorkspaceRootForDocument } from '../utils/workspace';
+import { getWorkspaceFolderForUri } from '../utils/workspace';
 
 const logger = () => getExtensionLogger('Command', 'ModuleInstantiation');
 
-export function instantiateModuleInteract() {
+export interface ModuleQuickPickItem extends vscode.QuickPickItem {
+  moduleSymbol: IndexedSymbol;
+}
+
+export function instantiateModuleInteract(ctagsManager?: CtagsManager) {
+  void instantiateModuleFromWorkspace(ctagsManager).then((inst) => {
+    if (inst && vscode.window.activeTextEditor) {
+      void vscode.window.activeTextEditor.insertSnippet(inst);
+    }
+  });
+}
+
+export async function instantiateModuleFromWorkspace(
+  ctagsManager?: CtagsManager
+): Promise<vscode.SnippetString | undefined> {
   if (!isCtagsEnabled()) {
     vscode.window.showInformationMessage(
       'Verilog-HDL/SystemVerilog: Ctags integration is disabled (verilog.ctags.enabled).'
     );
-    return;
+    return undefined;
   }
   if (!vscode.window.activeTextEditor) {
     vscode.window.showErrorMessage('No active text editor found');
-    return;
+    return undefined;
   }
   const activeDoc = vscode.window.activeTextEditor.document;
-  const filePath = path.dirname(activeDoc.uri.fsPath);
-  const workspaceRoot = getWorkspaceRootForDocument(activeDoc);
-  selectFile(filePath, workspaceRoot).then((srcpath) => {
-    if (srcpath === undefined) {
-      return;
-    }
-    instantiateModule(srcpath).then((inst) => {
-      if (inst && vscode.window.activeTextEditor) {
-        vscode.window.activeTextEditor.insertSnippet(inst);
-      }
-    });
-  });
-}
+  const workspaceFolder = getWorkspaceFolderForUri(activeDoc.uri);
+  if (!workspaceFolder || !ctagsManager) {
+    return instantiateModule(activeDoc.uri.fsPath);
+  }
 
-export async function instantiateModule(srcpath: string): Promise<vscode.SnippetString | undefined> {
-    if (!isCtagsEnabled()) {
-      return undefined;
-    }
-    // Using Ctags to get all the modules in the file
-    let moduleName: string = '';
-    let portsName: string[] = [];
-    let parametersName: string[] = [];
-    if (!vscode.window.activeTextEditor) {
-      return undefined;
-    }
-    const file: vscode.TextDocument = vscode.window.activeTextEditor.document;
-    const log = logger();
-    const ctags: ModuleTags = new ModuleTags(log, file);
-    log.info`Executing ctags for module instantiation`;
-    const output = await ctags.execCtags(srcpath);
-    await ctags.buildSymbolsList(output);
-    let module: Symbol | undefined;
-    const modules: Symbol[] = ctags.symbols.filter((tag) => tag.type === 'module');
-    // No modules found
-    if (modules.length <= 0) {
-      vscode.window.showErrorMessage('Verilog-HDL/SystemVerilog: No modules found in the file');
-      return undefined;
-    }
-    // Only one module found
-    else if (modules.length === 1) {
-      module = modules[0];
-    }
-    // many modules found
-    else if (modules.length > 1) {
-      const selectedModuleName = await vscode.window.showQuickPick(
-        ctags.symbols.filter((tag) => tag.type === 'module').map((tag) => tag.name),
+  return vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: 'Finding Verilog modules',
+      cancellable: true,
+    },
+    async (_progress, token) => {
+      const modules = await ctagsManager.findTopLevelModules(workspaceFolder, token);
+      if (modules.length === 0) {
+        vscode.window.showErrorMessage('Verilog-HDL/SystemVerilog: No modules found in the workspace');
+        return undefined;
+      }
+
+      const selected = await vscode.window.showQuickPick(
+        buildModuleQuickPickItems(modules, workspaceFolder),
         {
+          matchOnDescription: true,
           placeHolder: 'Choose a module to instantiate',
         }
       );
-      if (selectedModuleName === undefined) {
+      if (!selected) {
         return undefined;
       }
-      moduleName = selectedModuleName;
-      module = modules.filter((tag) => tag.name === moduleName)[0];
+
+      const members = await ctagsManager.findModuleMembers(selected.moduleSymbol, token);
+      return buildInstantiationSnippet(
+        selected.moduleSymbol.symbol.name,
+        members.ports.map((symbol) => symbol.name),
+        members.parameters.map((symbol) => symbol.name),
+        getIndentationString()
+      );
     }
-    if (!module) {
+  );
+}
+
+export async function instantiateModule(srcpath: string): Promise<vscode.SnippetString | undefined> {
+  if (!isCtagsEnabled()) {
+    return undefined;
+  }
+  if (!vscode.window.activeTextEditor) {
+    return undefined;
+  }
+  const log = logger();
+  const ctags = new InstantiationCtags(log, vscode.window.activeTextEditor.document);
+  log.info`Executing ctags for module instantiation fallback`;
+  const output = await ctags.execCtags(srcpath);
+  await ctags.buildSymbolsList(output);
+  const modules = ctags.symbols.filter((tag) => tag.type === 'module');
+  if (modules.length <= 0) {
+    vscode.window.showErrorMessage('Verilog-HDL/SystemVerilog: No modules found in the file');
+    return undefined;
+  }
+
+  let module = modules[0];
+  if (modules.length > 1) {
+    const selectedModuleName = await vscode.window.showQuickPick(
+      modules.map((tag) => tag.name),
+      {
+        placeHolder: 'Choose a module to instantiate',
+      }
+    );
+    if (selectedModuleName === undefined) {
       return undefined;
     }
-    const scope = module.parentScope !== '' ? `${module.parentScope  }.${  module.name}` : module.name;
-    const ports: Symbol[] = ctags.symbols.filter(
-      (tag) => tag.type === 'port' && tag.parentType === 'module' && tag.parentScope === scope
-    );
-    portsName = ports.map((tag) => tag.name);
-    const params: Symbol[] = ctags.symbols.filter(
-      (tag) =>
-        tag.type === 'parameter' && tag.parentType === 'module' && tag.parentScope === scope
-    );
-    parametersName = params.map((tag) => tag.name);
-    log.info`Module name: ${module.name}`;
-    let paramString = ``;
-    if (parametersName.length > 0) {
-      paramString = `\n#(\n${instantiatePort(parametersName)})\n`;
-    }
-    log.info`portsName: ${portsName.toString()}`;
-    return new vscode.SnippetString()
-        .appendText(`${module.name  } `)
-        .appendText(paramString)
-        .appendPlaceholder('u_')
-        .appendPlaceholder(`${module.name}(\n`)
-        .appendText(instantiatePort(portsName))
-        .appendText(');\n');
+    module = modules.find((tag) => tag.name === selectedModuleName) ?? module;
+  }
+
+  const members = findModuleMembersInSymbols(module, ctags.symbols);
+  log.info`Module name: ${module.name}`;
+  log.info`portsName: ${members.ports.map((symbol) => symbol.name).toString()}`;
+  return buildInstantiationSnippet(
+    module.name,
+    members.ports.map((symbol) => symbol.name),
+    members.parameters.map((symbol) => symbol.name),
+    getIndentationString()
+  );
+}
+
+export function buildModuleQuickPickItems(
+  modules: readonly IndexedSymbol[],
+  workspaceFolder: vscode.WorkspaceFolder
+): ModuleQuickPickItem[] {
+  return modules.map((moduleSymbol) => ({
+    label: moduleSymbol.symbol.name,
+    description: path.relative(workspaceFolder.uri.fsPath, moduleSymbol.uri.fsPath),
+    moduleSymbol,
+  }));
+}
+
+export function buildInstantiationSnippet(
+  moduleName: string,
+  ports: readonly string[],
+  parameters: readonly string[],
+  indentation = getIndentationString()
+): vscode.SnippetString {
+  const paramString =
+    parameters.length > 0 ? `\n#(\n${instantiatePort(parameters, indentation)})\n` : '';
+  return new vscode.SnippetString()
+    .appendText(`${moduleName} `)
+    .appendText(paramString)
+    .appendPlaceholder('u_')
+    .appendPlaceholder(`${moduleName}(\n`)
+    .appendText(instantiatePort(ports, indentation))
+    .appendText(');\n');
 }
 
 function isCtagsEnabled(): boolean {
@@ -117,27 +158,19 @@ function getIndentationString(): string {
 
   if (useSpaces) {
     return ' '.repeat(tabSize);
-  } 
-    return '\t';
-  
+  }
+  return '\t';
 }
 
-function instantiatePort(ports: string[]): string {
+function instantiatePort(ports: readonly string[], indentation: string): string {
   let port = '';
-  let maxLen = 0;
-  const indent = getIndentationString();
+  const maxLen = ports.reduce((max, current) => Math.max(max, current.length), 0);
 
-  for (let i = 0; i < ports.length; i++) {
-    if (ports[i].length > maxLen) {
-      maxLen = ports[i].length;
-    }
-  }
-  // .NAME(NAME)
   for (let i = 0; i < ports.length; i++) {
     let element = ports[i];
     const padding = maxLen - element.length + 1;
     element = element + ' '.repeat(padding);
-    port += indent;
+    port += indentation;
     port += `.${element}(${element})`;
     if (i !== ports.length - 1) {
       port += ',';
@@ -145,51 +178,6 @@ function instantiatePort(ports: string[]): string {
     port += '\n';
   }
   return port;
-}
-
-export async function selectFile(
-  currentDir: string,
-  workspaceRoot?: string
-): Promise<string | undefined> {
-  const dirs = getDirectories(currentDir);
-  // if is subdirectory, add '../'
-  if (shouldShowParentDirectory(currentDir, workspaceRoot)) {
-    dirs.unshift('..');
-  }
-  // all files ends with '.sv'
-  const files = getFiles(currentDir).filter((file) => file.endsWith('.v') || file.endsWith('.sv'));
-
-  // available quick pick items
-  // Indicate folders in the Quick pick
-  const items: vscode.QuickPickItem[] = [];
-  dirs.forEach((dir) => {
-    items.push({
-      label: dir,
-      description: 'folder',
-    });
-  });
-  files.forEach((file) => {
-    items.push({
-      label: file,
-    });
-  });
-
-  const selected = await vscode.window
-    .showQuickPick(items, {
-      placeHolder: 'Choose the module file',
-    });
-  if (!selected) {
-    return undefined;
-  }
-
-  // if is a directory
-  const location = path.join(currentDir, selected.label);
-  if (fs.statSync(location).isDirectory()) {
-    return selectFile(location, workspaceRoot);
-  }
-
-  // return file path
-  return location;
 }
 
 export function shouldShowParentDirectory(currentDir: string, workspaceRoot?: string): boolean {
@@ -200,34 +188,35 @@ export function shouldShowParentDirectory(currentDir: string, workspaceRoot?: st
   return relative.length > 0 && !relative.startsWith('..') && !path.isAbsolute(relative);
 }
 
-function getDirectories(srcpath: string): string[] {
-  return fs
-    .readdirSync(srcpath)
-    .filter((file) => fs.statSync(path.join(srcpath, file)).isDirectory());
+function findModuleMembersInSymbols(
+  module: Symbol,
+  symbols: readonly Symbol[]
+): { ports: Symbol[]; parameters: Symbol[] } {
+  const scope = module.parentScope !== '' ? `${module.parentScope}.${module.name}` : module.name;
+  return {
+    ports: symbols.filter(
+      (tag) => tag.type === 'port' && tag.parentType === 'module' && tag.parentScope === scope
+    ),
+    parameters: symbols.filter(
+      (tag) => tag.type === 'parameter' && tag.parentType === 'module' && tag.parentScope === scope
+    ),
+  };
 }
 
-function getFiles(srcpath: string): string[] {
-  return fs.readdirSync(srcpath).filter((file) => fs.statSync(path.join(srcpath, file)).isFile());
-}
-
-class ModuleTags extends Ctags {
+class InstantiationCtags extends Ctags {
   buildSymbolsList(tags: string): Promise<void> {
     if (tags === '') {
       return Promise.resolve();
     }
-    // Parse ctags output
     const lines: string[] = tags.split(/\r?\n/);
     lines.forEach((line) => {
       if (line !== '') {
         const tag: Symbol | undefined = this.parseTagLine(line);
-        // add only modules, ports and parameters
-        // Use 'parameter' type instead of 'constant' after #102
         if (tag && (tag.type === 'module' || tag.type === 'port' || tag.type === 'parameter')) {
           this.symbols.push(tag);
         }
       }
     });
-    // skip finding end tags
     return Promise.resolve();
   }
 }
