@@ -6,9 +6,24 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import which from 'which';
-import { SystemVerilogFormatProvider } from '../providers/FormatProvider';
+import {
+  buildIStyleVerilogFormatterArgs,
+  buildVeribleVerilogFormatArgs,
+  SystemVerilogFormatProvider,
+} from '../providers/FormatProvider';
 
 suite('Formatting', () => {
+  test('builds formatter args with quoted custom arguments', () => {
+    assert.deepStrictEqual(
+      buildIStyleVerilogFormatterArgs('/tmp/input file.v', '--foo "bar baz"', 'ANSI'),
+      ['-n', '--foo', 'bar baz', '--style=ansi', '/tmp/input file.v']
+    );
+    assert.deepStrictEqual(
+      buildVeribleVerilogFormatArgs('/tmp/input file.sv', '--flag "quoted value"'),
+      ['--inplace', '--flag', 'quoted value', '/tmp/input file.sv']
+    );
+  });
+
   test('verible-verilog-format formats via configured binary', async function () {
     const veriblePath = which.sync('verible-verilog-format', { nothrow: true });
     if (!veriblePath) {

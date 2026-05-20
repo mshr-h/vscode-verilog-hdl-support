@@ -1,8 +1,44 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
-import { LanguageClient, ServerOptions } from 'vscode-languageclient/node';
+import { LanguageClient, type Executable, type ServerOptions } from 'vscode-languageclient/node';
 import { getExtensionLogger } from '../logging';
+import { splitCommandLineArgs } from '../utils/commandLine';
 import { LanguageServerDefinition } from './definitions';
+
+export function buildLanguageServerArgs(defaultArgs: string[], customArgs?: string): string[] {
+  return defaultArgs.concat(splitCommandLineArgs(customArgs ?? ''));
+}
+
+function buildExecutable(command: string, args: string[], serverEnv?: NodeJS.ProcessEnv): Executable {
+  if (serverEnv && Object.keys(serverEnv).length > 0) {
+    return {
+      command,
+      args,
+      options: { env: { ...process.env, ...serverEnv } },
+    };
+  }
+  return { command, args };
+}
+
+export function buildLanguageServerOptions(
+  definition: LanguageServerDefinition,
+  command: string,
+  customArgs?: string,
+  serverEnv?: NodeJS.ProcessEnv
+): ServerOptions {
+  return {
+    run: buildExecutable(
+      command,
+      buildLanguageServerArgs(definition.serverArgs, customArgs),
+      serverEnv
+    ),
+    debug: buildExecutable(
+      command,
+      buildLanguageServerArgs(definition.serverDebugArgs, customArgs),
+      serverEnv
+    ),
+  };
+}
 
 export class LanguageServerManager {
   private languageClients = new Map<string, LanguageClient>();
@@ -33,20 +69,18 @@ export class LanguageServerManager {
       `verilog.languageServer.${  definition.name}`
     );
     const enabled = settings.get('enabled', false) as boolean;
-    const binPath = settings.get('path', definition.defaultPath) as string;
-    const customArgs = settings.get('arguments') as string | undefined;
-
-    const serverArgs = definition.serverArgs.slice();
-    const serverDebugArgs = definition.serverDebugArgs.slice();
-    if (customArgs) {
-      serverArgs.push(customArgs);
-      serverDebugArgs.push(customArgs);
+    if (!enabled) {
+      return;
     }
 
-    const serverOptions: ServerOptions = {
-      run: { command: binPath, args: serverArgs },
-      debug: { command: binPath, args: serverDebugArgs },
-    };
+    const binPath = settings.get('path', definition.defaultPath) as string;
+    const customArgs = settings.get('arguments') as string | undefined;
+    const serverOptions = buildLanguageServerOptions(
+      definition,
+      binPath,
+      customArgs,
+      definition.buildEnv?.()
+    );
 
     const client = new LanguageClient(
       definition.name,
@@ -55,14 +89,6 @@ export class LanguageServerManager {
       definition.buildClientOptions()
     );
     this.languageClients.set(definition.name, client);
-
-    if (!enabled) {
-      return;
-    }
-
-    if (definition.applyProcessEnv) {
-      definition.applyProcessEnv();
-    }
 
     client.start();
     this.logger.info`"${definition.name}" language server started.`;

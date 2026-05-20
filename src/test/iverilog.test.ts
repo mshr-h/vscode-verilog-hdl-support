@@ -7,11 +7,7 @@ import * as vscode from 'vscode';
 import which from 'which';
 import LinterDiagnosticManager from '../linter/LinterDiagnosticManager';
 import LintRunManager from '../linter/LintRunManager';
-import IcarusLinter, {
-  buildIcarusArgs,
-  parseIcarusDiagnostics,
-  splitCommandLineArgs,
-} from '../linter/IcarusLinter';
+import IcarusLinter, { buildIcarusArgs, parseIcarusDiagnostics } from '../linter/IcarusLinter';
 
 async function waitForDiagnostics(
   collection: vscode.DiagnosticCollection,
@@ -30,22 +26,6 @@ async function waitForDiagnostics(
 }
 
 suite('Icarus Linter', () => {
-  test('splits custom command-line arguments', () => {
-    assert.deepStrictEqual(splitCommandLineArgs(''), []);
-    assert.deepStrictEqual(splitCommandLineArgs('  -Wall   -DNAME=VALUE  '), [
-      '-Wall',
-      '-DNAME=VALUE',
-    ]);
-    assert.deepStrictEqual(
-      splitCommandLineArgs('-DMSG="hello world" -I \'quoted include\' "-DNAME=foo bar"'),
-      ['-DMSG=hello world', '-I', 'quoted include', '-DNAME=foo bar']
-    );
-    assert.deepStrictEqual(splitCommandLineArgs('-DNAME=\\"quoted\\" "unterminated value'), [
-      '-DNAME="quoted"',
-      'unterminated value',
-    ]);
-  });
-
   test('builds argv without shell quoting', () => {
     const includePath = path.join(os.tmpdir(), 'iverilog include path');
     const documentPath = path.join(os.tmpdir(), 'iverilog source path', 'bad file.v');
