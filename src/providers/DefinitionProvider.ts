@@ -15,11 +15,11 @@ export class VerilogDefinitionProvider implements vscode.DefinitionProvider {
   async provideDefinition(
     document: vscode.TextDocument,
     position: vscode.Position,
-    _token: vscode.CancellationToken
+    token: vscode.CancellationToken
   ): Promise<vscode.DefinitionLink[] | undefined> {
     this.logger.info("Definitions requested", { uri: document.uri.toString() });
     // find all matching symbols
-    const definitions: vscode.DefinitionLink[] = await this.ctagsManager.findSymbol(document, position);
+    const definitions: vscode.DefinitionLink[] = await this.ctagsManager.findSymbol(document, position, token);
     this.logger.info("Definitions returned", { count: definitions.length });
     return definitions;
   }

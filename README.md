@@ -60,9 +60,14 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 
 This extension uses the tags created using Ctags to provide many of its features. It is recommended to use [Universal Ctags](https://github.com/universal-ctags/ctags) as it supports SystemVerilog also, compared to Exuberant Ctags and other older versions. The tags are stored in memory and not as separate files.
 
-Currently the integrated feature supports only tags in the currently opened file, not tags in other files.
 Enable this integration with the `verilog.ctags.enabled` setting.
-However, you can use other independent Ctags extensions to find definitions from any file.
+
+Workspace-wide lookup for Go to Definition, Peek Definition, and Hover is available with `verilog.ctags.workspace.enabled`.
+The workspace index is lazy and in-memory: it is built on first cross-file lookup or when you run **Verilog: Rebuild Workspace Ctags Index**, and it is not written to disk.
+Use `verilog.ctags.workspace.include` and `verilog.ctags.workspace.exclude` to control which files are indexed.
+If a workspace folder has more matching files than `verilog.ctags.workspace.maxFiles`, workspace indexing is skipped for that folder and current-file Ctags support continues to work.
+
+You can still use other independent Ctags extensions for definitions outside the workspace or for workflows that need persistent tag files.
 
 For example [Ctags Companion](https://github.com/gediminasz/ctags-companion) works well with this extension
 by adding the following settings on `.vscode/settings.json` in your workspace.

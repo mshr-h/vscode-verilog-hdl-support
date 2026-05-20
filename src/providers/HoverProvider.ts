@@ -14,10 +14,10 @@ export class VerilogHoverProvider implements vscode.HoverProvider {
   public async provideHover(
     document: vscode.TextDocument,
     position: vscode.Position,
-    _token: vscode.CancellationToken
+    token: vscode.CancellationToken
   ): Promise<vscode.Hover | undefined> {
     this.logger.info(`Hover requested for ${document.uri.toString()}`);
-    const matches: vscode.DefinitionLink[] = await this.ctagsManager.findSymbol(document, position);
+    const matches: vscode.DefinitionLink[] = await this.ctagsManager.findSymbol(document, position, token);
     // find symbol
     for (const i of matches) {
       // returns the first found tag. Disregards others
