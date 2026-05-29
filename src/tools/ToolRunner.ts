@@ -102,7 +102,9 @@ function getWindowsCommandCandidates(command: string, env: NodeJS.ProcessEnv): s
   if (extension.length > 0) {
     return [command];
   }
-  return [command, ...getWindowsPathExt(env).map((pathExt) => `${command}${pathExt}`)];
+  // Vivado on Windows ships both xvlog and xvlog.bat; the extensionless file is
+  // not the correct Windows launcher, so prefer PATHEXT candidates first.
+  return [...getWindowsPathExt(env).map((pathExt) => `${command}${pathExt}`), command];
 }
 
 export function isWindowsBatchFile(command: string): boolean {
