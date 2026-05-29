@@ -35,6 +35,42 @@ suite('ToolRunner', () => {
     assert.strictEqual(resolved, 'C:\\Vivado\\bin\\xvlog.BAT');
   });
 
+  test('prefers Windows PATHEXT matches over extensionless files on PATH', () => {
+    const env = {
+      PATH: 'C:\\Vivado\\bin',
+      PATHEXT: '.EXE;.CMD;.BAT',
+    };
+    const existingFiles = new Set(['C:\\Vivado\\bin\\xvlog', 'C:\\Vivado\\bin\\xvlog.BAT']);
+    const resolved = resolveWindowsCommand('xvlog', {
+      env,
+      existsSync: (candidate) => existingFiles.has(candidate),
+    });
+
+    assert.strictEqual(resolved, 'C:\\Vivado\\bin\\xvlog.BAT');
+  });
+
+  test('prefers Windows PATHEXT matches over extensionless files for path commands', () => {
+    const existingFiles = new Set(['C:\\Vivado\\bin\\xvlog', 'C:\\Vivado\\bin\\xvlog.BAT']);
+    const resolved = resolveWindowsCommand('C:\\Vivado\\bin\\xvlog', {
+      env: { PATHEXT: '.EXE;.CMD;.BAT' },
+      existsSync: (candidate) => existingFiles.has(candidate),
+    });
+
+    assert.strictEqual(resolved, 'C:\\Vivado\\bin\\xvlog.BAT');
+  });
+
+  test('falls back to extensionless Windows command when no PATHEXT match exists', () => {
+    const resolved = resolveWindowsCommand('xvlog', {
+      env: {
+        PATH: 'C:\\Vivado\\bin',
+        PATHEXT: '.EXE;.CMD;.BAT',
+      },
+      existsSync: (candidate) => candidate === 'C:\\Vivado\\bin\\xvlog',
+    });
+
+    assert.strictEqual(resolved, 'C:\\Vivado\\bin\\xvlog');
+  });
+
   test('uses cmd.exe invocation only for Windows batch files', () => {
     assert.strictEqual(isWindowsBatchFile('C:\\Vivado\\bin\\xvlog.cmd'), true);
     assert.strictEqual(isWindowsBatchFile('C:\\Vivado\\bin\\xvlog.bat'), true);
