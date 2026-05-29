@@ -694,11 +694,12 @@
     "which": "^7.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/mocha": "10.0.10",
     "@types/node": "~25.0.3",
     "@types/semver": "^7.7.1",
     "@types/vscode": "^1.107.0",
     "@types/which": "^3.0.4",
-    "@eslint/js": "10.0.1",
     "@typescript-eslint/eslint-plugin": "^8.56.0",
     "@typescript-eslint/parser": "^8.56.0",
     "@vscode/test-cli": "^0.0.12",
@@ -708,7 +709,7 @@
     "glob": "^13.0.0",
     "globals": "^17.0.0",
     "npm-run-all2": "^8.0.4",
-    "typescript": "5.5.4",
+    "typescript": "6.0.3",
     "typescript-eslint": "^8.56.0"
   },
   "__metadata": {
