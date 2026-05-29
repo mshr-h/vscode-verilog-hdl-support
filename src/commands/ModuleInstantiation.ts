@@ -40,8 +40,6 @@ export async function instantiateModule(srcpath: string): Promise<vscode.Snippet
     }
     // Using Ctags to get all the modules in the file
     let moduleName: string = '';
-    let portsName: string[] = [];
-    let parametersName: string[] = [];
     if (!vscode.window.activeTextEditor) {
       return undefined;
     }
@@ -83,12 +81,12 @@ export async function instantiateModule(srcpath: string): Promise<vscode.Snippet
     const ports: Symbol[] = ctags.symbols.filter(
       (tag) => tag.type === 'port' && tag.parentType === 'module' && tag.parentScope === scope
     );
-    portsName = ports.map((tag) => tag.name);
+    const portsName = ports.map((tag) => tag.name);
     const params: Symbol[] = ctags.symbols.filter(
       (tag) =>
         tag.type === 'parameter' && tag.parentType === 'module' && tag.parentScope === scope
     );
-    parametersName = params.map((tag) => tag.name);
+    const parametersName = params.map((tag) => tag.name);
     log.info`Module name: ${module.name}`;
     let paramString = ``;
     if (parametersName.length > 0) {
