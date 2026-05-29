@@ -53,6 +53,24 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 
 ## Usage Instructions
 
+### Commands
+
+- **Rerun lint tool**
+
+    Choose a lint tool from the list and run it manually. Useful if the code was changed by an external script or version control system.
+
+- **Verilog: Doctor**
+
+    Diagnose the configured external tools and write a report to the `Verilog Doctor` output channel. It checks Ctags, the selected linter, formatters, WSL setup, enabled language servers, include paths, and config files without running linting or formatting on user files.
+
+- **Instantiate Module**
+
+    Choose a module present in your workspace to instantiate it in the current file.
+
+- **Open Fliplot Waveform Viewer**
+
+    Open the embedded Fliplot waveform viewer and load a VCD file.
+
 - All linters expect the executable binary ( `iverilog` , `verilator` ...) to be present in the `PATH` environment variable, unless otherwise specified.
 - On Windows, Vivado `xvlog` can be discovered when it is provided as `xvlog.bat` or `xvlog.cmd` on `PATH` or under `verilog.linting.path`.
 - Set `verilog.linting.linter` to `none` to disable automatic linting without warnings.
@@ -85,24 +103,6 @@ It also supports the `readtags` command included in Universal Ctags, allowing fo
 - macOS - Install through Homebrew from [here](https://github.com/universal-ctags/homebrew-universal-ctags)
 
 Add the installation path of Ctags binary in your `PATH` environment variable or mention it in `verilog.ctags.path` setting.
-
-### Commands
-
-- **Rerun lint tool**
-
-    Choose a lint tool from the list and run it manually. Useful if the code was changed by an external script or version control system.
-
-- **Verilog: Doctor**
-
-    Diagnose the configured external tools and write a report to the `Verilog Doctor` output channel. It checks Ctags, the selected linter, formatters, WSL setup, enabled language servers, include paths, and config files without running linting or formatting on user files.
-
-- **Instantiate Module**
-
-    Choose a module present in your workspace to instantiate it in the current file.
-
-- **Open Fliplot Waveform Viewer**
-
-    Open the embedded Fliplot waveform viewer and load a VCD file.
 
 ### Language Servers (Experimental)
 
