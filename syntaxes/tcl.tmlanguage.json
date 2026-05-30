@@ -132,6 +132,46 @@
                 }
             ]
         },
+        "switch_braces": {
+            "patterns": [
+                {
+                    "name": "meta.word.switch.tcl",
+                    "begin": "\\{",
+                    "end": "\\}",
+                    "patterns": [
+                        {
+                            "name": "keyword.control.default.tcl",
+                            "match": "\\bdefault\\b"
+                        },
+                        {
+                            "name": "string.unquoted.switch-pattern.tcl",
+                            "match": "[^\\s\\{\\}\\[\\]\\$;]+(?=\\s*\\{)"
+                        },
+                        {
+                            "include": "#comment"
+                        },
+                        {
+                            "include": "#variable"
+                        },
+                        {
+                            "include": "#double_quotes"
+                        },
+                        {
+                            "include": "#brackets"
+                        },
+                        {
+                            "include": "#tcl_braces"
+                        },
+                        {
+                            "include": "#switch_braces"
+                        },
+                        {
+                            "include": "#command"
+                        }
+                    ]
+                }
+            ]
+        },
         "expr_braces": {
             "patterns": [
                 {
@@ -484,6 +524,53 @@
                                     ]
                                 }
                             ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "switch": {
+            "patterns": [
+                {
+                    "name": "meta.command.switch.tcl",
+                    "begin": "\\b(switch)\\b",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "keyword.control.switch.tcl"
+                        }
+                    },
+                    "end": "(?:(;)|(?=\\})|(?=\\])|$)",
+                    "endCaptures": {
+                        "1": {
+                            "name": "punctuation.end.semicolon.tcl"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "name": "keyword.control.default.tcl",
+                            "match": "\\bdefault\\b"
+                        },
+                        {
+                            "name": "string.unquoted.switch-pattern.tcl",
+                            "match": "[^\\s\\{\\}\\[\\]\\$;]+(?=\\s*\\{)"
+                        },
+                        {
+                            "include": "#variable"
+                        },
+                        {
+                            "include": "#double_quotes"
+                        },
+                        {
+                            "include": "#brackets"
+                        },
+                        {
+                            "include": "#switch_braces"
+                        },
+                        {
+                            "include": "#tcl_braces"
+                        },
+                        {
+                            "include": "#braces"
                         }
                     ]
                 }
@@ -863,6 +950,9 @@
                 },
                 {
                     "include": "#if"
+                },
+                {
+                    "include": "#switch"
                 },
                 {
                     "include": "#while"
