@@ -522,4 +522,45 @@ suite('Verilator Linter', () => {
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }
   });
+
+  test('[windows-wsl2] reports diagnostics using Verilator under WSL2', async function () {
+    this.timeout(20000);
+
+    if (process.platform !== 'win32') {
+      this.skip();
+      return;
+    }
+    if (process.env.VERILOGHDL_RUN_WSL2_TESTS !== '1') {
+      this.skip();
+      return;
+    }
+
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'verilator wsl2-test-'));
+    const tempFilePath = createTempSvFile(tempRoot, 'bad file.sv', 'module m\nendmodule\n');
+    const diagnostics = vscode.languages.createDiagnosticCollection('verilator-wsl2-test');
+
+    try {
+      await withVerilatorConfig('wsl', { useWSL: true }, async () => {
+        const linter = new VerilatorLinter(
+          new LinterDiagnosticManager(diagnostics),
+          new LintRunManager()
+        );
+        const document = await vscode.workspace.openTextDocument(tempFilePath);
+
+        linter.startLint(document);
+        const results = await waitForDiagnostics(diagnostics, document.uri, 10000);
+
+        assert.ok(
+          results.some(
+            (diag) =>
+              diag.source === 'verilator' && diag.severity === vscode.DiagnosticSeverity.Error
+          ),
+          'Expected a Verilator syntax error diagnostic from WSL2'
+        );
+      });
+    } finally {
+      diagnostics.dispose();
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
 });
