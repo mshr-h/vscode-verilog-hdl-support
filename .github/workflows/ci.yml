@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [ main ]
+    branches: [ main, codex/repro-512-wsl2-width ]
   pull_request:
     branches: [ main ]
 
@@ -9,14 +9,14 @@ jobs:
     name: Upload vsix package
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: lts/*
       - run: npm ci
@@ -39,10 +39,48 @@ jobs:
         if: runner.os == 'Linux'
       - run: npm test
         if: runner.os == 'macOS'
+      - run: npm run compile-tests
+        if: runner.os == 'Windows'
       - run: npm run compile
+        if: runner.os == 'Windows'
+      - run: npm run test:windows
+        if: runner.os == 'Windows'
+      - run: npm run compile
+        if: runner.os != 'Windows'
       - run: npx @vscode/vsce package
       - name: upload vsix package
         if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           path: veriloghdl-*.vsix
+
+  windows-wsl2:
+    name: Windows WSL2 integration
+    runs-on: windows-2025
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: lts/*
+      - run: npm ci
+      - name: Setup WSL2
+        uses: Vampire/setup-wsl@d1da7f2c0322a5ee4f24975344f67fc0f5baf364 # v7.0.0
+        with:
+          distribution: Ubuntu-24.04
+          wsl-version: 2
+          update: 'true'
+          additional-packages: verilator
+      - name: Verify WSL2 toolchain
+        shell: pwsh
+        run: |
+          wsl --status
+          wsl --list --verbose
+          wsl -e bash -lc 'set -euxo pipefail; uname -a; command -v wslpath; command -v verilator; verilator --version'
+      - run: npm run compile
+      - run: npm run compile-tests
+      - name: Run WSL2 integration tests
+        env:
+          VERILOGHDL_RUN_WSL2_TESTS: '1'
+        run: npm run test:windows-wsl2

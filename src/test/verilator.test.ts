@@ -30,6 +30,26 @@ async function waitForDiagnostics(
   return collection.get(uri) ?? [];
 }
 
+function formatDiagnosticsDump(
+  collection: vscode.DiagnosticCollection,
+  expectedUri: vscode.Uri
+): string {
+  const lines = [`Expected document URI: ${expectedUri.toString()}`, 'Diagnostic collection:'];
+
+  collection.forEach((uri, diagnostics) => {
+    lines.push(`- ${uri.toString()}`);
+    for (const diagnostic of diagnostics) {
+      lines.push(
+        `  source=${diagnostic.source ?? ''} severity=${diagnostic.severity} code=${
+          diagnostic.code?.toString() ?? ''
+        } message=${diagnostic.message}`
+      );
+    }
+  });
+
+  return lines.join('\n');
+}
+
 async function withVerilatorConfig(
   verilatorPath: string,
   options: {
@@ -468,6 +488,62 @@ suite('Verilator Linter', () => {
         }
       );
     } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  test('[windows-wsl2] reproduces #512: WIDTH warning is published on Windows document URI', async function () {
+    this.timeout(20000);
+
+    if (process.platform !== 'win32') {
+      this.skip();
+      return;
+    }
+    if (process.env.VERILOGHDL_RUN_WSL2_TESTS !== '1') {
+      this.skip();
+      return;
+    }
+
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'verilator wsl2-width-test-'));
+    const tempFilePath = createTempSvFile(
+      tempRoot,
+      'width warning.sv',
+      [
+        'module width_warning(input logic [1:0] cmd_addr, output logic cmd_x_sel);',
+        'wire axes_sel_reg = cmd_addr[1:0];',
+        "assign cmd_x_sel = axes_sel_reg == 2'd0;",
+        'endmodule',
+        '',
+      ].join('\n')
+    );
+    const diagnostics = vscode.languages.createDiagnosticCollection('verilator-wsl2-width-test');
+
+    try {
+      await withVerilatorConfig('wsl', { useWSL: true, arguments: '-Wall' }, async () => {
+        const linter = new VerilatorLinter(
+          new LinterDiagnosticManager(diagnostics),
+          new LintRunManager()
+        );
+        const document = await vscode.workspace.openTextDocument(tempFilePath);
+
+        await linter.startLint(document);
+        const results = diagnostics.get(document.uri) ?? [];
+
+        assert.ok(
+          results.some(
+            (diag) =>
+              diag.source === 'verilator' &&
+              diag.severity === vscode.DiagnosticSeverity.Warning &&
+              diag.code === 'WIDTH'
+          ),
+          `Expected Verilator WIDTH warning on Windows document URI\n${formatDiagnosticsDump(
+            diagnostics,
+            document.uri
+          )}`
+        );
+      });
+    } finally {
+      diagnostics.dispose();
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }
   });
