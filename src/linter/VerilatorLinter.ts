@@ -201,6 +201,13 @@ function convertVerilatorSeverity(severityString: string): vscode.DiagnosticSeve
   return vscode.DiagnosticSeverity.Information;
 }
 
+function normalizeVerilatorCode(code: string | undefined): string | undefined {
+  if (code === 'WIDTHTRUNC' || code === 'WIDTHEXPAND') {
+    return 'WIDTH';
+  }
+  return code;
+}
+
 export function parseVerilatorDiagnostics(
   options: ParseVerilatorDiagnosticsOptions
 ): Map<string, vscode.Diagnostic[]> {
@@ -286,7 +293,7 @@ export function parseVerilatorDiagnostics(
         severity: convertVerilatorSeverity(rex.groups["severity"]),
         range: new vscode.Range(lineNum, colNum, lineNum, END_OF_LINE),
         message: rex.groups["verboseError"],
-        code: rex.groups["errorCode"],
+        code: normalizeVerilatorCode(rex.groups["errorCode"]),
         source: 'verilator',
       });
     }
