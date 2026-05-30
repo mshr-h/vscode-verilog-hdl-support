@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.23.4] - 2026-05-31
+
+### Added
+
+- Added Windows WSL2 integration test coverage for linting path conversion and Verilator diagnostics. [#581](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/581), [#584](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/584)
+
+### Changed
+
+- Updated development and CI tooling, including TypeScript 6, ESLint 10, `which` 7, and newer GitHub Actions dependencies. [#566](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/566), [#582](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/582)
+- Refactored formatter argument construction for iStyle and Verible with test coverage for quoted custom arguments.
+- Improved extension version comparison for changelog update notifications.
+
+### Fixed
+
+- Fixed Tcl language file extension registration for `.tm` and `.tk` files.
+- Fixed WSL2 path conversion to run `wslpath` without shell interpretation. [#581](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/581)
+- Fixed Verilator WSL2 diagnostics for `WIDTHTRUNC` and `WIDTHEXPAND` messages by normalizing them to the `WIDTH` diagnostic code. [#584](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/584)
+
+### Removed
+
+- Removed an unused legacy hover provider implementation.
+
 ## [1.23.3] - 2026-05-30
 
 ### Fixed
