@@ -1,275 +1,93 @@
-# AGENTS.md - AI Agent Guidelines
+# AGENTS.md - Coding Agent Guide
 
-This document provides guidance for AI coding agents working on the vscode-verilog-hdl-support project.
+This repository is a VS Code HDL extension. For user-facing feature descriptions,
+use `README.md`. For the exact contributed languages, commands, grammars,
+snippets, settings, and custom editors, use `package.json` under
+`contributes.*`; do not duplicate that surface here.
 
-## Project Overview
+## Codebase Map
 
-This is a VS Code extension providing HDL (Hardware Description Language) support including:
-- **Syntax highlighting** for Verilog, SystemVerilog, VHDL, Verilog-AMS, UCF, SDC, XDC, UPF, Tcl, Verilog filelists, and VCD
-- **Linting** via external tools (iverilog, verilator, modelsim, xvlog, slang, verible-verilog-lint)
-- **Language Server** integration (svls, veridian, hdl_checker, verible-verilog-ls, vhdl_ls, tclsp)
-- **Formatting** support (verilog-format, istyle-verilog-formatter, verible-verilog-format)
-- **Ctags integration** for symbols, hover, definitions, and completions
-- **VCD waveform viewer** via a VS Code Custom Editor (Fliplot)
+- `src/extension.ts` - extension activation and registration for providers,
+  commands, linting, Fliplot, and language servers.
+- `src/commands/` - command implementations, including Doctor and module
+  instantiation.
+- `src/providers/` - VS Code language feature providers.
+- `src/linter/` - lint orchestration, diagnostics, run coordination, and linter
+  implementations.
+- `src/languageServer/` - language server definitions, options, and lifecycle
+  management.
+- `src/tools/` - shared external-tool execution and WSL path conversion helpers.
+- `src/utils/` - shared path, config, and workspace helpers.
+- `src/fliplot/` and `media/fliplot/` - VCD viewer integration and web assets.
+- `syntaxes/`, `configs/`, and `snippets/` - language grammars,
+  configurations, and snippets.
+- `src/test/` - VS Code extension tests.
 
-The source of truth for “what the extension supports” is `package.json` under `contributes.*`.
+## Agent Commands
 
-## Repository Structure
+Use these commands when they are relevant to the change:
 
-```
-src/
-├── extension.ts          # Extension entry point, activates all features
-├── extensionManager.ts   # Manages extension lifecycle and version updates
-├── logging.ts            # LogTape logging bootstrap + helpers
-├── logtape-vscode-sink.ts# LogTape sink implementation for VS Code Output
-├── constants.ts          # Shared constants
-├── ctags.ts              # Ctags integration for symbol parsing
-├── hover.ts              # Legacy/utility hover helpers (providers are in providers/)
-├── commands/             # VS Code command implementations
-│   └── ModuleInstantiation.ts
-├── providers/            # VS Code language feature providers
-│   ├── CompletionItemProvider.ts
-│   ├── DefinitionProvider.ts
-│   ├── DocumentSymbolProvider.ts
-│   ├── FormatProvider.ts
-│   └── HoverProvider.ts
-├── linter/               # Linting infrastructure
-│   ├── BaseLinter.ts     # Abstract base class for linters
-│   ├── LintManager.ts    # Manages linter selection and execution
-│   ├── IcarusLinter.ts   # iverilog linter
-│   ├── VerilatorLinter.ts
-│   ├── ModelsimLinter.ts
-│   ├── SlangLinter.ts
-│   ├── VeribleVerilogLintLinter.ts
-│   ├── XvlogLinter.ts
-├── languageServer/       # Language server client management
-│   ├── index.ts          # Exports init/stop functions
-│   ├── definitions.ts    # Language server definitions
-│   ├── manager.ts        # Manages multiple language server clients
-│   └── tclspOptions.ts   # Tcl language server options
-├── fliplot/              # VCD waveform viewer
-│   ├── FliplotPanel.ts   # Webview panel implementation
-│   └── FliplotCustomEditor.ts  # Custom editor for VCD files
-└── test/                 # Test files (see Testing section)
-
-syntaxes/                 # TextMate grammar files (.tmLanguage.json/.yaml)
-configs/                  # Language configuration files
-snippets/                 # Code snippets for each language
-media/fliplot/            # Fliplot web assets
-language_examples/        # Example HDL files for testing
-surfer/                   # Waveform tooling/assets (used by Fliplot)
-```
-
-## Development Setup
-
-### Prerequisites
-- Node.js (LTS version recommended)
-- npm
-
-### Installation
 ```bash
-npm install
+npm run compile
+npm run lint
+npm run check-types
+npm run compile-tests
+npm test
+npm run syntax
 ```
 
-### Build Commands
-```bash
-npm run compile         # Typecheck + lint + esbuild bundle
-npm run watch           # Watch mode for development
-npm run watch:tsc       # Watch TypeScript compilation only
-npm run watch:esbuild   # Watch esbuild bundling only
-npm run package         # Production bundle (used for VSIX publish)
-npm run compile-tests   # Compile test sources to out/
-npm run pretest         # Compile-tests + bundle + lint
-npm run syntax          # Regenerate syntaxes/systemverilog.tmLanguage.json from YAML
-```
+`npm test` uses VS Code test tooling. It may need network access to resolve or
+download the VS Code test runner and may need to launch VS Code outside the
+sandbox. Run it with the required access when requested or when the change
+needs full extension validation, and report the exact result.
 
-### Development Workflow
-1. Run `npm run watch` or use the VS Code task "watch" (Ctrl+Shift+B)
-2. Press F5 to launch the Extension Development Host
-3. Make changes and reload the Extension Development Host to test
+For targeted validation, prefer the narrowest command that covers the changed
+behavior. Use broader validation when touching shared linting, language server,
+activation, or process-running behavior.
 
-## Build System
+## Implementation Patterns
 
-- **TypeScript**: Used primarily for type checking during dev (`tsc --noEmit`). Tests are compiled to `out/` via `npm run compile-tests`.
-- **esbuild**: Bundles the extension entry point to `dist/extension.js` (the actual extension entry point)
-- **Entry point**: `src/extension.ts` → bundled to `dist/extension.js`
-- **Config**: `tsconfig.json` (strict mode enabled)
+- Linters extend `BaseLinter`, are selected by `LintManager`, coordinate runs
+  through `LintRunManager`, publish diagnostics through
+  `LinterDiagnosticManager`, and execute external tools through `ToolRunner`.
+- Language servers are defined in `src/languageServer/definitions.ts`; the
+  manager handles lifecycle and configuration changes.
+- Providers and commands are registered from `src/extension.ts`.
+- Doctor behavior lives in `src/commands/Doctor.ts` and should diagnose
+  configured tools without mutating user HDL files.
+- User-facing contribution changes must be reflected in `package.json`
+  `contributes.*`; update tests and docs only where they add non-duplicated
+  value.
 
-## Contributes Surface (Complete)
+## Source Conventions
 
-The extension’s user-facing surface is defined in `package.json` under `contributes.*`.
-
-### Language IDs
-
-The contributed language IDs are:
-
-- `verilog`
-- `verilogams`
-- `systemverilog`
-- `vhdl`
-- `ucf`
-- `sdc`
-- `tcl`
-- `upf`
-- `xdc`
-- `verilog-filelist`
-- `wavedump` (for `.vcd`)
-
-### Grammars / Scopes
-
-TextMate grammars (and key scopes) are contributed via `contributes.grammars`:
-
-- `verilog` → `source.verilog` → `syntaxes/verilog.tmLanguage.json`
-- `verilogams` → `source.verilogams` → `syntaxes/verilogams.tmLanguage.json`
-- `systemverilog` → `source.systemverilog` → `syntaxes/systemverilog.tmLanguage.json`
-- `vhdl` → `source.vhdl` → `syntaxes/vhdl.tmLanguage.json`
-- `ucf` → `source.ucfconstraints` → `syntaxes/ucf.tmLanguage.json`
-- `sdc` → `source.sdc` → `syntaxes/sdc.tmLanguage.json`
-- `tcl` → `source.tcl` → `syntaxes/tcl.tmlanguage.json`
-- `upf` → `source.tcl` → `syntaxes/tcl.tmlanguage.json` (shares Tcl scope)
-- `xdc` → `source.sdc` → `syntaxes/sdc.tmLanguage.json` (shares SDC scope)
-- `verilog-filelist` → `source.verilog-filelist` → `syntaxes/verilog-filelist.tmLanguage.json`
-
-Markdown codeblock injection grammar:
-
-- `syntaxes/codeblock.json` injects into `text.html.markdown` and embeds Verilog/SystemVerilog blocks.
-
-Note: `syntaxes/systemverilog.tmLanguage.yaml` is a source file; the contributed grammar is the generated JSON.
-
-### Commands
-
-Contributed commands:
-
-- `verilog.instantiateModule` — Instantiate Module
-- `verilog.lint` — Rerun lint tool
-- `verilog.openFliplot` — Open Fliplot Waveform Viewer
-
-### Custom Editors
-
-- `verilog.fliplotEditor` registered for `*.vcd` (default priority)
-
-### Snippets
-
-Snippets are contributed under:
-
-- `snippets/verilog.json`
-- `snippets/verilogams.json`
-- `snippets/systemverilog.json`
-
-### Settings / Configuration
-
-Settings live under `contributes.configuration` and are grouped by:
-
-- `verilog.ctags.*`
-- `verilog.formatting.*`
-- `verilog.linting.*`
-- `verilog.languageServer.*`
-
-## Testing
-
-### Running Tests
-```bash
-npm test                # Run all tests
-npm run pretest         # Compile + lint before testing
-```
-
-`npm test` uses `vscode-test`, which needs network access to resolve or download
-the VS Code test runner and needs to launch VS Code outside the sandbox. Always
-run `npm test` with network/escalated access and report the exact result.
-
-### Test Structure
-Tests are located in `src/test/` and use VS Code's test framework:
-- `extension.test.ts` - Basic extension tests
-- `ctags.test.ts` - Ctags functionality
-- `format.test.ts` - Formatting tests
-- `hover.test.ts` - Hover provider tests
-- `iverilog.test.ts`, `verilator.test.ts`, `verible-verilog-lint.test.ts` - Linter tests
-- `languageServer.test.ts` - Language server tests
-- `moduleInstantiation.test.ts` - Module instantiation command tests
-- `tclsp.test.ts` - Tcl language server tests
-
-## Code Style
-
-### Linting
-```bash
-npm run lint           # Run ESLint
-```
-
-### Formatting
-- Use **Prettier** as the default formatter for TypeScript
-- Use **ESLint** for code quality
-- Enable "Format on Save" in VS Code
-
-### ESLint Rules
-- Uses TypeScript ESLint parser
-- Key rules: `curly`, `eqeqeq`, `no-throw-literal`, `semi`
-- Import naming convention: camelCase or PascalCase
-
-### Conventions
-- All source files should have `// SPDX-License-Identifier: MIT` header
-- Use LogTape via `getExtensionLogger()` (see `src/logging.ts`)
-- Providers follow VS Code's provider pattern
-- Linters extend `BaseLinter` abstract class
-
-## Key Patterns
-
-### Adding a New Linter
-1. Create a new file in `src/linter/` extending `BaseLinter`
-2. Implement `convertToSeverity()` and `lint()` methods
-3. Register in `LintManager.ts`
-4. Add configuration options in `package.json` under `contributes.configuration`
-
-### Adding a New Language Server
-1. Add server definition in `src/languageServer/definitions.ts`
-2. Add configuration options in `package.json`
-3. The `LanguageServerManager` handles lifecycle automatically
-
-### Adding a New Provider
-1. Create provider class implementing VS Code's provider interface
-2. Register in `src/extension.ts` using `context.subscriptions.push()`
-
-## Configuration
-
-Extension settings are defined in `package.json` under `contributes.configuration`:
-- `verilog.ctags.*` - Ctags settings
-- `verilog.linting.*` - Linter settings
-- `verilog.formatting.*` - Formatter settings
-- `verilog.languageServer.*` - Language server settings
+- Add `// SPDX-License-Identifier: MIT` to new source files.
+- Use LogTape through `getExtensionLogger()` instead of ad hoc output.
+- Prefer existing helper APIs and local patterns over new abstractions.
+- Keep changes focused; avoid unrelated refactors or generated churn.
+- Do not directly hand-edit generated `syntaxes/systemverilog.tmLanguage.json`.
+  Edit `syntaxes/systemverilog.tmLanguage.yaml` and run `npm run syntax`.
+- Preserve existing user or contributor changes in the worktree. Do not revert
+  unrelated files.
 
 ## Release Process
 
-This repo uses a tag-driven publish workflow.
+This repo uses tag-driven publishing.
 
-1. Update version in `package.json`
-2. Update `CHANGELOG.md` (and any other release notes expected by contributors)
-3. Push a Git tag (e.g. `vX.Y.Z`)
-4. GitHub Actions publishes on tag push via `.github/workflows/publish-marketplace.yml` (Open VSX + VS Marketplace)
+- Update `package.json` version and `CHANGELOG.md` (and any other release notes expected by contributors).
+- Do not push a version tag automatically. Ask the user before creating or
+  pushing a tag such as `vX.Y.Z`.
+- `.github/workflows/publish-marketplace.yml` publishes to Open VSX and the VS
+  Code Marketplace on tag push.
+- `.github/workflows/ci.yml` runs tests and packaging on PRs and pushes, and
+  uploads the Linux VSIX artifact.
 
-CI packaging:
+## Testing Notes
 
-- `.github/workflows/ci.yml` runs tests on PR/push, runs `npx @vscode/vsce package`, and uploads the VSIX artifact on Linux.
-
-## Important Files
-
-- `package.json` - Extension manifest, commands, configuration schema
-- `tsconfig.json` - TypeScript configuration
-- `eslint.config.mjs` - ESLint configuration
-- `esbuild.js` - Build script for bundling
-- `CHANGELOG.md` - Version history
-- `CONTRIBUTING.md` - Contribution guidelines
-- `.github/workflows/ci.yml` - CI tests + VSIX packaging artifact
-- `.github/workflows/publish-marketplace.yml` - Tag-driven publishing workflow
-
-## Dependencies
-
-### Runtime
-- `vscode-languageclient` - Language Server Protocol client
-- `semver` - Version comparison
-- `which` - Executable path resolution
-- `js-yaml` - YAML parsing (for syntaxes)
-
-### Development
-- `typescript` - TypeScript compiler
-- `esbuild` - Fast bundler
-- `eslint` + plugins - Linting
-- `@vscode/test-electron` - VS Code extension testing
+- Tests are compiled to `out/` with `npm run compile-tests`.
+- VS Code test runner configuration lives in `.vscode-test.mjs`; Windows-focused
+  tests use `.vscode-test.windows.mjs`.
+- WSL2 integration tests are gated by `VERILOGHDL_RUN_WSL2_TESTS`.
+- Documentation-only edits normally do not require the full test suite, but
+  still review the final diff for accuracy against `README.md`, `package.json`,
+  `src/extension.ts`, and the current source layout.
