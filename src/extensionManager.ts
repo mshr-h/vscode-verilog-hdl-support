@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
-import { SemVer } from 'semver';
+import { gt, SemVer } from 'semver';
 import { getExtensionLogger } from './logging';
 
 interface PackageJSON {
@@ -39,21 +39,19 @@ export class ExtensionManager {
       currentVersion: currentVersion.version,
     });
 
-    return previousVersion < currentVersion;
+    return gt(currentVersion, previousVersion);
   }
 
   public showChangelogNotification() {
     const displayName: string = this.packageJSON.displayName;
     const extensionPath: string = this.extensionPath;
-    if (this.isVersionUpdated()) {
-      vscode.window
-        .showInformationMessage(`${displayName  } extension has been updated`, 'Open Changelog')
-        .then(function (_: string | undefined) {
-          const changelogUri = vscode.Uri.file(`${extensionPath  }/CHANGELOG.md`);
-          vscode.workspace.openTextDocument(changelogUri).then((doc) => {
-            vscode.window.showTextDocument(doc);
-          });
+    vscode.window
+      .showInformationMessage(`${displayName  } extension has been updated`, 'Open Changelog')
+      .then(function (_: string | undefined) {
+        const changelogUri = vscode.Uri.file(`${extensionPath  }/CHANGELOG.md`);
+        vscode.workspace.openTextDocument(changelogUri).then((doc) => {
+          vscode.window.showTextDocument(doc);
         });
-    }
+      });
   }
 }
