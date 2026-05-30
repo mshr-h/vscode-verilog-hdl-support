@@ -30,7 +30,7 @@ suite('[windows] WslPathConverter', () => {
 
     assert.strictEqual(converted, '/mnt/c/workspace/top.sv');
     assert.strictEqual(calls[0].command, 'wsl');
-    assert.deepStrictEqual(calls[0].args, ['wslpath', 'C:\\workspace\\top.sv']);
+    assert.deepStrictEqual(calls[0].args, ['-e', 'wslpath', 'C:\\workspace\\top.sv']);
     assert.strictEqual(calls[0].timeoutMs, 5000);
     assert.strictEqual(calls[0].collectStdout, true);
     assert.strictEqual(calls[0].collectStderr, true);
@@ -48,7 +48,7 @@ suite('[windows] WslPathConverter', () => {
     });
 
     assert.strictEqual(converted, 'C:\\workspace\\top.sv');
-    assert.deepStrictEqual(calls[0].args, ['wslpath', '-w', '/mnt/c/workspace/top.sv']);
+    assert.deepStrictEqual(calls[0].args, ['-e', 'wslpath', '-w', '/mnt/c/workspace/top.sv']);
   });
 
   test('passes spaces and single quotes as one argv element', async () => {
@@ -61,7 +61,7 @@ suite('[windows] WslPathConverter', () => {
 
     await convertToWslPath(inputPath, { runToolFn: fakeRunTool });
 
-    assert.deepStrictEqual(calls[0].args, ['wslpath', inputPath]);
+    assert.deepStrictEqual(calls[0].args, ['-e', 'wslpath', inputPath]);
   });
 
   test('removes trailing CR/LF without trimming path characters', async () => {
