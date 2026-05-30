@@ -173,10 +173,9 @@ npm test                # Run all tests
 npm run pretest         # Compile + lint before testing
 ```
 
-`npm test` uses `vscode-test`, which may need network access to resolve or download
-the VS Code test runner and may need to launch VS Code outside the sandbox. If a
-sandboxed run fails with DNS/update service errors or VS Code runner aborts, rerun
-`npm test` with network/escalated access and report the exact result.
+`npm test` uses `vscode-test`, which needs network access to resolve or download
+the VS Code test runner and needs to launch VS Code outside the sandbox. Always
+run `npm test` with network/escalated access and report the exact result.
 
 ### Test Structure
 Tests are located in `src/test/` and use VS Code's test framework:
