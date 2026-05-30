@@ -7,6 +7,7 @@ import * as crypto from 'crypto';
 import * as path from 'path';
 import { type Logger } from '@logtape/logtape';
 import { getExtensionLogger } from '../logging';
+import { splitCommandLineArgs } from '../linter/IcarusLinter';
 import { resolveConfigPath } from '../utils/configPath';
 import { getWorkspaceRootForDocument } from '../utils/workspace';
 
@@ -23,6 +24,33 @@ export function buildVerilogFormatArgs(
     args.push(resolvedSettingsPath);
   }
   return args;
+}
+
+export function buildIStyleVerilogFormatterArgs(
+  tmpFilepath: string,
+  customArgs: string,
+  formatStyle: string
+): string[] {
+  const args: string[] = ['-n', ...splitCommandLineArgs(customArgs)];
+
+  // format style
+  switch (formatStyle) {
+    case 'ANSI':
+      args.push('--style=ansi');
+      break;
+    case 'K&R':
+      args.push('--style=kr');
+      break;
+    case 'GNU':
+      args.push('--style=gnu');
+      break;
+  }
+  args.push(tmpFilepath);
+  return args;
+}
+
+export function buildVeribleVerilogFormatArgs(tmpFilepath: string, customArgs: string): string[] {
+  return ['--inplace', ...splitCommandLineArgs(customArgs), tmpFilepath];
 }
 
 // handle temporary file
@@ -117,39 +145,13 @@ class IStyleVerilogFormatterEditProvider extends FileBasedFormattingEditProvider
   prepareArgument(_document: vscode.TextDocument, tmpFilepath: string): string[] {
     const customArgs: string = <string>this.config.get('arguments', '');
     const formatStyle: string = <string>this.config.get('style', 'Indent only');
-
-    // -n means not to create a .orig file
-    let args: string[] = ['-n'];
-    if (customArgs.length > 0) {
-      args = args.concat(customArgs.split(' '));
-    }
-
-    // format style
-    switch (formatStyle) {
-      case 'ANSI':
-        args.push('--style=ansi');
-        break;
-      case 'K&R':
-        args.push('--style=kr');
-        break;
-      case 'GNU':
-        args.push('--style=gnu');
-        break;
-    }
-    args.push(tmpFilepath);
-    return args;
+    return buildIStyleVerilogFormatterArgs(tmpFilepath, customArgs, formatStyle);
   }
 }
 class VeribleVerilogFormatEditProvider extends FileBasedFormattingEditProvider {
   prepareArgument(_document: vscode.TextDocument, tmpFilepath: string): string[] {
     const customArgs: string = <string>this.config.get('arguments', '');
-
-    let args: string[] = ['--inplace'];
-    if (customArgs.length > 0) {
-      args = args.concat(customArgs.split(' '));
-    }
-    args.push(tmpFilepath);
-    return args;
+    return buildVeribleVerilogFormatArgs(tmpFilepath, customArgs);
   }
 }
 

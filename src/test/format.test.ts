@@ -6,7 +6,12 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import which from 'which';
-import { buildVerilogFormatArgs, SystemVerilogFormatProvider } from '../providers/FormatProvider';
+import {
+  buildIStyleVerilogFormatterArgs,
+  buildVeribleVerilogFormatArgs,
+  buildVerilogFormatArgs,
+  SystemVerilogFormatProvider,
+} from '../providers/FormatProvider';
 
 suite('Formatting', () => {
   test('verilog-format settings path is expanded when the file exists', () => {
@@ -34,6 +39,29 @@ suite('Formatting', () => {
     );
 
     assert.deepStrictEqual(args, ['-f', '/tmp/input.v']);
+  });
+
+  test('iStyle custom arguments are split like linter arguments', () => {
+    const args = buildIStyleVerilogFormatterArgs(
+      '/tmp/input.v',
+      '  --flag "two words"   --define=VALUE  ',
+      'ANSI'
+    );
+
+    assert.deepStrictEqual(args, [
+      '-n',
+      '--flag',
+      'two words',
+      '--define=VALUE',
+      '--style=ansi',
+      '/tmp/input.v',
+    ]);
+  });
+
+  test('verible custom arguments are split like linter arguments', () => {
+    const args = buildVeribleVerilogFormatArgs('/tmp/input.sv', '--flag "two words"');
+
+    assert.deepStrictEqual(args, ['--inplace', '--flag', 'two words', '/tmp/input.sv']);
   });
 
   test('verible-verilog-format formats via configured binary', async function () {
