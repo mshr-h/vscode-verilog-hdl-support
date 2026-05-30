@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 import * as assert from 'assert';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { runTool, type ToolRunOptions, type ToolRunResult } from '../tools/ToolRunner';
 import { convertFromWslPath, convertToWslPath } from '../tools/WslPathConverter';
@@ -29,7 +30,7 @@ suite('[windows] WslPathConverter', () => {
 
     assert.strictEqual(converted, '/mnt/c/workspace/top.sv');
     assert.strictEqual(calls[0].command, 'wsl');
-    assert.deepStrictEqual(calls[0].args, ['wslpath', 'C:\\workspace\\top.sv']);
+    assert.deepStrictEqual(calls[0].args, ['-e', 'wslpath', 'C:\\workspace\\top.sv']);
     assert.strictEqual(calls[0].timeoutMs, 5000);
     assert.strictEqual(calls[0].collectStdout, true);
     assert.strictEqual(calls[0].collectStderr, true);
@@ -47,7 +48,7 @@ suite('[windows] WslPathConverter', () => {
     });
 
     assert.strictEqual(converted, 'C:\\workspace\\top.sv');
-    assert.deepStrictEqual(calls[0].args, ['wslpath', '-w', '/mnt/c/workspace/top.sv']);
+    assert.deepStrictEqual(calls[0].args, ['-e', 'wslpath', '-w', '/mnt/c/workspace/top.sv']);
   });
 
   test('passes spaces and single quotes as one argv element', async () => {
@@ -60,7 +61,7 @@ suite('[windows] WslPathConverter', () => {
 
     await convertToWslPath(inputPath, { runToolFn: fakeRunTool });
 
-    assert.deepStrictEqual(calls[0].args, ['wslpath', inputPath]);
+    assert.deepStrictEqual(calls[0].args, ['-e', 'wslpath', inputPath]);
   });
 
   test('removes trailing CR/LF without trimming path characters', async () => {
@@ -107,5 +108,32 @@ suite('[windows] WslPathConverter', () => {
     assert.strictEqual(calls[0].cancellationToken, tokenSource.token);
     assert.strictEqual(calls[0].timeoutMs, 1234);
     assert.strictEqual(calls[0].command, 'C:\\Windows\\System32\\wsl.exe');
+  });
+});
+
+suite('[windows-wsl2] WslPathConverter integration', () => {
+  test('round-trips a Windows path through real wslpath', async function () {
+    this.timeout(15000);
+
+    if (process.platform !== 'win32') {
+      this.skip();
+      return;
+    }
+    if (process.env.VERILOGHDL_RUN_WSL2_TESTS !== '1') {
+      this.skip();
+      return;
+    }
+
+    const windowsPath = __filename;
+    const wslPath = await convertToWslPath(windowsPath, { timeoutMs: 15000 });
+
+    assert.match(wslPath, /^\/mnt\/[a-z]\//i);
+
+    const roundTrip = await convertFromWslPath(wslPath, { timeoutMs: 15000 });
+
+    assert.strictEqual(
+      path.normalize(roundTrip).toLowerCase(),
+      path.normalize(windowsPath).toLowerCase()
+    );
   });
 });

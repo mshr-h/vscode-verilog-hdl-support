@@ -47,12 +47,12 @@ export async function convertToWslPath(
   inputPath: string,
   options?: WslPathConversionOptions
 ): Promise<string> {
-  return convertWslPath(inputPath, ['wslpath'], options);
+  return convertWslPath(inputPath, ['-e', 'wslpath'], options);
 }
 
 export async function convertFromWslPath(
   inputPath: string,
   options?: WslPathConversionOptions
 ): Promise<string> {
-  return convertWslPath(inputPath, ['wslpath', '-w'], options);
+  return convertWslPath(inputPath, ['-e', 'wslpath', '-w'], options);
 }
