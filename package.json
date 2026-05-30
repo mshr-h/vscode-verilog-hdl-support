@@ -109,8 +109,8 @@
         ],
         "extensions": [
           ".tcl",
-          "tm",
-          "tk"
+          ".tm",
+          ".tk"
         ],
         "configuration": "./configs/tcl.configuration.json"
       },
