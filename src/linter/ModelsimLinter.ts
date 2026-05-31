@@ -4,7 +4,7 @@ import * as path from 'path';
 import BaseLinter from './BaseLinter';
 import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
-import { splitCommandLineArgs } from './IcarusLinter';
+import { splitCommandLineArgs } from '../utils/commandLine';
 import LinterDiagnosticManager from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
 

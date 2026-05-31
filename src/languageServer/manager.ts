@@ -1,8 +1,28 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
-import { LanguageClient, ServerOptions } from 'vscode-languageclient/node';
+import { LanguageClient } from 'vscode-languageclient/node';
 import { getExtensionLogger } from '../logging';
+import { splitCommandLineArgs } from '../utils/commandLine';
 import { LanguageServerDefinition } from './definitions';
+
+export interface BuildServerOptionsInput {
+  definition: Pick<LanguageServerDefinition, 'serverArgs' | 'serverDebugArgs'>;
+  command: string;
+  customArgs?: string;
+}
+
+export interface BuiltServerOptions {
+  run: { command: string; args: string[] };
+  debug: { command: string; args: string[] };
+}
+
+export function buildServerOptions(input: BuildServerOptionsInput): BuiltServerOptions {
+  const customArgs = input.customArgs ? splitCommandLineArgs(input.customArgs) : [];
+  return {
+    run: { command: input.command, args: input.definition.serverArgs.concat(customArgs) },
+    debug: { command: input.command, args: input.definition.serverDebugArgs.concat(customArgs) },
+  };
+}
 
 export class LanguageServerManager {
   private languageClients = new Map<string, LanguageClient>();
@@ -36,17 +56,7 @@ export class LanguageServerManager {
     const binPath = settings.get('path', definition.defaultPath) as string;
     const customArgs = settings.get('arguments') as string | undefined;
 
-    const serverArgs = definition.serverArgs.slice();
-    const serverDebugArgs = definition.serverDebugArgs.slice();
-    if (customArgs) {
-      serverArgs.push(customArgs);
-      serverDebugArgs.push(customArgs);
-    }
-
-    const serverOptions: ServerOptions = {
-      run: { command: binPath, args: serverArgs },
-      debug: { command: binPath, args: serverDebugArgs },
-    };
+    const serverOptions = buildServerOptions({ definition, command: binPath, customArgs });
 
     const client = new LanguageClient(
       definition.name,
