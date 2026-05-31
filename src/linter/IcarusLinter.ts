@@ -3,8 +3,11 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import BaseLinter from './BaseLinter';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
+import { splitCommandLineArgs } from '../utils/commandLine';
 import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
+
+export { splitCommandLineArgs } from '../utils/commandLine';
 
 const standardToArg: Map<string, string> = new Map<string, string>([
   ['Verilog-95', '-g1995'],
@@ -21,63 +24,6 @@ export interface BuildIcarusArgsOptions {
   includePaths: string[];
   customArguments: string;
   documentPath: string;
-}
-
-export function splitCommandLineArgs(input: string): string[] {
-  const args: string[] = [];
-  let current = '';
-  let quote: "'" | '"' | undefined;
-  let hasToken = false;
-
-  for (let i = 0; i < input.length; i++) {
-    const char = input[i];
-
-    if (char === '\\') {
-      if (i + 1 < input.length) {
-        current += input[i + 1];
-        hasToken = true;
-        i++;
-      } else {
-        current += char;
-        hasToken = true;
-      }
-      continue;
-    }
-
-    if (quote) {
-      if (char === quote) {
-        quote = undefined;
-      } else {
-        current += char;
-      }
-      hasToken = true;
-      continue;
-    }
-
-    if (char === '"' || char === "'") {
-      quote = char;
-      hasToken = true;
-      continue;
-    }
-
-    if (/\s/.test(char)) {
-      if (hasToken) {
-        args.push(current);
-        current = '';
-        hasToken = false;
-      }
-      continue;
-    }
-
-    current += char;
-    hasToken = true;
-  }
-
-  if (hasToken) {
-    args.push(current);
-  }
-
-  return args;
 }
 
 export function buildIcarusArgs(options: BuildIcarusArgsOptions): string[] {
