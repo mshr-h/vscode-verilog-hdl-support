@@ -36,10 +36,9 @@ npm test
 npm run syntax
 ```
 
-`npm test` uses VS Code test tooling. It may need network access to resolve or
-download the VS Code test runner and may need to launch VS Code outside the
-sandbox. Run it with the required access when requested or when the change
-needs full extension validation, and report the exact result.
+`npm test` uses `vscode-test`, which needs network access to resolve or download
+the VS Code test runner and needs to launch VS Code outside the sandbox. Always
+run `npm test` with network/escalated access and report the exact result.
 
 For targeted validation, prefer the narrowest command that covers the changed
 behavior. Use broader validation when touching shared linting, language server,
