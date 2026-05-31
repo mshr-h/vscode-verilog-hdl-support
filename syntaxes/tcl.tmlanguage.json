@@ -21,7 +21,15 @@
             "patterns": [
                 {
                     "name": "comment.line.tcl",
-                    "match": "\\s*\\#.*"
+                    "match": "(?:^|(?<=;))\\s*\\#.*"
+                }
+            ]
+        },
+        "script_comment": {
+            "patterns": [
+                {
+                    "name": "comment.line.tcl",
+                    "match": "(?:^|(?<=[;{\\[]))\\s*\\#.*"
                 }
             ]
         },
@@ -123,7 +131,7 @@
                     "end": "\\}",
                     "patterns": [
                         {
-                            "include": "#comment"
+                            "include": "#script_comment"
                         },
                         {
                             "include": "#command"
@@ -146,9 +154,6 @@
                         {
                             "name": "string.unquoted.switch-pattern.tcl",
                             "match": "[^\\s\\{\\}\\[\\]\\$;]+(?=\\s*\\{)"
-                        },
-                        {
-                            "include": "#comment"
                         },
                         {
                             "include": "#variable"
@@ -193,7 +198,7 @@
                     "end": "\\]",
                     "patterns": [
                         {
-                            "include": "#comment"
+                            "include": "#script_comment"
                         },
                         {
                             "include": "#command"
