@@ -7,11 +7,13 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import which from 'which';
 import {
+  type FormatProviderDependencies,
   buildIStyleVerilogFormatterArgs,
   buildVeribleVerilogFormatArgs,
   buildVerilogFormatArgs,
   SystemVerilogFormatProvider,
 } from '../providers/FormatProvider';
+import type { ToolRunOptions, ToolRunResult } from '../tools/ToolRunner';
 
 suite('Formatting', () => {
   test('verilog-format settings path is expanded when the file exists', () => {
@@ -119,6 +121,132 @@ suite('Formatting', () => {
       await veribleConfig.update('path', previousPath, vscode.ConfigurationTarget.Global);
       await veribleConfig.update('arguments', previousArgs, vscode.ConfigurationTarget.Global);
       fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  test('formatter success returns a whole-document TextEdit and cleans up temp file', async () => {
+    const formatConfig = vscode.workspace.getConfiguration('verilog.formatting.systemVerilog');
+    const veribleConfig = vscode.workspace.getConfiguration(
+      'verilog.formatting.veribleVerilogFormatter'
+    );
+    const previousFormatter = formatConfig.get('formatter');
+    const previousPath = veribleConfig.get('path');
+    const previousArgs = veribleConfig.get('arguments');
+    let tempFilePath = '';
+
+    const dependencies: FormatProviderDependencies = {
+      runTool: async (options: ToolRunOptions): Promise<ToolRunResult> => {
+        tempFilePath = options.args[options.args.length - 1];
+        fs.writeFileSync(tempFilePath, 'module m;\nendmodule\n');
+        return {
+          exitCode: 0,
+          signal: null,
+          stdout: '',
+          stderr: '',
+          command: options.command,
+          args: options.args,
+        };
+      },
+    };
+
+    try {
+      await formatConfig.update(
+        'formatter',
+        'verible-verilog-format',
+        vscode.ConfigurationTarget.Global
+      );
+      await veribleConfig.update('path', 'fake-verible', vscode.ConfigurationTarget.Global);
+      await veribleConfig.update('arguments', '', vscode.ConfigurationTarget.Global);
+
+      const document = await vscode.workspace.openTextDocument({
+        language: 'systemverilog',
+        content: 'module   m;endmodule',
+      });
+
+      const provider = new SystemVerilogFormatProvider(dependencies);
+      const tokenSource = new vscode.CancellationTokenSource();
+      const edits = await provider.provideDocumentFormattingEdits(
+        document,
+        { insertSpaces: true, tabSize: 2 },
+        tokenSource.token
+      );
+
+      assert.strictEqual(edits?.length, 1);
+      assert.strictEqual(edits?.[0].newText, 'module m;\nendmodule\n');
+      assert.deepStrictEqual(
+        edits?.[0].range,
+        new vscode.Range(document.positionAt(0), document.positionAt(document.getText().length))
+      );
+      assert.ok(tempFilePath.length > 0);
+      assert.ok(!fs.existsSync(tempFilePath));
+    } finally {
+      await formatConfig.update(
+        'formatter',
+        previousFormatter,
+        vscode.ConfigurationTarget.Global
+      );
+      await veribleConfig.update('path', previousPath, vscode.ConfigurationTarget.Global);
+      await veribleConfig.update('arguments', previousArgs, vscode.ConfigurationTarget.Global);
+    }
+  });
+
+  test('formatter failure returns no edits and cleans up temp file', async () => {
+    const formatConfig = vscode.workspace.getConfiguration('verilog.formatting.systemVerilog');
+    const veribleConfig = vscode.workspace.getConfiguration(
+      'verilog.formatting.veribleVerilogFormatter'
+    );
+    const previousFormatter = formatConfig.get('formatter');
+    const previousPath = veribleConfig.get('path');
+    const previousArgs = veribleConfig.get('arguments');
+    let tempFilePath = '';
+
+    const dependencies: FormatProviderDependencies = {
+      runTool: async (options: ToolRunOptions): Promise<ToolRunResult> => {
+        tempFilePath = options.args[options.args.length - 1];
+        return {
+          exitCode: 1,
+          signal: null,
+          stdout: 'formatter stdout',
+          stderr: 'formatter stderr',
+          command: options.command,
+          args: options.args,
+        };
+      },
+    };
+
+    try {
+      await formatConfig.update(
+        'formatter',
+        'verible-verilog-format',
+        vscode.ConfigurationTarget.Global
+      );
+      await veribleConfig.update('path', 'fake-verible', vscode.ConfigurationTarget.Global);
+      await veribleConfig.update('arguments', '', vscode.ConfigurationTarget.Global);
+
+      const document = await vscode.workspace.openTextDocument({
+        language: 'systemverilog',
+        content: 'module   m;endmodule',
+      });
+
+      const provider = new SystemVerilogFormatProvider(dependencies);
+      const tokenSource = new vscode.CancellationTokenSource();
+      const edits = await provider.provideDocumentFormattingEdits(
+        document,
+        { insertSpaces: true, tabSize: 2 },
+        tokenSource.token
+      );
+
+      assert.deepStrictEqual(edits, []);
+      assert.ok(tempFilePath.length > 0);
+      assert.ok(!fs.existsSync(tempFilePath));
+    } finally {
+      await formatConfig.update(
+        'formatter',
+        previousFormatter,
+        vscode.ConfigurationTarget.Global
+      );
+      await veribleConfig.update('path', previousPath, vscode.ConfigurationTarget.Global);
+      await veribleConfig.update('arguments', previousArgs, vscode.ConfigurationTarget.Global);
     }
   });
 });
