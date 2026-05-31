@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.24.0] - 2026-05-31
+
+### Added
+
+- Added optional Vaporview waveform opener and `verilog.waveform.*` settings. [#589](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/589)
+- Added shared command-line argument splitting for tool integrations. [#586](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/586)
+
+### Changed
+
+- Changed formatter execution to use `ToolRunner` with reliable temporary file cleanup. [#587](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/587)
+- Improved Doctor warnings for language server and formatter configuration. [#588](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/588)
+
+### Fixed
+
+- Fixed Tcl `#` regex highlighting. [#590](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/590)
+- Fixed Verilog `$` identifier highlighting. [#591](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/591)
+
 ## [1.23.5] - 2026-05-31
 
 ### Fixed
