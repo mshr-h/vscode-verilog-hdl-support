@@ -15,6 +15,7 @@ import { initAllLanguageClients, stopAllLanguageClients } from './languageServer
 import { bootstrapLogging, disposeLogging, getExtensionLogger } from './logging';
 import { FliplotPanel } from './fliplot/FliplotPanel';
 import { FliplotCustomEditor } from './fliplot/FliplotCustomEditor';
+import { openWaveform } from './waveform/OpenWaveform';
 
 let ctagsManager: CtagsManager | undefined;
 const extensionID: string = 'mshr-h.veriloghdl';
@@ -146,6 +147,11 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('verilog.openFliplot', () => {
       FliplotPanel.show(context);
     })
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand('verilog.openWaveform', (arg?: unknown) =>
+      openWaveform(context, arg)
+    )
   );
   context.subscriptions.push(registerDoctorCommand(context));
 
