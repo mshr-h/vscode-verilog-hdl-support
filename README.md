@@ -24,7 +24,9 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - Synopsys Design Constraints
   - Verilog Filelists (dot-F files)
   - Tcl
-- \[Experimental\]Integrated VCD viewer powered by [fliplot](https://github.com/raczben/fliplot)
+- VCD waveform viewer integration:
+  - [fliplot](https://github.com/raczben/fliplot) (build-in)
+  - [Vaporview](https://marketplace.visualstudio.com/items?itemName=lramseyer.vaporview) (when that extension is installed)
 - Simple Snippets
 - Linting support from:
   - Icarus Verilog - `iverilog`
@@ -70,6 +72,10 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 - **Open Fliplot Waveform Viewer**
 
     Open the embedded Fliplot waveform viewer and load a VCD file.
+
+- **Verilog: Open Waveform**
+
+    Open a VCD waveform file with the configured waveform viewer. By default, this command uses Vaporview when the `lramseyer.vaporview` extension is installed and falls back to the embedded Fliplot viewer otherwise. Configure waveform viewer behavior under `verilog.waveform`.
 
 - All linters expect the executable binary ( `iverilog` , `verilator` ...) to be present in the `PATH` environment variable, unless otherwise specified.
 - On Windows, Vivado `xvlog` can be discovered when it is provided as `xvlog.bat` or `xvlog.cmd` on `PATH` or under `verilog.linting.path`.

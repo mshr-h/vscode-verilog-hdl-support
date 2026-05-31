@@ -637,6 +637,36 @@
             "markdownDescription": "Add custom arguments for the vhdl_ls Language Server."
           }
         }
+      },
+      {
+        "title": "Verilog: Waveform",
+        "properties": {
+          "verilog.waveform.viewer": {
+            "scope": "window",
+            "type": "string",
+            "enum": [
+              "auto",
+              "vaporview",
+              "fliplot"
+            ],
+            "default": "auto",
+            "markdownDescription": "Choose the waveform viewer for VCD files. Auto uses Vaporview when installed and falls back to Fliplot."
+          },
+          "verilog.waveform.vaporview.loadAll": {
+            "scope": "window",
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "When opening VCD files with Vaporview, load all signals instead of an initial subset."
+          },
+          "verilog.waveform.vaporview.maxSignals": {
+            "scope": "window",
+            "type": "number",
+            "default": 64,
+            "minimum": 1,
+            "maximum": 64,
+            "markdownDescription": "Maximum number of signals Vaporview should load initially."
+          }
+        }
       }
     ],
     "commands": [
@@ -655,6 +685,10 @@
       {
         "command": "verilog.openFliplot",
         "title": "Verilog: Open Fliplot Waveform Viewer"
+      },
+      {
+        "command": "verilog.openWaveform",
+        "title": "Verilog: Open Waveform"
       }
     ],
     "customEditors": [

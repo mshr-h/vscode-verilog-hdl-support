@@ -96,6 +96,22 @@ suite('Extension Test Suite', () => {
     );
   });
 
+  test('extension should register verilog.openWaveform command', async function () {
+    this.timeout(10000);
+    const extension = vscode.extensions.getExtension(EXTENSION_ID);
+    assert.ok(extension, 'Extension should be present');
+
+    if (!extension.isActive) {
+      await extension.activate();
+    }
+
+    const commands = await vscode.commands.getCommands(true);
+    assert.ok(
+      commands.includes('verilog.openWaveform'),
+      'verilog.openWaveform command should be registered'
+    );
+  });
+
   test('extension should register verilog.doctor command', async function () {
     this.timeout(10000);
     const extension = vscode.extensions.getExtension(EXTENSION_ID);
