@@ -2,7 +2,10 @@
 import * as assert from 'assert';
 import * as os from 'os';
 import * as path from 'path';
+import * as vscode from 'vscode';
 import {
+  buildFormatterChecks,
+  buildLanguageServerConflictChecks,
   buildLanguageServerChecks,
   buildLinterChecks,
   expandPathVariables,
@@ -200,5 +203,70 @@ suite('Doctor', () => {
         (check) => check.status === 'warn' && check.message.includes('version unknown')
       )
     );
+  });
+
+  test('warns when multiple language servers are enabled for systemverilog', () => {
+    const checks = buildLanguageServerConflictChecks([
+      { name: 'svls', enabled: true, languages: ['systemverilog'] },
+      { name: 'veridian', enabled: true, languages: ['systemverilog'] },
+      { name: 'rustHdl', enabled: true, languages: ['vhdl'] },
+    ]);
+
+    assert.ok(
+      checks.some(
+        (check) =>
+          check.status === 'warn' &&
+          check.message.includes('systemverilog') &&
+          check.message.includes('svls, veridian')
+      )
+    );
+  });
+
+  test('does not warn when only one language server is enabled for a language', () => {
+    const checks = buildLanguageServerConflictChecks([
+      { name: 'svls', enabled: true, languages: ['systemverilog'] },
+      { name: 'veridian', enabled: false, languages: ['systemverilog'] },
+      { name: 'rustHdl', enabled: true, languages: ['vhdl'] },
+    ]);
+
+    assert.ok(!checks.some((check) => check.status === 'warn'));
+  });
+
+  test('language server checks display parsed arguments', async () => {
+    const checks = await buildLanguageServerChecks(
+      {
+        name: 'svls',
+        enabled: false,
+        path: 'svls',
+        arguments: '--foo "A=B C"',
+      },
+      makeDeps({})
+    );
+
+    assert.ok(
+      checks.some((check) => check.message === 'svls parsed arguments = [--foo, A=B C]')
+    );
+  });
+
+  test('selected formatter with empty path produces one actionable warning', async () => {
+    const config = vscode.workspace.getConfiguration('verilog.formatting.verilogFormat');
+    const previousPath = config.get('path');
+
+    try {
+      await config.update('path', '', vscode.ConfigurationTarget.Global);
+
+      const checks = await buildFormatterChecks('verilog-format', makeDeps({}));
+
+      assert.ok(
+        checks.some(
+          (check) =>
+            check.status === 'warn' &&
+            check.message.includes('verilog.formatting.verilogFormat.path')
+        )
+      );
+      assert.ok(!checks.some((check) => check.status === 'error'));
+    } finally {
+      await config.update('path', previousPath, vscode.ConfigurationTarget.Global);
+    }
   });
 });

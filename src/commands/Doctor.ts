@@ -8,6 +8,11 @@ import { getExtensionLogger } from '../logging';
 import { runTool, ToolRunError, type ToolRunOptions, type ToolRunResult } from '../tools/ToolRunner';
 import { buildSlangCommand } from '../linter/SlangLinter';
 import { buildVerilatorCommand } from '../linter/VerilatorLinter';
+import {
+  createLanguageServerDefinitions,
+  type LanguageServerDefinition,
+} from '../languageServer/definitions';
+import { splitCommandLineArgs } from '../utils/commandLine';
 import { expandPathVariables, resolveConfigPath } from '../utils/configPath';
 import { getWorkspaceFolderForUri } from '../utils/workspace';
 
@@ -68,6 +73,12 @@ export interface LanguageServerDoctorOptions {
   arguments?: string;
   configFiles?: Array<{ label: string; path: string; resolvePerWorkspace?: boolean }>;
   workspaceFolders?: string[];
+}
+
+export interface LanguageServerConflictInput {
+  name: string;
+  enabled: boolean;
+  languages: string[];
 }
 
 let doctorOutputChannel: vscode.OutputChannel | undefined;
@@ -339,6 +350,12 @@ export async function buildLanguageServerChecks(
   ];
   if (options.arguments !== undefined) {
     checks.push({ status: 'info', message: `${options.name} arguments = ${options.arguments}` });
+    if (options.arguments.trim().length > 0) {
+      checks.push({
+        status: 'info',
+        message: `${options.name} parsed arguments = [${splitCommandLineArgs(options.arguments).join(', ')}]`,
+      });
+    }
   }
 
   if (!options.enabled) {
@@ -518,16 +535,19 @@ async function buildLanguageServersSection(
   token?: vscode.CancellationToken
 ): Promise<DoctorSection> {
   const checks: DoctorCheck[] = [];
-  const serverNames = [
-    'svls',
-    'veridian',
-    'hdlChecker',
-    'veribleVerilogLs',
-    'tclsp',
-    'rustHdl',
-  ];
+  const definitions = createLanguageServerDefinitions();
+  const serverStates: LanguageServerConflictInput[] = definitions.map((definition) => {
+    const config = vscode.workspace.getConfiguration(`verilog.languageServer.${definition.name}`);
+    return {
+      name: definition.name,
+      enabled: config.get<boolean>('enabled', false),
+      languages: getLanguageIdsForDefinition(definition),
+    };
+  });
+  checks.push(...buildLanguageServerConflictChecks(serverStates));
 
-  for (const name of serverNames) {
+  for (const definition of definitions) {
+    const name = definition.name;
     const config = vscode.workspace.getConfiguration(`verilog.languageServer.${name}`);
     const configFiles: LanguageServerDoctorOptions['configFiles'] = [];
     if (name === 'svls') {
@@ -564,6 +584,43 @@ async function buildLanguageServersSection(
   }
 
   return { title: 'Language Servers', checks };
+}
+
+export function buildLanguageServerConflictChecks(
+  servers: LanguageServerConflictInput[]
+): DoctorCheck[] {
+  const serversByLanguage = new Map<string, string[]>();
+  for (const server of servers) {
+    if (!server.enabled) {
+      continue;
+    }
+    for (const language of server.languages) {
+      const serverNames = serversByLanguage.get(language) ?? [];
+      serverNames.push(server.name);
+      serversByLanguage.set(language, serverNames);
+    }
+  }
+
+  const checks: DoctorCheck[] = [];
+  for (const [language, serverNames] of serversByLanguage) {
+    if (serverNames.length > 1) {
+      checks.push({
+        status: 'warn',
+        message: `Multiple language servers are enabled for ${language}: ${serverNames.join(', ')}. This may cause duplicate diagnostics/completions; consider enabling only one.`,
+      });
+    }
+  }
+  return checks;
+}
+
+function getLanguageIdsForDefinition(definition: LanguageServerDefinition): string[] {
+  const documentSelector = definition.buildClientOptions().documentSelector ?? [];
+  return documentSelector.flatMap((selector) => {
+    if (typeof selector === 'string') {
+      return [selector];
+    }
+    return selector.language ? [selector.language] : [];
+  });
 }
 
 function buildSummarySection(sections: DoctorSection[]): DoctorSection {
@@ -626,12 +683,28 @@ async function appendFormatterChecks(
   deps: DoctorDependencies,
   token?: vscode.CancellationToken
 ): Promise<void> {
+  checks.push(...(await buildFormatterChecks(formatter, deps, token)));
+}
+
+export async function buildFormatterChecks(
+  formatter: string,
+  deps: DoctorDependencies,
+  token?: vscode.CancellationToken
+): Promise<DoctorCheck[]> {
+  const checks: DoctorCheck[] = [];
   const formatterConfig = getFormatterConfiguration(formatter);
   if (!formatterConfig) {
     checks.push({ status: 'info', message: `${formatter} has no configured binary check` });
-    return;
+    return checks;
   }
   checks.push(...formatterConfig.extraChecks);
+  if (formatterConfig.path.trim().length === 0) {
+    checks.push({
+      status: 'warn',
+      message: `${formatterConfig.binaryName} path is empty; set ${formatterConfig.pathSetting}.`,
+    });
+    return checks;
+  }
   await appendBinaryChecks(
     checks,
     `${formatterConfig.binaryName} binary`,
@@ -640,25 +713,30 @@ async function appendFormatterChecks(
     token
   );
   await appendVersionCheck(checks, 'version', formatterConfig.path, ['--version'], deps, token);
+  return checks;
 }
 
 function getFormatterConfiguration(
   formatter: string
-): { binaryName: string; path: string; extraChecks: DoctorCheck[] } | undefined {
+): { binaryName: string; path: string; pathSetting: string; extraChecks: DoctorCheck[] } | undefined {
   switch (formatter) {
     case 'verilog-format': {
+      const pathSetting = 'verilog.formatting.verilogFormat.path';
       const config = vscode.workspace.getConfiguration('verilog.formatting.verilogFormat');
       return {
         binaryName: 'verilog-format',
         path: config.get<string>('path', 'verilog-format'),
+        pathSetting,
         extraChecks: [],
       };
     }
     case 'iStyle': {
+      const pathSetting = 'verilog.formatting.iStyleVerilogFormatter.path';
       const config = vscode.workspace.getConfiguration('verilog.formatting.iStyleVerilogFormatter');
       return {
         binaryName: 'iStyle',
         path: config.get<string>('path', 'iStyle'),
+        pathSetting,
         extraChecks: [
           { status: 'info', message: `iStyle arguments = ${config.get<string>('arguments', '')}` },
           { status: 'info', message: `iStyle style = ${config.get<string>('style', '')}` },
@@ -666,10 +744,12 @@ function getFormatterConfiguration(
       };
     }
     case 'verible-verilog-format': {
+      const pathSetting = 'verilog.formatting.veribleVerilogFormatter.path';
       const config = vscode.workspace.getConfiguration('verilog.formatting.veribleVerilogFormatter');
       return {
         binaryName: 'verible-verilog-format',
         path: config.get<string>('path', 'verible-verilog-format'),
+        pathSetting,
         extraChecks: [
           {
             status: 'info',
