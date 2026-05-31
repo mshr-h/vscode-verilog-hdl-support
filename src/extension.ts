@@ -160,14 +160,16 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   // Configure language server
-  vscode.workspace.onDidChangeConfiguration((event) => {
-    if (!event.affectsConfiguration('verilog.languageServer')) {
-      return;
-    }
-    stopAllLanguageClients().finally(() => {
-      initAllLanguageClients();
-    });
-  });
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration((event) => {
+      if (!event.affectsConfiguration('verilog.languageServer')) {
+        return;
+      }
+      stopAllLanguageClients().finally(() => {
+        initAllLanguageClients();
+      });
+    })
+  );
   initAllLanguageClients();
 
   logger.info("Extension activated", { extensionId: extensionID });
