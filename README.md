@@ -24,6 +24,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - Synopsys Design Constraints
   - Verilog Filelists (dot-F files)
   - Tcl
+- Inactive Verilog/SystemVerilog preprocessor region highlighting
 - VCD waveform viewer integration:
   - [fliplot](https://github.com/raczben/fliplot) (build-in)
   - [Vaporview](https://marketplace.visualstudio.com/items?itemName=lramseyer.vaporview) (when that extension is installed)
@@ -81,6 +82,22 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 - On Windows, Vivado `xvlog` can be discovered when it is provided as `xvlog.bat` or `xvlog.cmd` on `PATH` or under `verilog.linting.path`.
 - Set `verilog.linting.linter` to `none` to disable automatic linting without warnings.
 - While using `` `include`` directives, the path to the files should be relative to the workspace directory, unless`runAtFileLocation` is enabled (not supported by all linters)
+
+### Inactive Preprocessor Regions
+
+Inactive Verilog/SystemVerilog preprocessor branches controlled by `` `ifdef``, `` `ifndef``, `` `elsif``, `` `else``, and `` `endif`` are highlighted in the editor. The lightweight scanner uses macros defined in the current document plus any workspace-wide macros configured in `verilog.preprocessor.defines`.
+
+```json
+{
+    "verilog.preprocessor.defines": ["SIMULATION", "USE_VENDOR_IP"],
+    "verilog.preprocessor.inactiveCode.enabled": true,
+    "verilog.preprocessor.inactiveCode.opacity": 0.45,
+    "verilog.preprocessor.inactiveCode.foregroundColor": "",
+    "verilog.preprocessor.inactiveCode.backgroundColor": "rgba(255, 0, 0, 0.12)"
+}
+```
+
+Leave `foregroundColor` or `backgroundColor` empty to use the theme/default styling. This feature does not resolve `` `include`` files, filelists, or simulator arguments such as `+define+FOO` and `-D FOO`.
 
 ### Ctags Integration
 

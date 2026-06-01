@@ -703,6 +703,46 @@
             "markdownDescription": "Maximum number of signals Vaporview should load initially."
           }
         }
+      },
+      {
+        "title": "Verilog: Preprocessor",
+        "properties": {
+          "verilog.preprocessor.defines": {
+            "scope": "window",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [],
+            "markdownDescription": "Macro names to treat as predefined for Verilog/SystemVerilog preprocessor inactive-code highlighting."
+          },
+          "verilog.preprocessor.inactiveCode.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Enable decorations for inactive Verilog/SystemVerilog preprocessor regions."
+          },
+          "verilog.preprocessor.inactiveCode.opacity": {
+            "scope": "window",
+            "type": "number",
+            "default": 0.45,
+            "minimum": 0,
+            "maximum": 1,
+            "markdownDescription": "Opacity for inactive Verilog/SystemVerilog preprocessor region decorations."
+          },
+          "verilog.preprocessor.inactiveCode.foregroundColor": {
+            "scope": "window",
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Optional CSS color for inactive Verilog/SystemVerilog preprocessor region foreground text. Leave empty to use the theme default."
+          },
+          "verilog.preprocessor.inactiveCode.backgroundColor": {
+            "scope": "window",
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Optional CSS color for inactive Verilog/SystemVerilog preprocessor region backgrounds, for example `rgba(255, 0, 0, 0.12)`. Leave empty to use no custom background."
+          }
+        }
       }
     ],
     "commands": [

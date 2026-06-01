@@ -16,6 +16,7 @@ import { bootstrapLogging, disposeLogging, getExtensionLogger } from './logging'
 import { FliplotPanel } from './fliplot/FliplotPanel';
 import { FliplotCustomEditor } from './fliplot/FliplotCustomEditor';
 import { openWaveform } from './waveform/OpenWaveform';
+import { InactivePreprocessorDecorationProvider } from './providers/InactivePreprocessorDecorationProvider';
 
 let ctagsManager: CtagsManager | undefined;
 const extensionID: string = 'mshr-h.veriloghdl';
@@ -127,6 +128,8 @@ export async function activate(context: vscode.ExtensionContext) {
       systemVerilogFormatProvider
     )
   );
+
+  context.subscriptions.push(new InactivePreprocessorDecorationProvider());
 
   // Configure command to instantiate a module
   context.subscriptions.push(
