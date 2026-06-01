@@ -707,7 +707,7 @@
       "name": "storage.type.rand.systemverilog"
     },
     "module-parameters": {
-      "begin": "[ \\t\\r\\n]*\\b(?:(bind)[ \\t\\r\\n]+([a-zA-Z_][a-zA-Z0-9_$\\.]*)[ \\t\\r\\n]+)?([a-zA-Z_][a-zA-Z0-9_$]*)[ \\t\\r\\n]+(?!intersect|and|or|throughout|within)(?=#[^#])",
+      "begin": "^[ \\t]*\\b(?:(bind)[ \\t]+([a-zA-Z_][a-zA-Z0-9_$\\.]*)[ \\t]+)?(?!\\b(?:intersect|and|or|throughout|within)\\b)([a-zA-Z_][a-zA-Z0-9_$]*)[ \\t]*(?=#[^#]|$)",
       "beginCaptures": {
         "1": {
           "name": "keyword.control.systemverilog"
