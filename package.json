@@ -161,17 +161,53 @@
       {
         "language": "verilog",
         "scopeName": "source.verilog",
-        "path": "./syntaxes/verilog.tmLanguage.json"
+        "path": "./syntaxes/verilog.tmLanguage.json",
+        "balancedBracketScopes": [
+          "*"
+        ],
+        "unbalancedBracketScopes": [
+          "variable.other.identifier.verilog",
+          "variable.other.constant.verilog",
+          "entity.name.type.module.verilog",
+          "entity.name.tag.module.reference.verilog",
+          "entity.name.tag.module.identifier.verilog"
+        ]
       },
       {
         "language": "verilogams",
         "scopeName": "source.verilogams",
-        "path": "./syntaxes/verilogams.tmLanguage.json"
+        "path": "./syntaxes/verilogams.tmLanguage.json",
+        "balancedBracketScopes": [
+          "*"
+        ],
+        "unbalancedBracketScopes": [
+          "variable.other.constant.verilogams",
+          "entity.name.type.module.verilogams",
+          "entity.name.tag.module.reference.verilogams",
+          "entity.name.tag.module.identifier.verilogams"
+        ]
       },
       {
         "language": "systemverilog",
         "scopeName": "source.systemverilog",
-        "path": "./syntaxes/systemverilog.tmLanguage.json"
+        "path": "./syntaxes/systemverilog.tmLanguage.json",
+        "balancedBracketScopes": [
+          "*"
+        ],
+        "unbalancedBracketScopes": [
+          "variable.other.identifier.systemverilog",
+          "variable.other.constant.preprocessor.systemverilog",
+          "entity.name.section.systemverilog",
+          "entity.name.type.module.systemverilog",
+          "entity.name.type.class.systemverilog",
+          "entity.name.function.systemverilog",
+          "entity.name.goto-label.php",
+          "storage.type.user-defined.systemverilog",
+          "storage.type.userdefined.systemverilog",
+          "support.type.scope.systemverilog",
+          "support.function.port.systemverilog",
+          "variable.other.module.systemverilog"
+        ]
       },
       {
         "language": "vhdl",
