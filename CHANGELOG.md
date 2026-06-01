@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.25.0] - 2026-06-02
+
+### Added
+
+- Added inactive Verilog preprocessor region highlighting. [#596](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/596)
+
+### Fixed
+
+- Fixed false `begin`/`end` bracket matching for identifiers. [#595](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/595)
+- Fixed split-line SystemVerilog module parameter highlighting. [#593](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/593)
+- Fixed Verilog comment region folding markers. [#592](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/592)
+
 ## [1.24.0] - 2026-05-31
 
 ### Added
