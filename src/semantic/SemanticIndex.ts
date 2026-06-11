@@ -31,6 +31,10 @@ export class SemanticIndex {
     return this.symbols.filter((symbol): symbol is ModuleRecord => symbol.kind === 'module');
   }
 
+  getAllSymbols(): SymbolRecord[] {
+    return this.symbols.slice();
+  }
+
   findModules(name: string): ModuleRecord[] {
     return (this.modulesByName.get(name) ?? []).slice();
   }

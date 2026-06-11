@@ -760,6 +760,17 @@
         }
       },
       {
+        "title": "Verilog: Module Instantiation",
+        "properties": {
+          "verilog.instantiate.useProjectIndex": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Use the project index for module instantiation when project modules are available. Falls back to the ctags file picker when disabled or when the project index has no modules."
+          }
+        }
+      },
+      {
         "title": "Verilog: Preprocessor",
         "properties": {
           "verilog.preprocessor.defines": {

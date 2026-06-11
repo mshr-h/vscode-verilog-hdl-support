@@ -2,8 +2,8 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { VerilogDefinitionProvider } from '../providers/DefinitionProvider';
-import { CtagsManager } from '../ctags';
 import { END_OF_LINE } from '../constants';
+import type { DefinitionService } from '../hdl/DefinitionService';
 
 suite('DefinitionProvider', () => {
   test('returns definition links for found symbol', async () => {
@@ -24,11 +24,11 @@ suite('DefinitionProvider', () => {
       },
     ];
 
-    const ctagsManager = {
-      findSymbol: async () => definitionLinks,
-    } as unknown as CtagsManager;
+    const definitionService = {
+      provideDefinition: async () => definitionLinks,
+    } as unknown as DefinitionService;
 
-    const provider = new VerilogDefinitionProvider(ctagsManager);
+    const provider = new VerilogDefinitionProvider(definitionService);
     const tokenSource = new vscode.CancellationTokenSource();
 
     // Position on 'sig' in the assign statement
@@ -49,11 +49,11 @@ suite('DefinitionProvider', () => {
       content: 'module top; endmodule',
     });
 
-    const ctagsManager = {
-      findSymbol: async () => [],
-    } as unknown as CtagsManager;
+    const definitionService = {
+      provideDefinition: async () => [],
+    } as unknown as DefinitionService;
 
-    const provider = new VerilogDefinitionProvider(ctagsManager);
+    const provider = new VerilogDefinitionProvider(definitionService);
     const tokenSource = new vscode.CancellationTokenSource();
 
     const result = await provider.provideDefinition(
@@ -88,11 +88,11 @@ suite('DefinitionProvider', () => {
       },
     ];
 
-    const ctagsManager = {
-      findSymbol: async () => definitionLinks,
-    } as unknown as CtagsManager;
+    const definitionService = {
+      provideDefinition: async () => definitionLinks,
+    } as unknown as DefinitionService;
 
-    const provider = new VerilogDefinitionProvider(ctagsManager);
+    const provider = new VerilogDefinitionProvider(definitionService);
     const tokenSource = new vscode.CancellationTokenSource();
 
     const result = await provider.provideDefinition(
