@@ -705,6 +705,61 @@
         }
       },
       {
+        "title": "Verilog: Project",
+        "properties": {
+          "verilog.project.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Enable project-aware Verilog/SystemVerilog model."
+          },
+          "verilog.project.filelists": {
+            "scope": "window",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [],
+            "markdownDescription": "List of Verilog/SystemVerilog filelists to use for project indexing."
+          },
+          "verilog.project.activeTarget": {
+            "scope": "window",
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Active HDL project target / compile unit name."
+          },
+          "verilog.project.includeDirs": {
+            "scope": "window",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [],
+            "markdownDescription": "Additional include directories."
+          },
+          "verilog.project.defines": {
+            "scope": "window",
+            "type": "object",
+            "default": {},
+            "markdownDescription": "Additional preprocessor defines."
+          },
+          "verilog.project.exclude": {
+            "scope": "window",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "**/.git/**",
+              "**/node_modules/**",
+              "**/build/**",
+              "**/sim/**"
+            ],
+            "markdownDescription": "Glob patterns excluded from project indexing."
+          }
+        }
+      },
+      {
         "title": "Verilog: Preprocessor",
         "properties": {
           "verilog.preprocessor.defines": {
@@ -757,6 +812,18 @@
       {
         "command": "verilog.doctor",
         "title": "Verilog: Doctor"
+      },
+      {
+        "command": "verilog.reloadProject",
+        "title": "Verilog: Reload Project"
+      },
+      {
+        "command": "verilog.showProjectStatus",
+        "title": "Verilog: Show Project Status"
+      },
+      {
+        "command": "verilog.showProjectModules",
+        "title": "Verilog: Show Project Modules"
       },
       {
         "command": "verilog.openFliplot",

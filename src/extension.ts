@@ -17,6 +17,10 @@ import { FliplotPanel } from './fliplot/FliplotPanel';
 import { FliplotCustomEditor } from './fliplot/FliplotCustomEditor';
 import { openWaveform } from './waveform/OpenWaveform';
 import { InactivePreprocessorDecorationProvider } from './providers/InactivePreprocessorDecorationProvider';
+import { ProjectService } from './project/ProjectService';
+import { ProjectWatcher } from './project/ProjectWatcher';
+import { registerProjectCommands } from './project/ProjectCommands';
+import { IndexService } from './semantic/IndexService';
 
 let ctagsManager: CtagsManager | undefined;
 const extensionID: string = 'mshr-h.veriloghdl';
@@ -37,6 +41,12 @@ export async function activate(context: vscode.ExtensionContext) {
   ctagsManager = new CtagsManager();
   ctagsManager.configure();
   context.subscriptions.push(ctagsManager);
+
+  const projectService = new ProjectService();
+  const indexService = new IndexService(projectService);
+  context.subscriptions.push(projectService, indexService, new ProjectWatcher(projectService));
+  context.subscriptions.push(...registerProjectCommands(projectService, indexService));
+  void projectService.reload('activation');
 
   // Configure Document Symbol Provider
   const verilogDocumentSymbolProvider = new DocumentSymbolProvider.VerilogDocumentSymbolProvider(
@@ -156,7 +166,7 @@ export async function activate(context: vscode.ExtensionContext) {
       openWaveform(context, arg)
     )
   );
-  context.subscriptions.push(registerDoctorCommand(context));
+  context.subscriptions.push(registerDoctorCommand(context, projectService));
 
   context.subscriptions.push(
     vscode.window.registerCustomEditorProvider(

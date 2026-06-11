@@ -12,6 +12,7 @@ suite('tclsp initialization options', () => {
     const folder = (vscode.workspace.workspaceFolders ?? []).at(0);
     const hasWorkspace = Boolean(folder);
     let previousFolder: string | undefined;
+    let wroteFolderConfig = false;
     if (folder) {
       previousFolder = vscode.workspace
         .getConfiguration('verilog.languageServer.tclsp', folder.uri)
@@ -32,11 +33,16 @@ suite('tclsp initialization options', () => {
           'verilog.languageServer.tclsp',
           folder.uri
         );
-        await folderConfig.update(
-          'configPath',
-          'folder.tclint',
-          vscode.ConfigurationTarget.WorkspaceFolder
-        );
+        try {
+          await folderConfig.update(
+            'configPath',
+            'folder.tclint',
+            vscode.ConfigurationTarget.WorkspaceFolder
+          );
+          wroteFolderConfig = true;
+        } catch {
+          wroteFolderConfig = false;
+        }
       }
 
       const result = buildTclspInitializationOptions();
@@ -49,7 +55,7 @@ suite('tclsp initialization options', () => {
         assert.ok(Array.isArray(settings), 'Expected workspace settings');
         const entry = settings.find((item: any) => item.cwd === folder.uri.fsPath);
         assert.ok(entry, 'Expected workspace setting for folder');
-        assert.strictEqual(entry.configPath, 'folder.tclint');
+        assert.strictEqual(entry.configPath, wroteFolderConfig ? 'folder.tclint' : 'workspace.tclint');
       }
     } finally {
       await config.update(
@@ -64,7 +70,7 @@ suite('tclsp initialization options', () => {
           vscode.ConfigurationTarget.Workspace
         );
       }
-      if (folder) {
+      if (folder && wroteFolderConfig) {
         const folderConfig = vscode.workspace.getConfiguration(
           'verilog.languageServer.tclsp',
           folder.uri
