@@ -12,6 +12,8 @@ import {
   createLanguageServerDefinitions,
   type LanguageServerDefinition,
 } from '../languageServer/definitions';
+import type { ProjectService } from '../project/ProjectService';
+import { activeEditorContextDiagnostic, summarizeContext } from '../project/ProjectCommands';
 import { splitCommandLineArgs } from '../utils/commandLine';
 import { expandPathVariables, resolveConfigPath } from '../utils/configPath';
 import { getWorkspaceFolderForUri } from '../utils/workspace';
@@ -110,13 +112,17 @@ const languageServerLabels: Record<string, string> = {
   rustHdl: 'vhdl_ls',
 };
 
-export function registerDoctorCommand(context: vscode.ExtensionContext): vscode.Disposable {
-  return vscode.commands.registerCommand('verilog.doctor', () => runDoctor(context));
+export function registerDoctorCommand(
+  context: vscode.ExtensionContext,
+  projectService?: ProjectService
+): vscode.Disposable {
+  return vscode.commands.registerCommand('verilog.doctor', () => runDoctor(context, createDefaultDoctorDependencies(), projectService));
 }
 
 export async function runDoctor(
   context: vscode.ExtensionContext,
-  deps: DoctorDependencies = createDefaultDoctorDependencies()
+  deps: DoctorDependencies = createDefaultDoctorDependencies(),
+  projectService?: ProjectService
 ): Promise<void> {
   let report: DoctorReport;
   try {
@@ -126,7 +132,7 @@ export async function runDoctor(
         title: 'Running Verilog Doctor',
         cancellable: true,
       },
-      async (_progress, token) => buildDoctorReport(context, deps, token)
+      async (_progress, token) => buildDoctorReport(context, deps, token, projectService)
     );
   } catch (err) {
     if (err instanceof ToolRunError && err.reason === 'cancelled') {
@@ -154,7 +160,8 @@ export async function runDoctor(
 export async function buildDoctorReport(
   context: vscode.ExtensionContext,
   deps: DoctorDependencies,
-  token?: vscode.CancellationToken
+  token?: vscode.CancellationToken,
+  projectService?: ProjectService
 ): Promise<DoctorReport> {
   const activeDocument = vscode.window.activeTextEditor?.document;
   const activeWorkspaceFolder = activeDocument
@@ -172,6 +179,7 @@ export async function buildDoctorReport(
     await buildLintingSectionFromConfiguration(deps, workspaceFolderPath, token),
     await buildFormattingSection(deps, workspaceFolderPath, token),
     await buildLanguageServersSection(deps, workspaceFolderPaths, token),
+    buildProjectSection(projectService),
   ];
   sections.push(buildSummarySection(sections));
 
@@ -185,6 +193,53 @@ export async function buildDoctorReport(
     remoteName: vscode.env.remoteName ?? 'none',
     sections,
   };
+}
+
+function buildProjectSection(projectService?: ProjectService): DoctorSection {
+  if (!projectService) {
+    return {
+      title: 'Project',
+      checks: [{ status: 'info', message: 'Project service unavailable in this Doctor context.' }],
+    };
+  }
+
+  const snapshot = projectService.getSnapshot();
+  const activeUri = vscode.window.activeTextEditor?.document.uri;
+  const activeContext = activeUri ? projectService.getPreferredFileContext(activeUri) : undefined;
+  const diagnostics = snapshot.diagnostics.concat(activeEditorContextDiagnostic(projectService) ?? []);
+  const checks: DoctorCheck[] = [
+    {
+      status: snapshot.diagnostics.some((diagnostic) => diagnostic.code === 'project-disabled') ? 'info' : 'ok',
+      message: `Project enabled = ${String(!snapshot.diagnostics.some((diagnostic) => diagnostic.code === 'project-disabled'))}`,
+    },
+    { status: 'info', message: `Workspace root = ${snapshot.workspaceRoot.fsPath}` },
+    { status: 'info', message: `Active target = ${snapshot.activeTargetId || '(none)'}` },
+    { status: 'info', message: `Compile units = ${snapshot.compileUnits.length}` },
+    {
+      status: 'info',
+      message: `Files = ${snapshot.compileUnits.reduce((sum, compileUnit) => sum + compileUnit.files.length, 0)}`,
+    },
+    { status: 'info', message: `Active editor context = ${summarizeContext(activeContext)}` },
+  ];
+
+  for (const compileUnit of snapshot.compileUnits) {
+    checks.push({
+      status: 'info',
+      message: `compile unit ${compileUnit.id}: files=${compileUnit.files.length}, includeDirs=${compileUnit.includeDirs.length}, defines=${Object.keys(compileUnit.defines).length}`,
+    });
+  }
+
+  for (const diagnostic of diagnostics) {
+    checks.push({
+      status: diagnostic.severity === 'error' ? 'error' : diagnostic.severity === 'warning' ? 'warn' : 'info',
+      message: diagnostic.message,
+      detail: diagnostic.location
+        ? `${diagnostic.location.uri.fsPath}:${diagnostic.location.range.start.line + 1}`
+        : undefined,
+    });
+  }
+
+  return { title: 'Project', checks };
 }
 
 export function renderDoctorReport(report: DoctorReport): string {

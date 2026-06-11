@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 import * as assert from 'assert';
+import * as fs from 'fs';
+import * as path from 'path';
 import * as vscode from 'vscode';
 
 const EXTENSION_ID = 'mshr-h.veriloghdl';
@@ -126,5 +128,39 @@ suite('Extension Test Suite', () => {
       commands.includes('verilog.doctor'),
       'verilog.doctor command should be registered'
     );
+  });
+
+  test('extension should register project commands', async function () {
+    this.timeout(10000);
+    const extension = vscode.extensions.getExtension(EXTENSION_ID);
+    assert.ok(extension, 'Extension should be present');
+
+    if (!extension.isActive) {
+      await extension.activate();
+    }
+
+    const commands = await vscode.commands.getCommands(true);
+    assert.ok(commands.includes('verilog.reloadProject'));
+    assert.ok(commands.includes('verilog.showProjectStatus'));
+    assert.ok(commands.includes('verilog.showProjectModules'));
+  });
+
+  test('package should contribute project settings', () => {
+    const packageJson = JSON.parse(
+      fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8')
+    ) as {
+      contributes: { configuration: Array<{ properties: Record<string, unknown> }> };
+    };
+    const properties = Object.assign(
+      {},
+      ...packageJson.contributes.configuration.map((configuration) => configuration.properties)
+    ) as Record<string, unknown>;
+
+    assert.ok(properties['verilog.project.enabled']);
+    assert.ok(properties['verilog.project.filelists']);
+    assert.ok(properties['verilog.project.activeTarget']);
+    assert.ok(properties['verilog.project.includeDirs']);
+    assert.ok(properties['verilog.project.defines']);
+    assert.ok(properties['verilog.project.exclude']);
   });
 });
