@@ -8,6 +8,7 @@ import {
   buildSlangCommand,
   getSlangPaths,
   parseSlangDiagnostics,
+  parseSlangDiagnosticsByFile,
 } from '../linter/SlangLinter';
 
 suite('Slang Linter', () => {
@@ -110,6 +111,25 @@ suite('Slang Linter', () => {
     assert.strictEqual(diagnostics[0].source, 'slang');
     assert.strictEqual(diagnostics[1].severity, vscode.DiagnosticSeverity.Warning);
     assert.strictEqual(diagnostics[1].code, 'unused');
+  });
+
+  test('parses compile-unit diagnostics across multiple files', () => {
+    const ownerPath = '/tmp/slang source/top file.sv';
+    const childPath = '/tmp/slang source/child.sv';
+    const stderr = [
+      `${ownerPath}:3:12: error: top error`,
+      `${childPath}:4:2: warning: child warning [-Wunused]`,
+    ].join('\n');
+
+    const diagnosticsByFile = parseSlangDiagnosticsByFile({
+      stderr,
+      documentPath: ownerPath,
+      isWindows: false,
+      useWSL: false,
+    });
+
+    assert.strictEqual(diagnosticsByFile.get(ownerPath)?.[0]?.message, 'top error');
+    assert.strictEqual(diagnosticsByFile.get(childPath)?.[0]?.message, 'child warning');
   });
 
   test('does not import child_process or call child exec', () => {

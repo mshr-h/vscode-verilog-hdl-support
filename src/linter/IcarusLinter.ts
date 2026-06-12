@@ -7,6 +7,13 @@ import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from '../utils/commandLine';
 import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
+import {
+  buildIcarusCompileUnitArgs,
+  getCompileUnitDefineArgs,
+  getCompileUnitIncludePaths,
+  getCompileUnitSourcePaths,
+} from './CompileUnitLintArgs';
+import type { LintRunOptions } from './LintMode';
 
 export { splitCommandLineArgs } from '../utils/commandLine';
 
@@ -171,11 +178,39 @@ export default class IcarusLinter extends BaseLinter {
     return convertIcarusSeverity(kind, msg);
   }
 
-  protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
+  protected async lint(doc: vscode.TextDocument, run: LintRunHandle, options: LintRunOptions): Promise<void> {
     this.logger.info`Executing IcarusLinter.lint()`;
 
     const binPath: string = path.join(this.config.linterInstalledPath, 'iverilog');
     this.logger.info`iverilog binary path: ${binPath}`;
+    const decision = await this.getLintDecision(doc, options);
+    if (decision.kind === 'skip') {
+      this.replaceDiagnostics(doc, run, new Map<string, vscode.Diagnostic[]>());
+      return;
+    }
+    if (decision.kind === 'compileUnit') {
+      const args = buildIcarusCompileUnitArgs({
+        languageId: doc.languageId,
+        standards: this.standards,
+        includePaths: this.resolveIncludePaths(this.config.includePath, doc).concat(
+          getCompileUnitIncludePaths(decision.context)
+        ),
+        defineArgs: getCompileUnitDefineArgs(decision.context),
+        customArguments: this.config.arguments,
+        sourcePaths: getCompileUnitSourcePaths(decision.context),
+      });
+      const cwd = this.getWorkingDirectory(doc);
+
+      this.logger.info("Executing compile-unit lint", {
+        command: binPath,
+        args,
+        cwd,
+        compileUnit: decision.context.compileUnit.id,
+      });
+
+      await this.runIcarus(binPath, args, cwd, doc, run);
+      return;
+    }
 
     const args = buildIcarusArgs({
       languageId: doc.languageId,

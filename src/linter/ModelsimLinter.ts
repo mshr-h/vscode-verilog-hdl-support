@@ -7,6 +7,7 @@ import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from '../utils/commandLine';
 import LinterDiagnosticManager from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
+import type { LintRunOptions } from './LintMode';
 
 export interface BuildModelsimArgsOptions {
   workLibrary: string;
@@ -90,7 +91,8 @@ export default class ModelsimLinter extends BaseLinter {
     return convertModelsimSeverity(severityString);
   }
 
-  protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
+  protected async lint(doc: vscode.TextDocument, run: LintRunHandle, options: LintRunOptions): Promise<void> {
+    this.warnUnsupportedCompileUnitMode(options);
     this.logger.info`modelsim lint requested`;
     const cwd: string = this.getWorkingDirectory(doc);
     // no change needed for systemverilog

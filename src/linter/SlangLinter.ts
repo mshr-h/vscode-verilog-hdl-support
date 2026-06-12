@@ -9,8 +9,15 @@ import { convertToWslPath, type WslPathConversionOptions } from '../tools/WslPat
 import { getWorkspaceRootForDocument } from '../utils/workspace';
 import type { ProjectService } from '../project/ProjectService';
 import { splitCommandLineArgs } from '../utils/commandLine';
-import LinterDiagnosticManager from './LinterDiagnosticManager';
+import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
+import {
+  buildSlangCompileUnitArgs,
+  getCompileUnitDefineArgs,
+  getCompileUnitIncludePaths,
+  getCompileUnitSourcePaths,
+} from './CompileUnitLintArgs';
+import type { LintRunOptions } from './LintMode';
 
 const isWindows = process.platform === 'win32';
 
@@ -118,7 +125,14 @@ function convertSlangSeverity(severityString: string): vscode.DiagnosticSeverity
 }
 
 export function parseSlangDiagnostics(options: ParseSlangDiagnosticsOptions): vscode.Diagnostic[] {
+  return parseSlangDiagnosticsByFile(options).get(options.documentPath) ?? [];
+}
+
+export function parseSlangDiagnosticsByFile(
+  options: ParseSlangDiagnosticsOptions
+): Map<string, vscode.Diagnostic[]> {
   const diagnostics: vscode.Diagnostic[] = [];
+  const diagnosticsByFile = new Map<string, vscode.Diagnostic[]>();
   const re = /(.+?):(\d+):(\d+):\s(note|warning|error):\s(.*?)(\[-W(.*)\]|$)/;
   const convertToWslPath = options.convertToWslPath ?? ((inputPath: string) => inputPath);
 
@@ -137,23 +151,28 @@ export function parseSlangDiagnostics(options: ParseSlangDiagnosticsOptions): vs
       }
     }
 
-    if (!options.documentPath.endsWith(filePath)) {
-      return;
-    }
-
     const lineNum = Number(rex[2]) - 1;
     const colNum = Number(rex[3]) - 1;
 
-    diagnostics.push({
+    const diagnostic = {
       severity: convertSlangSeverity(rex[4]),
       range: new vscode.Range(lineNum, colNum, lineNum, END_OF_LINE),
-      message: rex[5],
+      message: rex[5].trim(),
       code: rex[7] ? rex[7] : 'error',
       source: 'slang',
-    });
+    };
+    if (options.documentPath.endsWith(filePath)) {
+      diagnostics.push(diagnostic);
+    }
+    const fileDiagnostics = diagnosticsByFile.get(filePath) ?? [];
+    fileDiagnostics.push(diagnostic);
+    diagnosticsByFile.set(filePath, fileDiagnostics);
   });
 
-  return diagnostics;
+  if (diagnostics.length > 0 && !diagnosticsByFile.has(options.documentPath)) {
+    diagnosticsByFile.set(options.documentPath, diagnostics);
+  }
+  return diagnosticsByFile;
 }
 
 export default class SlangLinter extends BaseLinter {
@@ -181,7 +200,7 @@ export default class SlangLinter extends BaseLinter {
     return convertSlangSeverity(severityString);
   }
 
-  protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
+  protected async lint(doc: vscode.TextDocument, run: LintRunHandle, options: LintRunOptions): Promise<void> {
     const commandInfo = buildSlangCommand({
       isWindows,
       useWSL: this.useWSL,
@@ -193,6 +212,40 @@ export default class SlangLinter extends BaseLinter {
       commandInfo.command,
       run
     );
+    const decision = await this.getLintDecision(doc, options);
+    if (decision.kind === 'skip') {
+      this.publishDocumentDiagnosticsIfCurrent(doc, run, []);
+      return;
+    }
+    if (decision.kind === 'compileUnit') {
+      const compileUnitPaths = await this.convertCompileUnitPaths(
+        getCompileUnitSourcePaths(decision.context),
+        commandInfo.command,
+        run
+      );
+      const compileUnitIncludePaths = await this.convertCompileUnitPaths(
+        this.resolveIncludePaths(this.config.includePath, doc).concat(getCompileUnitIncludePaths(decision.context)),
+        commandInfo.command,
+        run
+      );
+      const args = commandInfo.leadingArgs.concat(
+        buildSlangCompileUnitArgs({
+          docFolder: paths.docFolder,
+          includePaths: compileUnitIncludePaths,
+          defineArgs: getCompileUnitDefineArgs(decision.context),
+          customArguments: this.config.arguments,
+          sourcePaths: compileUnitPaths,
+        })
+      );
+      this.logger.info("Executing compile-unit lint", {
+        command: commandInfo.command,
+        args,
+        cwd: paths.cwd,
+        compileUnit: decision.context.compileUnit.id,
+      });
+      await this.runSlangCompileUnit(commandInfo.command, args, paths.cwd, paths.docUri, doc, run);
+      return;
+    }
     const args = commandInfo.leadingArgs.concat(
       buildSlangArgs({
         docFolder: paths.docFolder,
@@ -209,6 +262,21 @@ export default class SlangLinter extends BaseLinter {
     this.logger.info("Executing", { command: commandInfo.command, args, cwd: paths.cwd });
 
     await this.runSlang(commandInfo.command, args, paths.cwd, paths.docUri, doc, run);
+  }
+
+  private async convertCompileUnitPaths(
+    paths: string[],
+    wslCommand: string,
+    run: LintRunHandle
+  ): Promise<string[]> {
+    if (!isWindows || !this.useWSL) {
+      return isWindows ? paths.map((inputPath) => inputPath.replace(/\\/g, '/')) : paths;
+    }
+    const conversionOptions: WslPathConversionOptions = {
+      cancellationToken: run.cancellationToken,
+      wslCommand,
+    };
+    return Promise.all(paths.map((inputPath) => convertToWslPath(inputPath, conversionOptions)));
   }
 
   private async getRunPaths(
@@ -273,6 +341,52 @@ export default class SlangLinter extends BaseLinter {
       });
       this.logger.info`${diagnostics.length} errors/warnings returned`;
       this.publishDocumentDiagnosticsIfCurrent(doc, run, diagnostics);
+    } catch (err) {
+      if (err instanceof ToolRunError && err.reason === 'cancelled') {
+        return;
+      }
+      if (err instanceof ToolRunError) {
+        this.logger.error`slang failed: ${err.message}`;
+      } else {
+        this.logger.error`slang exception: ${err}`;
+      }
+      this.publishDocumentDiagnosticsIfCurrent(doc, run, []);
+    }
+  }
+
+  private async runSlangCompileUnit(
+    command: string,
+    args: string[],
+    cwd: string,
+    ownerDocumentPath: string,
+    doc: vscode.TextDocument,
+    run: LintRunHandle
+  ): Promise<void> {
+    try {
+      const result = await runTool({
+        command,
+        args,
+        cwd,
+        collectStdout: true,
+        collectStderr: true,
+        cancellationToken: run.cancellationToken,
+      });
+      if (!run.isCurrent()) {
+        return;
+      }
+      const diagnosticsByFile = parseSlangDiagnosticsByFile({
+        stderr: result.stderr,
+        documentPath: ownerDocumentPath,
+        isWindows,
+        useWSL: this.useWSL,
+      });
+      const diagnosticsByUri: DiagnosticMap = new Map();
+      diagnosticsByFile.forEach((diagnostics, fileName) => {
+        const uri = vscode.Uri.file(fileName);
+        diagnosticsByUri.set(uri.toString(), { uri, diagnostics });
+      });
+      this.logger.info`${diagnosticsByUri.size} files with errors/warnings returned`;
+      this.publishDiagnosticsIfCurrent(doc, run, diagnosticsByUri);
     } catch (err) {
       if (err instanceof ToolRunError && err.reason === 'cancelled') {
         return;

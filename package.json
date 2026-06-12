@@ -399,6 +399,29 @@
             "default": false,
             "markdownDescription": "When enabled, pass active project include directories and preprocessor defines to supported lint tools. Existing custom linter arguments are still appended after project context arguments."
           },
+          "verilog.linting.mode": {
+            "scope": "window",
+            "type": "string",
+            "enum": [
+              "file",
+              "compileUnit"
+            ],
+            "default": "file",
+            "markdownDescription": "Choose lint scope. `file` preserves existing current-document linting. `compileUnit` lints the active project compile unit when supported by the selected linter."
+          },
+          "verilog.linting.compileUnit.maxFiles": {
+            "scope": "window",
+            "type": "number",
+            "default": 500,
+            "minimum": 1,
+            "markdownDescription": "Maximum number of source files allowed for automatic compile-unit linting."
+          },
+          "verilog.linting.compileUnit.warnBeforeLargeRun": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Ask for confirmation before manual compile-unit linting when the compile unit exceeds the maximum file guard."
+          },
           "verilog.linting.iverilog.arguments": {
             "scope": "window",
             "type": "string",

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { getLintProjectContext } from '../linter/ProjectLintContext';
+import { getCompileUnitLintContext, getLintProjectContext } from '../linter/ProjectLintContext';
 import type { ProjectService } from '../project/ProjectService';
 
 suite('Project lint context', () => {
@@ -51,5 +51,73 @@ suite('Project lint context', () => {
     } finally {
       await config.update('useProjectContext', previous, vscode.ConfigurationTarget.Global);
     }
+  });
+
+  test('resolves compile unit context for active document', async () => {
+    const document = await vscode.workspace.openTextDocument({
+      language: 'systemverilog',
+      content: 'module top; endmodule',
+    });
+    const projectService = {
+      getPreferredFileContext: () => ({
+        file: document.uri,
+        compileUnitId: 'unit',
+        includeDirs: [vscode.Uri.file('/workspace/inc')],
+        defines: {},
+      }),
+      getSnapshot: () => ({
+        version: 1,
+        workspaceRoot: vscode.Uri.file('/workspace'),
+        activeTargetId: 'unit',
+        compileUnits: [{
+          id: 'unit',
+          name: 'unit',
+          root: vscode.Uri.file('/workspace'),
+          files: [
+            {
+              uri: vscode.Uri.file('/workspace/b.sv'),
+              languageId: 'systemverilog',
+              kind: 'source',
+              order: 1,
+            },
+            {
+              uri: document.uri,
+              languageId: 'systemverilog',
+              kind: 'source',
+              order: 0,
+            },
+          ],
+          includeDirs: [vscode.Uri.file('/workspace/inc')],
+          defines: {
+            SIM: { name: 'SIM', value: true, source: 'filelist' },
+          },
+          topModules: [],
+          source: { type: 'settings' },
+        }],
+        diagnostics: [],
+      }),
+    } as unknown as ProjectService;
+
+    const context = getCompileUnitLintContext(projectService, document);
+
+    assert.ok(context);
+    assert.strictEqual(context.compileUnit.id, 'unit');
+    assert.deepStrictEqual(context.files.map((file) => file.uri.fsPath), [
+      document.uri.fsPath,
+      '/workspace/b.sv',
+    ]);
+    assert.deepStrictEqual(context.includeDirs.map((uri) => uri.fsPath), ['/workspace/inc']);
+  });
+
+  test('returns undefined when active document has no compile unit membership', async () => {
+    const document = await vscode.workspace.openTextDocument({
+      language: 'systemverilog',
+      content: 'module top; endmodule',
+    });
+    const context = getCompileUnitLintContext({
+      getPreferredFileContext: () => undefined,
+    } as unknown as ProjectService, document);
+
+    assert.strictEqual(context, undefined);
   });
 });

@@ -15,6 +15,12 @@ import type { ProjectService } from '../project/ProjectService';
 import { splitCommandLineArgs } from '../utils/commandLine';
 import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
+import {
+  getCompileUnitDefineArgs,
+  getCompileUnitIncludePaths,
+  getCompileUnitSourcePaths,
+} from './CompileUnitLintArgs';
+import type { LintRunOptions } from './LintMode';
 
 const isWindows = process.platform === 'win32';
 
@@ -51,6 +57,7 @@ export interface BuildVerilatorArgsOptions {
   defineArgs?: string[];
   customArguments: string;
   documentPath: string;
+  sourcePaths?: string[];
 }
 
 export interface BuildVerilatorRunInputsOptions {
@@ -64,6 +71,7 @@ export interface BuildVerilatorRunInputsOptions {
   includePaths: string[];
   defineArgs?: string[];
   customArguments: string;
+  sourcePaths?: string[];
   cancellationToken?: vscode.CancellationToken;
   convertToWslPathFn?: typeof convertToWslPath;
 }
@@ -139,7 +147,7 @@ export function buildVerilatorArgs(options: BuildVerilatorArgsOptions): string[]
   args.push(...options.includePaths.map((includePath) => `-I${includePath}`));
   args.push(...(options.defineArgs ?? []).map((defineArg) => `-D${defineArg}`));
   args.push(...splitCommandLineArgs(options.customArguments));
-  args.push(options.documentPath);
+  args.push(...(options.sourcePaths ?? [options.documentPath]));
   return args;
 }
 
@@ -156,6 +164,7 @@ export async function buildVerilatorRunInputs(
   let docUri = options.documentPath;
   let docFolder = rawDocFolder;
   let includePaths = options.includePaths;
+  let sourcePaths = options.sourcePaths;
 
   if (options.isWindows) {
     if (options.useWSL) {
@@ -169,9 +178,13 @@ export async function buildVerilatorRunInputs(
       includePaths = await Promise.all(
         options.includePaths.map((includePath) => convert(includePath, conversionOptions))
       );
+      sourcePaths = options.sourcePaths
+        ? await Promise.all(options.sourcePaths.map((sourcePath) => convert(sourcePath, conversionOptions)))
+        : undefined;
     } else {
       docUri = options.documentPath.replace(/\\/g, '/');
       docFolder = rawDocFolder.replace(/\\/g, '/');
+      sourcePaths = options.sourcePaths?.map((sourcePath) => sourcePath.replace(/\\/g, '/'));
     }
   }
 
@@ -191,6 +204,7 @@ export async function buildVerilatorRunInputs(
         defineArgs: options.defineArgs,
         customArguments: options.customArguments,
         documentPath: docUri,
+        sourcePaths,
     })
   );
 
@@ -372,8 +386,13 @@ export default class VerilatorLinter extends BaseLinter {
     return convertVerilatorSeverity(severityString);
   }
 
-  protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
+  protected async lint(doc: vscode.TextDocument, run: LintRunHandle, options: LintRunOptions): Promise<void> {
     try {
+      const decision = await this.getLintDecision(doc, options);
+      if (decision.kind === 'skip') {
+        this.replaceDiagnostics(doc, run, new Map<string, vscode.Diagnostic[]>());
+        return;
+      }
       const inputs = await buildVerilatorRunInputs({
         documentPath: doc.uri.fsPath,
         languageId: doc.languageId,
@@ -382,9 +401,16 @@ export default class VerilatorLinter extends BaseLinter {
         runAtFileLocation: this.config.runAtFileLocation,
         workspaceFolder: getWorkspaceRootForDocument(doc),
         linterInstalledPath: this.config.linterInstalledPath,
-        includePaths: this.getConfiguredAndProjectIncludePaths(doc),
-        defineArgs: this.getProjectContext(doc).defineArgs,
+        includePaths: decision.kind === 'compileUnit'
+          ? this.resolveIncludePaths(this.config.includePath, doc).concat(getCompileUnitIncludePaths(decision.context))
+          : this.getConfiguredAndProjectIncludePaths(doc),
+        defineArgs: decision.kind === 'compileUnit'
+          ? getCompileUnitDefineArgs(decision.context)
+          : this.getProjectContext(doc).defineArgs,
         customArguments: this.config.arguments,
+        sourcePaths: decision.kind === 'compileUnit'
+          ? getCompileUnitSourcePaths(decision.context)
+          : undefined,
         cancellationToken: run.cancellationToken,
       });
       if (!run.isCurrent()) {

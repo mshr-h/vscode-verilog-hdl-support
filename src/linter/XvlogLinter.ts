@@ -8,6 +8,7 @@ import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from '../utils/commandLine';
 import LinterDiagnosticManager from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
+import type { LintRunOptions } from './LintMode';
 
 export interface BuildXvlogArgsOptions {
   languageId: string;
@@ -85,7 +86,8 @@ export default class XvlogLinter extends BaseLinter {
     return convertXvlogSeverity(severityString);
   }
 
-  protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
+  protected async lint(doc: vscode.TextDocument, run: LintRunHandle, options: LintRunOptions): Promise<void> {
+    this.warnUnsupportedCompileUnitMode(options);
     const binPath: string = path.join(this.config.linterInstalledPath, 'xvlog');
 
     const args = buildXvlogArgs({

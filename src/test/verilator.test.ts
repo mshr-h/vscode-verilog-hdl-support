@@ -230,6 +230,7 @@ suite('Verilator Linter', () => {
       linterInstalledPath: '',
       includePaths: ['C:\\workspace\\include dir'],
       customArguments: '--trace',
+      sourcePaths: ['C:\\workspace\\rtl\\top.sv', 'C:\\workspace\\rtl\\child.sv'],
       convertToWslPathFn: async (inputPath, options) => {
         assert.strictEqual(options?.wslCommand, 'wsl');
         convertedInputs.push(inputPath);
@@ -244,6 +245,8 @@ suite('Verilator Linter', () => {
       'C:\\workspace\\rtl\\top.sv',
       'C:\\workspace\\rtl',
       'C:\\workspace\\include dir',
+      'C:\\workspace\\rtl\\top.sv',
+      'C:\\workspace\\rtl\\child.sv',
     ]);
     assert.deepStrictEqual(inputs.args, [
       'verilator',
@@ -253,6 +256,7 @@ suite('Verilator Linter', () => {
       '-I/mnt/c/workspace/include dir',
       '--trace',
       '/mnt/c/workspace/rtl/top.sv',
+      '/mnt/c/workspace/rtl/child.sv',
     ]);
     assert.ok(
       !inputs.args.some((arg) => arg.includes('C:\\workspace')),
