@@ -2,12 +2,25 @@
 import * as vscode from 'vscode';
 import type { ProjectService } from './ProjectService';
 
+export interface ProjectWatcherOptions {
+  debounceMs?: number;
+  watch?: boolean;
+}
+
 export class ProjectWatcher implements vscode.Disposable {
   private readonly disposables: vscode.Disposable[] = [];
   private reloadTimer: NodeJS.Timeout | undefined;
   private filelistWatcher: vscode.FileSystemWatcher | undefined;
+  private readonly debounceMs: number;
 
-  constructor(private readonly projectService: ProjectService) {
+  constructor(
+    private readonly projectService: ProjectService,
+    options: ProjectWatcherOptions = {}
+  ) {
+    this.debounceMs = options.debounceMs ?? 300;
+    if (options.watch === false) {
+      return;
+    }
     this.disposables.push(
       vscode.workspace.onDidChangeConfiguration((event) => {
         if (!event.affectsConfiguration('verilog.project')) {
@@ -27,7 +40,7 @@ export class ProjectWatcher implements vscode.Disposable {
     this.reloadTimer = setTimeout(() => {
       this.reloadTimer = undefined;
       void this.projectService.reload(reason);
-    }, 300);
+    }, this.debounceMs);
   }
 
   dispose(): void {
