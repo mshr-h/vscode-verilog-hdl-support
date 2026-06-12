@@ -23,11 +23,13 @@ import { InstantiationService } from './hdl/InstantiationService';
 import { CompletionService } from './hdl/CompletionService';
 import { ModuleInstanceCodeActionService } from './hdl/ModuleInstanceCodeActionService';
 import { HoverService } from './hdl/HoverService';
+import { HierarchyService } from './hierarchy/HierarchyService';
 import { ProjectService } from './project/ProjectService';
 import { ProjectWatcher } from './project/ProjectWatcher';
 import { registerProjectCommands } from './project/ProjectCommands';
 import { IndexService } from './semantic/IndexService';
 import { VerilogWorkspaceSymbolProvider } from './providers/WorkspaceSymbolProvider';
+import { HdlExplorerProvider, registerHdlExplorerCommands } from './views/HdlExplorerProvider';
 
 let ctagsManager: CtagsManager | undefined;
 const extensionID: string = 'mshr-h.veriloghdl';
@@ -56,8 +58,17 @@ export async function activate(context: vscode.ExtensionContext) {
   const completionService = new CompletionService(projectService, indexService, ctagsManager);
   const codeActionService = new ModuleInstanceCodeActionService(projectService, indexService);
   const hoverService = new HoverService(projectService, indexService, ctagsManager);
-  context.subscriptions.push(projectService, indexService, new ProjectWatcher(projectService));
+  const hierarchyService = new HierarchyService(projectService, indexService);
+  const hdlExplorerProvider = new HdlExplorerProvider(projectService, indexService, hierarchyService);
+  context.subscriptions.push(projectService, indexService, hierarchyService, hdlExplorerProvider, new ProjectWatcher(projectService));
   context.subscriptions.push(...registerProjectCommands(projectService, indexService));
+  context.subscriptions.push(...registerHdlExplorerCommands(hierarchyService, hdlExplorerProvider));
+  context.subscriptions.push(
+    vscode.window.createTreeView('verilog.hdlExplorer', {
+      treeDataProvider: hdlExplorerProvider,
+      showCollapseAll: true,
+    })
+  );
   void projectService.reload('activation');
 
   // Configure Document Symbol Provider

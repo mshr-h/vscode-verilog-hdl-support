@@ -20,6 +20,7 @@ export interface CompileUnitBuildInput {
   defines: ParsedDefine[];
   settingsIncludeDirs: string[];
   settingsDefines: Record<string, string | boolean | number>;
+  settingsTopModules?: string[];
   source: CompileUnit['source'];
 }
 
@@ -35,7 +36,7 @@ export function buildCompileUnit(input: CompileUnitBuildInput): CompileUnit {
         .concat(input.settingsIncludeDirs.map((includeDir) => resolveSettingsUri(includeDir, input.root)))
     ),
     defines: mergeDefines(input.defines, input.settingsDefines),
-    topModules: [],
+    topModules: input.settingsTopModules?.slice() ?? [],
     source: input.source,
   };
 }

@@ -190,6 +190,7 @@ suite('ProjectLoader', () => {
       enabled: true,
       filelists: [],
       activeTarget: '',
+      topModules: [],
       includeDirs: [],
       defines: {},
       exclude: ['**/.git/**', '**/node_modules/**', '**/build/**'],

@@ -100,6 +100,7 @@ export class ProjectLoader {
         defines: resolved.defines,
         settingsIncludeDirs: settings.includeDirs,
         settingsDefines: settings.defines,
+        settingsTopModules: settings.topModules,
         source: { type: 'filelist', uri: vscode.Uri.file(filelistPath) },
       });
     });
@@ -133,6 +134,7 @@ export class ProjectLoader {
         defines: [],
         settingsIncludeDirs: settings.includeDirs,
         settingsDefines: settings.defines,
+        settingsTopModules: settings.topModules,
         source: { type: 'auto' },
       }),
     ];

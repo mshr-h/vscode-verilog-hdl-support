@@ -296,6 +296,7 @@ function settings(overrides: Partial<ProjectSettings> = {}): ProjectSettings {
     enabled: true,
     filelists: [],
     activeTarget: '',
+    topModules: [],
     includeDirs: [],
     defines: {},
     exclude: ['**/.git/**', '**/node_modules/**', '**/build/**', '**/sim/**'],
