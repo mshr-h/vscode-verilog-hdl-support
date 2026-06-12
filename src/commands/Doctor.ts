@@ -14,6 +14,8 @@ import {
 } from '../languageServer/definitions';
 import type { ProjectService } from '../project/ProjectService';
 import { activeEditorContextDiagnostic, summarizeContext } from '../project/ProjectCommands';
+import { getCompileUnitLintContext } from '../linter/ProjectLintContext';
+import { supportsCompileUnitLint, type LintMode } from '../linter/LintMode';
 import { splitCommandLineArgs } from '../utils/commandLine';
 import { expandPathVariables, resolveConfigPath } from '../utils/configPath';
 import { getWorkspaceFolderForUri } from '../utils/workspace';
@@ -66,6 +68,8 @@ export interface LinterDoctorOptions {
   useWSL?: boolean;
   modelsimWork?: string;
   isWindows?: boolean;
+  lintMode?: LintMode;
+  activeCompileUnit?: { id: string; name: string; files: number };
 }
 
 export interface LanguageServerDoctorOptions {
@@ -176,7 +180,7 @@ export async function buildDoctorReport(
   const sections: DoctorSection[] = [
     buildWorkspaceSection(activeDocument, activeWorkspaceFolder),
     await buildCtagsSection(deps, token),
-    await buildLintingSectionFromConfiguration(deps, workspaceFolderPath, token),
+    await buildLintingSectionFromConfiguration(deps, workspaceFolderPath, token, projectService),
     await buildFormattingSection(deps, workspaceFolderPath, token),
     await buildLanguageServersSection(deps, workspaceFolderPaths, token),
     buildProjectSection(projectService),
@@ -342,6 +346,19 @@ export async function buildLinterChecks(
   const checks: DoctorCheck[] = [
     { status: 'info', message: `verilog.linting.linter = ${options.linter}` },
   ];
+  if (options.lintMode) {
+    checks.push({ status: 'info', message: `verilog.linting.mode = ${options.lintMode}` });
+    checks.push({
+      status: options.lintMode === 'compileUnit' && !supportsCompileUnitLint(options.linter) ? 'warn' : 'info',
+      message: `compileUnit support = ${String(supportsCompileUnitLint(options.linter))}`,
+    });
+  }
+  if (options.activeCompileUnit) {
+    checks.push({
+      status: 'info',
+      message: `active compile unit = ${options.activeCompileUnit.name} (${options.activeCompileUnit.id}), files=${options.activeCompileUnit.files}`,
+    });
+  }
 
   if (options.linter === 'none') {
     checks.push({ status: 'info', message: 'no linter selected' });
@@ -516,18 +533,32 @@ async function buildCtagsSection(
 async function buildLintingSectionFromConfiguration(
   deps: DoctorDependencies,
   workspaceFolder?: string,
-  token?: vscode.CancellationToken
+  token?: vscode.CancellationToken,
+  projectService?: ProjectService
 ): Promise<DoctorSection> {
   const lintConfig = vscode.workspace.getConfiguration('verilog.linting');
   const linter = lintConfig.get<string>('linter', 'none');
   const linterPath = lintConfig.get<string>('path', '');
+  const lintMode = lintConfig.get<LintMode>('mode', 'file');
   const specificConfig = linter === 'none' ? undefined : getLinterSpecificConfiguration(linter);
+  const activeDocument = vscode.window.activeTextEditor?.document;
+  const activeCompileUnitContext = activeDocument
+    ? getCompileUnitLintContext(projectService, activeDocument)
+    : undefined;
 
   const checks = await buildLinterChecks(
     {
       linter,
       linterPath,
       workspaceFolder,
+      lintMode,
+      activeCompileUnit: activeCompileUnitContext
+        ? {
+            id: activeCompileUnitContext.compileUnit.id,
+            name: activeCompileUnitContext.compileUnit.name,
+            files: activeCompileUnitContext.files.length,
+          }
+        : undefined,
       includePath: specificConfig?.get<string[]>('includePath', []),
       arguments: specificConfig?.get<string>('arguments', ''),
       runAtFileLocation: specificConfig?.get<boolean>('runAtFileLocation', false),

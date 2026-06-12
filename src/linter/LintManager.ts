@@ -11,6 +11,8 @@ import VeribleVerilogLintLinter from './VeribleVerilogLintLinter';
 import LinterDiagnosticManager from './LinterDiagnosticManager';
 import LintRunManager from './LintRunManager';
 import type { ProjectService } from '../project/ProjectService';
+import { getCompileUnitLintContext } from './ProjectLintContext';
+import { getLintRunSettings, supportsCompileUnitLint } from './LintMode';
 
 export default class LintManager {
   private subscriptions: vscode.Disposable[];
@@ -183,11 +185,20 @@ export default class LintManager {
       this.logger.error("Linter selection cancelled");
       return;
     }
+    const lintSettings = getLintRunSettings();
+    const compileUnitContext =
+      lintSettings.mode === 'compileUnit' && supportsCompileUnitLint(linterStr.label)
+        ? getCompileUnitLintContext(this.projectService, editor.document)
+        : undefined;
+    const title = compileUnitContext
+      ? `Verilog-HDL/SystemVerilog: Running lint for compile unit ${compileUnitContext.compileUnit.name}...`
+      : 'Verilog-HDL/SystemVerilog: Running lint tool...';
+
     // Create and run the linter with progress bar
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: 'Verilog-HDL/SystemVerilog: Running lint tool...',
+        title,
       },
       async (_progress, _token) => {
         const linter: BaseLinter | null = this.getLinterFromString(linterStr.label);
@@ -199,7 +210,7 @@ export default class LintManager {
 
         try {
           linter.removeFileDiagnostics(editor.document);
-          await linter.startLint(editor.document);
+          await linter.startLint(editor.document, { trigger: 'manual' });
         } finally {
           linter.dispose();
         }

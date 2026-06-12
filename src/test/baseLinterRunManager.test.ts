@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import BaseLinter from '../linter/BaseLinter';
+import BaseLinter, { type LintDecision } from '../linter/BaseLinter';
 import LintManager from '../linter/LintManager';
 import LinterDiagnosticManager, { type DiagnosticSink } from '../linter/LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from '../linter/LintRunManager';
+import type { LintRunOptions } from '../linter/LintMode';
+import type { ProjectService } from '../project/ProjectService';
 
 class FakeDiagnosticSink implements DiagnosticSink {
   readonly diagnostics = new Map<string, readonly vscode.Diagnostic[]>();
@@ -46,7 +48,8 @@ class Deferred {
 type LintAction = (
   linter: TestLinter,
   doc: vscode.TextDocument,
-  run: LintRunHandle
+  run: LintRunHandle,
+  options: LintRunOptions
 ) => Promise<void>;
 
 class TestLinter extends BaseLinter {
@@ -55,9 +58,10 @@ class TestLinter extends BaseLinter {
   constructor(
     diagnosticManager: LinterDiagnosticManager,
     runManager: LintRunManager,
-    readonly sourceId = 'test-linter'
+    readonly sourceId = 'test-linter',
+    projectService?: ProjectService
   ) {
-    super(sourceId, diagnosticManager, runManager);
+    super(sourceId, diagnosticManager, runManager, projectService);
   }
 
   queueAction(action: LintAction): void {
@@ -82,16 +86,28 @@ class TestLinter extends BaseLinter {
     return vscode.DiagnosticSeverity.Error;
   }
 
-  protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
+  async decide(doc: vscode.TextDocument, options: LintRunOptions): Promise<LintDecision> {
+    return this.getLintDecision(doc, options);
+  }
+
+  protected async lint(
+    doc: vscode.TextDocument,
+    run: LintRunHandle,
+    options: LintRunOptions
+  ): Promise<void> {
     const action = this.actions.shift();
     if (action) {
-      await action(this, doc, run);
+      await action(this, doc, run, options);
     }
   }
 }
 
 function documentFor(uri: vscode.Uri): vscode.TextDocument {
   return { uri } as vscode.TextDocument;
+}
+
+function docUri(fsPath: string): vscode.Uri {
+  return vscode.Uri.file(fsPath);
 }
 
 function createHarness(sourceId?: string): {
@@ -105,6 +121,52 @@ function createHarness(sourceId?: string): {
   const linter = new TestLinter(new LinterDiagnosticManager(sink), runManager, sourceId);
   const doc = documentFor(vscode.Uri.file('/tmp/top.v'));
   return { sink, runManager, linter, doc };
+}
+
+function createHarnessWithProject(projectService: ProjectService): {
+  sink: FakeDiagnosticSink;
+  runManager: LintRunManager;
+  linter: TestLinter;
+  doc: vscode.TextDocument;
+} {
+  const sink = new FakeDiagnosticSink();
+  const runManager = new LintRunManager();
+  const doc = documentFor(vscode.Uri.file('/tmp/a.sv'));
+  const linter = new TestLinter(new LinterDiagnosticManager(sink), runManager, 'test-linter', projectService);
+  return { sink, runManager, linter, doc };
+}
+
+function createProjectServiceForCompileUnit(ownerUri: vscode.Uri, fileCount: number): ProjectService {
+  const files = Array.from({ length: fileCount }, (_, index) => ({
+    uri: index === 0 ? ownerUri : vscode.Uri.file(`/tmp/${index}.sv`),
+    languageId: 'systemverilog' as const,
+    kind: 'source' as const,
+    order: index,
+  }));
+  return {
+    getPreferredFileContext: () => ({
+      file: ownerUri,
+      compileUnitId: 'unit',
+      includeDirs: [],
+      defines: {},
+    }),
+    getSnapshot: () => ({
+      version: 1,
+      workspaceRoot: vscode.Uri.file('/tmp'),
+      activeTargetId: 'unit',
+      compileUnits: [{
+        id: 'unit',
+        name: 'unit',
+        root: vscode.Uri.file('/tmp'),
+        files,
+        includeDirs: [],
+        defines: {},
+        topModules: [],
+        source: { type: 'settings' },
+      }],
+      diagnostics: [],
+    }),
+  } as unknown as ProjectService;
 }
 
 suite('BaseLinter run management', () => {
@@ -134,6 +196,47 @@ suite('BaseLinter run management', () => {
 
     assert.strictEqual(disposeCount, 1);
     assert.strictEqual((manager as any).linter, null);
+  });
+
+  test('compile-unit maxFiles guard skips automatic runs', async () => {
+    const config = vscode.workspace.getConfiguration('verilog.linting');
+    const compileConfig = vscode.workspace.getConfiguration('verilog.linting.compileUnit');
+    const previousMode = config.get('mode');
+    const previousMaxFiles = compileConfig.get('maxFiles');
+    const { linter, doc } = createHarnessWithProject(createProjectServiceForCompileUnit(docUri('/tmp/a.sv'), 2));
+
+    try {
+      await config.update('mode', 'compileUnit', vscode.ConfigurationTarget.Global);
+      await compileConfig.update('maxFiles', 1, vscode.ConfigurationTarget.Global);
+      const decision = await linter.decide(doc, { trigger: 'automatic' });
+
+      assert.strictEqual(decision.kind, 'skip');
+    } finally {
+      await config.update('mode', previousMode, vscode.ConfigurationTarget.Global);
+      await compileConfig.update('maxFiles', previousMaxFiles, vscode.ConfigurationTarget.Global);
+    }
+  });
+
+  test('manual compile-unit lint can bypass large-run confirmation when disabled', async () => {
+    const config = vscode.workspace.getConfiguration('verilog.linting');
+    const compileConfig = vscode.workspace.getConfiguration('verilog.linting.compileUnit');
+    const previousMode = config.get('mode');
+    const previousMaxFiles = compileConfig.get('maxFiles');
+    const previousWarn = compileConfig.get('warnBeforeLargeRun');
+    const { linter, doc } = createHarnessWithProject(createProjectServiceForCompileUnit(docUri('/tmp/a.sv'), 2));
+
+    try {
+      await config.update('mode', 'compileUnit', vscode.ConfigurationTarget.Global);
+      await compileConfig.update('maxFiles', 1, vscode.ConfigurationTarget.Global);
+      await compileConfig.update('warnBeforeLargeRun', false, vscode.ConfigurationTarget.Global);
+      const decision = await linter.decide(doc, { trigger: 'manual' });
+
+      assert.strictEqual(decision.kind, 'compileUnit');
+    } finally {
+      await config.update('mode', previousMode, vscode.ConfigurationTarget.Global);
+      await compileConfig.update('maxFiles', previousMaxFiles, vscode.ConfigurationTarget.Global);
+      await compileConfig.update('warnBeforeLargeRun', previousWarn, vscode.ConfigurationTarget.Global);
+    }
   });
 
   test('stale run cannot publish diagnostics', async () => {
