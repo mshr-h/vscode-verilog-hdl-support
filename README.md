@@ -28,6 +28,8 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 - VCD waveform viewer integration:
   - [fliplot](https://github.com/raczben/fliplot) (build-in)
   - [Vaporview](https://marketplace.visualstudio.com/items?itemName=lramseyer.vaporview) (when that extension is installed)
+- Project-aware Verilog/SystemVerilog model from filelists, project settings, and workspace discovery
+- HDL Explorer with project summaries, indexed modules/packages, and best-effort hierarchy
 - Simple Snippets
 - Linting support from:
   - Icarus Verilog - `iverilog`
@@ -36,6 +38,14 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
   - Vivado Logical Simulation - `xvlog`
   - Slang - `slang`
   - Verible Verilog Lint - `verible-verilog-lint`
+- Optional compile-unit linting for Slang, Verilator, and Icarus Verilog
+- Project-aware HDL editing:
+  - Cross-file module and include go-to-definition
+  - Hover for modules, ports, parameters, macros, includes, and indexed symbols
+  - Workspace symbols for indexed HDL symbols
+  - Module, macro, include path, port, and parameter completion
+  - Module instantiation from the project index
+  - Code actions to fill missing named ports and parameters
 - Ctags Integration
   - Autocomplete
   - Document Symbols Outline
@@ -70,6 +80,26 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 
     Choose a module present in your workspace to instantiate it in the current file.
 
+- **Verilog: Reload Project**
+
+    Reload the project-aware HDL model from configured filelists, project settings, or workspace discovery.
+
+- **Verilog: Show Project Status**
+
+    Write the current project snapshot, file context, and project diagnostics summary to the output channel.
+
+- **Verilog: Show Project Modules**
+
+    Show indexed project modules in a quick pick.
+
+- **Verilog: Refresh HDL Explorer**
+
+    Refresh the HDL Explorer tree view.
+
+- **Verilog: Refresh Hierarchy**
+
+    Rebuild the best-effort module hierarchy used by HDL Explorer.
+
 - **Open Fliplot Waveform Viewer**
 
     Open the embedded Fliplot waveform viewer and load a VCD file.
@@ -83,13 +113,40 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 - Set `verilog.linting.linter` to `none` to disable automatic linting without warnings.
 - While using `` `include`` directives, the path to the files should be relative to the workspace directory, unless`runAtFileLocation` is enabled (not supported by all linters)
 
+### Project-Aware HDL Features
+
+The extension can build a lightweight project model for Verilog/SystemVerilog workspaces. Configure filelists with `verilog.project.filelists`, or leave that setting empty to let the extension discover `*.v`, `*.vh`, `*.sv`, and `*.svh` files in the workspace. Project-level include directories and defines can be configured with `verilog.project.includeDirs` and `verilog.project.defines`.
+
+The project model powers cross-file module lookup, include resolution, workspace symbols, hover, completion, module instantiation, HDL Explorer, and compile-unit linting. Existing Ctags behavior remains available as a fallback when the project index has no answer or the project model is disabled with `verilog.project.enabled`.
+
+Use **Verilog: Reload Project**, **Verilog: Show Project Status**, and **Verilog: Show Project Modules** to inspect or refresh the current project model.
+
+### HDL Explorer And Hierarchy
+
+The **HDL Explorer** view appears in VS Code's Explorer sidebar. It shows the active project target, compile units, indexed modules/packages, a best-effort module hierarchy, and unresolved instances when enabled.
+
+Hierarchy detection is intentionally lightweight and does not perform full SystemVerilog elaboration. Configure top modules with `verilog.project.topModules` when inference is ambiguous, and control hierarchy behavior with `verilog.hierarchy.*` settings.
+
+### Project-Aware Editing
+
+For Verilog/SystemVerilog files, the project index improves go-to-definition, hover, workspace symbol search, completions, and module instantiation. Module names can resolve across the workspace even when the file name differs from the module name, and `` `include`` paths can resolve through the active file context include directories.
+
+Completion can suggest indexed module names, macros, include paths, ports, and parameters. Code actions can fill missing named ports or parameters in module instances when the target module is available from the project index.
+
+### Compile-Unit Linting
+
+File linting remains the default. To lint the active file's project compile unit, set `verilog.linting.mode` to `compileUnit`. Compile-unit mode is supported for Slang, Verilator, and Icarus Verilog; Verible, Xvlog, and Modelsim fall back to file-mode linting with a warning.
+
+Compile-unit linting uses the active file's preferred project context, ordered compile-unit source files, include directories, defines, and existing custom linter arguments. Large automatic runs are guarded by `verilog.linting.compileUnit.maxFiles` and `verilog.linting.compileUnit.warnBeforeLargeRun`.
+
 ### Inactive Preprocessor Regions
 
-Inactive Verilog/SystemVerilog preprocessor branches controlled by `` `ifdef``, `` `ifndef``, `` `elsif``, `` `else``, and `` `endif`` are highlighted in the editor. The lightweight scanner uses macros defined in the current document plus any workspace-wide macros configured in `verilog.preprocessor.defines`.
+Inactive Verilog/SystemVerilog preprocessor branches controlled by `` `ifdef``, `` `ifndef``, `` `elsif``, `` `else``, and `` `endif`` are highlighted in the editor. The lightweight scanner uses macros defined in the current document plus any workspace-wide macros configured in `verilog.preprocessor.defines`. When `verilog.preprocessor.useProjectDefines` is enabled, project defines from the active file context are merged in as well.
 
 ```json
 {
     "verilog.preprocessor.defines": ["SIMULATION", "USE_VENDOR_IP"],
+    "verilog.preprocessor.useProjectDefines": true,
     "verilog.preprocessor.inactiveCode.enabled": true,
     "verilog.preprocessor.inactiveCode.opacity": 0.45,
     "verilog.preprocessor.inactiveCode.foregroundColor": "",
@@ -97,13 +154,13 @@ Inactive Verilog/SystemVerilog preprocessor branches controlled by `` `ifdef``, 
 }
 ```
 
-Leave `foregroundColor` or `backgroundColor` empty to use the theme/default styling. This feature does not resolve `` `include`` files, filelists, or simulator arguments such as `+define+FOO` and `-D FOO`.
+Leave `foregroundColor` or `backgroundColor` empty to use the theme/default styling. This feature is a lightweight editor aid and does not perform full preprocessing.
 
 ### Ctags Integration
 
 This extension uses the tags created using Ctags to provide many of its features. It is recommended to use [Universal Ctags](https://github.com/universal-ctags/ctags) as it supports SystemVerilog also, compared to Exuberant Ctags and other older versions. The tags are stored in memory and not as separate files.
 
-Currently the integrated feature supports only tags in the currently opened file, not tags in other files.
+Currently the integrated Ctags feature supports only tags in the currently opened file, not tags in other files. Project-aware features can provide workspace-wide HDL lookup when the project index has enough information.
 Enable this integration with the `verilog.ctags.enabled` setting.
 However, you can use other independent Ctags extensions to find definitions from any file.
 

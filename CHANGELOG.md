@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [Unreleased]
+
+### Added
+
+- Added a project-aware HDL model with filelist loading, workspace discovery, file contexts, semantic indexing, project reload/status commands, and indexed module listing. [#599](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/599)
+- Added project-index integration for module definition lookup, include go-to-definition, workspace symbols, and project-index module instantiation while keeping Ctags fallback behavior. [#600](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/600)
+- Added project-context UX support for inactive preprocessor defines, module/macro/include completions, and optional project include/define arguments for linting. [#601](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/601)
+- Added context-aware port and parameter completions for module instantiations. [#603](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/603)
+- Added quick fixes to fill missing named ports and parameters in module instantiations. [#604](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/604)
+- Added project-aware hover information for modules, ports, parameters, macros, includes, and indexed symbols. [#605](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/605)
+- Added HDL Explorer with project summaries, modules, packages, best-effort hierarchy, and unresolved instance reporting. [#606](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/606)
+- Added optional compile-unit lint mode for Slang, Verilator, and Icarus Verilog with file-mode fallback for unsupported linters. [#607](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/607)
+
+### Changed
+
+- Stabilized project loading and indexing with deterministic HDL project fixtures, safer failure handling, debounce coverage, and broader provider fallback tests. [#602](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/602)
+- Improved CI setup and dependency tooling, including faster tool installs and an `npm-run-all2` update. [#579](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/579), [#602](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/602)
+
 ## [1.25.0] - 2026-06-02
 
 ### Added
