@@ -7,6 +7,7 @@ import * as DocumentSymbolProvider from './providers/DocumentSymbolProvider';
 import * as HoverProvider from './providers/HoverProvider';
 import * as DefinitionProvider from './providers/DefinitionProvider';
 import * as CompletionItemProvider from './providers/CompletionItemProvider';
+import * as CodeActionProvider from './providers/CodeActionProvider';
 import * as ModuleInstantiation from './commands/ModuleInstantiation';
 import { registerDoctorCommand } from './commands/Doctor';
 import * as FormatProvider from './providers/FormatProvider';
@@ -20,6 +21,7 @@ import { InactivePreprocessorDecorationProvider } from './providers/InactivePrep
 import { DefinitionService } from './hdl/DefinitionService';
 import { InstantiationService } from './hdl/InstantiationService';
 import { CompletionService } from './hdl/CompletionService';
+import { ModuleInstanceCodeActionService } from './hdl/ModuleInstanceCodeActionService';
 import { ProjectService } from './project/ProjectService';
 import { ProjectWatcher } from './project/ProjectWatcher';
 import { registerProjectCommands } from './project/ProjectCommands';
@@ -51,6 +53,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const definitionService = new DefinitionService(projectService, indexService, ctagsManager);
   const instantiationService = new InstantiationService(indexService);
   const completionService = new CompletionService(projectService, indexService, ctagsManager);
+  const codeActionService = new ModuleInstanceCodeActionService(projectService, indexService);
   context.subscriptions.push(projectService, indexService, new ProjectWatcher(projectService));
   context.subscriptions.push(...registerProjectCommands(projectService, indexService));
   void projectService.reload('activation');
@@ -136,6 +139,24 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerWorkspaceSymbolProvider(
       new VerilogWorkspaceSymbolProvider(indexService)
+    )
+  );
+
+  const verilogCodeActionProvider = new CodeActionProvider.VerilogCodeActionProvider(
+    codeActionService
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCodeActionsProvider(
+      { scheme: 'file', language: 'verilog' },
+      verilogCodeActionProvider,
+      { providedCodeActionKinds: CodeActionProvider.VerilogCodeActionProvider.providedCodeActionKinds }
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCodeActionsProvider(
+      { scheme: 'file', language: 'systemverilog' },
+      verilogCodeActionProvider,
+      { providedCodeActionKinds: CodeActionProvider.VerilogCodeActionProvider.providedCodeActionKinds }
     )
   );
 

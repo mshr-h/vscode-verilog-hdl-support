@@ -60,6 +60,7 @@ suite('InstanceContextScanner', () => {
     ].join('\n'));
 
     assert.ok(context?.connectedNames.has('clk'));
+    assert.strictEqual(context?.connections[0]?.expressionText, 'clk');
   });
 
   test('detects already overridden parameters', () => {
@@ -75,6 +76,12 @@ suite('InstanceContextScanner', () => {
 
   test('returns undefined outside instance context', () => {
     const context = scanAtCursor('assign value = wi|re_sig;');
+
+    assert.strictEqual(context, undefined);
+  });
+
+  test('returns undefined for positional instance connections', () => {
+    const context = scanAtCursor('foo u_foo (cl|k);');
 
     assert.strictEqual(context, undefined);
   });
