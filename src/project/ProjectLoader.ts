@@ -64,6 +64,14 @@ export class ProjectLoader {
         ? this.loadFilelistCompileUnits(workspaceRoot, settings, diagnostics)
         : await this.loadFallbackCompileUnit(workspaceRoot, settings, diagnostics);
 
+    logger.info('Loaded Verilog project model', {
+      workspaceRoot: workspaceRoot.fsPath,
+      compileUnits: compileUnits.length,
+      files: countFiles(compileUnits),
+      includeDirs: countIncludeDirs(compileUnits),
+      defines: countDefines(compileUnits),
+      diagnostics: diagnostics.length,
+    });
     return createSnapshot(version, workspaceRoot, settings.activeTarget, compileUnits, diagnostics);
   }
 
@@ -209,4 +217,16 @@ function globToRegExp(pattern: string): RegExp {
 
 function escapeRegExp(input: string): string {
   return input.replace(/[|\\{}()[\]^$+?.]/g, '\\$&');
+}
+
+function countFiles(compileUnits: CompileUnit[]): number {
+  return compileUnits.reduce((sum, compileUnit) => sum + compileUnit.files.length, 0);
+}
+
+function countIncludeDirs(compileUnits: CompileUnit[]): number {
+  return compileUnits.reduce((sum, compileUnit) => sum + compileUnit.includeDirs.length, 0);
+}
+
+function countDefines(compileUnits: CompileUnit[]): number {
+  return compileUnits.reduce((sum, compileUnit) => sum + Object.keys(compileUnit.defines).length, 0);
 }

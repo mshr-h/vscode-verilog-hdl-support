@@ -1,8 +1,16 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
+import { getExtensionLogger } from '../logging';
 import { FileContextResolver } from './FileContextResolver';
 import { ProjectLoader } from './ProjectLoader';
-import { cloneSnapshot, type FileContext, type ProjectSnapshot } from './ProjectTypes';
+import {
+  cloneSnapshot,
+  PROJECT_DIAGNOSTIC_SOURCE,
+  type FileContext,
+  type ProjectSnapshot,
+} from './ProjectTypes';
+
+const logger = getExtensionLogger('Project', 'Service');
 
 export class ProjectService implements vscode.Disposable {
   private readonly emitter = new vscode.EventEmitter<ProjectSnapshot>();
@@ -26,9 +34,36 @@ export class ProjectService implements vscode.Disposable {
     return cloneSnapshot(this.snapshot);
   }
 
-  async reload(_reason?: string): Promise<ProjectSnapshot> {
+  async reload(reason = 'unspecified'): Promise<ProjectSnapshot> {
     this.version += 1;
-    this.snapshot = await this.loader.load(this.version);
+    logger.info('Reloading Verilog project', { reason, version: this.version });
+    try {
+      this.snapshot = await this.loader.load(this.version);
+      logger.info('Reloaded Verilog project', {
+        reason,
+        version: this.snapshot.version,
+        compileUnits: this.snapshot.compileUnits.length,
+        files: this.snapshot.compileUnits.reduce((sum, compileUnit) => sum + compileUnit.files.length, 0),
+        diagnostics: this.snapshot.diagnostics.length,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error('Failed to reload Verilog project', { reason, error: message });
+      this.snapshot = {
+        version: this.version,
+        workspaceRoot: this.snapshot.workspaceRoot,
+        activeTargetId: '',
+        compileUnits: [],
+        diagnostics: [
+          {
+            severity: 'error',
+            message: `Project loading failed: ${message}`,
+            source: PROJECT_DIAGNOSTIC_SOURCE,
+            code: 'project-load-failed',
+          },
+        ],
+      };
+    }
     const cloned = this.getSnapshot();
     this.emitter.fire(cloned);
     return cloned;
