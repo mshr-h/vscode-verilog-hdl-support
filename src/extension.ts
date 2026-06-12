@@ -22,6 +22,7 @@ import { DefinitionService } from './hdl/DefinitionService';
 import { InstantiationService } from './hdl/InstantiationService';
 import { CompletionService } from './hdl/CompletionService';
 import { ModuleInstanceCodeActionService } from './hdl/ModuleInstanceCodeActionService';
+import { HoverService } from './hdl/HoverService';
 import { ProjectService } from './project/ProjectService';
 import { ProjectWatcher } from './project/ProjectWatcher';
 import { registerProjectCommands } from './project/ProjectCommands';
@@ -54,6 +55,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const instantiationService = new InstantiationService(indexService);
   const completionService = new CompletionService(projectService, indexService, ctagsManager);
   const codeActionService = new ModuleInstanceCodeActionService(projectService, indexService);
+  const hoverService = new HoverService(projectService, indexService, ctagsManager);
   context.subscriptions.push(projectService, indexService, new ProjectWatcher(projectService));
   context.subscriptions.push(...registerProjectCommands(projectService, indexService));
   void projectService.reload('activation');
@@ -105,7 +107,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Configure Hover Providers
   const verilogHoverProvider = new HoverProvider.VerilogHoverProvider(
-    ctagsManager,
+    hoverService,
   );
   context.subscriptions.push(
     vscode.languages.registerHoverProvider(
