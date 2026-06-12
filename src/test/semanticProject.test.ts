@@ -36,6 +36,65 @@ suite('FastScanner', () => {
     assert.ok(moduleRecord.parameters.some((parameter) => parameter.name === 'WIDTH'));
   });
 
+  test('captures ANSI ports and parameters with simple metadata', () => {
+    const result = new FastScanner().scan([
+      'module foo #(',
+      '  parameter int WIDTH = 32,',
+      '  parameter DEPTH = 4',
+      ') (',
+      '  input logic clk,',
+      '  input logic [WIDTH-1:0] data_i,',
+      '  output logic valid_o',
+      ');',
+      'endmodule',
+    ].join('\n'), vscode.Uri.file('/workspace/foo.sv'), 'unit');
+    const moduleRecord = result.symbols.find(
+      (symbol): symbol is ModuleRecord => symbol.kind === 'module' && symbol.name === 'foo'
+    );
+
+    assert.ok(moduleRecord);
+    assert.deepStrictEqual(
+      moduleRecord.parameters.map((parameter) => [parameter.name, parameter.dataType, parameter.defaultValue]),
+      [
+        ['WIDTH', 'int', '32'],
+        ['DEPTH', undefined, '4'],
+      ]
+    );
+    assert.deepStrictEqual(
+      moduleRecord.ports.map((port) => [port.name, port.direction, port.dataType, port.width]),
+      [
+        ['clk', 'input', 'logic', undefined],
+        ['data_i', 'input', 'logic', '[WIDTH-1:0]'],
+        ['valid_o', 'output', 'logic', undefined],
+      ]
+    );
+  });
+
+  test('captures simple non-ANSI port declarations', () => {
+    const result = new FastScanner().scan([
+      'module foo(clk, rst_n, data_i, valid_o);',
+      '  input clk;',
+      '  input rst_n;',
+      '  input [7:0] data_i;',
+      '  output valid_o;',
+      'endmodule',
+    ].join('\n'), vscode.Uri.file('/workspace/foo.sv'), 'unit');
+    const moduleRecord = result.symbols.find(
+      (symbol): symbol is ModuleRecord => symbol.kind === 'module' && symbol.name === 'foo'
+    );
+
+    assert.ok(moduleRecord);
+    assert.deepStrictEqual(
+      moduleRecord.ports.map((port) => [port.name, port.direction, port.width]),
+      [
+        ['clk', 'input', undefined],
+        ['rst_n', 'input', undefined],
+        ['data_i', 'input', '[7:0]'],
+        ['valid_o', 'output', undefined],
+      ]
+    );
+  });
+
   test('does not throw on malformed SystemVerilog', () => {
     const result = new FastScanner().scan('module ; /* unterminated', vscode.Uri.file('/bad.sv'), 'unit');
     assert.deepStrictEqual(result.symbols, []);

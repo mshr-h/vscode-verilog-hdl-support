@@ -26,10 +26,16 @@ export interface SymbolRecord {
 
 export interface ParameterRecord extends SymbolRecord {
   kind: 'parameter' | 'localparam';
+  dataType?: string;
+  width?: string;
+  defaultValue?: string;
 }
 
 export interface PortRecord extends SymbolRecord {
   kind: 'port';
+  direction?: 'input' | 'output' | 'inout' | 'ref' | 'interface' | 'unknown';
+  dataType?: string;
+  width?: string;
 }
 
 export interface ModuleRecord extends SymbolRecord {
