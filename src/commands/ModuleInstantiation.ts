@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Ctags, Symbol } from '../ctags';
+import type { InstantiationService } from '../hdl/InstantiationService';
 import { getExtensionLogger } from '../logging';
 import { getWorkspaceRootForDocument } from '../utils/workspace';
 
@@ -32,6 +33,12 @@ export function instantiateModuleInteract() {
       }
     });
   });
+}
+
+export function instantiateModuleInteractWithProjectIndex(
+  instantiationService: InstantiationService
+) {
+  void instantiationService.instantiateModuleInteract(instantiateModuleInteract);
 }
 
 export async function instantiateModule(srcpath: string): Promise<vscode.SnippetString | undefined> {

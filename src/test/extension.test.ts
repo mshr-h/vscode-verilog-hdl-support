@@ -162,5 +162,6 @@ suite('Extension Test Suite', () => {
     assert.ok(properties['verilog.project.includeDirs']);
     assert.ok(properties['verilog.project.defines']);
     assert.ok(properties['verilog.project.exclude']);
+    assert.ok(properties['verilog.instantiate.useProjectIndex']);
   });
 });

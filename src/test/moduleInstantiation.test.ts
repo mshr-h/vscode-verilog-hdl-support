@@ -7,8 +7,93 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import which from 'which';
 import { instantiateModule, shouldShowParentDirectory } from '../commands/ModuleInstantiation';
+import {
+  buildModuleInstantiationSnippet,
+  InstantiationService,
+} from '../hdl/InstantiationService';
+import type { IndexService } from '../semantic/IndexService';
+import { SemanticIndex } from '../semantic/SemanticIndex';
+import type { ModuleRecord, ParameterRecord, PortRecord } from '../semantic/SymbolRecords';
 
 suite('Module Instantiation', () => {
+  test('builds project-index snippet with parameters and ports', () => {
+    const snippet = buildModuleInstantiationSnippet(
+      createModuleRecord('my_mod', ['WIDTH'], ['clk', 'rst_n'])
+    );
+    const value = snippet.value;
+
+    assert.ok(value.includes('my_mod'));
+    assert.ok(value.includes('#('));
+    assert.ok(value.includes('.WIDTH'));
+    assert.ok(value.includes('.clk  '), 'Snippet should align shorter port names');
+    assert.ok(value.includes('.rst_n'));
+    assert.ok(value.includes(');'));
+  });
+
+  test('uses project index module selection when available', async function () {
+    const document = await vscode.workspace.openTextDocument({
+      language: 'systemverilog',
+      content: '',
+    });
+    const editor = await vscode.window.showTextDocument(document);
+    const moduleRecord = createModuleRecord('idx_mod', ['WIDTH'], ['clk']);
+    const service = new InstantiationService({
+      getIndex: () => new SemanticIndex(1, [moduleRecord]),
+    } as unknown as IndexService);
+    const originalShowQuickPick = vscode.window.showQuickPick;
+    let fallbackCalled = false;
+
+    try {
+      (vscode.window as any).showQuickPick = async (items: unknown) => {
+        assert.ok(Array.isArray(items));
+        return (items as Array<{ module: ModuleRecord }>)[0];
+      };
+      await service.instantiateModuleInteract(() => {
+        fallbackCalled = true;
+      });
+
+      assert.strictEqual(fallbackCalled, false);
+      assert.ok(editor.document.getText().includes('idx_mod'));
+      assert.ok(editor.document.getText().includes('.WIDTH'));
+      assert.ok(editor.document.getText().includes('.clk'));
+    } finally {
+      (vscode.window as any).showQuickPick = originalShowQuickPick;
+    }
+  });
+
+  test('falls back when project index instantiation is disabled', async () => {
+    const config = vscode.workspace.getConfiguration('verilog.instantiate');
+    const previous = config.get('useProjectIndex');
+    const service = new InstantiationService({
+      getIndex: () => new SemanticIndex(1, [createModuleRecord('idx_mod', [], [])]),
+    } as unknown as IndexService);
+    let fallbackCalled = false;
+
+    try {
+      await config.update('useProjectIndex', false, vscode.ConfigurationTarget.Global);
+      await service.instantiateModuleInteract(() => {
+        fallbackCalled = true;
+      });
+
+      assert.strictEqual(fallbackCalled, true);
+    } finally {
+      await config.update('useProjectIndex', previous, vscode.ConfigurationTarget.Global);
+    }
+  });
+
+  test('falls back when project index has no modules', async () => {
+    const service = new InstantiationService({
+      getIndex: () => new SemanticIndex(1, []),
+    } as unknown as IndexService);
+    let fallbackCalled = false;
+
+    await service.instantiateModuleInteract(() => {
+      fallbackCalled = true;
+    });
+
+    assert.strictEqual(fallbackCalled, true);
+  });
+
   test('uses the supplied workspace root for parent navigation decisions', () => {
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'ctags-inst-root-'));
     const firstRoot = path.join(tempRoot, 'first');
@@ -100,3 +185,35 @@ suite('Module Instantiation', () => {
     }
   });
 });
+
+function createModuleRecord(name: string, parameterNames: string[], portNames: string[]): ModuleRecord {
+  const uri = vscode.Uri.file(`/workspace/${name}.sv`);
+  const selectionRange = new vscode.Range(0, 7, 0, 7 + name.length);
+  const base = {
+    id: `unit:${name}`,
+    name,
+    uri,
+    range: selectionRange,
+    selectionRange,
+    containerName: name,
+    compileUnitId: 'unit',
+  };
+  return {
+    ...base,
+    kind: 'module',
+    parameters: parameterNames.map((parameterName): ParameterRecord => ({
+      ...base,
+      id: `unit:${name}:parameter:${parameterName}`,
+      name: parameterName,
+      kind: 'parameter',
+      containerName: name,
+    })),
+    ports: portNames.map((portName): PortRecord => ({
+      ...base,
+      id: `unit:${name}:port:${portName}`,
+      name: portName,
+      kind: 'port',
+      containerName: name,
+    })),
+  };
+}

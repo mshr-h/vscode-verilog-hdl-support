@@ -17,10 +17,13 @@ import { FliplotPanel } from './fliplot/FliplotPanel';
 import { FliplotCustomEditor } from './fliplot/FliplotCustomEditor';
 import { openWaveform } from './waveform/OpenWaveform';
 import { InactivePreprocessorDecorationProvider } from './providers/InactivePreprocessorDecorationProvider';
+import { DefinitionService } from './hdl/DefinitionService';
+import { InstantiationService } from './hdl/InstantiationService';
 import { ProjectService } from './project/ProjectService';
 import { ProjectWatcher } from './project/ProjectWatcher';
 import { registerProjectCommands } from './project/ProjectCommands';
 import { IndexService } from './semantic/IndexService';
+import { VerilogWorkspaceSymbolProvider } from './providers/WorkspaceSymbolProvider';
 
 let ctagsManager: CtagsManager | undefined;
 const extensionID: string = 'mshr-h.veriloghdl';
@@ -44,6 +47,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const projectService = new ProjectService();
   const indexService = new IndexService(projectService);
+  const definitionService = new DefinitionService(projectService, indexService, ctagsManager);
+  const instantiationService = new InstantiationService(indexService);
   context.subscriptions.push(projectService, indexService, new ProjectWatcher(projectService));
   context.subscriptions.push(...registerProjectCommands(projectService, indexService));
   void projectService.reload('activation');
@@ -108,7 +113,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Configure Definition Providers
   const verilogDefinitionProvider = new DefinitionProvider.VerilogDefinitionProvider(
-    ctagsManager
+    definitionService
   );
   context.subscriptions.push(
     vscode.languages.registerDefinitionProvider(
@@ -120,6 +125,11 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.languages.registerDefinitionProvider(
       { scheme: 'file', language: 'systemverilog' },
       verilogDefinitionProvider
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerWorkspaceSymbolProvider(
+      new VerilogWorkspaceSymbolProvider(indexService)
     )
   );
 
@@ -145,7 +155,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'verilog.instantiateModule',
-      ModuleInstantiation.instantiateModuleInteract
+      () => ModuleInstantiation.instantiateModuleInteractWithProjectIndex(instantiationService)
     )
   );
 
