@@ -2,7 +2,7 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { VerilogHoverProvider } from '../providers/HoverProvider';
-import { CtagsManager } from '../ctags';
+import type { HoverService } from '../hdl/HoverService';
 import { END_OF_LINE } from '../constants';
 
 suite('Hover Provider', () => {
@@ -16,17 +16,15 @@ suite('Hover Provider', () => {
       new vscode.Position(0, 0),
       new vscode.Position(0, END_OF_LINE)
     );
-    const ctagsManager = {
-      findSymbol: async () => [
-        {
-          targetUri: document.uri,
-          targetRange,
-          targetSelectionRange: targetRange,
-        },
-      ],
-    } as unknown as CtagsManager;
+    const hoverService = {
+      provideHover: async () => {
+        const hoverText = new vscode.MarkdownString();
+        hoverText.appendCodeblock(document.getText(targetRange).trim(), document.languageId);
+        return new vscode.Hover(hoverText);
+      },
+    } as unknown as HoverService;
 
-    const provider = new VerilogHoverProvider(ctagsManager);
+    const provider = new VerilogHoverProvider(hoverService);
     const hover = await provider.provideHover(
       document,
       new vscode.Position(0, 8),
