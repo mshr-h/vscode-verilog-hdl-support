@@ -86,6 +86,6 @@ suite('InstanceContextScanner', () => {
 
 function scanAtCursor(textWithCursor: string): ReturnType<typeof scanInstanceContext> {
   const offset = textWithCursor.indexOf('|');
-  const text = textWithCursor.replace('|', '');
+  const text = textWithCursor.replace(/\|/g, '');
   return scanInstanceContext(text, offset);
 }
