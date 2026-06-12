@@ -143,6 +143,10 @@ suite('Extension Test Suite', () => {
     assert.ok(commands.includes('verilog.reloadProject'));
     assert.ok(commands.includes('verilog.showProjectStatus'));
     assert.ok(commands.includes('verilog.showProjectModules'));
+    assert.ok(commands.includes('verilog.refreshHierarchy'));
+    assert.ok(commands.includes('verilog.refreshHdlExplorer'));
+    assert.ok(commands.includes('verilog.openModuleFromExplorer'));
+    assert.ok(commands.includes('verilog.openInstanceFromExplorer'));
   });
 
   test('package should contribute project settings', () => {
@@ -159,9 +163,14 @@ suite('Extension Test Suite', () => {
     assert.ok(properties['verilog.project.enabled']);
     assert.ok(properties['verilog.project.filelists']);
     assert.ok(properties['verilog.project.activeTarget']);
+    assert.ok(properties['verilog.project.topModules']);
     assert.ok(properties['verilog.project.includeDirs']);
     assert.ok(properties['verilog.project.defines']);
     assert.ok(properties['verilog.project.exclude']);
+    assert.ok(properties['verilog.hierarchy.enabled']);
+    assert.ok(properties['verilog.hierarchy.maxDepth']);
+    assert.ok(properties['verilog.hierarchy.showUnresolved']);
+    assert.ok(properties['verilog.hdlExplorer.enabled']);
     assert.ok(properties['verilog.instantiate.useProjectIndex']);
     assert.ok(properties['verilog.preprocessor.useProjectDefines']);
     assert.ok(properties['verilog.linting.useProjectContext']);
@@ -172,5 +181,15 @@ suite('Extension Test Suite', () => {
     assert.ok(properties['verilog.codeActions.fillMissingPorts.enabled']);
     assert.ok(properties['verilog.codeActions.fillMissingParameters.enabled']);
     assert.ok(properties['verilog.codeActions.alignment.enabled']);
+  });
+
+  test('package should contribute HDL Explorer view', () => {
+    const packageJson = JSON.parse(
+      fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8')
+    ) as {
+      contributes: { views: { explorer: Array<{ id: string; name: string }> } };
+    };
+
+    assert.ok(packageJson.contributes.views.explorer.some((view) => view.id === 'verilog.hdlExplorer'));
   });
 });

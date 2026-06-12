@@ -9,9 +9,12 @@ import { SemanticIndex } from './SemanticIndex';
 const logger = getExtensionLogger('Semantic', 'IndexService');
 
 export class IndexService implements vscode.Disposable {
+  private readonly emitter = new vscode.EventEmitter<SemanticIndex>();
   private readonly disposables: vscode.Disposable[] = [];
   private index = new SemanticIndex(0, []);
   private rebuildSerial = 0;
+
+  readonly onDidChangeIndex = this.emitter.event;
 
   constructor(
     projectService: ProjectService,
@@ -40,6 +43,7 @@ export class IndexService implements vscode.Disposable {
       const symbols = await this.backend.build(snapshot);
       if (serial === this.rebuildSerial) {
         this.index = new SemanticIndex(snapshot.version, symbols);
+        this.emitter.fire(this.index);
         logger.info('Rebuilt Verilog semantic index', {
           version: snapshot.version,
           symbols: symbols.length,
@@ -53,6 +57,7 @@ export class IndexService implements vscode.Disposable {
       });
       if (serial === this.rebuildSerial) {
         this.index = new SemanticIndex(snapshot.version, []);
+        this.emitter.fire(this.index);
       }
     }
     return this.index;
@@ -62,5 +67,6 @@ export class IndexService implements vscode.Disposable {
     for (const disposable of this.disposables) {
       disposable.dispose();
     }
+    this.emitter.dispose();
   }
 }

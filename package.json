@@ -734,6 +734,15 @@
             "default": "",
             "markdownDescription": "Active HDL project target / compile unit name."
           },
+          "verilog.project.topModules": {
+            "scope": "window",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [],
+            "markdownDescription": "Top modules to use for best-effort HDL hierarchy roots. When empty, roots are inferred from module instantiations."
+          },
           "verilog.project.includeDirs": {
             "scope": "window",
             "type": "array",
@@ -762,6 +771,36 @@
               "**/sim/**"
             ],
             "markdownDescription": "Glob patterns excluded from project indexing."
+          }
+        }
+      },
+      {
+        "title": "Verilog: Hierarchy",
+        "properties": {
+          "verilog.hierarchy.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Enable best-effort project-aware HDL module hierarchy."
+          },
+          "verilog.hierarchy.maxDepth": {
+            "scope": "window",
+            "type": "number",
+            "default": 20,
+            "minimum": 1,
+            "markdownDescription": "Maximum recursion depth for the best-effort HDL hierarchy tree."
+          },
+          "verilog.hierarchy.showUnresolved": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Show unresolved module instantiations in the HDL hierarchy and explorer."
+          },
+          "verilog.hdlExplorer.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Enable the HDL Explorer tree view."
           }
         }
       },
@@ -901,6 +940,22 @@
         "title": "Verilog: Show Project Modules"
       },
       {
+        "command": "verilog.refreshHierarchy",
+        "title": "Verilog: Refresh Hierarchy"
+      },
+      {
+        "command": "verilog.refreshHdlExplorer",
+        "title": "Verilog: Refresh HDL Explorer"
+      },
+      {
+        "command": "verilog.openModuleFromExplorer",
+        "title": "Verilog: Open Module From Explorer"
+      },
+      {
+        "command": "verilog.openInstanceFromExplorer",
+        "title": "Verilog: Open Instance From Explorer"
+      },
+      {
         "command": "verilog.openFliplot",
         "title": "Verilog: Open Fliplot Waveform Viewer"
       },
@@ -909,6 +964,23 @@
         "title": "Verilog: Open Waveform"
       }
     ],
+    "views": {
+      "explorer": [
+        {
+          "id": "verilog.hdlExplorer",
+          "name": "HDL Explorer"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "verilog.refreshHdlExplorer",
+          "when": "view == verilog.hdlExplorer",
+          "group": "navigation"
+        }
+      ]
+    },
     "customEditors": [
       {
         "viewType": "verilog.fliplotEditor",
