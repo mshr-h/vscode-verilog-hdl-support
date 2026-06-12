@@ -11,6 +11,7 @@ import {
   type WslPathConversionOptions,
 } from '../tools/WslPathConverter';
 import { getWorkspaceRootForDocument } from '../utils/workspace';
+import type { ProjectService } from '../project/ProjectService';
 import { splitCommandLineArgs } from '../utils/commandLine';
 import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
@@ -47,6 +48,7 @@ export interface BuildVerilatorArgsOptions {
   languageId: string;
   docFolder: string;
   includePaths: string[];
+  defineArgs?: string[];
   customArguments: string;
   documentPath: string;
 }
@@ -60,6 +62,7 @@ export interface BuildVerilatorRunInputsOptions {
   workspaceFolder?: string;
   linterInstalledPath: string;
   includePaths: string[];
+  defineArgs?: string[];
   customArguments: string;
   cancellationToken?: vscode.CancellationToken;
   convertToWslPathFn?: typeof convertToWslPath;
@@ -134,6 +137,7 @@ export function buildVerilatorArgs(options: BuildVerilatorArgsOptions): string[]
   args.push('--lint-only');
   args.push(`-I${options.docFolder}`);
   args.push(...options.includePaths.map((includePath) => `-I${includePath}`));
+  args.push(...(options.defineArgs ?? []).map((defineArg) => `-D${defineArg}`));
   args.push(...splitCommandLineArgs(options.customArguments));
   args.push(options.documentPath);
   return args;
@@ -180,12 +184,13 @@ export async function buildVerilatorRunInputs(
     : options.workspaceFolder ?? docFolder;
 
   const args = commandInfo.leadingArgs.concat(
-    buildVerilatorArgs({
-      languageId: options.languageId,
-      docFolder,
-      includePaths,
-      customArguments: options.customArguments,
-      documentPath: docUri,
+      buildVerilatorArgs({
+        languageId: options.languageId,
+        docFolder,
+        includePaths,
+        defineArgs: options.defineArgs,
+        customArguments: options.customArguments,
+        documentPath: docUri,
     })
   );
 
@@ -331,8 +336,12 @@ export default class VerilatorLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
   private useWSL!: boolean;
 
-  constructor(diagnosticManager: LinterDiagnosticManager, runManager: LintRunManager) {
-    super('verilator', diagnosticManager, runManager);
+  constructor(
+    diagnosticManager: LinterDiagnosticManager,
+    runManager: LintRunManager,
+    projectService?: ProjectService
+  ) {
+    super('verilator', diagnosticManager, runManager, projectService);
     this.updateConfig();
   }
 
@@ -373,7 +382,8 @@ export default class VerilatorLinter extends BaseLinter {
         runAtFileLocation: this.config.runAtFileLocation,
         workspaceFolder: getWorkspaceRootForDocument(doc),
         linterInstalledPath: this.config.linterInstalledPath,
-        includePaths: this.resolveIncludePaths(this.config.includePath, doc),
+        includePaths: this.getConfiguredAndProjectIncludePaths(doc),
+        defineArgs: this.getProjectContext(doc).defineArgs,
         customArguments: this.config.arguments,
         cancellationToken: run.cancellationToken,
       });

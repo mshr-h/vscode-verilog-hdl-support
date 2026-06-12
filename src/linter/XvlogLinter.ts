@@ -2,6 +2,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import BaseLinter from './BaseLinter';
+import type { ProjectService } from '../project/ProjectService';
 import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from '../utils/commandLine';
@@ -11,6 +12,7 @@ import LintRunManager, { type LintRunHandle } from './LintRunManager';
 export interface BuildXvlogArgsOptions {
   languageId: string;
   includePaths: string[];
+  defineArgs?: string[];
   customArguments: string;
   documentPath: string;
 }
@@ -22,6 +24,9 @@ export function buildXvlogArgs(options: BuildXvlogArgsOptions): string[] {
   }
   for (const includePath of options.includePaths) {
     args.push('-i', includePath);
+  }
+  for (const defineArg of options.defineArgs ?? []) {
+    args.push('--define', defineArg);
   }
   args.push(...splitCommandLineArgs(options.customArguments));
   args.push(options.documentPath);
@@ -61,8 +66,12 @@ export function parseXvlogDiagnostics(stdout: string): vscode.Diagnostic[] {
 }
 
 export default class XvlogLinter extends BaseLinter {
-  constructor(diagnosticManager: LinterDiagnosticManager, runManager: LintRunManager) {
-    super('xvlog', diagnosticManager, runManager);
+  constructor(
+    diagnosticManager: LinterDiagnosticManager,
+    runManager: LintRunManager,
+    projectService?: ProjectService
+  ) {
+    super('xvlog', diagnosticManager, runManager, projectService);
     this.updateConfig();
   }
 
@@ -81,7 +90,8 @@ export default class XvlogLinter extends BaseLinter {
 
     const args = buildXvlogArgs({
       languageId: doc.languageId,
-      includePaths: this.resolveIncludePaths(this.config.includePath, doc),
+      includePaths: this.getConfiguredAndProjectIncludePaths(doc),
+      defineArgs: this.getProjectContext(doc).defineArgs,
       customArguments: this.config.arguments,
       documentPath: doc.fileName,
     });

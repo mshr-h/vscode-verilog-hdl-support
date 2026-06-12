@@ -10,6 +10,7 @@ import XvlogLinter from './XvlogLinter';
 import VeribleVerilogLintLinter from './VeribleVerilogLintLinter';
 import LinterDiagnosticManager from './LinterDiagnosticManager';
 import LintRunManager from './LintRunManager';
+import type { ProjectService } from '../project/ProjectService';
 
 export default class LintManager {
   private subscriptions: vscode.Disposable[];
@@ -20,7 +21,7 @@ export default class LintManager {
   private runManager: LintRunManager;
   private readonly logger = getExtensionLogger('Linter', 'Manager');
 
-  constructor() {
+  constructor(private readonly projectService?: ProjectService) {
     this.subscriptions = [];
     this.linter = null;
     this.diagnosticCollection = vscode.languages.createDiagnosticCollection('verilog-lint');
@@ -41,15 +42,15 @@ export default class LintManager {
   getLinterFromString(name: string): BaseLinter | null {
     switch (name) {
       case 'iverilog':
-        return new IcarusLinter(this.diagnosticManager, this.runManager);
+        return new IcarusLinter(this.diagnosticManager, this.runManager, this.projectService);
       case 'xvlog':
-        return new XvlogLinter(this.diagnosticManager, this.runManager);
+        return new XvlogLinter(this.diagnosticManager, this.runManager, this.projectService);
       case 'modelsim':
         return new ModelsimLinter(this.diagnosticManager, this.runManager);
       case 'verilator':
-        return new VerilatorLinter(this.diagnosticManager, this.runManager);
+        return new VerilatorLinter(this.diagnosticManager, this.runManager, this.projectService);
       case 'slang':
-        return new SlangLinter(this.diagnosticManager, this.runManager);
+        return new SlangLinter(this.diagnosticManager, this.runManager, this.projectService);
       case 'verible-verilog-lint':
         return new VeribleVerilogLintLinter(this.diagnosticManager, this.runManager);
       default:

@@ -19,6 +19,7 @@ import { openWaveform } from './waveform/OpenWaveform';
 import { InactivePreprocessorDecorationProvider } from './providers/InactivePreprocessorDecorationProvider';
 import { DefinitionService } from './hdl/DefinitionService';
 import { InstantiationService } from './hdl/InstantiationService';
+import { CompletionService } from './hdl/CompletionService';
 import { ProjectService } from './project/ProjectService';
 import { ProjectWatcher } from './project/ProjectWatcher';
 import { registerProjectCommands } from './project/ProjectCommands';
@@ -49,6 +50,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const indexService = new IndexService(projectService);
   const definitionService = new DefinitionService(projectService, indexService, ctagsManager);
   const instantiationService = new InstantiationService(indexService);
+  const completionService = new CompletionService(projectService, indexService, ctagsManager);
   context.subscriptions.push(projectService, indexService, new ProjectWatcher(projectService));
   context.subscriptions.push(...registerProjectCommands(projectService, indexService));
   void projectService.reload('activation');
@@ -73,7 +75,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // Configure Completion Item Provider
   // Trigger on ".", "(", "="
   const verilogCompletionItemProvider = new CompletionItemProvider.VerilogCompletionItemProvider(
-    ctagsManager,
+    completionService,
   );
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(
@@ -81,7 +83,9 @@ export async function activate(context: vscode.ExtensionContext) {
       verilogCompletionItemProvider,
       '.',
       '(',
-      '='
+      '=',
+      '`',
+      '"'
     )
   );
   context.subscriptions.push(
@@ -90,7 +94,9 @@ export async function activate(context: vscode.ExtensionContext) {
       verilogCompletionItemProvider,
       '.',
       '(',
-      '='
+      '=',
+      '`',
+      '"'
     )
   );
 
@@ -149,7 +155,7 @@ export async function activate(context: vscode.ExtensionContext) {
     )
   );
 
-  context.subscriptions.push(new InactivePreprocessorDecorationProvider());
+  context.subscriptions.push(new InactivePreprocessorDecorationProvider(projectService));
 
   // Configure command to instantiate a module
   context.subscriptions.push(
@@ -160,7 +166,7 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   // Register command for manual linting
-  lintManager = new LintManager();
+  lintManager = new LintManager(projectService);
   context.subscriptions.push(lintManager);
   context.subscriptions.push(
     vscode.commands.registerCommand('verilog.lint', lintManager.runLintTool, lintManager)

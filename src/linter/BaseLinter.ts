@@ -2,9 +2,11 @@
 import * as vscode from 'vscode';
 import { type Logger } from '@logtape/logtape';
 import { getExtensionLogger } from '../logging';
+import type { ProjectService } from '../project/ProjectService';
 import { getWorkingDirectoryForDocument, resolvePathsForDocument } from '../utils/workspace';
 import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
+import { getLintProjectContext, type LintProjectContext } from './ProjectLintContext';
 
 /** Common configuration interface for linters */
 export interface LinterConfig {
@@ -50,7 +52,8 @@ export default abstract class BaseLinter implements vscode.Disposable {
   constructor(
     name: string,
     diagnosticManager: LinterDiagnosticManager,
-    runManager: LintRunManager
+    runManager: LintRunManager,
+    private readonly projectService?: ProjectService
   ) {
     this.diagnosticManager = diagnosticManager;
     this.runManager = runManager;
@@ -105,6 +108,15 @@ export default abstract class BaseLinter implements vscode.Disposable {
    */
   protected resolveIncludePaths(paths: string[], doc: vscode.TextDocument): string[] {
     return resolvePathsForDocument(paths, doc);
+  }
+
+  protected getProjectContext(doc: vscode.TextDocument): LintProjectContext {
+    return getLintProjectContext(this.projectService, doc);
+  }
+
+  protected getConfiguredAndProjectIncludePaths(doc: vscode.TextDocument): string[] {
+    const projectContext = this.getProjectContext(doc);
+    return this.resolveIncludePaths(this.config.includePath, doc).concat(projectContext.includePaths);
   }
 
   /**

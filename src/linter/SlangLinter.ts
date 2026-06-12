@@ -7,6 +7,7 @@ import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { convertToWslPath, type WslPathConversionOptions } from '../tools/WslPathConverter';
 import { getWorkspaceRootForDocument } from '../utils/workspace';
+import type { ProjectService } from '../project/ProjectService';
 import { splitCommandLineArgs } from '../utils/commandLine';
 import LinterDiagnosticManager from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
@@ -42,6 +43,7 @@ export interface SlangPaths {
 export interface BuildSlangArgsOptions {
   docFolder: string;
   includePaths: string[];
+  defineArgs?: string[];
   customArguments: string;
   documentPath: string;
 }
@@ -97,6 +99,9 @@ export function buildSlangArgs(options: BuildSlangArgsOptions): string[] {
   const args: string[] = ['-I', options.docFolder];
   for (const includePath of options.includePaths) {
     args.push('-I', includePath);
+  }
+  for (const defineArg of options.defineArgs ?? []) {
+    args.push('-D', defineArg);
   }
   args.push(...splitCommandLineArgs(options.customArguments));
   args.push(options.documentPath);
@@ -155,8 +160,12 @@ export default class SlangLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
   private useWSL!: boolean;
 
-  constructor(diagnosticManager: LinterDiagnosticManager, runManager: LintRunManager) {
-    super('slang', diagnosticManager, runManager);
+  constructor(
+    diagnosticManager: LinterDiagnosticManager,
+    runManager: LintRunManager,
+    projectService?: ProjectService
+  ) {
+    super('slang', diagnosticManager, runManager, projectService);
     this.updateConfig();
   }
 
@@ -187,7 +196,11 @@ export default class SlangLinter extends BaseLinter {
     const args = commandInfo.leadingArgs.concat(
       buildSlangArgs({
         docFolder: paths.docFolder,
-        includePaths: this.resolveIncludePaths(this.config.includePath, doc),
+        includePaths: this.getConfiguredAndProjectIncludePaths(doc),
+        // Argument order is: tool defaults, configured include paths, project include
+        // paths/defines, user custom args, document. Custom args stay later so users
+        // can override or supplement project context.
+        defineArgs: this.getProjectContext(doc).defineArgs,
         customArguments: this.config.arguments,
         documentPath: paths.docUri,
       })

@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
+import type { ProjectService } from '../project/ProjectService';
+import type { MacroDefine } from '../project/ProjectTypes';
 
 interface InactivePreprocessorRange {
   startLine: number;
@@ -195,11 +197,25 @@ export function computeInactivePreprocessorRanges(
   return ranges;
 }
 
+export function mergePreprocessorDefines(
+  configuredDefines: readonly string[],
+  projectDefines: Record<string, MacroDefine> | undefined,
+  useProjectDefines: boolean
+): string[] {
+  const merged = new Set(configuredDefines);
+  if (useProjectDefines && projectDefines) {
+    for (const defineName of Object.keys(projectDefines)) {
+      merged.add(defineName);
+    }
+  }
+  return [...merged];
+}
+
 export class InactivePreprocessorDecorationProvider implements vscode.Disposable {
   private readonly subscriptions: vscode.Disposable[] = [];
   private decorationType: vscode.TextEditorDecorationType | undefined;
 
-  constructor() {
+  constructor(private readonly projectService?: ProjectService) {
     this.recreateDecorationType();
     this.subscriptions.push(
       vscode.window.onDidChangeActiveTextEditor(() => {
@@ -220,6 +236,13 @@ export class InactivePreprocessorDecorationProvider implements vscode.Disposable
         this.updateVisibleEditors();
       })
     );
+    if (this.projectService) {
+      this.subscriptions.push(
+        this.projectService.onDidChangeSnapshot(() => {
+          this.updateVisibleEditors();
+        })
+      );
+    }
     this.updateVisibleEditors();
   }
 
@@ -263,9 +286,15 @@ export class InactivePreprocessorDecorationProvider implements vscode.Disposable
       return;
     }
 
+    const config = vscode.workspace.getConfiguration('verilog.preprocessor');
+    const projectContext = this.projectService?.getPreferredFileContext(editor.document.uri);
     const ranges = computeInactivePreprocessorRanges(
       editor.document.getText(),
-      vscode.workspace.getConfiguration('verilog.preprocessor').get('defines', [])
+      mergePreprocessorDefines(
+        config.get<string[]>('defines', []),
+        projectContext?.defines,
+        config.get<boolean>('useProjectDefines', true)
+      )
     ).map((range) => this.toVscodeRange(editor.document, range));
     editor.setDecorations(this.decorationType, ranges);
   }

@@ -2,6 +2,7 @@
 import * as assert from 'assert';
 import {
   computeInactivePreprocessorRanges,
+  mergePreprocessorDefines,
 } from '../providers/InactivePreprocessorDecorationProvider';
 
 suite('Inactive Preprocessor Ranges', () => {
@@ -21,6 +22,44 @@ suite('Inactive Preprocessor Ranges', () => {
     );
 
     assert.deepStrictEqual(ranges, [{ startLine: 3, endLine: 3 }]);
+  });
+
+  test('project defines merge with configured defines', () => {
+    const defines = mergePreprocessorDefines(
+      ['CONFIG_DEFINED'],
+      {
+        PROJECT_DEFINED: { name: 'PROJECT_DEFINED', value: true, source: 'filelist' },
+      },
+      true
+    );
+    const ranges = computeInactivePreprocessorRanges(
+      [
+        '`ifdef PROJECT_DEFINED',
+        'assign a = 1;',
+        '`else',
+        'assign a = 0;',
+        '`endif',
+      ].join('\n'),
+      defines
+    );
+
+    assert.deepStrictEqual(ranges, [{ startLine: 3, endLine: 3 }]);
+  });
+
+  test('project defines can be disabled for inactive preprocessing', () => {
+    const defines = mergePreprocessorDefines(
+      [],
+      {
+        PROJECT_DEFINED: { name: 'PROJECT_DEFINED', value: true, source: 'filelist' },
+      },
+      false
+    );
+    const ranges = computeInactivePreprocessorRanges(
+      ['`ifdef PROJECT_DEFINED', 'assign a = 1;', '`endif'].join('\n'),
+      defines
+    );
+
+    assert.deepStrictEqual(ranges, [{ startLine: 1, endLine: 1 }]);
   });
 
   test('ifndef treats a defined macro as inactive', () => {
