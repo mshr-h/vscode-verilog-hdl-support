@@ -169,5 +169,8 @@ suite('Extension Test Suite', () => {
     assert.ok(properties['verilog.completion.parameters.enabled']);
     assert.ok(properties['verilog.completion.autoConnectPorts']);
     assert.ok(properties['verilog.completion.autoConnectParameters']);
+    assert.ok(properties['verilog.codeActions.fillMissingPorts.enabled']);
+    assert.ok(properties['verilog.codeActions.fillMissingParameters.enabled']);
+    assert.ok(properties['verilog.codeActions.alignment.enabled']);
   });
 });

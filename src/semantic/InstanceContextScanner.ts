@@ -5,6 +5,19 @@ export interface InstanceContext {
   instanceName?: string;
   kind: 'ports' | 'parameters';
   connectedNames: Set<string>;
+  listOpenOffset: number;
+  listCloseOffset?: number;
+  connections: InstanceConnection[];
+}
+
+export interface InstanceConnection {
+  name: string;
+  expressionText: string;
+  hasTrailingComma: boolean;
+  startOffset: number;
+  endOffset: number;
+  expressionStartOffset: number;
+  expressionEndOffset: number;
 }
 
 interface CandidateContext {
@@ -30,7 +43,9 @@ export function scanInstanceContext(text: string, offset: number): InstanceConte
         moduleName: candidate.moduleName,
         instanceName: candidate.instanceName,
         kind: candidate.kind,
-        connectedNames: collectNamedConnections(safeText, candidate.openParen, boundedOffset),
+        listOpenOffset: candidate.openParen,
+        listCloseOffset: findMatchingCloseParen(safeText, candidate.openParen),
+        ...collectConnections(safeText, candidate.openParen, boundedOffset),
       };
     }
   } catch {
@@ -101,16 +116,95 @@ function findTrailingParameterOverride(text: string): { moduleName: string } | u
   return undefined;
 }
 
-function collectNamedConnections(text: string, openParen: number, offset: number): Set<string> {
-  const names = new Set<string>();
-  const segment = text.slice(openParen + 1, offset);
-  for (const match of segment.matchAll(/\.([A-Za-z_][A-Za-z0-9_$]*)\s*\(/g)) {
-    const name = match[1];
-    if (name) {
-      names.add(name);
+function collectConnections(
+  text: string,
+  openParen: number,
+  cursorOffset: number
+): Pick<InstanceContext, 'connectedNames' | 'connections'> {
+  const connectedNames = new Set<string>();
+  const connections: InstanceConnection[] = [];
+  const closeParen = findMatchingCloseParen(text, openParen) ?? text.length;
+  let index = openParen + 1;
+  while (index < closeParen) {
+    index = skipWhitespaceAndCommas(text, index, closeParen);
+    if (index >= closeParen) {
+      break;
+    }
+    if (text[index] !== '.') {
+      throw new Error('positional or mixed instance connections are not supported');
+    }
+    const connection = readNamedConnection(text, index, closeParen);
+    if (!connection) {
+      if (index <= cursorOffset) {
+        break;
+      }
+      throw new Error('malformed named instance connection');
+    }
+    connectedNames.add(connection.name);
+    connections.push(connection);
+    index = connection.hasTrailingComma ? connection.endOffset + 1 : connection.endOffset;
+  }
+  return { connectedNames, connections };
+}
+
+function readNamedConnection(
+  text: string,
+  dotOffset: number,
+  closeParen: number
+): InstanceConnection | undefined {
+  const match = /\.([A-Za-z_][A-Za-z0-9_$]*)\s*\(/.exec(text.slice(dotOffset, closeParen));
+  if (!match || match.index !== 0) {
+    return undefined;
+  }
+  const name = match[1] ?? '';
+  const expressionOpenOffset = dotOffset + match[0].length - 1;
+  const expressionCloseOffset = findMatchingCloseParen(text, expressionOpenOffset);
+  if (expressionCloseOffset === undefined || expressionCloseOffset > closeParen) {
+    return undefined;
+  }
+  const afterExpression = skipWhitespace(text, expressionCloseOffset + 1, closeParen);
+  const hasTrailingComma = text[afterExpression] === ',';
+  return {
+    name,
+    expressionText: text.slice(expressionOpenOffset + 1, expressionCloseOffset).trim(),
+    hasTrailingComma,
+    startOffset: dotOffset,
+    endOffset: expressionCloseOffset + 1,
+    expressionStartOffset: expressionOpenOffset + 1,
+    expressionEndOffset: expressionCloseOffset,
+  };
+}
+
+function findMatchingCloseParen(text: string, openParen: number): number | undefined {
+  let depth = 0;
+  for (let i = openParen; i < text.length; i += 1) {
+    const ch = text[i];
+    if (ch === '(') {
+      depth += 1;
+    } else if (ch === ')') {
+      depth -= 1;
+      if (depth === 0) {
+        return i;
+      }
     }
   }
-  return names;
+  return undefined;
+}
+
+function skipWhitespaceAndCommas(text: string, offset: number, endOffset: number): number {
+  let index = offset;
+  while (index < endOffset && (/[\s,]/.test(text[index] ?? ''))) {
+    index += 1;
+  }
+  return index;
+}
+
+function skipWhitespace(text: string, offset: number, endOffset: number): number {
+  let index = offset;
+  while (index < endOffset && (/\s/.test(text[index] ?? ''))) {
+    index += 1;
+  }
+  return index;
 }
 
 function getOpenParenStack(text: string, offset: number): number[] {

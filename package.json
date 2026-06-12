@@ -795,6 +795,29 @@
         }
       },
       {
+        "title": "Verilog: Code Actions",
+        "properties": {
+          "verilog.codeActions.fillMissingPorts.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Enable code actions that fill missing named module port connections from the project index."
+          },
+          "verilog.codeActions.fillMissingParameters.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Enable code actions that fill missing named module parameter overrides from the project index."
+          },
+          "verilog.codeActions.alignment.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Align generated named module port and parameter connections in code actions."
+          }
+        }
+      },
+      {
         "title": "Verilog: Module Instantiation",
         "properties": {
           "verilog.instantiate.useProjectIndex": {
