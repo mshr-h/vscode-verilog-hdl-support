@@ -165,5 +165,9 @@ suite('Extension Test Suite', () => {
     assert.ok(properties['verilog.instantiate.useProjectIndex']);
     assert.ok(properties['verilog.preprocessor.useProjectDefines']);
     assert.ok(properties['verilog.linting.useProjectContext']);
+    assert.ok(properties['verilog.completion.ports.enabled']);
+    assert.ok(properties['verilog.completion.parameters.enabled']);
+    assert.ok(properties['verilog.completion.autoConnectPorts']);
+    assert.ok(properties['verilog.completion.autoConnectParameters']);
   });
 });

@@ -766,6 +766,35 @@
         }
       },
       {
+        "title": "Verilog: Completion",
+        "properties": {
+          "verilog.completion.ports.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Enable project-index completion for named module port connections."
+          },
+          "verilog.completion.parameters.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Enable project-index completion for named module parameter overrides."
+          },
+          "verilog.completion.autoConnectPorts": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Insert `.port(port)` snippets for named port completion."
+          },
+          "verilog.completion.autoConnectParameters": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Insert `.PARAM(PARAM)` snippets for named parameter completion."
+          }
+        }
+      },
+      {
         "title": "Verilog: Module Instantiation",
         "properties": {
           "verilog.instantiate.useProjectIndex": {
