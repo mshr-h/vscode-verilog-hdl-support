@@ -17,8 +17,19 @@ jobs:
         with:
           node-version: lts/*
       - run: npm ci
+      - name: Cache Cargo installs
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cache/veriloghdl-cargo-install-target
+          key: ${{ runner.os }}-cargo-install-${{ hashFiles('.github/workflows/ci.yml', '.github/workflows/publish-marketplace.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-install-
       - name: Install dependencies
         run: |
+          export CARGO_TARGET_DIR="$HOME/.cache/veriloghdl-cargo-install-target"
           sudo apt update
           sudo apt install -y iverilog verilator
           cargo install svls
