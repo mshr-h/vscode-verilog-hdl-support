@@ -48,6 +48,7 @@ suite('Icarus Linter', () => {
 
   test('builds argv without shell quoting', () => {
     const includePath = path.join(os.tmpdir(), 'iverilog include path');
+    const projectIncludePath = path.join(os.tmpdir(), 'iverilog project include');
     const documentPath = path.join(os.tmpdir(), 'iverilog source path', 'bad file.v');
     const args = buildIcarusArgs({
       languageId: 'systemverilog',
@@ -55,7 +56,8 @@ suite('Icarus Linter', () => {
         ['verilog', 'Verilog-2005'],
         ['systemverilog', 'SystemVerilog2012'],
       ]),
-      includePaths: [includePath],
+      includePaths: [includePath, projectIncludePath],
+      defineArgs: ['SIM', 'WIDTH=32'],
       customArguments: '-Wall -DMSG="hello world"',
       documentPath,
     });
@@ -66,6 +68,12 @@ suite('Icarus Linter', () => {
       '-g2012',
       '-I',
       includePath,
+      '-I',
+      projectIncludePath,
+      '-D',
+      'SIM',
+      '-D',
+      'WIDTH=32',
       '-Wall',
       '-DMSG=hello world',
       documentPath,

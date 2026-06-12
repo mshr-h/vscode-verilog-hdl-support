@@ -4,6 +4,10 @@ import * as vscode from 'vscode';
 import { VerilogCompletionItemProvider } from '../providers/CompletionItemProvider';
 import { Ctags, CtagsManager, Symbol } from '../ctags';
 import { getExtensionLogger } from '../logging';
+import { CompletionService } from '../hdl/CompletionService';
+import type { ProjectService } from '../project/ProjectService';
+import type { IndexService } from '../semantic/IndexService';
+import { SemanticIndex } from '../semantic/SemanticIndex';
 
 suite('Ctags Parsing', () => {
   test('builds symbols from ctags output without invoking ctags binary', async () => {
@@ -99,7 +103,7 @@ suite('Ctags Completion', () => {
       getSymbols: async () => symbols,
     } as unknown as CtagsManager;
 
-    const provider = new VerilogCompletionItemProvider(ctagsManager);
+    const provider = createCompletionProvider(ctagsManager);
     const tokenSource = new vscode.CancellationTokenSource();
     const items = await provider.provideCompletionItems(
       document,
@@ -139,7 +143,7 @@ suite('Ctags Completion', () => {
       getSymbols: async () => symbols,
     } as unknown as CtagsManager;
 
-    const provider = new VerilogCompletionItemProvider(ctagsManager);
+    const provider = createCompletionProvider(ctagsManager);
     const tokenSource = new vscode.CancellationTokenSource();
     const items = await provider.provideCompletionItems(
       document,
@@ -176,7 +180,7 @@ suite('Ctags Completion', () => {
       getSymbols: async () => symbols,
     } as unknown as CtagsManager;
 
-    const provider = new VerilogCompletionItemProvider(ctagsManager);
+    const provider = createCompletionProvider(ctagsManager);
     const tokenSource = new vscode.CancellationTokenSource();
     const items = await provider.provideCompletionItems(
       document,
@@ -214,7 +218,7 @@ suite('Ctags Completion', () => {
       getSymbols: async () => symbols,
     } as unknown as CtagsManager;
 
-    const provider = new VerilogCompletionItemProvider(ctagsManager);
+    const provider = createCompletionProvider(ctagsManager);
     const tokenSource = new vscode.CancellationTokenSource();
     const items = await provider.provideCompletionItems(
       document,
@@ -247,7 +251,7 @@ suite('Ctags Completion', () => {
       getSymbols: async () => symbols,
     } as unknown as CtagsManager;
 
-    const provider = new VerilogCompletionItemProvider(ctagsManager);
+    const provider = createCompletionProvider(ctagsManager);
     const tokenSource = new vscode.CancellationTokenSource();
     const items = await provider.provideCompletionItems(
       document,
@@ -286,7 +290,7 @@ suite('Ctags Completion', () => {
       getSymbols: async () => symbols,
     } as unknown as CtagsManager;
 
-    const provider = new VerilogCompletionItemProvider(ctagsManager);
+    const provider = createCompletionProvider(ctagsManager);
     const tokenSource = new vscode.CancellationTokenSource();
     const items = await provider.provideCompletionItems(
       document,
@@ -307,3 +311,13 @@ suite('Ctags Completion', () => {
     assert.strictEqual(classItem?.kind, vscode.CompletionItemKind.Class);
   });
 });
+
+function createCompletionProvider(ctagsManager: CtagsManager): VerilogCompletionItemProvider {
+  const projectService = {} as ProjectService;
+  const indexService = {
+    getIndex: () => new SemanticIndex(1, []),
+  } as unknown as IndexService;
+  return new VerilogCompletionItemProvider(
+    new CompletionService(projectService, indexService, ctagsManager)
+  );
+}

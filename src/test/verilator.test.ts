@@ -137,6 +137,7 @@ suite('Verilator Linter', () => {
     const documentPath = '/tmp/verilator source/top file.sv';
     const docFolder = '/tmp/verilator source';
     const includePath = '/tmp/verilator include';
+    const projectIncludePath = '/tmp/verilator project include';
     const commandInfo = buildVerilatorCommand({
       isWindows: false,
       useWSL: false,
@@ -146,7 +147,8 @@ suite('Verilator Linter', () => {
       buildVerilatorArgs({
         languageId: 'systemverilog',
         docFolder,
-        includePaths: [includePath],
+        includePaths: [includePath, projectIncludePath],
+        defineArgs: ['SIM', 'WIDTH=32'],
         customArguments: '--timing --top-module "top mod"',
         documentPath,
       })
@@ -158,6 +160,9 @@ suite('Verilator Linter', () => {
       '--lint-only',
       `-I${docFolder}`,
       `-I${includePath}`,
+      `-I${projectIncludePath}`,
+      '-DSIM',
+      '-DWIDTH=32',
       '--timing',
       '--top-module',
       'top mod',

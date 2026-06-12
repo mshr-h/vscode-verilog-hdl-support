@@ -15,6 +15,7 @@ suite('Slang Linter', () => {
     const documentPath = '/tmp/slang source/top file.sv';
     const docFolder = '/tmp/slang source';
     const includePath = '/tmp/slang include';
+    const projectIncludePath = '/tmp/slang project include';
     const commandInfo = buildSlangCommand({
       isWindows: false,
       useWSL: false,
@@ -23,7 +24,8 @@ suite('Slang Linter', () => {
     const args = commandInfo.leadingArgs.concat(
       buildSlangArgs({
         docFolder,
-        includePaths: [includePath],
+        includePaths: [includePath, projectIncludePath],
+        defineArgs: ['SIM', 'WIDTH=32'],
         customArguments: '--single-unit --top "top mod"',
         documentPath,
       })
@@ -35,6 +37,12 @@ suite('Slang Linter', () => {
       docFolder,
       '-I',
       includePath,
+      '-I',
+      projectIncludePath,
+      '-D',
+      'SIM',
+      '-D',
+      'WIDTH=32',
       '--single-unit',
       '--top',
       'top mod',

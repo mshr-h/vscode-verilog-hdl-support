@@ -393,6 +393,12 @@
             "default": "none",
             "markdownDescription": "Select the verilog linter."
           },
+          "verilog.linting.useProjectContext": {
+            "scope": "window",
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "When enabled, pass active project include directories and preprocessor defines to supported lint tools. Existing custom linter arguments are still appended after project context arguments."
+          },
           "verilog.linting.iverilog.arguments": {
             "scope": "window",
             "type": "string",
@@ -781,6 +787,12 @@
             },
             "default": [],
             "markdownDescription": "Macro names to treat as predefined for Verilog/SystemVerilog preprocessor inactive-code highlighting."
+          },
+          "verilog.preprocessor.useProjectDefines": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Use active project preprocessor defines when highlighting inactive Verilog/SystemVerilog preprocessor regions."
           },
           "verilog.preprocessor.inactiveCode.enabled": {
             "scope": "window",

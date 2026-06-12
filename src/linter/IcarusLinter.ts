@@ -2,6 +2,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import BaseLinter from './BaseLinter';
+import type { ProjectService } from '../project/ProjectService';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from '../utils/commandLine';
 import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
@@ -22,6 +23,7 @@ export interface BuildIcarusArgsOptions {
   languageId: string;
   standards: Map<string, string>;
   includePaths: string[];
+  defineArgs?: string[];
   customArguments: string;
   documentPath: string;
 }
@@ -35,6 +37,9 @@ export function buildIcarusArgs(options: BuildIcarusArgsOptions): string[] {
   }
   for (const includePath of options.includePaths) {
     args.push('-I', includePath);
+  }
+  for (const defineArg of options.defineArgs ?? []) {
+    args.push('-D', defineArg);
   }
   args.push(...splitCommandLineArgs(options.customArguments));
   args.push(options.documentPath);
@@ -142,8 +147,12 @@ export default class IcarusLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
   private standards!: Map<string, string>;
 
-  constructor(diagnosticManager: LinterDiagnosticManager, runManager: LintRunManager) {
-    super('iverilog', diagnosticManager, runManager);
+  constructor(
+    diagnosticManager: LinterDiagnosticManager,
+    runManager: LintRunManager,
+    projectService?: ProjectService
+  ) {
+    super('iverilog', diagnosticManager, runManager, projectService);
     this.updateConfig();
   }
 
@@ -171,7 +180,11 @@ export default class IcarusLinter extends BaseLinter {
     const args = buildIcarusArgs({
       languageId: doc.languageId,
       standards: this.standards,
-      includePaths: this.resolveIncludePaths(this.config.includePath, doc),
+      includePaths: this.getConfiguredAndProjectIncludePaths(doc),
+      // Argument order is: tool defaults, configured include paths, project include
+      // paths/defines, user custom args, document. Custom args stay later so users
+      // can override or supplement project context.
+      defineArgs: this.getProjectContext(doc).defineArgs,
       customArguments: this.config.arguments,
       documentPath: doc.uri.fsPath,
     });

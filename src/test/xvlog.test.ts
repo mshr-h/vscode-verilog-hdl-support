@@ -9,10 +9,12 @@ import { buildXvlogArgs, parseXvlogDiagnostics } from '../linter/XvlogLinter';
 suite('Xvlog Linter', () => {
   test('builds args with automatic flags and split custom args', () => {
     const includePath = path.join(os.tmpdir(), 'xvlog include');
+    const projectIncludePath = path.join(os.tmpdir(), 'xvlog project include');
     const documentPath = path.join(os.tmpdir(), 'xvlog source', 'top file.sv');
     const args = buildXvlogArgs({
       languageId: 'systemverilog',
-      includePaths: [includePath],
+      includePaths: [includePath, projectIncludePath],
+      defineArgs: ['SIM', 'WIDTH=32'],
       customArguments: '--define FOO="bar baz"',
       documentPath,
     });
@@ -22,6 +24,12 @@ suite('Xvlog Linter', () => {
       '-sv',
       '-i',
       includePath,
+      '-i',
+      projectIncludePath,
+      '--define',
+      'SIM',
+      '--define',
+      'WIDTH=32',
       '--define',
       'FOO=bar baz',
       documentPath,

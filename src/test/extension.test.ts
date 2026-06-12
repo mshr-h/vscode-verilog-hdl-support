@@ -163,5 +163,7 @@ suite('Extension Test Suite', () => {
     assert.ok(properties['verilog.project.defines']);
     assert.ok(properties['verilog.project.exclude']);
     assert.ok(properties['verilog.instantiate.useProjectIndex']);
+    assert.ok(properties['verilog.preprocessor.useProjectDefines']);
+    assert.ok(properties['verilog.linting.useProjectContext']);
   });
 });
