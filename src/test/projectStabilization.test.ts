@@ -14,7 +14,7 @@ import { ProjectWatcher } from '../project/ProjectWatcher';
 import { buildCompileUnit } from '../project/ProjectModelMerger';
 import { renderProjectStatus } from '../project/ProjectCommands';
 import type { ProjectSnapshot } from '../project/ProjectTypes';
-import type { ProjectSettings } from '../project/providers/SettingsProjectSourceProvider';
+import { readProjectSettings, type ProjectSettings } from '../project/providers/SettingsProjectSourceProvider';
 import { FastIndexerBackend } from '../semantic/backends/FastIndexerBackend';
 import { IndexService } from '../semantic/IndexService';
 import { SemanticIndex } from '../semantic/SemanticIndex';
@@ -73,6 +73,42 @@ suite('Minimal IDE Model Stabilization', () => {
 
       assert.strictEqual(snapshot.compileUnits.length, 0);
       assert.ok(snapshot.diagnostics.some((diagnostic) => diagnostic.code === 'project-disabled'));
+    });
+
+    test('SettingsProjectSourceProvider defaults project indexing to disabled', () => {
+      const projectSettings = readProjectSettings({
+        get: <T>(_section: string, defaultValue: T): T => defaultValue,
+      } as Pick<vscode.WorkspaceConfiguration, 'get'>);
+
+      assert.strictEqual(projectSettings.enabled, false);
+      assert.strictEqual(projectSettings.maxAutoDiscoveredFiles, 5000);
+    });
+
+    test('auto-discovery skips indexing when file count exceeds the configured limit', async function () {
+      this.timeout(10000);
+      const root = fs.mkdtempSync(path.join(os.tmpdir(), 'verilog-autodiscovery-limit-'));
+      fs.writeFileSync(path.join(root, 'top.sv'), 'module top; endmodule\n');
+      fs.writeFileSync(path.join(root, 'child.sv'), 'module child; endmodule\n');
+
+      const snapshot = await loadFixture(root, settings({ maxAutoDiscoveredFiles: 1 }));
+
+      assert.strictEqual(snapshot.compileUnits.length, 0);
+      assert.ok(
+        snapshot.diagnostics.some((diagnostic) => diagnostic.code === 'auto-discovery-file-limit-exceeded')
+      );
+    });
+
+    test('auto-discovery still creates fallback compile unit under the configured limit', async function () {
+      this.timeout(10000);
+      const root = fs.mkdtempSync(path.join(os.tmpdir(), 'verilog-autodiscovery-small-'));
+      fs.writeFileSync(path.join(root, 'top.sv'), 'module top; endmodule\n');
+      fs.writeFileSync(path.join(root, 'child.sv'), 'module child; endmodule\n');
+
+      const snapshot = await loadFixture(root, settings({ maxAutoDiscoveredFiles: 2 }));
+
+      assert.strictEqual(snapshot.compileUnits[0]?.id, 'auto:workspace');
+      assert.strictEqual(snapshot.compileUnits[0]?.files.length, 2);
+      assert.ok(snapshot.diagnostics.some((diagnostic) => diagnostic.code === 'fallback-discovery'));
     });
 
     test('returns preferred file context by active target and no context for unrelated files', async () => {
@@ -268,6 +304,60 @@ suite('Minimal IDE Model Stabilization', () => {
       watcher.dispose();
     });
 
+    test('ProjectWatcher creates filelist watcher only while project indexing is enabled', () => {
+      let enabled = false;
+      let watchersCreated = 0;
+      let watchersDisposed = 0;
+      let watcherEventDisposablesDisposed = 0;
+      let configListener: ((event: vscode.ConfigurationChangeEvent) => void) | undefined;
+      const watcher = new ProjectWatcher({
+        reload: async () => createSnapshot('/workspace', []),
+      } as unknown as ProjectService, {
+        createFileSystemWatcher: (() => {
+          watchersCreated += 1;
+          const event: vscode.Event<vscode.Uri> = (_listener, _thisArgs, _disposables) => ({
+            dispose: () => {
+              watcherEventDisposablesDisposed += 1;
+            },
+          });
+          return {
+            ignoreCreateEvents: false,
+            ignoreChangeEvents: false,
+            ignoreDeleteEvents: false,
+            onDidCreate: event,
+            onDidChange: event,
+            onDidDelete: event,
+            dispose: () => {
+              watchersDisposed += 1;
+            },
+          };
+        }) as typeof vscode.workspace.createFileSystemWatcher,
+        onDidChangeConfiguration: ((listener) => {
+          configListener = listener;
+          return { dispose: () => undefined };
+        }) as typeof vscode.workspace.onDidChangeConfiguration,
+        settingsProvider: {
+          getSettings: () => settings({ enabled }),
+        },
+      });
+
+      assert.strictEqual(watchersCreated, 0);
+
+      enabled = true;
+      configListener?.(projectConfigurationChangeEvent());
+      assert.strictEqual(watchersCreated, 1);
+      assert.strictEqual(watchersDisposed, 0);
+
+      enabled = false;
+      configListener?.(projectConfigurationChangeEvent());
+      assert.strictEqual(watchersCreated, 1);
+      assert.strictEqual(watchersDisposed, 1);
+      assert.strictEqual(watcherEventDisposablesDisposed, 3);
+
+      watcher.dispose();
+      assert.strictEqual(watchersDisposed, 1);
+    });
+
     test('auto-discovery excludes large ignored directories before indexing', async function () {
       this.timeout(10000);
       const root = fs.mkdtempSync(path.join(os.tmpdir(), 'verilog-large-workspace-'));
@@ -300,6 +390,7 @@ function settings(overrides: Partial<ProjectSettings> = {}): ProjectSettings {
     includeDirs: [],
     defines: {},
     exclude: ['**/.git/**', '**/node_modules/**', '**/build/**', '**/sim/**'],
+    maxAutoDiscoveredFiles: 5000,
     ...overrides,
   };
 }
@@ -372,4 +463,10 @@ function createSnapshot(workspaceRoot: string, symbols: SymbolRecord[]): Project
 
 async function delay(ms: number): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function projectConfigurationChangeEvent(): vscode.ConfigurationChangeEvent {
+  return {
+    affectsConfiguration: (section: string) => section === 'verilog.project',
+  };
 }

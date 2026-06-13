@@ -194,6 +194,7 @@ suite('ProjectLoader', () => {
       includeDirs: [],
       defines: {},
       exclude: ['**/.git/**', '**/node_modules/**', '**/build/**'],
+      maxAutoDiscoveredFiles: 5000,
     };
     const loader = new ProjectLoader(
       { getSettings: () => settings },

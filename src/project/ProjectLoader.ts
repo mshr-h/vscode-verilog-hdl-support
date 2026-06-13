@@ -112,10 +112,24 @@ export class ProjectLoader {
     diagnostics: ProjectDiagnostic[]
   ): Promise<CompileUnit[]> {
     const exclude = settings.exclude.length > 0 ? `{${settings.exclude.join(',')}}` : undefined;
+    const maxFiles = settings.maxAutoDiscoveredFiles;
     const files = await vscode.workspace.findFiles(
       new vscode.RelativePattern(workspaceRoot, '**/*.{v,vh,sv,svh}'),
-      exclude
+      exclude,
+      maxFiles + 1
     );
+    if (files.length > maxFiles) {
+      diagnostics.push({
+        severity: 'warning',
+        message:
+          `Project auto-discovery found more than ${maxFiles} HDL files. `
+          + 'Project indexing was skipped. Configure verilog.project.filelists, '
+          + 'increase verilog.project.maxAutoDiscoveredFiles, or adjust verilog.project.exclude.',
+        source: PROJECT_DIAGNOSTIC_SOURCE,
+        code: 'auto-discovery-file-limit-exceeded',
+      });
+      return [];
+    }
     diagnostics.push({
       severity: 'info',
       message: `No project filelists configured; discovered ${files.length} HDL files.`,
