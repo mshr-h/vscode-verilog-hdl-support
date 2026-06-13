@@ -146,8 +146,23 @@ suite('Extension Test Suite', () => {
     assert.ok(commands.includes('verilog.showProjectModules'));
     assert.ok(commands.includes('verilog.refreshHierarchy'));
     assert.ok(commands.includes('verilog.refreshHdlExplorer'));
+    assert.ok(commands.includes('verilog.setActiveTargetFromExplorer'));
+    assert.ok(commands.includes('verilog.selectActiveTarget'));
     assert.ok(commands.includes('verilog.openModuleFromExplorer'));
+    assert.ok(commands.includes('verilog.instantiateModuleFromExplorer'));
+    assert.ok(commands.includes('verilog.showHierarchyFromModule'));
+    assert.ok(commands.includes('verilog.clearHierarchyRootFilter'));
+    assert.ok(commands.includes('verilog.findModuleReferencesFromExplorer'));
     assert.ok(commands.includes('verilog.openInstanceFromExplorer'));
+    assert.ok(commands.includes('verilog.openInstanceModuleFromExplorer'));
+    assert.ok(commands.includes('verilog.findInstanceModuleReferencesFromExplorer'));
+    assert.ok(commands.includes('verilog.searchUnresolvedModule'));
+    assert.ok(commands.includes('verilog.copyModuleNameFromExplorer'));
+    assert.ok(commands.includes('verilog.openFileFromExplorer'));
+    assert.ok(commands.includes('verilog.copyPathFromExplorer'));
+    assert.ok(commands.includes('verilog.copyRelativePathFromExplorer'));
+    assert.ok(commands.includes('verilog.copyDefineNameFromExplorer'));
+    assert.ok(commands.includes('verilog.copyDefineArgumentFromExplorer'));
   });
 
   test('package should contribute project settings', () => {
@@ -206,5 +221,41 @@ suite('Extension Test Suite', () => {
     };
 
     assert.ok(packageJson.contributes.views.explorer.some((view) => view.id === 'verilog.hdlExplorer'));
+  });
+
+  test('package should contribute HDL Explorer context menus', () => {
+    const packageJson = JSON.parse(
+      fs.readFileSync(path.join(getRepositoryRoot(), 'package.json'), 'utf8')
+    ) as {
+      contributes: {
+        menus: {
+          'view/item/context': Array<{ command: string; when: string }>;
+          'view/title': Array<{ command: string; when: string }>;
+        };
+      };
+    };
+
+    const itemMenus = packageJson.contributes.menus['view/item/context'];
+    const titleMenus = packageJson.contributes.menus['view/title'];
+    assert.ok(itemMenus.some((menu) =>
+      menu.command === 'verilog.setActiveTargetFromExplorer' &&
+      menu.when.includes('viewItem == hdlExplorer.compileUnit')
+    ));
+    assert.ok(itemMenus.some((menu) =>
+      menu.command === 'verilog.instantiateModuleFromExplorer' &&
+      menu.when.includes('viewItem == hdlExplorer.module')
+    ));
+    assert.ok(itemMenus.some((menu) =>
+      menu.command === 'verilog.searchUnresolvedModule' &&
+      menu.when.includes('viewItem == hdlExplorer.unresolvedInstance')
+    ));
+    assert.ok(itemMenus.some((menu) =>
+      menu.command === 'verilog.copyDefineArgumentFromExplorer' &&
+      menu.when.includes('viewItem == hdlExplorer.define')
+    ));
+    assert.ok(titleMenus.some((menu) =>
+      menu.command === 'verilog.selectActiveTarget' &&
+      menu.when === 'view == verilog.hdlExplorer'
+    ));
   });
 });

@@ -80,7 +80,15 @@ export async function activate(context: vscode.ExtensionContext) {
     new ProjectWatcher(projectService)
   );
   context.subscriptions.push(...registerProjectCommands(projectService, indexService));
-  context.subscriptions.push(...registerHdlExplorerCommands(hierarchyService, hdlExplorerProvider));
+  context.subscriptions.push(
+    ...registerHdlExplorerCommands(
+      projectService,
+      hierarchyService,
+      instantiationService,
+      referenceService,
+      hdlExplorerProvider
+    )
+  );
   context.subscriptions.push(
     vscode.window.createTreeView('verilog.hdlExplorer', {
       treeDataProvider: hdlExplorerProvider,

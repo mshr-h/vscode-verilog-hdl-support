@@ -1038,12 +1038,88 @@
         "title": "Verilog: Refresh HDL Explorer"
       },
       {
+        "command": "verilog.setActiveTargetFromExplorer",
+        "title": "Verilog: Set Active Target From Explorer"
+      },
+      {
+        "command": "verilog.selectActiveTarget",
+        "title": "Verilog: Select Active HDL Target"
+      },
+      {
         "command": "verilog.openModuleFromExplorer",
         "title": "Verilog: Open Module From Explorer"
       },
       {
+        "command": "verilog.instantiateModuleFromExplorer",
+        "title": "Verilog: Instantiate Module From Explorer"
+      },
+      {
+        "command": "verilog.showHierarchyFromModule",
+        "title": "Verilog: Show Hierarchy From This Module"
+      },
+      {
+        "command": "verilog.clearHierarchyRootFilter",
+        "title": "Verilog: Clear HDL Hierarchy Root Filter"
+      },
+      {
+        "command": "verilog.findModuleReferencesFromExplorer",
+        "title": "Verilog: Find Module References From Explorer"
+      },
+      {
         "command": "verilog.openInstanceFromExplorer",
         "title": "Verilog: Open Instance From Explorer"
+      },
+      {
+        "command": "verilog.openInstanceModuleFromExplorer",
+        "title": "Verilog: Open Instance Module From Explorer"
+      },
+      {
+        "command": "verilog.findInstanceModuleReferencesFromExplorer",
+        "title": "Verilog: Find Instance Module References From Explorer"
+      },
+      {
+        "command": "verilog.searchUnresolvedModule",
+        "title": "Verilog: Search Unresolved Module"
+      },
+      {
+        "command": "verilog.copyModuleNameFromExplorer",
+        "title": "Verilog: Copy Module Name From Explorer"
+      },
+      {
+        "command": "verilog.openFileFromExplorer",
+        "title": "Verilog: Open File From Explorer"
+      },
+      {
+        "command": "verilog.revealFileInOs",
+        "title": "Verilog: Reveal File in OS"
+      },
+      {
+        "command": "verilog.revealIncludeDirInOs",
+        "title": "Verilog: Reveal Include Directory in OS"
+      },
+      {
+        "command": "verilog.copyPathFromExplorer",
+        "title": "Verilog: Copy Path From Explorer"
+      },
+      {
+        "command": "verilog.copyRelativePathFromExplorer",
+        "title": "Verilog: Copy Relative Path From Explorer"
+      },
+      {
+        "command": "verilog.openCompileUnitSource",
+        "title": "Verilog: Open Compile Unit Source"
+      },
+      {
+        "command": "verilog.copyDefineNameFromExplorer",
+        "title": "Verilog: Copy Define Name From Explorer"
+      },
+      {
+        "command": "verilog.copyDefineArgumentFromExplorer",
+        "title": "Verilog: Copy Define Argument From Explorer"
+      },
+      {
+        "command": "verilog.openDefineLocationFromExplorer",
+        "title": "Verilog: Open Define Location From Explorer"
       },
       {
         "command": "verilog.openFliplot",
@@ -1068,6 +1144,168 @@
           "command": "verilog.refreshHdlExplorer",
           "when": "view == verilog.hdlExplorer",
           "group": "navigation"
+        },
+        {
+          "command": "verilog.refreshHierarchy",
+          "when": "view == verilog.hdlExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "verilog.selectActiveTarget",
+          "when": "view == verilog.hdlExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "verilog.showProjectStatus",
+          "when": "view == verilog.hdlExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "verilog.clearHierarchyRootFilter",
+          "when": "view == verilog.hdlExplorer",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "verilog.selectActiveTarget",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.projectRoot",
+          "group": "navigation@1"
+        },
+        {
+          "command": "verilog.showProjectStatus",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.projectRoot",
+          "group": "navigation@2"
+        },
+        {
+          "command": "verilog.refreshHdlExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.projectRoot",
+          "group": "navigation@3"
+        },
+        {
+          "command": "verilog.setActiveTargetFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.compileUnit",
+          "group": "navigation@1"
+        },
+        {
+          "command": "verilog.openCompileUnitSource",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.compileUnit",
+          "group": "navigation@2"
+        },
+        {
+          "command": "verilog.openFileFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.sourceFile",
+          "group": "navigation@1"
+        },
+        {
+          "command": "verilog.revealFileInOs",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.sourceFile",
+          "group": "navigation@2"
+        },
+        {
+          "command": "verilog.copyPathFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.sourceFile",
+          "group": "clipboard@1"
+        },
+        {
+          "command": "verilog.copyRelativePathFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.sourceFile",
+          "group": "clipboard@2"
+        },
+        {
+          "command": "verilog.revealIncludeDirInOs",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.includeDir",
+          "group": "navigation@1"
+        },
+        {
+          "command": "verilog.copyPathFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.includeDir",
+          "group": "clipboard@1"
+        },
+        {
+          "command": "verilog.openModuleFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.module",
+          "group": "navigation@1"
+        },
+        {
+          "command": "verilog.instantiateModuleFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.module",
+          "group": "navigation@2"
+        },
+        {
+          "command": "verilog.showHierarchyFromModule",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.module",
+          "group": "navigation@3"
+        },
+        {
+          "command": "verilog.findModuleReferencesFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.module",
+          "group": "navigation@4"
+        },
+        {
+          "command": "verilog.openModuleFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.hierarchyModule",
+          "group": "navigation@1"
+        },
+        {
+          "command": "verilog.instantiateModuleFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.hierarchyModule",
+          "group": "navigation@2"
+        },
+        {
+          "command": "verilog.showHierarchyFromModule",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.hierarchyModule",
+          "group": "navigation@3"
+        },
+        {
+          "command": "verilog.findModuleReferencesFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.hierarchyModule",
+          "group": "navigation@4"
+        },
+        {
+          "command": "verilog.openInstanceFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.hierarchyInstance",
+          "group": "navigation@1"
+        },
+        {
+          "command": "verilog.openInstanceModuleFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.hierarchyInstance",
+          "group": "navigation@2"
+        },
+        {
+          "command": "verilog.findInstanceModuleReferencesFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.hierarchyInstance",
+          "group": "navigation@3"
+        },
+        {
+          "command": "verilog.openInstanceFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.unresolvedInstance",
+          "group": "navigation@1"
+        },
+        {
+          "command": "verilog.searchUnresolvedModule",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.unresolvedInstance",
+          "group": "navigation@2"
+        },
+        {
+          "command": "verilog.copyModuleNameFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.unresolvedInstance",
+          "group": "clipboard@1"
+        },
+        {
+          "command": "verilog.copyDefineNameFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.define",
+          "group": "clipboard@1"
+        },
+        {
+          "command": "verilog.copyDefineArgumentFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.define",
+          "group": "clipboard@2"
+        },
+        {
+          "command": "verilog.openDefineLocationFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.define",
+          "group": "navigation@1"
         }
       ]
     },

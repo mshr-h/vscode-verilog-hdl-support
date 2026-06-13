@@ -12,6 +12,16 @@ interface ModuleQuickPickItem extends vscode.QuickPickItem {
 export class InstantiationService {
   constructor(private readonly indexService: IndexService) {}
 
+  async instantiateModule(moduleRecord: ModuleRecord): Promise<boolean> {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor || !isHdlDocument(editor.document)) {
+      vscode.window.showWarningMessage('Open a Verilog/SystemVerilog editor before instantiating a module.');
+      return false;
+    }
+    await editor.insertSnippet(buildModuleInstantiationSnippet(moduleRecord));
+    return true;
+  }
+
   async instantiateModuleInteract(fallback: InstantiationFallback): Promise<void> {
     if (!useProjectIndex()) {
       await fallback();
@@ -91,6 +101,10 @@ function useProjectIndex(): boolean {
   return vscode.workspace
     .getConfiguration('verilog.instantiate')
     .get<boolean>('useProjectIndex', true);
+}
+
+function isHdlDocument(document: vscode.TextDocument): boolean {
+  return document.languageId === 'verilog' || document.languageId === 'systemverilog';
 }
 
 function getIndentationString(): string {

@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: MIT
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { HdlExplorerProvider } from '../views/HdlExplorerProvider';
+import {
+  buildActiveTargetQuickPickItems,
+  filterHierarchyRoots,
+  formatDefineArgument,
+  getRelativePath,
+  HdlExplorerProvider,
+} from '../views/HdlExplorerProvider';
 import type { HierarchyService } from '../hierarchy/HierarchyService';
 import type { HierarchySnapshot } from '../hierarchy/HierarchyTypes';
 import type { ProjectService } from '../project/ProjectService';
@@ -49,6 +55,62 @@ suite('HdlExplorerProvider', () => {
     assert.ok((await sectionChildren(provider, root, 'Packages')).some((item) => item.label === 'pkg'));
     assert.ok((await sectionChildren(provider, root, 'Hierarchy (best-effort)')).some((item) => item.label === 'top'));
     assert.ok((await sectionChildren(provider, root, 'Unresolved Instances')).some((item) => item.label === 'u_missing : missing'));
+  });
+
+  test('assigns stable context values to explorer items', async () => {
+    const moduleRecord = createModuleRecord('top');
+    const packageRecord = createSymbolRecord('pkg', 'package');
+    const provider = createProvider({
+      symbols: [moduleRecord, packageRecord],
+      hierarchy: {
+        version: 1,
+        roots: [{
+          moduleName: 'top',
+          module: moduleRecord,
+          instances: [{
+            instanceName: 'u_child',
+            moduleName: 'child',
+            resolvedModule: createModuleRecord('child'),
+            location: new vscode.Location(moduleRecord.uri, moduleRecord.selectionRange),
+          }, {
+            instanceName: 'u_missing',
+            moduleName: 'missing',
+            location: new vscode.Location(moduleRecord.uri, moduleRecord.selectionRange),
+          }],
+          unresolvedInstances: [],
+        }],
+        unresolvedInstances: [],
+        allInstances: [],
+      },
+    });
+
+    const root = await children(provider);
+    const projectItems = await sectionChildren(provider, root, 'HDL Project');
+    const compileUnits = projectItems.find((item) => item.label === 'Compile Units');
+    assert.ok(compileUnits);
+    const compileUnit = (await children(provider, compileUnits))[0];
+    assert.ok(compileUnit);
+    const compileUnitChildren = await children(provider, compileUnit);
+    const filesGroup = compileUnitChildren.find((item) => item.label === 'Files');
+    const includeDirsGroup = compileUnitChildren.find((item) => item.label === 'Include Dirs');
+    const definesGroup = compileUnitChildren.find((item) => item.label === 'Defines');
+    assert.ok(filesGroup);
+    assert.ok(includeDirsGroup);
+    assert.ok(definesGroup);
+    const hierarchyRoot = (await sectionChildren(provider, root, 'Hierarchy (best-effort)'))[0];
+    assert.ok(hierarchyRoot);
+    const hierarchyChildren = await children(provider, hierarchyRoot);
+
+    assert.strictEqual(root.find((item) => item.label === 'HDL Project')?.contextValue, 'hdlExplorer.projectRoot');
+    assert.strictEqual(compileUnit.contextValue, 'hdlExplorer.compileUnit');
+    assert.strictEqual((await children(provider, filesGroup))[0]?.contextValue, 'hdlExplorer.sourceFile');
+    assert.strictEqual((await children(provider, includeDirsGroup))[0]?.contextValue, 'hdlExplorer.includeDir');
+    assert.strictEqual((await children(provider, definesGroup))[0]?.contextValue, 'hdlExplorer.define');
+    assert.strictEqual((await sectionChildren(provider, root, 'Modules'))[0]?.contextValue, 'hdlExplorer.module');
+    assert.strictEqual((await sectionChildren(provider, root, 'Packages'))[0]?.contextValue, 'hdlExplorer.package');
+    assert.strictEqual(hierarchyRoot.contextValue, 'hdlExplorer.hierarchyModule');
+    assert.strictEqual(hierarchyChildren[0]?.contextValue, 'hdlExplorer.hierarchyInstance');
+    assert.strictEqual(hierarchyChildren[1]?.contextValue, 'hdlExplorer.unresolvedInstance');
   });
 
   test('maps module and instance items to source locations', async () => {
@@ -112,6 +174,92 @@ suite('HdlExplorerProvider', () => {
     } finally {
       await config.update('verilog.hdlExplorer.enabled', previous, vscode.ConfigurationTarget.Global);
     }
+  });
+
+  test('filters hierarchy roots and clears the filter', async () => {
+    const top = createModuleRecord('top');
+    const child = createModuleRecord('child');
+    const provider = createProvider({
+      symbols: [top, child],
+      hierarchy: {
+        version: 1,
+        roots: [{
+          moduleName: 'top',
+          module: top,
+          instances: [{
+            instanceName: 'u_child',
+            moduleName: 'child',
+            resolvedModule: child,
+            location: new vscode.Location(top.uri, top.selectionRange),
+            children: {
+              moduleName: 'child',
+              module: child,
+              instances: [],
+              unresolvedInstances: [],
+            },
+          }],
+          unresolvedInstances: [],
+        }],
+        unresolvedInstances: [],
+        allInstances: [],
+      },
+    });
+
+    provider.setHierarchyRootFilter('child', 'unit');
+    const filtered = await sectionChildren(provider, await children(provider), 'Hierarchy (best-effort)');
+    assert.strictEqual(filtered[0]?.label, 'Filtered root');
+    assert.strictEqual(filtered[1]?.label, 'child');
+
+    provider.clearHierarchyRootFilter();
+    const unfiltered = await sectionChildren(provider, await children(provider), 'Hierarchy (best-effort)');
+    assert.strictEqual(unfiltered[0]?.label, 'top');
+  });
+
+  test('helper functions build active target, path, define, and hierarchy values', () => {
+    const snapshot = createProjectSnapshot();
+    const compileUnit = snapshot.compileUnits[0];
+    assert.ok(compileUnit);
+    const picks = buildActiveTargetQuickPickItems(snapshot.compileUnits);
+    assert.strictEqual(picks[0]?.targetId, '');
+    assert.strictEqual(picks[1]?.label, compileUnit.name);
+    assert.strictEqual(picks[1]?.targetId, compileUnit.id);
+
+    assert.strictEqual(
+      getRelativePath(vscode.Uri.file('/workspace/rtl/top.sv'), vscode.Uri.file('/workspace')),
+      'rtl/top.sv'
+    );
+    const outsideWorkspaceUri = vscode.Uri.file('/other/top.sv');
+    assert.strictEqual(
+      getRelativePath(outsideWorkspaceUri, vscode.Uri.file('/workspace')),
+      outsideWorkspaceUri.fsPath
+    );
+    assert.strictEqual(formatDefineArgument('SIM', { name: 'SIM', value: true, source: 'settings' }), '+define+SIM');
+    assert.strictEqual(
+      formatDefineArgument('WIDTH', { name: 'WIDTH', value: '32', source: 'settings' }),
+      '+define+WIDTH=32'
+    );
+
+    const top = createModuleRecord('top');
+    const child = createModuleRecord('child');
+    const roots = [{
+      moduleName: 'top',
+      module: top,
+      instances: [{
+        instanceName: 'u_child',
+        moduleName: 'child',
+        resolvedModule: child,
+        location: new vscode.Location(top.uri, top.selectionRange),
+        children: {
+          moduleName: 'child',
+          module: child,
+          instances: [],
+          unresolvedInstances: [],
+        },
+      }],
+      unresolvedInstances: [],
+    }];
+    assert.deepStrictEqual(filterHierarchyRoots(roots).map((node) => node.moduleName), ['top']);
+    assert.deepStrictEqual(filterHierarchyRoots(roots, { moduleName: 'child', compileUnitId: 'unit' }).map((node) => node.moduleName), ['child']);
   });
 });
 

@@ -128,7 +128,7 @@ Use **Verilog: Reload Project**, **Verilog: Show Project Status**, and **Verilog
 
 ### HDL Explorer And Hierarchy
 
-The **HDL Explorer** view appears in VS Code's Explorer sidebar. It shows the active project target, compile units, indexed modules/packages, a best-effort module hierarchy, and unresolved instances when enabled.
+The **HDL Explorer** view appears in VS Code's Explorer sidebar. It shows the active project target, compile units, indexed modules/packages, a best-effort module hierarchy, and unresolved instances when enabled. Explorer context menus provide common project actions such as selecting the active target, opening HDL files or declarations, instantiating modules, filtering hierarchy roots, finding references, and copying paths or defines.
 
 Hierarchy detection is intentionally lightweight and does not perform full SystemVerilog elaboration. Configure top modules with `verilog.project.topModules` when inference is ambiguous, and control hierarchy behavior with `verilog.hierarchy.*` settings.
 
