@@ -61,6 +61,29 @@ suite('Module Instantiation', () => {
     }
   });
 
+  test('direct project-index instantiation handles no active editor gracefully', async () => {
+    const service = new InstantiationService({
+      getIndex: () => new SemanticIndex(1, []),
+    } as unknown as IndexService);
+    const originalShowWarningMessage = vscode.window.showWarningMessage;
+    let warning: string | undefined;
+
+    try {
+      await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+      (vscode.window as any).showWarningMessage = async (message: string) => {
+        warning = message;
+        return undefined;
+      };
+
+      const inserted = await service.instantiateModule(createModuleRecord('idx_mod', [], []));
+
+      assert.strictEqual(inserted, false);
+      assert.ok(warning?.includes('Verilog/SystemVerilog'));
+    } finally {
+      (vscode.window as any).showWarningMessage = originalShowWarningMessage;
+    }
+  });
+
   test('falls back when project index instantiation is disabled', async () => {
     const config = vscode.workspace.getConfiguration('verilog.instantiate');
     const previous = config.get('useProjectIndex');
