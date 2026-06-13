@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 import * as assert from 'assert';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import {
   buildIcarusCompileUnitArgs,
@@ -14,12 +15,13 @@ import type { CompileUnitLintContext } from '../linter/ProjectLintContext';
 suite('CompileUnitLintArgs', () => {
   test('generates Slang args with include dirs, defines, custom args, and source order', () => {
     const context = createContext();
+    const docFolder = path.dirname(context.ownerDocument.uri.fsPath);
     const includePath = context.includeDirs[0]?.fsPath;
     const firstSourcePath = context.files[0]?.uri.fsPath;
     const secondSourcePath = context.files[1]?.uri.fsPath;
 
     const args = buildSlangCompileUnitArgs({
-      docFolder: '/workspace/rtl',
+      docFolder,
       includePaths: getCompileUnitIncludePaths(context),
       defineArgs: getCompileUnitDefineArgs(context),
       customArguments: '--flag "two words"',
@@ -28,9 +30,9 @@ suite('CompileUnitLintArgs', () => {
 
     assert.deepStrictEqual(args, [
       '-I',
-      '/workspace/rtl',
+      docFolder,
       '-I',
-      '/workspace/inc',
+      includePath,
       '-D',
       'SIM',
       '-D',
@@ -45,13 +47,14 @@ suite('CompileUnitLintArgs', () => {
 
   test('generates Verilator args with source order', () => {
     const context = createContext();
+    const docFolder = path.dirname(context.ownerDocument.uri.fsPath);
     const includePath = context.includeDirs[0]?.fsPath;
     const firstSourcePath = context.files[0]?.uri.fsPath;
     const secondSourcePath = context.files[1]?.uri.fsPath;
 
     const args = buildVerilatorCompileUnitArgs({
       languageId: 'systemverilog',
-      docFolder: '/workspace/rtl',
+      docFolder,
       includePaths: getCompileUnitIncludePaths(context),
       defineArgs: getCompileUnitDefineArgs(context),
       customArguments: '-Wall',
@@ -61,7 +64,7 @@ suite('CompileUnitLintArgs', () => {
     assert.deepStrictEqual(args, [
       '-sv',
       '--lint-only',
-      '-I/workspace/rtl',
+      `-I${docFolder}`,
       `-I${includePath}`,
       '-DSIM',
       '-DWIDTH=32',
