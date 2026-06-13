@@ -6,6 +6,7 @@ import { CtagsManager } from './ctags';
 import * as DocumentSymbolProvider from './providers/DocumentSymbolProvider';
 import * as HoverProvider from './providers/HoverProvider';
 import * as DefinitionProvider from './providers/DefinitionProvider';
+import * as ReferenceProvider from './providers/ReferenceProvider';
 import * as CompletionItemProvider from './providers/CompletionItemProvider';
 import * as CodeActionProvider from './providers/CodeActionProvider';
 import * as ModuleInstantiation from './commands/ModuleInstantiation';
@@ -23,6 +24,7 @@ import { InstantiationService } from './hdl/InstantiationService';
 import { CompletionService } from './hdl/CompletionService';
 import { ModuleInstanceCodeActionService } from './hdl/ModuleInstanceCodeActionService';
 import { HoverService } from './hdl/HoverService';
+import { ReferenceService } from './hdl/ReferenceService';
 import { HierarchyService } from './hierarchy/HierarchyService';
 import { ProjectDiagnosticManager } from './project/ProjectDiagnosticManager';
 import { ProjectService } from './project/ProjectService';
@@ -61,6 +63,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const completionService = new CompletionService(projectService, indexService, ctagsManager);
   const codeActionService = new ModuleInstanceCodeActionService(projectService, indexService);
   const hoverService = new HoverService(projectService, indexService, ctagsManager);
+  const referenceService = new ReferenceService(projectService, indexService, ctagsManager);
   const hierarchyService = new HierarchyService(projectService, indexService);
   const semanticDiagnosticService = new SemanticDiagnosticService(projectService, indexService);
   const hdlExplorerProvider = new HdlExplorerProvider(projectService, indexService, hierarchyService);
@@ -164,6 +167,22 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerWorkspaceSymbolProvider(
       new VerilogWorkspaceSymbolProvider(indexService)
+    )
+  );
+
+  const verilogReferenceProvider = new ReferenceProvider.VerilogReferenceProvider(
+    referenceService
+  );
+  context.subscriptions.push(
+    vscode.languages.registerReferenceProvider(
+      { scheme: 'file', language: 'verilog' },
+      verilogReferenceProvider
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerReferenceProvider(
+      { scheme: 'file', language: 'systemverilog' },
+      verilogReferenceProvider
     )
   );
 
