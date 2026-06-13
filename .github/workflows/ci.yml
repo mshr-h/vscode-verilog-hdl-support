@@ -143,13 +143,7 @@ jobs:
         if: runner.os == 'Linux'
       - run: npm test
         if: runner.os == 'macOS'
-      - run: npm run compile-tests
-        if: runner.os == 'Windows'
-      - run: npm run compile
-        if: runner.os == 'Windows'
-      - run: npm run test:windows
-        if: runner.os == 'Windows'
-      - run: npm run test:windows-slang
+      - run: npm test
         if: runner.os == 'Windows'
       - run: npm run compile
         if: runner.os != 'Windows'
