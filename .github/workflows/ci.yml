@@ -9,10 +9,20 @@ jobs:
     name: Upload vsix package
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        include:
+          - os: macos-latest
+            slang_asset: slang-macos-arm64.tar.gz
+            slang_sha256: 6d2f86ffedfefe663c6f55fd77348806faafccd69e71f7359986b0c9604f9187
+          - os: ubuntu-latest
+            slang_asset: slang-linux-x86_64.tar.gz
+            slang_sha256: 951a170e10e25e54c91565030acfdfc11c3226714ebf225a18ad4166a898d8a4
+          - os: windows-latest
+            slang_asset: slang-windows-x86_64.zip
+            slang_sha256: 23d0a3d052cf88da13acc8b73161d77e3242ffbc630bb0577a3ccda0e4e39d81
       fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
+      SLANG_VERSION: v11.0
       VERIBLE_VERSION: v0.0-4071-g8d9f2c97
       VERIBLE_SHA256: bfa43258d9132797ec9dca2a624395bb83967e18b888803c022d1c9a889203b6
     steps:
@@ -23,6 +33,55 @@ jobs:
         with:
           node-version: lts/*
       - run: npm ci
+      - name: Cache slang
+        id: cache-slang
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.cache/veriloghdl-tools/slang/${{ env.SLANG_VERSION }}/${{ matrix.slang_asset }}
+          key: ${{ runner.os }}-slang-${{ env.SLANG_VERSION }}-${{ matrix.slang_asset }}-${{ matrix.slang_sha256 }}
+      - name: Install slang (Unix)
+        if: runner.os != 'Windows' && steps.cache-slang.outputs.cache-hit != 'true'
+        run: |
+          set -euxo pipefail
+          install_dir="$HOME/.cache/veriloghdl-tools/slang/${SLANG_VERSION}/${{ matrix.slang_asset }}"
+          archive="$RUNNER_TEMP/${{ matrix.slang_asset }}"
+          curl -fsSL --retry 3 --retry-delay 5 \
+            -o "$archive" \
+            "https://github.com/MikePopoloski/slang/releases/download/${SLANG_VERSION}/${{ matrix.slang_asset }}"
+          echo "${{ matrix.slang_sha256 }}  ${archive}" | shasum -a 256 --check -
+          rm -rf "$install_dir"
+          mkdir -p "$install_dir"
+          tar -xzf "$archive" -C "$install_dir"
+          chmod +x "$install_dir/slang"
+      - name: Install slang (Windows)
+        if: runner.os == 'Windows' && steps.cache-slang.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          $installDir = Join-Path $env:USERPROFILE ".cache/veriloghdl-tools/slang/$env:SLANG_VERSION/${{ matrix.slang_asset }}"
+          $archive = Join-Path $env:RUNNER_TEMP "${{ matrix.slang_asset }}"
+          curl.exe -fsSL --retry 3 --retry-delay 5 `
+            -o $archive `
+            "https://github.com/MikePopoloski/slang/releases/download/$env:SLANG_VERSION/${{ matrix.slang_asset }}"
+          $actualHash = (Get-FileHash -Algorithm SHA256 $archive).Hash.ToLowerInvariant()
+          if ($actualHash -ne "${{ matrix.slang_sha256 }}") {
+            throw "slang archive hash mismatch: expected ${{ matrix.slang_sha256 }}, got $actualHash"
+          }
+          if (Test-Path $installDir) {
+            Remove-Item -Recurse -Force $installDir
+          }
+          New-Item -ItemType Directory -Force $installDir | Out-Null
+          Expand-Archive -LiteralPath $archive -DestinationPath $installDir
+      - name: Add slang to PATH
+        run: echo "$HOME/.cache/veriloghdl-tools/slang/${SLANG_VERSION}/${{ matrix.slang_asset }}" >> "$GITHUB_PATH"
+        if: runner.os != 'Windows'
+      - name: Add slang to PATH (Windows)
+        shell: pwsh
+        run: |
+          $installDir = Join-Path $env:USERPROFILE ".cache/veriloghdl-tools/slang/$env:SLANG_VERSION/${{ matrix.slang_asset }}"
+          $installDir | Out-File -FilePath $env:GITHUB_PATH -Append
+        if: runner.os == 'Windows'
+      - name: Verify slang
+        run: slang --version
       - name: Cache Verible (macOS)
         id: cache-verible
         if: runner.os == 'macOS'
@@ -89,6 +148,8 @@ jobs:
       - run: npm run compile
         if: runner.os == 'Windows'
       - run: npm run test:windows
+        if: runner.os == 'Windows'
+      - run: npm run test:windows-slang
         if: runner.os == 'Windows'
       - run: npm run compile
         if: runner.os != 'Windows'
