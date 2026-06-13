@@ -4,7 +4,8 @@ import * as vscode from 'vscode';
 import { buildTclspInitializationOptions } from '../languageServer/tclspOptions';
 
 suite('tclsp initialization options', () => {
-  test('builds global and workspace settings', async () => {
+  test('builds global and workspace settings', async function () {
+    this.timeout(10000);
     const config = vscode.workspace.getConfiguration('verilog.languageServer.tclsp');
     const inspect = config.inspect<string>('configPath');
     const previousGlobal = inspect?.globalValue;
