@@ -30,7 +30,7 @@ export class HierarchyBuilder {
     const instancesByParent = groupInstancesByParent(instances);
     const resolvedInstanceKeys = new Set(
       instances
-        .map((instance) => findBestModule(index.findModules(instance.moduleName), instance.compileUnitId))
+        .map((instance) => index.findBestModule(instance.moduleName, instance.compileUnitId))
         .filter((moduleRecord): moduleRecord is ModuleRecord => moduleRecord !== undefined)
         .map(moduleKey)
     );
@@ -78,7 +78,7 @@ function buildNode(
   const unresolvedInstances: HierarchyInstanceNode[] = [];
 
   for (const instance of childInstances) {
-    const resolvedModule = findBestModule(index.findModules(instance.moduleName), instance.compileUnitId);
+    const resolvedModule = index.findBestModule(instance.moduleName, instance.compileUnitId);
     const instanceNode: HierarchyInstanceNode = {
       instanceName: instance.instanceName,
       moduleName: instance.moduleName,
@@ -151,16 +151,12 @@ function findUnresolvedInstances(
   index: SemanticIndex
 ): HierarchyInstanceNode[] {
   return instances
-    .filter((instance) => !findBestModule(index.findModules(instance.moduleName), instance.compileUnitId))
+    .filter((instance) => !index.findBestModule(instance.moduleName, instance.compileUnitId))
     .map((instance) => ({
       instanceName: instance.instanceName,
       moduleName: instance.moduleName,
       location: new vscode.Location(instance.uri, instance.selectionRange),
     }));
-}
-
-function findBestModule(modules: ModuleRecord[], compileUnitId: string): ModuleRecord | undefined {
-  return modules.find((moduleRecord) => moduleRecord.compileUnitId === compileUnitId) ?? modules[0];
 }
 
 function moduleKey(moduleRecord: ModuleRecord): string {

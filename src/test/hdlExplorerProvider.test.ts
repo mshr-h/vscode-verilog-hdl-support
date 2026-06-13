@@ -43,6 +43,8 @@ suite('HdlExplorerProvider', () => {
       'Hierarchy (best-effort)',
       'Unresolved Instances',
     ]);
+    const projectItems = await sectionChildren(provider, root, 'HDL Project');
+    assert.ok(projectItems.some((item) => item.label === 'Active Compile Unit'));
     assert.ok((await sectionChildren(provider, root, 'Modules')).some((item) => item.label === 'top'));
     assert.ok((await sectionChildren(provider, root, 'Packages')).some((item) => item.label === 'pkg'));
     assert.ok((await sectionChildren(provider, root, 'Hierarchy (best-effort)')).some((item) => item.label === 'top'));

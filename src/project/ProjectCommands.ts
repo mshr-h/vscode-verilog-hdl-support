@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
 import type { IndexService } from '../semantic/IndexService';
+import { getActiveCompileUnit } from './ProjectTargetResolver';
 import type { ProjectService } from './ProjectService';
 import type { FileContext, ProjectDiagnostic, ProjectSnapshot } from './ProjectTypes';
 
@@ -43,12 +44,14 @@ export function registerProjectCommands(
 
 export function renderProjectStatus(projectService: ProjectService): string {
   const snapshot = projectService.getSnapshot();
+  const activeCompileUnit = getActiveCompileUnit(snapshot);
   const lines: string[] = [
     '# Verilog Project Status',
     '',
     `Project enabled: ${isProjectEnabled(snapshot) ? 'yes' : 'no'}`,
     `Workspace root: ${snapshot.workspaceRoot.fsPath}`,
     `Active target: ${snapshot.activeTargetId || '(none)'}`,
+    `Resolved active compile unit: ${activeCompileUnit ? `${activeCompileUnit.name} (${activeCompileUnit.id})` : '(none)'}`,
     `Compile units: ${snapshot.compileUnits.length}`,
     `Files: ${countFiles(snapshot)}`,
     '',

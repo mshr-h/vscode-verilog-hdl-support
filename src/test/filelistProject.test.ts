@@ -10,6 +10,10 @@ import { tokenizeFilelist } from '../filelist/FilelistTokenizer';
 import { FileContextResolver } from '../project/FileContextResolver';
 import { ProjectLoader } from '../project/ProjectLoader';
 import { buildCompileUnit } from '../project/ProjectModelMerger';
+import {
+  createActiveTargetDiagnostic,
+  getActiveCompileUnit,
+} from '../project/ProjectTargetResolver';
 import type { ProjectSnapshot } from '../project/ProjectTypes';
 import type { ProjectSettings } from '../project/providers/SettingsProjectSourceProvider';
 
@@ -139,43 +143,54 @@ suite('ProjectModelMerger', () => {
 });
 
 suite('FileContextResolver', () => {
+  test('uses the only compile unit when active target is empty', () => {
+    const file = vscode.Uri.file('/workspace/rtl/top.sv');
+    const snapshot = createSnapshot('', [
+      createCompileUnit('a', 'rtl', file),
+    ]);
+
+    assert.strictEqual(getActiveCompileUnit(snapshot)?.id, 'a');
+    assert.strictEqual(new FileContextResolver(snapshot).getPreferredFileContext(file)?.compileUnitId, 'a');
+  });
+
   test('returns all contexts and prefers the active target', () => {
     const file = vscode.Uri.file('/workspace/rtl/top.sv');
-    const snapshot: ProjectSnapshot = {
-      version: 1,
-      workspaceRoot: vscode.Uri.file('/workspace'),
-      activeTargetId: 'b',
-      compileUnits: [
-        buildCompileUnit({
-          id: 'a',
-          name: 'a',
-          root: vscode.Uri.file('/workspace'),
-          files: [{ resolvedPath: file.fsPath, kind: 'source' }],
-          includeDirs: [],
-          defines: [],
-          settingsIncludeDirs: [],
-          settingsDefines: {},
-          source: { type: 'settings' },
-        }),
-        buildCompileUnit({
-          id: 'b',
-          name: 'b',
-          root: vscode.Uri.file('/workspace'),
-          files: [{ resolvedPath: file.fsPath, kind: 'source' }],
-          includeDirs: [],
-          defines: [],
-          settingsIncludeDirs: [],
-          settingsDefines: {},
-          source: { type: 'settings' },
-        }),
-      ],
-      diagnostics: [],
-    };
+    const snapshot = createSnapshot('b', [
+      createCompileUnit('a', 'a', file),
+      createCompileUnit('b', 'b', file),
+    ]);
 
     const resolver = new FileContextResolver(snapshot);
     assert.deepStrictEqual(resolver.getFileContexts(file).map((context) => context.compileUnitId), ['a', 'b']);
     assert.strictEqual(resolver.getPreferredFileContext(file)?.compileUnitId, 'b');
     assert.strictEqual(resolver.getPreferredFileContext(vscode.Uri.file('/workspace/missing.sv')), undefined);
+  });
+
+  test('active target can match compile unit name', () => {
+    const file = vscode.Uri.file('/workspace/rtl/top.sv');
+    const snapshot = createSnapshot('sim-target', [
+      createCompileUnit('rtl-id', 'rtl-target', file),
+      createCompileUnit('sim-id', 'sim-target', file),
+    ]);
+
+    assert.strictEqual(getActiveCompileUnit(snapshot)?.id, 'sim-id');
+    assert.strictEqual(new FileContextResolver(snapshot).getPreferredFileContext(file)?.compileUnitId, 'sim-id');
+  });
+
+  test('invalid active target creates warning diagnostic and preserves fallback context', () => {
+    const file = vscode.Uri.file('/workspace/rtl/top.sv');
+    const snapshot = createSnapshot('missing-target', [
+      createCompileUnit('a', 'rtl', file),
+      createCompileUnit('b', 'sim', file),
+    ]);
+
+    const diagnostic = createActiveTargetDiagnostic(snapshot);
+
+    assert.strictEqual(diagnostic?.code, 'active-target-not-found');
+    assert.strictEqual(diagnostic?.severity, 'warning');
+    assert.ok(diagnostic?.message.includes('missing-target'));
+    assert.ok(diagnostic?.message.includes('rtl (a)'));
+    assert.strictEqual(new FileContextResolver(snapshot).getPreferredFileContext(file)?.compileUnitId, 'a');
   });
 });
 
@@ -207,3 +222,27 @@ suite('ProjectLoader', () => {
     assert.ok(!snapshot.compileUnits[0]?.files.some((file) => file.uri.fsPath.endsWith('skip.sv')));
   });
 });
+
+function createSnapshot(activeTargetId: string, compileUnits: ProjectSnapshot['compileUnits']): ProjectSnapshot {
+  return {
+    version: 1,
+    workspaceRoot: vscode.Uri.file('/workspace'),
+    activeTargetId,
+    compileUnits,
+    diagnostics: [],
+  };
+}
+
+function createCompileUnit(id: string, name: string, file: vscode.Uri): ProjectSnapshot['compileUnits'][number] {
+  return buildCompileUnit({
+    id,
+    name,
+    root: vscode.Uri.file('/workspace'),
+    files: [{ resolvedPath: file.fsPath, kind: 'source' }],
+    includeDirs: [],
+    defines: [],
+    settingsIncludeDirs: [],
+    settingsDefines: {},
+    source: { type: 'settings' },
+  });
+}
