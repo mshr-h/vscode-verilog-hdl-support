@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.26.1] - 2026-06-13
+
+### Fixed
+
+- Disabled project indexing by default to avoid unexpected Extension Host crashes/freezes in very large workspaces. [#617](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/617)
+- Added `verilog.project.maxAutoDiscoveredFiles` to skip fallback workspace indexing when too many HDL files are discovered. [#617](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/617)
+
 ## [1.26.0] - 2026-06-13
 
 ### Added
