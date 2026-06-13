@@ -29,6 +29,7 @@ import { ProjectService } from './project/ProjectService';
 import { ProjectWatcher } from './project/ProjectWatcher';
 import { registerProjectCommands } from './project/ProjectCommands';
 import { IndexService } from './semantic/IndexService';
+import { SemanticDiagnosticService } from './semantic/SemanticDiagnosticService';
 import { VerilogWorkspaceSymbolProvider } from './providers/WorkspaceSymbolProvider';
 import { HdlExplorerProvider, registerHdlExplorerCommands } from './views/HdlExplorerProvider';
 
@@ -61,12 +62,14 @@ export async function activate(context: vscode.ExtensionContext) {
   const codeActionService = new ModuleInstanceCodeActionService(projectService, indexService);
   const hoverService = new HoverService(projectService, indexService, ctagsManager);
   const hierarchyService = new HierarchyService(projectService, indexService);
+  const semanticDiagnosticService = new SemanticDiagnosticService(projectService, indexService);
   const hdlExplorerProvider = new HdlExplorerProvider(projectService, indexService, hierarchyService);
   context.subscriptions.push(
     projectService,
     projectDiagnosticManager,
     indexService,
     hierarchyService,
+    semanticDiagnosticService,
     hdlExplorerProvider,
     new ProjectWatcher(projectService)
   );

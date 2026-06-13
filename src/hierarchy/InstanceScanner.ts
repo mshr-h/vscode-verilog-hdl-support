@@ -116,6 +116,8 @@ function scanModuleBody(
       continue;
     }
     const selectionRange = rangeFromOffset(original, lineStarts, parsed.instanceStart, parsed.instanceName.length);
+    const parameterOverrideConnections = collectNamedConnectionRecords(parsed.parameterSegment, original, lineStarts);
+    const portConnectionRecords = collectNamedConnectionRecords(parsed.portSegment, original, lineStarts);
     instances.push({
       id: `${compileUnitId}:${uri.fsPath}:${moduleBlock.name}:${parsed.instanceName}:${parsed.instanceStart}`,
       instanceName: parsed.instanceName,
@@ -126,9 +128,12 @@ function scanModuleBody(
         positionFromOffset(lineStarts, statement.start),
         positionFromOffset(lineStarts, statement.end + 1)
       ),
+      moduleNameRange: rangeFromOffset(original, lineStarts, parsed.moduleStart, parsed.moduleName.length),
       selectionRange,
-      parameterOverrides: collectNamedConnections(parsed.parameterText),
-      portConnections: collectNamedConnections(parsed.portText),
+      parameterOverrides: parameterOverrideConnections.map((connection) => connection.name),
+      portConnections: portConnectionRecords.map((connection) => connection.name),
+      parameterOverrideConnections,
+      portConnectionRecords,
       compileUnitId,
     });
   }
@@ -200,10 +205,11 @@ function splitTopLevelStatements(
 
 interface ParsedInstanceStatement {
   moduleName: string;
+  moduleStart: number;
   instanceName: string;
   instanceStart: number;
-  parameterText: string;
-  portText: string;
+  parameterSegment?: ParenthesizedSegment;
+  portSegment: ParenthesizedSegment;
 }
 
 function parseInstanceStatement(
@@ -217,7 +223,7 @@ function parseInstanceStatement(
     return undefined;
   }
   index = skipWhitespace(text, moduleName.end, statementEnd);
-  let parameterText = '';
+  let parameterSegment: ParenthesizedSegment | undefined;
   if (text[index] === '#') {
     index = skipWhitespace(text, index + 1, statementEnd);
     if (text[index] !== '(') {
@@ -227,7 +233,7 @@ function parseInstanceStatement(
     if (!parameterList) {
       return undefined;
     }
-    parameterText = parameterList.text;
+    parameterSegment = parameterList;
     index = skipWhitespace(text, parameterList.closeOffset + 1, statementEnd);
   }
 
@@ -248,10 +254,11 @@ function parseInstanceStatement(
   }
   return {
     moduleName: moduleName.text,
+    moduleStart: moduleName.start,
     instanceName: instanceName.text,
     instanceStart: instanceName.start,
-    parameterText,
-    portText: portList.text,
+    parameterSegment,
+    portSegment: portList,
   };
 }
 
@@ -293,17 +300,57 @@ function readParenthesized(
   return undefined;
 }
 
-function collectNamedConnections(text: string): string[] {
-  const names: string[] = [];
+function collectNamedConnectionRecords(
+  segment: ParenthesizedSegment | undefined,
+  original: string,
+  lineStarts: number[]
+): Array<{ name: string; range: vscode.Range }> {
+  if (!segment || !hasOnlyNamedConnections(segment.text)) {
+    return [];
+  }
+  const records: Array<{ name: string; range: vscode.Range }> = [];
   const seen = new Set<string>();
-  for (const match of text.matchAll(/\.([A-Za-z_][A-Za-z0-9_$]*)\s*\(/g)) {
+  for (const match of segment.text.matchAll(/\.([A-Za-z_][A-Za-z0-9_$]*)\s*\(/g)) {
     const name = match[1] ?? '';
     if (!seen.has(name)) {
       seen.add(name);
-      names.push(name);
+      const dotOffset = segment.openOffset + 1 + (match.index ?? 0);
+      records.push({
+        name,
+        range: rangeFromOffset(original, lineStarts, dotOffset, name.length + 1),
+      });
     }
   }
-  return names;
+  return records;
+}
+
+function hasOnlyNamedConnections(text: string): boolean {
+  for (const item of splitConnectionItems(text)) {
+    const trimmed = item.trim();
+    if (trimmed.length > 0 && !trimmed.startsWith('.')) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function splitConnectionItems(text: string): string[] {
+  const items: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let index = 0; index < text.length; index += 1) {
+    const ch = text[index];
+    if (ch === '(' || ch === '[' || ch === '{') {
+      depth += 1;
+    } else if (ch === ')' || ch === ']' || ch === '}') {
+      depth = Math.max(0, depth - 1);
+    } else if (ch === ',' && depth === 0) {
+      items.push(text.slice(start, index));
+      start = index + 1;
+    }
+  }
+  items.push(text.slice(start));
+  return items;
 }
 
 function skipWhitespace(text: string, start: number, end: number): number {

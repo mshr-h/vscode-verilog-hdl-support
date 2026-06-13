@@ -828,6 +828,54 @@
         }
       },
       {
+        "title": "Verilog: Semantic Diagnostics",
+        "properties": {
+          "verilog.semanticDiagnostics.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Enable lightweight project-aware Verilog/SystemVerilog semantic diagnostics."
+          },
+          "verilog.semanticDiagnostics.unresolvedModules.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Report unresolved module instantiations from the project index."
+          },
+          "verilog.semanticDiagnostics.unknownPorts.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Report named instance port connections that do not exist on the resolved module."
+          },
+          "verilog.semanticDiagnostics.unknownParameters.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Report named parameter overrides that do not exist on the resolved module."
+          },
+          "verilog.semanticDiagnostics.unresolvedIncludes.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Report unresolved `include paths using the active file context."
+          },
+          "verilog.semanticDiagnostics.unresolvedMacros.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "Report unresolved macro usages. Disabled by default to avoid noisy diagnostics in macro-heavy projects."
+          },
+          "verilog.semanticDiagnostics.maxFiles": {
+            "scope": "window",
+            "type": "number",
+            "default": 1000,
+            "minimum": 1,
+            "markdownDescription": "Maximum number of project files scanned by lightweight semantic diagnostics."
+          }
+        }
+      },
+      {
         "title": "Verilog: Completion",
         "properties": {
           "verilog.completion.ports.enabled": {

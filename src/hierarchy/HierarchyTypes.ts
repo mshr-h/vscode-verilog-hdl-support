@@ -2,6 +2,11 @@
 import * as vscode from 'vscode';
 import type { ModuleRecord } from '../semantic/SymbolRecords';
 
+export interface NamedConnectionRecord {
+  name: string;
+  range: vscode.Range;
+}
+
 export interface ModuleInstanceRecord {
   id: string;
   instanceName: string;
@@ -9,9 +14,12 @@ export interface ModuleInstanceRecord {
   parentModuleName: string;
   uri: vscode.Uri;
   range: vscode.Range;
+  moduleNameRange: vscode.Range;
   selectionRange: vscode.Range;
   parameterOverrides: string[];
   portConnections: string[];
+  parameterOverrideConnections: NamedConnectionRecord[];
+  portConnectionRecords: NamedConnectionRecord[];
   compileUnitId: string;
 }
 
