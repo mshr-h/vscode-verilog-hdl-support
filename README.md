@@ -119,6 +119,8 @@ The extension can build a lightweight project model for Verilog/SystemVerilog wo
 
 The project model powers cross-file module lookup, include resolution, workspace symbols, hover, completion, module instantiation, HDL Explorer, and compile-unit linting. Existing Ctags behavior remains available as a fallback when the project index has no answer or the project model is disabled with `verilog.project.enabled`.
 
+Project diagnostics with source locations are published to VS Code Problems; diagnostics without a precise location remain visible in Project Status, Doctor, and HDL Explorer. When multiple compile units exist, `verilog.project.activeTarget` can match either a compile unit id or name; if it is empty, a single compile unit is selected automatically.
+
 Use **Verilog: Reload Project**, **Verilog: Show Project Status**, and **Verilog: Show Project Modules** to inspect or refresh the current project model.
 
 ### HDL Explorer And Hierarchy

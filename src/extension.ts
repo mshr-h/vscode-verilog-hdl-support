@@ -24,6 +24,7 @@ import { CompletionService } from './hdl/CompletionService';
 import { ModuleInstanceCodeActionService } from './hdl/ModuleInstanceCodeActionService';
 import { HoverService } from './hdl/HoverService';
 import { HierarchyService } from './hierarchy/HierarchyService';
+import { ProjectDiagnosticManager } from './project/ProjectDiagnosticManager';
 import { ProjectService } from './project/ProjectService';
 import { ProjectWatcher } from './project/ProjectWatcher';
 import { registerProjectCommands } from './project/ProjectCommands';
@@ -52,6 +53,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(ctagsManager);
 
   const projectService = new ProjectService();
+  const projectDiagnosticManager = new ProjectDiagnosticManager(projectService);
   const indexService = new IndexService(projectService);
   const definitionService = new DefinitionService(projectService, indexService, ctagsManager);
   const instantiationService = new InstantiationService(indexService);
@@ -60,7 +62,14 @@ export async function activate(context: vscode.ExtensionContext) {
   const hoverService = new HoverService(projectService, indexService, ctagsManager);
   const hierarchyService = new HierarchyService(projectService, indexService);
   const hdlExplorerProvider = new HdlExplorerProvider(projectService, indexService, hierarchyService);
-  context.subscriptions.push(projectService, indexService, hierarchyService, hdlExplorerProvider, new ProjectWatcher(projectService));
+  context.subscriptions.push(
+    projectService,
+    projectDiagnosticManager,
+    indexService,
+    hierarchyService,
+    hdlExplorerProvider,
+    new ProjectWatcher(projectService)
+  );
   context.subscriptions.push(...registerProjectCommands(projectService, indexService));
   context.subscriptions.push(...registerHdlExplorerCommands(hierarchyService, hdlExplorerProvider));
   context.subscriptions.push(

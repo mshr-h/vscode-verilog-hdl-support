@@ -95,6 +95,16 @@ suite('Minimal IDE Model Stabilization', () => {
       assert.strictEqual(resolver.getPreferredFileContext(vscode.Uri.file(path.join(root, 'outside.sv'))), undefined);
     });
 
+    test('reports invalid active target as a project diagnostic', async () => {
+      const root = fixtureRoot('simple-filelist');
+      const snapshot = await loadFixture(root, settings({ filelists: ['files.f'], activeTarget: 'missing-target' }));
+      const diagnostic = snapshot.diagnostics.find((candidate) => candidate.code === 'active-target-not-found');
+
+      assert.strictEqual(diagnostic?.severity, 'warning');
+      assert.ok(diagnostic?.message.includes('missing-target'));
+      assert.ok(diagnostic?.message.includes('files.f'));
+    });
+
     test('degrades to an empty diagnostic snapshot when loading throws', async () => {
       const service = new ProjectService({
         load: async () => {
@@ -241,6 +251,7 @@ suite('Minimal IDE Model Stabilization', () => {
 
       assert.ok(report.includes('Project enabled: yes'));
       assert.ok(report.includes(`Workspace root: ${root}`));
+      assert.ok(report.includes('Resolved active compile unit: files.f (filelist:0:files.f)'));
       assert.ok(report.includes('Compile units: 1'));
       assert.ok(report.includes('Files: 4'));
       assert.ok(report.includes('Include dirs:'));

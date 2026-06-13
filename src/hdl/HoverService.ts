@@ -66,10 +66,9 @@ export class HoverService {
     if (!word) {
       return undefined;
     }
-    const moduleRecord = this.findBestModuleRecord(
-      this.indexService.getIndex().findModules(word.text),
-      document.uri
-    );
+    const moduleRecord = this.indexService
+      .getIndex()
+      .findBestModule(word.text, this.projectService.getPreferredFileContext(document.uri));
     if (!moduleRecord) {
       return undefined;
     }
@@ -90,10 +89,9 @@ export class HoverService {
       return undefined;
     }
 
-    const moduleRecord = this.findBestModuleRecord(
-      this.indexService.getIndex().findModules(context.moduleName),
-      document.uri
-    );
+    const moduleRecord = this.indexService
+      .getIndex()
+      .findBestModule(context.moduleName, this.projectService.getPreferredFileContext(document.uri));
     if (!moduleRecord) {
       return undefined;
     }
@@ -172,18 +170,12 @@ export class HoverService {
       return undefined;
     }
     const preferredCompileUnitId = this.projectService.getPreferredFileContext(document.uri)?.compileUnitId;
-    const symbol = this.indexService
-      .getIndex()
-      .getAllSymbols()
-      .find((candidate) =>
-        HOVER_SYMBOL_KINDS.has(candidate.kind)
-        && candidate.name === word.text
-        && (!preferredCompileUnitId || candidate.compileUnitId === preferredCompileUnitId)
-      )
-      ?? this.indexService
-        .getIndex()
-        .getAllSymbols()
-        .find((candidate) => HOVER_SYMBOL_KINDS.has(candidate.kind) && candidate.name === word.text);
+    const index = this.indexService.getIndex();
+    const symbol = index.findSymbolsByName(word.text, {
+      compileUnitId: preferredCompileUnitId,
+      kinds: [...HOVER_SYMBOL_KINDS],
+    }).at(0)
+      ?? index.findSymbolsByName(word.text, { kinds: [...HOVER_SYMBOL_KINDS] }).at(0);
     if (!symbol) {
       return undefined;
     }
@@ -206,11 +198,6 @@ export class HoverService {
       return new vscode.Hover(hoverText);
     }
     return undefined;
-  }
-
-  private findBestModuleRecord(modules: ModuleRecord[], documentUri: vscode.Uri): ModuleRecord | undefined {
-    const preferredCompileUnitId = this.projectService.getPreferredFileContext(documentUri)?.compileUnitId;
-    return modules.find((moduleRecord) => moduleRecord.compileUnitId === preferredCompileUnitId) ?? modules[0];
   }
 }
 

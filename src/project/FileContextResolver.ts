@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
+import { getActiveCompileUnit } from './ProjectTargetResolver';
 import { cloneDefines, type FileContext, type ProjectSnapshot } from './ProjectTypes';
 
 export class FileContextResolver {
@@ -23,8 +24,9 @@ export class FileContextResolver {
 
   getPreferredFileContext(uri: vscode.Uri): FileContext | undefined {
     const contexts = this.getFileContexts(uri);
+    const activeCompileUnit = getActiveCompileUnit(this.snapshot);
     return (
-      contexts.find((context) => context.compileUnitId === this.snapshot.activeTargetId) ??
+      contexts.find((context) => context.compileUnitId === activeCompileUnit?.id) ??
       contexts.at(0)
     );
   }
