@@ -14,6 +14,9 @@ import type { CompileUnitLintContext } from '../linter/ProjectLintContext';
 suite('CompileUnitLintArgs', () => {
   test('generates Slang args with include dirs, defines, custom args, and source order', () => {
     const context = createContext();
+    const includePath = context.includeDirs[0]?.fsPath;
+    const firstSourcePath = context.files[0]?.uri.fsPath;
+    const secondSourcePath = context.files[1]?.uri.fsPath;
 
     const args = buildSlangCompileUnitArgs({
       docFolder: '/workspace/rtl',
@@ -34,13 +37,17 @@ suite('CompileUnitLintArgs', () => {
       'WIDTH=32',
       '--flag',
       'two words',
-      '/workspace/rtl/a.sv',
-      '/workspace/rtl/b.sv',
+      firstSourcePath,
+      secondSourcePath,
     ]);
+    assert.strictEqual(args[3], includePath);
   });
 
   test('generates Verilator args with source order', () => {
     const context = createContext();
+    const includePath = context.includeDirs[0]?.fsPath;
+    const firstSourcePath = context.files[0]?.uri.fsPath;
+    const secondSourcePath = context.files[1]?.uri.fsPath;
 
     const args = buildVerilatorCompileUnitArgs({
       languageId: 'systemverilog',
@@ -55,17 +62,20 @@ suite('CompileUnitLintArgs', () => {
       '-sv',
       '--lint-only',
       '-I/workspace/rtl',
-      '-I/workspace/inc',
+      `-I${includePath}`,
       '-DSIM',
       '-DWIDTH=32',
       '-Wall',
-      '/workspace/rtl/a.sv',
-      '/workspace/rtl/b.sv',
+      firstSourcePath,
+      secondSourcePath,
     ]);
   });
 
   test('generates Icarus args with standards and source order', () => {
     const context = createContext();
+    const includePath = context.includeDirs[0]?.fsPath;
+    const firstSourcePath = context.files[0]?.uri.fsPath;
+    const secondSourcePath = context.files[1]?.uri.fsPath;
     const standards = new Map<string, string>([['systemverilog', 'SystemVerilog2012']]);
 
     const args = buildIcarusCompileUnitArgs({
@@ -82,14 +92,14 @@ suite('CompileUnitLintArgs', () => {
       'null',
       '-g2012',
       '-I',
-      '/workspace/inc',
+      includePath,
       '-D',
       'SIM',
       '-D',
       'WIDTH=32',
       '-Wall',
-      '/workspace/rtl/a.sv',
-      '/workspace/rtl/b.sv',
+      firstSourcePath,
+      secondSourcePath,
     ]);
   });
 });

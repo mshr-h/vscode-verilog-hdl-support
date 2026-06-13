@@ -65,7 +65,7 @@ export interface ParseSlangDiagnosticsOptions {
 }
 
 export function buildSlangCommand(options: SlangCommandOptions): SlangCommand {
-  const joinPath = options.isWindows ? path.win32.join : path.join;
+  const joinPath = options.isWindows ? path.win32.join : path.posix.join;
   if (options.isWindows && options.useWSL) {
     return {
       command: joinPath(options.linterInstalledPath, 'wsl'),
