@@ -109,7 +109,7 @@ suite('Module Instantiation', () => {
       assert.strictEqual(shouldShowParentDirectory(activeDir, firstRoot), false);
       assert.strictEqual(shouldShowParentDirectory(activeDir), false);
     } finally {
-      fs.rmSync(tempRoot, { recursive: true, force: true });
+      cleanupTempRoot(tempRoot);
     }
   });
 
@@ -135,7 +135,7 @@ suite('Module Instantiation', () => {
       assert.strictEqual(snippet, undefined, 'Expected no snippet when ctags is disabled');
     } finally {
       await ctagsConfig.update('enabled', previousEnabled, vscode.ConfigurationTarget.Global);
-      fs.rmSync(tempRoot, { recursive: true, force: true });
+      await cleanupTempRootAfterEditorUse(tempRoot);
     }
   });
 
@@ -181,10 +181,30 @@ suite('Module Instantiation', () => {
       assert.ok(value.includes(');'), 'Snippet should include closing');
     } finally {
       await ctagsConfig.update('path', previousPath, vscode.ConfigurationTarget.Global);
-      fs.rmSync(tempRoot, { recursive: true, force: true });
+      await cleanupTempRootAfterEditorUse(tempRoot);
     }
   });
 });
+
+async function cleanupTempRootAfterEditorUse(tempRoot: string): Promise<void> {
+  await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+  cleanupTempRoot(tempRoot);
+}
+
+function cleanupTempRoot(tempRoot: string): void {
+  try {
+    fs.rmSync(tempRoot, {
+      recursive: true,
+      force: true,
+      maxRetries: process.platform === 'win32' ? 10 : 0,
+      retryDelay: 100,
+    });
+  } catch (err) {
+    if (process.platform !== 'win32') {
+      throw err;
+    }
+  }
+}
 
 function createModuleRecord(name: string, parameterNames: string[], portNames: string[]): ModuleRecord {
   const uri = vscode.Uri.file(`/workspace/${name}.sv`);

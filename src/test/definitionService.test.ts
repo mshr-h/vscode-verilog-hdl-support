@@ -11,6 +11,7 @@ import type { FileContext } from '../project/ProjectTypes';
 import type { IndexService } from '../semantic/IndexService';
 import { SemanticIndex } from '../semantic/SemanticIndex';
 import type { ModuleRecord, ParameterRecord, PortRecord, SymbolRecord } from '../semantic/SymbolRecords';
+import { assertSameFsPath } from './pathTestUtils';
 
 suite('DefinitionService', () => {
   test('resolves module definitions across workspace by module name', async () => {
@@ -41,7 +42,7 @@ suite('DefinitionService', () => {
     const result = await service.provideDefinition(document, new vscode.Position(0, 11));
 
     assert.strictEqual(result.length, 1);
-    assert.strictEqual(result[0]?.targetUri.fsPath, includePath);
+    assertSameFsPath(result[0]?.targetUri.fsPath, includePath);
     assert.strictEqual(result[0]?.targetSelectionRange?.start.line, 0);
   });
 
@@ -67,7 +68,7 @@ suite('DefinitionService', () => {
     const result = await service.provideDefinition(document, new vscode.Position(0, 11));
 
     assert.strictEqual(result.length, 1);
-    assert.strictEqual(result[0]?.targetUri.fsPath, includePath);
+    assertSameFsPath(result[0]?.targetUri.fsPath, includePath);
   });
 
   test('falls back to ctags when project index has no definition', async () => {

@@ -3,6 +3,7 @@ import * as assert from 'assert';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { getRepositoryRoot } from './pathTestUtils';
 
 const EXTENSION_ID = 'mshr-h.veriloghdl';
 
@@ -151,7 +152,7 @@ suite('Extension Test Suite', () => {
 
   test('package should contribute project settings', () => {
     const packageJson = JSON.parse(
-      fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8')
+      fs.readFileSync(path.join(getRepositoryRoot(), 'package.json'), 'utf8')
     ) as {
       contributes: { configuration: Array<{ properties: Record<string, unknown> }> };
     };
@@ -196,7 +197,7 @@ suite('Extension Test Suite', () => {
 
   test('package should contribute HDL Explorer view', () => {
     const packageJson = JSON.parse(
-      fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8')
+      fs.readFileSync(path.join(getRepositoryRoot(), 'package.json'), 'utf8')
     ) as {
       contributes: { views: { explorer: Array<{ id: string; name: string }> } };
     };

@@ -15,6 +15,7 @@ import {
   type DoctorReport,
 } from '../commands/Doctor';
 import type { ToolRunOptions, ToolRunResult } from '../tools/ToolRunner';
+import { displayPath } from './pathTestUtils';
 
 function makeDeps(options: {
   executables?: Record<string, string | undefined>;
@@ -79,7 +80,7 @@ suite('Doctor', () => {
     assert.strictEqual(expandPathVariables('~'), os.homedir());
     assert.strictEqual(
       expandPathVariables('~/settings.toml'),
-      `${os.homedir()}/settings.toml`
+      path.join(os.homedir(), 'settings.toml')
     );
   });
 
@@ -174,7 +175,9 @@ suite('Doctor', () => {
 
     assert.ok(
       checks.some(
-        (check) => check.status === 'warn' && check.message.includes('/workspace/rtl/include')
+        (check) =>
+          check.status === 'warn' &&
+          displayPath(check.message).includes('/workspace/rtl/include')
       )
     );
     assert.ok(!checks.some((check) => check.status === 'error'));

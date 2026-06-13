@@ -25,7 +25,7 @@ suite('ModuleInstanceCodeActionService', () => {
 
     const action = getAction(service, document, position, 'Verilog: Fill Missing Ports');
 
-    assert.strictEqual(applyWorkspaceEdit(document, action.edit), [
+    assert.strictEqual(normalizeLineEndings(applyWorkspaceEdit(document, action.edit)), [
       'foo u_foo (',
       '  .clk    (clk),',
       '  .rst_n  (rst_n),',
@@ -51,7 +51,7 @@ suite('ModuleInstanceCodeActionService', () => {
 
     const action = getAction(service, document, position, 'Verilog: Fill Missing Ports');
 
-    assert.strictEqual(applyWorkspaceEdit(document, action.edit), [
+    assert.strictEqual(normalizeLineEndings(applyWorkspaceEdit(document, action.edit)), [
       'foo u_foo (',
       '  .rst_n  (reset_n),',
       '  .clk    (clk),',
@@ -71,7 +71,7 @@ suite('ModuleInstanceCodeActionService', () => {
 
     const action = getAction(service, document, position, 'Verilog: Fill Missing Ports');
 
-    assert.strictEqual(applyWorkspaceEdit(document, action.edit), [
+    assert.strictEqual(normalizeLineEndings(applyWorkspaceEdit(document, action.edit)), [
       'foo u_foo (',
       '    .clk  (clk),',
       '    .rst_n(rst_n)',
@@ -94,7 +94,7 @@ suite('ModuleInstanceCodeActionService', () => {
 
     const action = getAction(service, document, position, 'Verilog: Fill Missing Ports');
 
-    assert.strictEqual(applyWorkspaceEdit(document, action.edit), [
+    assert.strictEqual(normalizeLineEndings(applyWorkspaceEdit(document, action.edit)), [
       '  foo u_foo (',
       '    .clk  (clk),',
       '    .rst_n(rst_n)',
@@ -117,7 +117,7 @@ suite('ModuleInstanceCodeActionService', () => {
 
     const action = getAction(service, document, position, 'Verilog: Fill Missing Ports');
 
-    assert.strictEqual(applyWorkspaceEdit(document, action.edit), [
+    assert.strictEqual(normalizeLineEndings(applyWorkspaceEdit(document, action.edit)), [
       'foo u_foo (',
       '  .clk  (clk),',
       '  .rst_n(rst_n),',
@@ -140,7 +140,7 @@ suite('ModuleInstanceCodeActionService', () => {
 
     const action = getAction(service, document, position, 'Verilog: Fill Missing Parameters');
 
-    assert.strictEqual(applyWorkspaceEdit(document, action.edit), [
+    assert.strictEqual(normalizeLineEndings(applyWorkspaceEdit(document, action.edit)), [
       'foo #(',
       '  .WIDTH(32),',
       '  .DEPTH(DEPTH)',
@@ -223,6 +223,10 @@ function applyWorkspaceEdit(document: vscode.TextDocument, edit: vscode.Workspac
       const end = document.offsetAt(textEdit.range.end);
       return `${text.slice(0, start)}${textEdit.newText}${text.slice(end)}`;
     }, document.getText());
+}
+
+function normalizeLineEndings(text: string): string {
+  return text.replace(/\r\n/g, '\n');
 }
 
 function createService(symbols: SymbolRecord[]): ModuleInstanceCodeActionService {
