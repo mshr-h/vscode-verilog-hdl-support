@@ -21,11 +21,21 @@ export interface ResolvedFilelist {
   diagnostics: FilelistDiagnostic[];
 }
 
+interface MissingFilelistReference {
+  source: string;
+  line: number;
+  character: number;
+}
+
 export function resolveFilelist(filelistPath: string): ResolvedFilelist {
   return resolveFilelistInternal(path.resolve(filelistPath), []);
 }
 
-function resolveFilelistInternal(filelistPath: string, stack: string[]): ResolvedFilelist {
+function resolveFilelistInternal(
+  filelistPath: string,
+  stack: string[],
+  missingReference?: MissingFilelistReference
+): ResolvedFilelist {
   const resolved: ResolvedFilelist = emptyResolvedFilelist();
   const normalizedPath = path.resolve(filelistPath);
   const containingDir = path.dirname(normalizedPath);
@@ -45,9 +55,11 @@ function resolveFilelistInternal(filelistPath: string, stack: string[]): Resolve
     resolved.diagnostics.push({
       severity: 'error',
       message: `Missing filelist: ${normalizedPath}`,
-      source: normalizedPath,
+      source: missingReference?.source ?? normalizedPath,
       code: 'missing-filelist',
       path: normalizedPath,
+      line: missingReference?.line,
+      character: missingReference?.character,
     });
     return resolved;
   }
@@ -91,7 +103,15 @@ function resolveFilelistInternal(filelistPath: string, stack: string[]): Resolve
   for (const nested of parsed.nestedFilelists) {
     const nestedRef = resolvePathRef(nested, containingDir);
     resolved.nestedFilelists.push(nestedRef);
-    const nestedResolved = resolveFilelistInternal(nestedRef.resolvedPath, stack.concat(normalizedPath));
+    const nestedResolved = resolveFilelistInternal(
+      nestedRef.resolvedPath,
+      stack.concat(normalizedPath),
+      {
+        source: normalizedPath,
+        line: nestedRef.line,
+        character: nestedRef.character,
+      }
+    );
     mergeResolvedFilelist(resolved, nestedResolved);
   }
 

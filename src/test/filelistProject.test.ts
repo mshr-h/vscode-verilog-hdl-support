@@ -108,8 +108,12 @@ suite('FilelistResolver', () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'verilog-filelist-'));
     fs.writeFileSync(path.join(root, 'top.f'), '-f missing.f\n');
     const resolved = resolveFilelist(path.join(root, 'top.f'));
+    const diagnostic = resolved.diagnostics.find((candidate) => candidate.code === 'missing-filelist');
 
-    assert.ok(resolved.diagnostics.some((diagnostic) => diagnostic.code === 'missing-filelist'));
+    assert.ok(diagnostic);
+    assert.strictEqual(diagnostic.source, path.join(root, 'top.f'));
+    assert.strictEqual(diagnostic.line, 0);
+    assert.strictEqual(diagnostic.character, 3);
   });
 });
 

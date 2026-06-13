@@ -35,6 +35,13 @@ suite('ProjectDiagnosticManager', () => {
       diagnostics: [
         {
           severity: 'error',
+          message: 'missing filelist',
+          source: 'verilog.project',
+          code: 'missing-filelist',
+          location: new vscode.Location(uri, new vscode.Range(0, 3, 0, 12)),
+        },
+        {
+          severity: 'warning',
           message: 'missing source',
           source: 'verilog.project',
           code: 'missing-source-file',
@@ -57,10 +64,12 @@ suite('ProjectDiagnosticManager', () => {
     });
 
     const diagnostics = sink.diagnostics.get(uri.toString());
-    assert.strictEqual(diagnostics?.length, 2);
+    assert.strictEqual(diagnostics?.length, 3);
     assert.strictEqual(diagnostics?.[0]?.severity, vscode.DiagnosticSeverity.Error);
-    assert.strictEqual(diagnostics?.[0]?.code, 'missing-source-file');
+    assert.strictEqual(diagnostics?.[0]?.code, 'missing-filelist');
     assert.strictEqual(diagnostics?.[1]?.severity, vscode.DiagnosticSeverity.Warning);
+    assert.strictEqual(diagnostics?.[1]?.code, 'missing-source-file');
+    assert.strictEqual(diagnostics?.[2]?.code, 'missing-include-dir');
     assert.ok(![...sink.diagnostics.values()].flat().some((diagnostic) => diagnostic.message === 'unlocated info'));
     manager.dispose();
   });
