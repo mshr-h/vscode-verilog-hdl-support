@@ -140,8 +140,8 @@ suite('ProjectModelMerger', () => {
     assert.strictEqual(compileUnit.defines.WIDTH?.source, 'settings');
     assert.strictEqual(compileUnit.defines.SIM?.value, true);
     assert.deepStrictEqual(compileUnit.includeDirs.map((uri) => uri.fsPath), [
-      '/workspace/inc',
-      '/workspace/settings_inc',
+      path.join(root.fsPath, 'inc'),
+      path.join(root.fsPath, 'settings_inc'),
     ]);
   });
 });

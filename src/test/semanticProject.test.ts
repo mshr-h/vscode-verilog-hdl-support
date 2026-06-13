@@ -10,6 +10,7 @@ import { FastIndexerBackend } from '../semantic/backends/FastIndexerBackend';
 import { FastScanner } from '../semantic/backends/FastScanner';
 import { SemanticIndex } from '../semantic/SemanticIndex';
 import type { ModuleRecord } from '../semantic/SymbolRecords';
+import { assertSameFsPath } from './pathTestUtils';
 
 suite('FastScanner', () => {
   test('detects project symbols and basic module ports and parameters', () => {
@@ -149,7 +150,7 @@ suite('FastIndexerBackend', () => {
     };
 
     const resolved = new SemanticIndex(1, []).resolveInclude('"defs.svh"', context);
-    assert.strictEqual(resolved?.fsPath, path.join(inc, 'defs.svh'));
+    assertSameFsPath(resolved?.fsPath, path.join(inc, 'defs.svh'));
   });
 });
 

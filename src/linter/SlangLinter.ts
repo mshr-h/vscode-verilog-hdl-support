@@ -60,11 +60,12 @@ export interface ParseSlangDiagnosticsOptions {
   documentPath: string;
   isWindows: boolean;
   useWSL: boolean;
+  cwd?: string;
   convertToWslPath?: (inputPath: string) => string;
 }
 
 export function buildSlangCommand(options: SlangCommandOptions): SlangCommand {
-  const joinPath = options.isWindows ? path.win32.join : path.join;
+  const joinPath = options.isWindows ? path.win32.join : path.posix.join;
   if (options.isWindows && options.useWSL) {
     return {
       command: joinPath(options.linterInstalledPath, 'wsl'),
@@ -135,6 +136,7 @@ export function parseSlangDiagnosticsByFile(
   const diagnosticsByFile = new Map<string, vscode.Diagnostic[]>();
   const re = /(.+?):(\d+):(\d+):\s(note|warning|error):\s(.*?)(\[-W(.*)\]|$)/;
   const convertToWslPath = options.convertToWslPath ?? ((inputPath: string) => inputPath);
+  const pathApi = options.isWindows && !options.useWSL ? path.win32 : path.posix;
 
   options.stderr.split(/\r?\n/g).forEach((line) => {
     const rex = line.match(re);
@@ -147,6 +149,12 @@ export function parseSlangDiagnosticsByFile(
       if (options.useWSL) {
         filePath = convertToWslPath(filePath);
       } else {
+        filePath = filePath.replace(/\\/g, '/');
+      }
+    }
+    if (options.cwd && !pathApi.isAbsolute(filePath)) {
+      filePath = pathApi.resolve(options.cwd, filePath);
+      if (options.isWindows && !options.useWSL) {
         filePath = filePath.replace(/\\/g, '/');
       }
     }
@@ -338,6 +346,7 @@ export default class SlangLinter extends BaseLinter {
         documentPath,
         isWindows,
         useWSL: this.useWSL,
+        cwd,
       });
       this.logger.info`${diagnostics.length} errors/warnings returned`;
       this.publishDocumentDiagnosticsIfCurrent(doc, run, diagnostics);
@@ -379,6 +388,7 @@ export default class SlangLinter extends BaseLinter {
         documentPath: ownerDocumentPath,
         isWindows,
         useWSL: this.useWSL,
+        cwd,
       });
       const diagnosticsByUri: DiagnosticMap = new Map();
       diagnosticsByFile.forEach((diagnostics, fileName) => {

@@ -24,7 +24,7 @@ suite('Formatting', () => {
     );
     const args = buildVerilogFormatArgs(
       '/tmp/input.v',
-      '${env:VERILOG_FORMAT_TEST_HOME}/.verilog-format.properties',
+      path.join('${env:VERILOG_FORMAT_TEST_HOME}', '.verilog-format.properties'),
       undefined,
       (candidate) => candidate === settingsPath
     );

@@ -19,6 +19,7 @@ import { FastIndexerBackend } from '../semantic/backends/FastIndexerBackend';
 import { IndexService } from '../semantic/IndexService';
 import { SemanticIndex } from '../semantic/SemanticIndex';
 import type { SymbolRecord } from '../semantic/SymbolRecords';
+import { assertSameFsPath, endsWithPathSegments, getRepositoryRoot } from './pathTestUtils';
 
 suite('Minimal IDE Model Stabilization', () => {
   suite('ProjectService and ProjectLoader fixtures', () => {
@@ -28,7 +29,7 @@ suite('Minimal IDE Model Stabilization', () => {
 
       assert.strictEqual(snapshot.compileUnits.length, 1);
       assert.strictEqual(snapshot.compileUnits[0]?.files.length, 4);
-      assert.ok(snapshot.compileUnits[0]?.includeDirs.some((uri) => uri.fsPath.endsWith('rtl/include')));
+      assert.ok(snapshot.compileUnits[0]?.includeDirs.some((uri) => endsWithPathSegments(uri.fsPath, 'rtl', 'include')));
       assert.strictEqual(snapshot.compileUnits[0]?.defines.SIMPLE_PROJECT?.value, true);
       assert.strictEqual(snapshot.diagnostics.length, 0);
     });
@@ -38,9 +39,9 @@ suite('Minimal IDE Model Stabilization', () => {
       const snapshot = await loadFixture(root, settings({ filelists: ['files.f'] }));
 
       const unit = snapshot.compileUnits[0];
-      assert.ok(unit?.files.some((file) => file.uri.fsPath.endsWith('rtl/foo.sv')));
-      assert.ok(unit?.files.some((file) => file.uri.fsPath.endsWith('include/defs.svh')));
-      assert.ok(unit?.includeDirs.some((uri) => uri.fsPath.endsWith('include')));
+      assert.ok(unit?.files.some((file) => endsWithPathSegments(file.uri.fsPath, 'rtl', 'foo.sv')));
+      assert.ok(unit?.files.some((file) => endsWithPathSegments(file.uri.fsPath, 'include', 'defs.svh')));
+      assert.ok(unit?.includeDirs.some((uri) => endsWithPathSegments(uri.fsPath, 'include')));
       assert.strictEqual(unit?.defines.NESTED_PROJECT?.value, true);
     });
 
@@ -55,7 +56,7 @@ suite('Minimal IDE Model Stabilization', () => {
       assert.ok(codes.includes('missing-include-dir'));
       assert.ok(codes.includes('missing-source-file'));
       assert.ok(snapshot.diagnostics.every((diagnostic) => diagnostic.message.length > 0));
-      assert.strictEqual(missingFilelist?.location?.uri.fsPath, path.join(root, 'files.f'));
+      assertSameFsPath(missingFilelist?.location?.uri.fsPath, path.join(root, 'files.f'));
     });
 
     test('creates fallback auto-discovery compile unit and respects exclude patterns', async function () {
@@ -64,8 +65,8 @@ suite('Minimal IDE Model Stabilization', () => {
       const snapshot = await loadFixture(root, settings({ exclude: ['**/foo.sv'] }));
 
       assert.strictEqual(snapshot.compileUnits[0]?.id, 'auto:workspace');
-      assert.ok(snapshot.compileUnits[0]?.files.some((file) => file.uri.fsPath.endsWith('top.sv')));
-      assert.ok(!snapshot.compileUnits[0]?.files.some((file) => file.uri.fsPath.endsWith('foo.sv')));
+      assert.ok(snapshot.compileUnits[0]?.files.some((file) => endsWithPathSegments(file.uri.fsPath, 'top.sv')));
+      assert.ok(!snapshot.compileUnits[0]?.files.some((file) => endsWithPathSegments(file.uri.fsPath, 'foo.sv')));
       assert.ok(snapshot.diagnostics.some((diagnostic) => diagnostic.code === 'fallback-discovery'));
     });
 
@@ -190,7 +191,10 @@ suite('Minimal IDE Model Stabilization', () => {
       const context = resolver.getPreferredFileContext(topUri);
 
       assert.ok(context);
-      assert.strictEqual(index.resolveInclude('"defs.svh"', context)?.fsPath, path.join(root, 'rtl', 'include', 'defs.svh'));
+      assertSameFsPath(
+        index.resolveInclude('"defs.svh"', context)?.fsPath,
+        path.join(root, 'rtl', 'include', 'defs.svh')
+      );
     });
 
     test('supports full rebuild after ProjectSnapshot changes', async () => {
@@ -288,7 +292,7 @@ suite('Minimal IDE Model Stabilization', () => {
       const report = renderProjectStatus(service);
 
       assert.ok(report.includes('Project enabled: yes'));
-      assert.ok(report.includes(`Workspace root: ${root}`));
+      assert.ok(report.includes(`Workspace root: ${vscode.Uri.file(root).fsPath}`));
       assert.ok(report.includes('Resolved active compile unit: files.f (filelist:0:files.f)'));
       assert.ok(report.includes('Compile units: 1'));
       assert.ok(report.includes('Files: 4'));
@@ -391,7 +395,7 @@ suite('Minimal IDE Model Stabilization', () => {
 });
 
 function fixtureRoot(name: string): string {
-  return path.join(process.cwd(), 'test', 'fixtures', 'hdl-projects', name);
+  return path.join(getRepositoryRoot(), 'test', 'fixtures', 'hdl-projects', name);
 }
 
 function settings(overrides: Partial<ProjectSettings> = {}): ProjectSettings {

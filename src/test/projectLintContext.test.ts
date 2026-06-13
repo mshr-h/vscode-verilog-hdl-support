@@ -28,7 +28,7 @@ suite('Project lint context', () => {
       await config.update('useProjectContext', true, vscode.ConfigurationTarget.Global);
       const context = getLintProjectContext(projectService, document);
 
-      assert.deepStrictEqual(context.includePaths, ['/workspace/inc']);
+      assert.deepStrictEqual(context.includePaths, [vscode.Uri.file('/workspace/inc').fsPath]);
       assert.deepStrictEqual(context.defineArgs, ['SIM', 'WIDTH=32']);
     } finally {
       await config.update('useProjectContext', previous, vscode.ConfigurationTarget.Global);
@@ -104,9 +104,11 @@ suite('Project lint context', () => {
     assert.strictEqual(context.compileUnit.id, 'unit');
     assert.deepStrictEqual(context.files.map((file) => file.uri.fsPath), [
       document.uri.fsPath,
-      '/workspace/b.sv',
+      vscode.Uri.file('/workspace/b.sv').fsPath,
     ]);
-    assert.deepStrictEqual(context.includeDirs.map((uri) => uri.fsPath), ['/workspace/inc']);
+    assert.deepStrictEqual(context.includeDirs.map((uri) => uri.fsPath), [
+      vscode.Uri.file('/workspace/inc').fsPath,
+    ]);
   });
 
   test('returns undefined when active document has no compile unit membership', async () => {
