@@ -739,8 +739,8 @@
           "verilog.project.enabled": {
             "scope": "window",
             "type": "boolean",
-            "default": true,
-            "markdownDescription": "Enable project-aware Verilog/SystemVerilog model."
+            "default": false,
+            "markdownDescription": "Opt in to the project-aware Verilog/SystemVerilog model and semantic index. This can be expensive in large workspaces; users who only need formatting or syntax highlighting can leave it disabled."
           },
           "verilog.project.filelists": {
             "scope": "window",
@@ -794,6 +794,13 @@
               "**/sim/**"
             ],
             "markdownDescription": "Glob patterns excluded from project indexing."
+          },
+          "verilog.project.maxAutoDiscoveredFiles": {
+            "scope": "window",
+            "type": "number",
+            "default": 5000,
+            "minimum": 1,
+            "markdownDescription": "Maximum number of HDL files discovered automatically when `verilog.project.filelists` is empty. If the limit is exceeded, project indexing is skipped. Configure `verilog.project.filelists` or `verilog.project.exclude` for large workspaces."
           }
         }
       },

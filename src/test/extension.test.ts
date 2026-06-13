@@ -160,13 +160,16 @@ suite('Extension Test Suite', () => {
       ...packageJson.contributes.configuration.map((configuration) => configuration.properties)
     ) as Record<string, unknown>;
 
-    assert.ok(properties['verilog.project.enabled']);
+    const projectEnabled = properties['verilog.project.enabled'] as { default?: unknown };
+    assert.ok(projectEnabled);
+    assert.strictEqual(projectEnabled.default, false);
     assert.ok(properties['verilog.project.filelists']);
     assert.ok(properties['verilog.project.activeTarget']);
     assert.ok(properties['verilog.project.topModules']);
     assert.ok(properties['verilog.project.includeDirs']);
     assert.ok(properties['verilog.project.defines']);
     assert.ok(properties['verilog.project.exclude']);
+    assert.ok(properties['verilog.project.maxAutoDiscoveredFiles']);
     assert.ok(properties['verilog.hierarchy.enabled']);
     assert.ok(properties['verilog.hierarchy.maxDepth']);
     assert.ok(properties['verilog.hierarchy.showUnresolved']);

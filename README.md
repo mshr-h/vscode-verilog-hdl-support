@@ -115,9 +115,11 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 
 ### Project-Aware HDL Features
 
-The extension can build a lightweight project model for Verilog/SystemVerilog workspaces. Configure filelists with `verilog.project.filelists`, or leave that setting empty to let the extension discover `*.v`, `*.vh`, `*.sv`, and `*.svh` files in the workspace. Project-level include directories and defines can be configured with `verilog.project.includeDirs` and `verilog.project.defines`.
+The extension can build a lightweight project model for Verilog/SystemVerilog workspaces when `verilog.project.enabled` is enabled. Users who only need formatting or syntax highlighting do not need project indexing. Configure filelists with `verilog.project.filelists`, or leave that setting empty to let the extension discover `*.v`, `*.vh`, `*.sv`, and `*.svh` files in the workspace. Project-level include directories and defines can be configured with `verilog.project.includeDirs` and `verilog.project.defines`.
 
 The project model powers cross-file module lookup, include resolution, workspace symbols, hover, completion, module instantiation, HDL Explorer, and compile-unit linting. Existing Ctags behavior remains available as a fallback when the project index has no answer or the project model is disabled with `verilog.project.enabled`.
+
+Large workspaces should either keep `"verilog.project.enabled": false`, configure explicit `verilog.project.filelists`, narrow indexing with `verilog.project.exclude`, or raise `verilog.project.maxAutoDiscoveredFiles` after confirming automatic discovery is acceptable.
 
 Use **Verilog: Reload Project**, **Verilog: Show Project Status**, and **Verilog: Show Project Modules** to inspect or refresh the current project model.
 
