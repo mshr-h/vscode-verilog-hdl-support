@@ -5,6 +5,7 @@ import type { HierarchyService } from '../hierarchy/HierarchyService';
 import type { HierarchyInstanceNode, HierarchyNode } from '../hierarchy/HierarchyTypes';
 import type { ProjectService } from '../project/ProjectService';
 import type { CompileUnit } from '../project/ProjectTypes';
+import { getActiveCompileUnit } from '../project/ProjectTargetResolver';
 import type { IndexService } from '../semantic/IndexService';
 import {
   createCompileUnitItem,
@@ -138,8 +139,10 @@ export class HdlExplorerProvider implements vscode.TreeDataProvider<HdlExplorerI
 
   private getProjectChildren(): HdlExplorerItem[] {
     const snapshot = this.projectService.getSnapshot();
+    const activeCompileUnit = getActiveCompileUnit(snapshot);
     return [
       createInfoItem('Active Target', snapshot.activeTargetId || '(none)'),
+      createInfoItem('Active Compile Unit', activeCompileUnit ? `${activeCompileUnit.name} (${activeCompileUnit.id})` : '(none)'),
       createInfoItem('Diagnostics', String(snapshot.diagnostics.length)),
       createInfoItem('Workspace Root', snapshot.workspaceRoot.fsPath),
       createGroupItem('Compile Units', { group: 'compileUnits', compileUnits: snapshot.compileUnits }),

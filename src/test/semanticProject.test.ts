@@ -152,3 +152,60 @@ suite('FastIndexerBackend', () => {
     assert.strictEqual(resolved?.fsPath, path.join(inc, 'defs.svh'));
   });
 });
+
+suite('SemanticIndex query helpers', () => {
+  test('findBestModule prefers the requested compile unit for duplicate modules', () => {
+    const first = createModuleRecord('dupe', 'unitA');
+    const second = createModuleRecord('dupe', 'unitB');
+    const index = new SemanticIndex(1, [first, second]);
+
+    assert.strictEqual(index.findBestModule('dupe', 'unitB'), second);
+    assert.strictEqual(index.getModuleSignature('dupe', 'unitA'), first);
+  });
+
+  test('findBestModule falls back to first module when context does not match', () => {
+    const first = createModuleRecord('dupe', 'unitA');
+    const second = createModuleRecord('dupe', 'unitB');
+    const index = new SemanticIndex(1, [first, second]);
+
+    assert.strictEqual(index.findBestModule('dupe', 'missing'), first);
+    assert.strictEqual(index.findBestModule('unknown'), undefined);
+  });
+
+  test('findSymbolsByName filters by name kind and compile unit', () => {
+    const moduleRecord = createModuleRecord('shared', 'unitA');
+    const macroRecord = createSymbolRecord('shared', 'macro', 'unitB');
+    const packageRecord = createSymbolRecord('pkg', 'package', 'unitA');
+    const index = new SemanticIndex(1, [moduleRecord, macroRecord, packageRecord]);
+
+    assert.deepStrictEqual(index.findSymbolsByName('shared', { kinds: ['macro'] }), [macroRecord]);
+    assert.deepStrictEqual(index.findSymbolsByName('shared', { compileUnitId: 'unitA' }), [moduleRecord]);
+    assert.deepStrictEqual(index.findSymbolsByName('pkg', { kinds: ['package'], compileUnitId: 'unitA' }), [packageRecord]);
+  });
+});
+
+function createModuleRecord(name: string, compileUnitId: string): ModuleRecord {
+  return {
+    ...createSymbolRecord(name, 'module', compileUnitId),
+    kind: 'module',
+    ports: [],
+    parameters: [],
+  };
+}
+
+function createSymbolRecord(
+  name: string,
+  kind: ModuleRecord['kind'] | 'macro' | 'package',
+  compileUnitId: string
+) {
+  const selectionRange = new vscode.Range(0, 7, 0, 7 + name.length);
+  return {
+    id: `${compileUnitId}:${kind}:${name}`,
+    name,
+    kind,
+    uri: vscode.Uri.file(`/workspace/${compileUnitId}/${name}.sv`),
+    range: selectionRange,
+    selectionRange,
+    compileUnitId,
+  };
+}

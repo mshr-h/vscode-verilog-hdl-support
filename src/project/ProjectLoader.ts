@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import type { ResolvedFilelist } from '../filelist/FilelistResolver';
 import { getExtensionLogger } from '../logging';
 import { buildCompileUnit } from './ProjectModelMerger';
+import { createActiveTargetDiagnostic } from './ProjectTargetResolver';
 import {
   PROJECT_DIAGNOSTIC_SOURCE,
   type CompileUnit,
@@ -63,6 +64,13 @@ export class ProjectLoader {
       settings.filelists.length > 0
         ? this.loadFilelistCompileUnits(workspaceRoot, settings, diagnostics)
         : await this.loadFallbackCompileUnit(workspaceRoot, settings, diagnostics);
+
+    const activeTargetDiagnostic = createActiveTargetDiagnostic(
+      createSnapshot(version, workspaceRoot, settings.activeTarget, compileUnits, diagnostics)
+    );
+    if (activeTargetDiagnostic) {
+      diagnostics.push(activeTargetDiagnostic);
+    }
 
     logger.info('Loaded Verilog project model', {
       workspaceRoot: workspaceRoot.fsPath,

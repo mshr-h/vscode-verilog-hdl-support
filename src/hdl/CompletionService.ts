@@ -62,10 +62,9 @@ export class CompletionService {
       if (!isInstanceCompletionEnabled(instanceContext.kind)) {
         return { items: [] };
       }
-      const moduleRecord = findBestModuleRecord(
-        this.indexService.getIndex().findModules(instanceContext.moduleName),
-        this.projectService.getPreferredFileContext(document.uri)?.compileUnitId
-      );
+      const moduleRecord = this.indexService
+        .getIndex()
+        .findBestModule(instanceContext.moduleName, this.projectService.getPreferredFileContext(document.uri));
       if (moduleRecord) {
         return {
           items: getInstanceCompletionItems(moduleRecord, instanceContext, document, position),
@@ -176,13 +175,6 @@ function isInstanceCompletionEnabled(kind: InstanceContext['kind']): boolean {
     ? 'verilog.completion.parameters.enabled'
     : 'verilog.completion.ports.enabled';
   return vscode.workspace.getConfiguration().get<boolean>(setting, true);
-}
-
-function findBestModuleRecord(
-  modules: ModuleRecord[],
-  preferredCompileUnitId: string | undefined
-): ModuleRecord | undefined {
-  return modules.find((moduleRecord) => moduleRecord.compileUnitId === preferredCompileUnitId) ?? modules[0];
 }
 
 export function symbolToCompletionItem(

@@ -42,10 +42,9 @@ export class ModuleInstanceCodeActionService {
       return [];
     }
 
-    const moduleRecord = findBestModuleRecord(
-      this.indexService.getIndex().findModules(context.moduleName),
-      this.projectService.getPreferredFileContext(document.uri)?.compileUnitId
-    );
+    const moduleRecord = this.indexService
+      .getIndex()
+      .findBestModule(context.moduleName, this.projectService.getPreferredFileContext(document.uri));
     if (!moduleRecord) {
       return [];
     }
@@ -220,13 +219,6 @@ function createCodeAction(result: FillActionBuildResult): vscode.CodeAction {
   const action = new vscode.CodeAction(result.title, vscode.CodeActionKind.QuickFix);
   action.edit = result.edit;
   return action;
-}
-
-function findBestModuleRecord(
-  modules: ModuleRecord[],
-  preferredCompileUnitId: string | undefined
-): ModuleRecord | undefined {
-  return modules.find((moduleRecord) => moduleRecord.compileUnitId === preferredCompileUnitId) ?? modules[0];
 }
 
 function isSettingEnabled(setting: string): boolean {

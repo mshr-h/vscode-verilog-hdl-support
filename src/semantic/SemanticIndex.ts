@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import type { FileContext } from '../project/FileContext';
-import type { ModuleRecord, SymbolRecord } from './SymbolRecords';
+import type { ModuleRecord, SymbolRecord, SymbolRecordKind } from './SymbolRecords';
 
 export class SemanticIndex {
   private readonly modulesByName = new Map<string, ModuleRecord[]>();
@@ -37,6 +37,28 @@ export class SemanticIndex {
 
   findModules(name: string): ModuleRecord[] {
     return (this.modulesByName.get(name) ?? []).slice();
+  }
+
+  findBestModule(name: string, context?: FileContext | string): ModuleRecord | undefined {
+    const modules = this.findModules(name);
+    const compileUnitId = typeof context === 'string' ? context : context?.compileUnitId;
+    return modules.find((moduleRecord) => moduleRecord.compileUnitId === compileUnitId) ?? modules[0];
+  }
+
+  getModuleSignature(name: string, context?: FileContext | string): ModuleRecord | undefined {
+    return this.findBestModule(name, context);
+  }
+
+  findSymbolsByName(
+    name: string,
+    options: { compileUnitId?: string; kinds?: SymbolRecordKind[] } = {}
+  ): SymbolRecord[] {
+    const kinds = options.kinds ? new Set(options.kinds) : undefined;
+    return this.symbols.filter((symbol) =>
+      symbol.name === name
+      && (!options.compileUnitId || symbol.compileUnitId === options.compileUnitId)
+      && (!kinds || kinds.has(symbol.kind))
+    );
   }
 
   findPackages(name: string): SymbolRecord[] {
