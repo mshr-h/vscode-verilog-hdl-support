@@ -912,6 +912,18 @@
         }
       },
       {
+        "title": "Verilog: References",
+        "properties": {
+          "verilog.references.maxFiles": {
+            "scope": "window",
+            "type": "number",
+            "default": 1000,
+            "minimum": 1,
+            "markdownDescription": "Maximum number of project files scanned by lightweight project-aware Find References."
+          }
+        }
+      },
+      {
         "title": "Verilog: Code Actions",
         "properties": {
           "verilog.codeActions.fillMissingPorts.enabled": {

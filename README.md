@@ -41,6 +41,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 - Optional compile-unit linting for Slang, Verilator, and Icarus Verilog
 - Project-aware HDL editing:
   - Cross-file module and include go-to-definition
+  - Best-effort Find References for project-indexed HDL symbols
   - Hover for modules, ports, parameters, macros, includes, and indexed symbols
   - Workspace symbols for indexed HDL symbols
   - Module, macro, include path, port, and parameter completion
@@ -133,9 +134,11 @@ Hierarchy detection is intentionally lightweight and does not perform full Syste
 
 ### Project-Aware Editing
 
-For Verilog/SystemVerilog files, the project index improves go-to-definition, hover, workspace symbol search, completions, and module instantiation. Module names can resolve across the workspace even when the file name differs from the module name, and `` `include`` paths can resolve through the active file context include directories.
+For Verilog/SystemVerilog files, the project index improves go-to-definition, Find References, hover, workspace symbol search, completions, and module instantiation. Module names can resolve across the workspace even when the file name differs from the module name, and `` `include`` paths can resolve through the active file context include directories.
 
 Completion can suggest indexed module names, macros, include paths, ports, and parameters. Code actions can fill missing named ports or parameters in module instances when the target module is available from the project index.
+
+Find References is project/filelist-aware and best-effort. It supports modules, macros, include paths, and exact-name references for packages, interfaces, classes, and typedefs. It does not perform full SystemVerilog lexical scope resolution.
 
 ### Compile-Unit Linting
 

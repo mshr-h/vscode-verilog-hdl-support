@@ -9,35 +9,13 @@ import { FileContextResolver } from '../project/FileContextResolver';
 import type { ProjectService } from '../project/ProjectService';
 import type { CompileUnit, FileContext, ProjectSnapshot } from '../project/ProjectTypes';
 import type { IndexService } from './IndexService';
+import { scanIncludeOccurrences, scanMacroUsages } from './scanners/OccurrenceScanners';
 import type { SemanticIndex } from './SemanticIndex';
 import type { ModuleRecord } from './SymbolRecords';
 
 const logger = getExtensionLogger('Semantic', 'Diagnostics');
 const SEMANTIC_DIAGNOSTIC_SOURCE = 'verilog.semantic';
 const REFRESH_DEBOUNCE_MS = 300;
-
-const MACRO_DIRECTIVES = new Set([
-  'begin_keywords',
-  'celldefine',
-  'default_nettype',
-  'define',
-  'else',
-  'elsif',
-  'end_keywords',
-  'endcelldefine',
-  'endif',
-  'ifdef',
-  'ifndef',
-  'include',
-  'line',
-  'nounconnected_drive',
-  'pragma',
-  'resetall',
-  'timescale',
-  'undef',
-  'undefineall',
-  'unconnected_drive',
-]);
 
 export interface SemanticDiagnosticSink {
   set(uri: vscode.Uri, diagnostics: readonly vscode.Diagnostic[]): void;
@@ -53,16 +31,6 @@ interface SemanticDiagnosticSettings {
   unresolvedIncludes: boolean;
   unresolvedMacros: boolean;
   maxFiles: number;
-}
-
-interface IncludeOccurrence {
-  includeText: string;
-  range: vscode.Range;
-}
-
-interface MacroOccurrence {
-  name: string;
-  range: vscode.Range;
 }
 
 export class SemanticDiagnosticService implements vscode.Disposable {
@@ -201,7 +169,7 @@ export class SemanticDiagnosticService implements vscode.Disposable {
     }
 
     if (settings.unresolvedMacros) {
-      for (const occurrence of scanMacroOccurrences(text)) {
+      for (const occurrence of scanMacroUsages(text)) {
         if (!isMacroResolved(occurrence.name, context, index)) {
           addDiagnostic(diagnosticsByUri, uri, {
             range: occurrence.range,
@@ -339,142 +307,6 @@ function getSemanticDiagnosticSettings(): SemanticDiagnosticSettings {
     unresolvedMacros: config.get<boolean>('verilog.semanticDiagnostics.unresolvedMacros.enabled', false),
     maxFiles: config.get<number>('verilog.semanticDiagnostics.maxFiles', 1000),
   };
-}
-
-export function scanIncludeOccurrences(text: string): IncludeOccurrence[] {
-  const masked = maskComments(text);
-  const lineStarts = computeLineStarts(text);
-  const occurrences: IncludeOccurrence[] = [];
-  for (const match of masked.matchAll(/`include\s+(["<])([^">]+)[">]/g)) {
-    const open = match[1] ?? '"';
-    const includePath = match[2] ?? '';
-    const matchOffset = match.index ?? 0;
-    const pathOffsetInMatch = match[0].indexOf(includePath);
-    const pathOffset = matchOffset + pathOffsetInMatch;
-    const close = open === '<' ? '>' : '"';
-    occurrences.push({
-      includeText: `${open}${includePath}${close}`,
-      range: new vscode.Range(
-        positionFromOffset(lineStarts, pathOffset),
-        positionFromOffset(lineStarts, pathOffset + includePath.length)
-      ),
-    });
-  }
-  return occurrences;
-}
-
-export function scanMacroOccurrences(text: string): MacroOccurrence[] {
-  const masked = maskCommentsAndStrings(text);
-  const lineStarts = computeLineStarts(text);
-  const occurrences: MacroOccurrence[] = [];
-  for (const match of masked.matchAll(/`([A-Za-z_][A-Za-z0-9_$]*)/g)) {
-    const name = match[1] ?? '';
-    if (MACRO_DIRECTIVES.has(name)) {
-      continue;
-    }
-    const nameOffset = (match.index ?? 0) + 1;
-    occurrences.push({
-      name,
-      range: new vscode.Range(
-        positionFromOffset(lineStarts, nameOffset),
-        positionFromOffset(lineStarts, nameOffset + name.length)
-      ),
-    });
-  }
-  return occurrences;
-}
-
-function maskComments(text: string): string {
-  let result = '';
-  let index = 0;
-  while (index < text.length) {
-    const ch = text[index] ?? '';
-    const next = text[index + 1] ?? '';
-    if (ch === '/' && next === '/') {
-      result += '  ';
-      index += 2;
-      while (index < text.length && text[index] !== '\n') {
-        result += ' ';
-        index += 1;
-      }
-      continue;
-    }
-    if (ch === '/' && next === '*') {
-      result += '  ';
-      index += 2;
-      while (index < text.length) {
-        const blockCh = text[index] ?? '';
-        const blockNext = text[index + 1] ?? '';
-        if (blockCh === '*' && blockNext === '/') {
-          result += '  ';
-          index += 2;
-          break;
-        }
-        result += blockCh === '\n' ? '\n' : ' ';
-        index += 1;
-      }
-      continue;
-    }
-    result += ch;
-    index += 1;
-  }
-  return result;
-}
-
-function maskCommentsAndStrings(text: string): string {
-  const withoutComments = maskComments(text);
-  let result = '';
-  let index = 0;
-  while (index < withoutComments.length) {
-    const ch = withoutComments[index] ?? '';
-    if (ch === '"') {
-      result += ' ';
-      index += 1;
-      while (index < withoutComments.length) {
-        const stringCh = withoutComments[index] ?? '';
-        result += stringCh === '\n' ? '\n' : ' ';
-        if (stringCh === '\\' && index + 1 < withoutComments.length) {
-          result += withoutComments[index + 1] === '\n' ? '\n' : ' ';
-          index += 2;
-          continue;
-        }
-        index += 1;
-        if (stringCh === '"') {
-          break;
-        }
-      }
-      continue;
-    }
-    result += ch;
-    index += 1;
-  }
-  return result;
-}
-
-function computeLineStarts(text: string): number[] {
-  const starts = [0];
-  for (let i = 0; i < text.length; i += 1) {
-    if (text[i] === '\n') {
-      starts.push(i + 1);
-    }
-  }
-  return starts;
-}
-
-function positionFromOffset(lineStarts: number[], offset: number): vscode.Position {
-  let low = 0;
-  let high = lineStarts.length - 1;
-  while (low <= high) {
-    const mid = Math.floor((low + high) / 2);
-    const value = lineStarts[mid] ?? 0;
-    if (value <= offset) {
-      low = mid + 1;
-    } else {
-      high = mid - 1;
-    }
-  }
-  const line = Math.max(0, high);
-  return new vscode.Position(line, offset - (lineStarts[line] ?? 0));
 }
 
 export function getIncludeSearchDirs(context: FileContext): string[] {
