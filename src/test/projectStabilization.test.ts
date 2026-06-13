@@ -48,12 +48,14 @@ suite('Minimal IDE Model Stabilization', () => {
       const root = fixtureRoot('malformed-filelist');
       const snapshot = await loadFixture(root, settings({ filelists: ['files.f'] }));
       const codes = snapshot.diagnostics.map((diagnostic) => diagnostic.code);
+      const missingFilelist = snapshot.diagnostics.find((diagnostic) => diagnostic.code === 'missing-filelist');
 
       assert.ok(codes.includes('nested-filelist-cycle'));
       assert.ok(codes.includes('missing-filelist'));
       assert.ok(codes.includes('missing-include-dir'));
       assert.ok(codes.includes('missing-source-file'));
       assert.ok(snapshot.diagnostics.every((diagnostic) => diagnostic.message.length > 0));
+      assert.strictEqual(missingFilelist?.location?.uri.fsPath, path.join(root, 'files.f'));
     });
 
     test('creates fallback auto-discovery compile unit and respects exclude patterns', async function () {
