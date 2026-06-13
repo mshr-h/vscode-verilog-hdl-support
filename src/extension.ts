@@ -7,6 +7,7 @@ import * as DocumentSymbolProvider from './providers/DocumentSymbolProvider';
 import * as HoverProvider from './providers/HoverProvider';
 import * as DefinitionProvider from './providers/DefinitionProvider';
 import * as ReferenceProvider from './providers/ReferenceProvider';
+import * as RenameProvider from './providers/RenameProvider';
 import * as CompletionItemProvider from './providers/CompletionItemProvider';
 import * as CodeActionProvider from './providers/CodeActionProvider';
 import * as ModuleInstantiation from './commands/ModuleInstantiation';
@@ -25,6 +26,7 @@ import { CompletionService } from './hdl/CompletionService';
 import { ModuleInstanceCodeActionService } from './hdl/ModuleInstanceCodeActionService';
 import { HoverService } from './hdl/HoverService';
 import { ReferenceService } from './hdl/ReferenceService';
+import { RenameService } from './hdl/RenameService';
 import { HierarchyService } from './hierarchy/HierarchyService';
 import { ProjectDiagnosticManager } from './project/ProjectDiagnosticManager';
 import { ProjectService } from './project/ProjectService';
@@ -64,6 +66,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const codeActionService = new ModuleInstanceCodeActionService(projectService, indexService);
   const hoverService = new HoverService(projectService, indexService, ctagsManager);
   const referenceService = new ReferenceService(projectService, indexService, ctagsManager);
+  const renameService = new RenameService(projectService, indexService, referenceService);
   const hierarchyService = new HierarchyService(projectService, indexService);
   const semanticDiagnosticService = new SemanticDiagnosticService(projectService, indexService);
   const hdlExplorerProvider = new HdlExplorerProvider(projectService, indexService, hierarchyService);
@@ -183,6 +186,22 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.languages.registerReferenceProvider(
       { scheme: 'file', language: 'systemverilog' },
       verilogReferenceProvider
+    )
+  );
+
+  const verilogRenameProvider = new RenameProvider.VerilogRenameProvider(
+    renameService
+  );
+  context.subscriptions.push(
+    vscode.languages.registerRenameProvider(
+      { scheme: 'file', language: 'verilog' },
+      verilogRenameProvider
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerRenameProvider(
+      { scheme: 'file', language: 'systemverilog' },
+      verilogRenameProvider
     )
   );
 
