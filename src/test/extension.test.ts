@@ -171,6 +171,13 @@ suite('Extension Test Suite', () => {
     assert.ok(properties['verilog.hierarchy.maxDepth']);
     assert.ok(properties['verilog.hierarchy.showUnresolved']);
     assert.ok(properties['verilog.hdlExplorer.enabled']);
+    assert.ok(properties['verilog.semanticDiagnostics.enabled']);
+    assert.ok(properties['verilog.semanticDiagnostics.unresolvedModules.enabled']);
+    assert.ok(properties['verilog.semanticDiagnostics.unknownPorts.enabled']);
+    assert.ok(properties['verilog.semanticDiagnostics.unknownParameters.enabled']);
+    assert.ok(properties['verilog.semanticDiagnostics.unresolvedIncludes.enabled']);
+    assert.ok(properties['verilog.semanticDiagnostics.unresolvedMacros.enabled']);
+    assert.ok(properties['verilog.semanticDiagnostics.maxFiles']);
     assert.ok(properties['verilog.instantiate.useProjectIndex']);
     assert.ok(properties['verilog.preprocessor.useProjectDefines']);
     assert.ok(properties['verilog.linting.useProjectContext']);

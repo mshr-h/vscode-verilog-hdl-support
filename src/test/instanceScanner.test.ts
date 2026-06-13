@@ -18,6 +18,11 @@ suite('InstanceScanner', () => {
     assert.strictEqual(instances[0]?.instanceName, 'u_foo');
     assert.strictEqual(instances[0]?.parentModuleName, 'top');
     assert.deepStrictEqual(instances[0]?.portConnections, ['clk']);
+    assert.strictEqual(instances[0]?.moduleNameRange.start.line, 1);
+    assert.strictEqual(instances[0]?.moduleNameRange.start.character, 2);
+    assert.strictEqual(instances[0]?.portConnectionRecords[0]?.name, 'clk');
+    assert.strictEqual(instances[0]?.portConnectionRecords[0]?.range.start.line, 2);
+    assert.strictEqual(instances[0]?.portConnectionRecords[0]?.range.start.character, 4);
   });
 
   test('detects parameterized instance', () => {
@@ -34,6 +39,9 @@ suite('InstanceScanner', () => {
     assert.strictEqual(instances.length, 1);
     assert.deepStrictEqual(instances[0]?.parameterOverrides, ['WIDTH']);
     assert.deepStrictEqual(instances[0]?.portConnections, ['clk']);
+    assert.strictEqual(instances[0]?.parameterOverrideConnections[0]?.name, 'WIDTH');
+    assert.strictEqual(instances[0]?.parameterOverrideConnections[0]?.range.start.line, 2);
+    assert.strictEqual(instances[0]?.parameterOverrideConnections[0]?.range.start.character, 4);
   });
 
   test('detects inline parameterized instance', () => {
