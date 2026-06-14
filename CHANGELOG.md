@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.27.0] - 2026-06-15
+
+### Added
+
+- Added project-aware references for modules, macros, include paths, packages, interfaces, classes, and typedefs. [#612](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/612)
+- Added project-aware rename support for indexed module names and source-defined macros. [#613](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/613)
+- Added expanded project-aware definitions and semantic diagnostics for indexed HDL projects. [#610](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/610), [#611](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/611)
+- Added actionable HDL Explorer context actions for project files, declarations, references, hierarchy roots, unresolved modules, paths, and defines. [#615](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/615)
+
+### Changed
+
+- Improved CI/tooling coverage for Slang integration and faster Verible installation. [#614](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/614)
+
+### Fixed
+
+- Published nested filelist diagnostics to Problems and stabilized project-aware IDE diagnostics. [#608](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/608), [#609](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/609)
+
 ## [1.26.1] - 2026-06-13
 
 ### Fixed
