@@ -72,7 +72,7 @@ To try the project-aware features together, open the [HDL Feature Showcase](exam
 | UPF | `.upf` | Tcl-based syntax highlighting and optional `tclsp` support |
 | Verilog filelists | `.f` | Filelist language mode used by project indexing |
 | VCD waveform dumps | `.vcd` | Open with **Verilog: Open Waveform** |
-| Markdown fenced code blocks | <code>```verilog</code> / <code>```systemverilog</code> | Embedded highlighting in Markdown |
+| Markdown fenced code blocks | `verilog` / `systemverilog` | Embedded highlighting in Markdown |
 
 ## Usage Instructions
 
