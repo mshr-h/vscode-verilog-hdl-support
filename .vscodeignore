@@ -20,3 +20,4 @@ esbuild.js
 **/eslint.config.mjs
 **/.vscode-test.*
 .devcontainer/**
+examples/

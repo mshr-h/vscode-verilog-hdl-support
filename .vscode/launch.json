@@ -20,6 +20,22 @@
 			"preLaunchTask": "${defaultBuildTask}",
 			"request": "launch",
 			"type": "extensionHost"
+		},
+		{
+			"args": [
+				"--disable-extensions",
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"--user-data-dir=${workspaceFolder}/.vscode-dev/user-data",
+				"--extensions-dir=${workspaceFolder}/.vscode-dev/extensions",
+				"${workspaceFolder}/examples/hdl-feature-showcase"
+			],
+			"name": "Launch Extension (HDL Feature Showcase)",
+			"outFiles": [
+				"${workspaceFolder}/out/**/*.js"
+			],
+			"preLaunchTask": "${defaultBuildTask}",
+			"request": "launch",
+			"type": "extensionHost"
 		}
 	]
 }

@@ -1,0 +1,9 @@
++incdir+../rtl/include
++define+FPGA
++define+HAS_UART
+../rtl/include/config.svh
+../rtl/include/board_defs.svh
+../rtl/pkg/soc_types_pkg.sv
+../rtl/ip/uart_core.sv
+../broken/bad_instance_top.sv
+../broken/diagnostics_playground.sv

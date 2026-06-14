@@ -40,6 +40,8 @@ Project-aware Verilog/SystemVerilog features are also disabled by default. Enabl
 
 Use **Verilog: Doctor** from the command palette to inspect external tool paths, enabled language servers, formatter setup, linter configuration, WSL setup, include paths, and project configuration.
 
+To try the project-aware features together, open the [HDL Feature Showcase](examples/hdl-feature-showcase/README.md). It walks through project-aware navigation, HDL Explorer hierarchy, semantic diagnostics, compile-unit linting, and inactive preprocessor regions with a small multi-target SystemVerilog project.
+
 ## Features
 
 - Syntax highlighting and language modes for HDL, constraint, script, filelist, and waveform files.
@@ -156,6 +158,8 @@ Configure filelists with `verilog.project.filelists`, or leave that setting empt
 ```
 
 The project model powers cross-file module lookup, include resolution, workspace symbols, hover, completion, module instantiation, HDL Explorer, semantic diagnostics, and compile-unit linting. Existing Ctags behavior remains available as a fallback when the project index has no answer or the project model is disabled.
+
+For a guided multi-target filelist example, see the [HDL Feature Showcase](examples/hdl-feature-showcase/README.md).
 
 Large workspaces should either keep `"verilog.project.enabled": false`, configure explicit `verilog.project.filelists`, narrow indexing with `verilog.project.exclude`, or raise `verilog.project.maxAutoDiscoveredFiles` after confirming automatic discovery is acceptable. Automatic discovery is skipped when more files than `verilog.project.maxAutoDiscoveredFiles` are found.
 
