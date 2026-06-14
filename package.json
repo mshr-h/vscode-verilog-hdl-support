@@ -1344,7 +1344,7 @@
     "@logtape/logtape": "^2.0.0",
     "js-yaml": "^4.1.1",
     "semver": "^7.7.3",
-    "vscode-languageclient": "^9.0.1",
+    "vscode-languageclient": "^10.0.0",
     "which": "^7.0.0"
   },
   "devDependencies": {
