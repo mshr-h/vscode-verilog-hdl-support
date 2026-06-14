@@ -1035,7 +1035,8 @@
       },
       {
         "command": "verilog.refreshHdlExplorer",
-        "title": "Verilog: Refresh HDL Explorer"
+        "title": "Verilog: Refresh HDL Explorer",
+        "icon": "$(refresh)"
       },
       {
         "command": "verilog.setActiveTargetFromExplorer",
@@ -1148,22 +1149,22 @@
         {
           "command": "verilog.refreshHierarchy",
           "when": "view == verilog.hdlExplorer",
-          "group": "navigation"
+          "group": "1_hierarchy@1"
         },
         {
           "command": "verilog.selectActiveTarget",
           "when": "view == verilog.hdlExplorer",
-          "group": "navigation"
+          "group": "2_project@1"
         },
         {
           "command": "verilog.showProjectStatus",
           "when": "view == verilog.hdlExplorer",
-          "group": "navigation"
+          "group": "2_project@2"
         },
         {
           "command": "verilog.clearHierarchyRootFilter",
           "when": "view == verilog.hdlExplorer",
-          "group": "navigation"
+          "group": "1_hierarchy@2"
         }
       ],
       "view/item/context": [

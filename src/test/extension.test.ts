@@ -230,7 +230,7 @@ suite('Extension Test Suite', () => {
       contributes: {
         menus: {
           'view/item/context': Array<{ command: string; when: string }>;
-          'view/title': Array<{ command: string; when: string }>;
+          'view/title': Array<{ command: string; when: string; group: string }>;
         };
       };
     };
@@ -253,9 +253,11 @@ suite('Extension Test Suite', () => {
       menu.command === 'verilog.copyDefineArgumentFromExplorer' &&
       menu.when.includes('viewItem == hdlExplorer.define')
     ));
-    assert.ok(titleMenus.some((menu) =>
-      menu.command === 'verilog.selectActiveTarget' &&
-      menu.when === 'view == verilog.hdlExplorer'
-    ));
+    assert.deepStrictEqual(
+      titleMenus
+        .filter((menu) => menu.when === 'view == verilog.hdlExplorer' && menu.group === 'navigation')
+        .map((menu) => menu.command),
+      ['verilog.refreshHdlExplorer']
+    );
   });
 });
