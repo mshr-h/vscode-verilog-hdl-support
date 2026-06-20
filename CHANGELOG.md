@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.27.1] - 2026-06-21
+
+### Changed
+
+- Added third-party syntax grammar license notices and linked them from the README.
+
 ## [1.27.0] - 2026-06-15
 
 ### Added
