@@ -9,6 +9,138 @@ This project bundles the following third-party software:
 - jsTree 3.3.11 (https://www.jstree.com/), licensed under the MIT License.
 - jquery-contextmenu 2.9.2 (https://swisnl.github.io/jQuery-contextMenu/), licensed under the MIT License.
 
+## Syntax highlighting grammars
+
+### VSCode-SystemVerilog
+
+Component: VSCode-SystemVerilog
+
+Files in this repository:
+
+- syntaxes/systemverilog.tmLanguage.yaml
+- syntaxes/systemverilog.tmLanguage.json
+
+Source:
+
+- https://github.com/eirikpre/VSCode-SystemVerilog
+- Upstream file: syntaxes/systemverilog.tmLanguage.yaml
+
+License: MIT
+
+Upstream copyright notice and license text:
+
+MIT License
+
+Copyright (c) 2018 Eirik Prestegårdshus
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+### Digital-IDE Tcl grammar and language configuration
+
+Component: Digital-IDE
+
+Files in this repository:
+
+- syntaxes/tcl.tmlanguage.json
+- configs/tcl.configuration.json
+
+Source:
+
+- https://github.com/Digital-EDA/Digital-IDE
+- Upstream files: syntaxes/tcl.json, config/tcl.configuration.json
+
+License: MIT
+
+Upstream copyright notice and license text:
+
+MIT License
+
+Copyright (c) 2023 DIDE
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+### TextMate Verilog Bundle
+
+Component: TextMate Verilog Bundle
+
+Files in this repository:
+
+- syntaxes/verilog.tmLanguage.json
+
+Source:
+
+- https://github.com/textmate/verilog.tmbundle
+- Upstream file: Syntaxes/Verilog.tmLanguage
+
+License: TextMate bundle permissive license
+
+Upstream license text:
+
+Permission to copy, use, modify, sell and distribute this
+software is granted. This software is provided "as is" without
+express or implied warranty, and with no claim as to its
+suitability for any purpose.
+
+### VHDL grammar
+
+Component: VHDL grammar
+
+Files in this repository:
+
+- syntaxes/vhdl.tmLanguage.json
+
+Source:
+
+- https://github.com/yangsu/sublime-vhdl
+- https://github.com/textmate/vhdl.tmbundle
+- Upstream file: Syntaxes/VHDL.tmLanguage
+
+Upstream notice:
+
+- VHDL Bundle by Brian Padalino (ocnqnyvab@tznvy.pbz)
+- The yangsu/sublime-vhdl README states that it is based on VHDL.tmbundle for TextMate.
+
+License: TextMate bundle permissive license
+
+Upstream license text:
+
+Permission to copy, use, modify, sell and distribute this
+software is granted. This software is provided "as is" without
+express or implied warranty, and with no claim as to its
+suitability for any purpose.
+
 Apache License
 Version 2.0, January 2004
 http://www.apache.org/licenses/

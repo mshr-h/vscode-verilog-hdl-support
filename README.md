@@ -335,6 +335,8 @@ Logs are written to a LogOutputChannel in VS Code. You can check them by opening
 
 ## Thanks
 
+Third-party syntax grammars and related notices are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
 - To all our [Contributors](https://github.com/mshr-h/vscode-verilog-hdl-support/graphs/contributors)
 - [Textmate Package for Verilog](https://github.com/textmate/verilog.tmbundle)
 - [SublimeLinter-contrib-iverilog](https://github.com/jfcherng/SublimeLinter-contrib-iverilog)

@@ -1,3 +1,4 @@
+# Derived from eirikpre/VSCode-SystemVerilog. See THIRD_PARTY_NOTICES.md.
 name: SystemVerilog
 scopeName: source.systemverilog
 fileTypes:
