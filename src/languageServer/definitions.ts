@@ -43,6 +43,15 @@ export function createLanguageServerDefinitions(): LanguageServerDefinition[] {
       }),
     },
     {
+      name: 'slangServer',
+      defaultPath: 'slang-server',
+      serverArgs: [],
+      serverDebugArgs: [],
+      buildClientOptions: () => ({
+        documentSelector: [{ scheme: 'file', language: 'systemverilog' }],
+      }),
+    },
+    {
       name: 'hdlChecker',
       defaultPath: 'hdl_checker',
       serverArgs: ['--lsp'],

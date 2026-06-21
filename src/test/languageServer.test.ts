@@ -11,6 +11,7 @@ suite('Language Server smoke', () => {
     const expected = [
       'hdlChecker',
       'rustHdl',
+      'slangServer',
       'svls',
       'tclsp',
       'veribleVerilogLs',
@@ -29,6 +30,17 @@ suite('Language Server smoke', () => {
         `Expected documentSelector for ${definition.name}`
       );
     }
+  });
+
+  test('slang-server handles SystemVerilog documents', () => {
+    const definition = createLanguageServerDefinitions().find(
+      (server) => server.name === 'slangServer'
+    );
+    assert.ok(definition);
+
+    const selector = definition.buildClientOptions().documentSelector;
+
+    assert.deepStrictEqual(selector, [{ scheme: 'file', language: 'systemverilog' }]);
   });
 
   test('initializes and stops without enabled servers', async () => {
