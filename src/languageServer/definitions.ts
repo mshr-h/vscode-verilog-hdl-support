@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
-import { LanguageClientOptions, Message } from 'vscode-languageclient/node';
+import { Message, type InitializeParams, type LanguageClientOptions } from 'vscode-languageclient/node';
 
+import { sanitizeSlangServerInitializeParams } from './slangServerCompatibility';
 import { buildTclspInitializationOptions } from './tclspOptions';
 
 export type LanguageServerDefinition = {
@@ -11,6 +12,7 @@ export type LanguageServerDefinition = {
   serverDebugArgs: string[];
   buildClientOptions: () => LanguageClientOptions;
   applyProcessEnv?: () => void;
+  sanitizeInitializeParams?: (params: InitializeParams) => void;
 };
 
 export function createLanguageServerDefinitions(): LanguageServerDefinition[] {
@@ -50,6 +52,7 @@ export function createLanguageServerDefinitions(): LanguageServerDefinition[] {
       buildClientOptions: () => ({
         documentSelector: [{ scheme: 'file', language: 'systemverilog' }],
       }),
+      sanitizeInitializeParams: sanitizeSlangServerInitializeParams,
     },
     {
       name: 'hdlChecker',

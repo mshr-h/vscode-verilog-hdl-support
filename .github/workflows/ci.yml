@@ -13,16 +13,20 @@ jobs:
           - os: macos-latest
             slang_asset: slang-macos-arm64.tar.gz
             slang_sha256: 6d2f86ffedfefe663c6f55fd77348806faafccd69e71f7359986b0c9604f9187
+            slang_server_asset: slang-server-macos.tar.gz
           - os: ubuntu-latest
             slang_asset: slang-linux-x86_64.tar.gz
             slang_sha256: 951a170e10e25e54c91565030acfdfc11c3226714ebf225a18ad4166a898d8a4
+            slang_server_asset: slang-server-linux-x64.tar.gz
           - os: windows-latest
             slang_asset: slang-windows-x86_64.zip
             slang_sha256: 23d0a3d052cf88da13acc8b73161d77e3242ffbc630bb0577a3ccda0e4e39d81
+            slang_server_asset: slang-server-windows-x64.zip
       fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
       SLANG_VERSION: v11.0
+      SLANG_SERVER_VERSION: v0.2.7
       VERIBLE_VERSION: v0.0-4071-g8d9f2c97
       VERIBLE_SHA256: bfa43258d9132797ec9dca2a624395bb83967e18b888803c022d1c9a889203b6
     steps:
@@ -33,6 +37,11 @@ jobs:
         with:
           node-version: lts/*
       - run: npm ci
+      - name: Setup slang-server
+        uses: ./.github/actions/setup-slang-server
+        with:
+          version: ${{ env.SLANG_SERVER_VERSION }}
+          asset: ${{ matrix.slang_server_asset }}
       - name: Cache slang
         id: cache-slang
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5

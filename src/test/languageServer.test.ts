@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 import * as assert from 'assert';
+import type { InitializeParams } from 'vscode-languageclient/node';
 
 import { createLanguageServerDefinitions } from '../languageServer/definitions';
 import { initAllLanguageClients, stopAllLanguageClients } from '../languageServer';
 import { buildServerOptions } from '../languageServer/manager';
+import { sanitizeSlangServerInitializeParams } from '../languageServer/slangServerCompatibility';
 
 suite('Language Server smoke', () => {
   test('defines expected servers', () => {
@@ -41,6 +43,62 @@ suite('Language Server smoke', () => {
     const selector = definition.buildClientOptions().documentSelector;
 
     assert.deepStrictEqual(selector, [{ scheme: 'file', language: 'systemverilog' }]);
+  });
+
+  test('only slang-server has an initialize params sanitizer', () => {
+    const definitions = createLanguageServerDefinitions();
+    const slangServer = definitions.find((server) => server.name === 'slangServer');
+
+    assert.strictEqual(typeof slangServer?.sanitizeInitializeParams, 'function');
+    assert.ok(
+      definitions
+        .filter((server) => server.name !== 'slangServer')
+        .every((server) => server.sanitizeInitializeParams === undefined)
+    );
+  });
+
+  test('slang-server sanitizer removes unsupported refactor.move code action kind', () => {
+    const params = initializeParamsWithCodeActionKinds([
+      '',
+      'quickfix',
+      'refactor.move',
+      'refactor.extract',
+      'source',
+    ]);
+
+    sanitizeSlangServerInitializeParams(params);
+
+    assert.deepStrictEqual(getCodeActionKindValueSet(params), [
+      '',
+      'quickfix',
+      'refactor.extract',
+      'source',
+    ]);
+  });
+
+  test('slang-server sanitizer tolerates missing or malformed code action capabilities', () => {
+    const malformedParams = [
+      { capabilities: {} },
+      { capabilities: { textDocument: {} } },
+      { capabilities: { textDocument: { codeAction: 'unsupported-shape' } } },
+      {
+        capabilities: {
+          textDocument: {
+            codeAction: {
+              codeActionLiteralSupport: {
+                codeActionKind: {
+                  valueSet: 'unsupported-shape',
+                },
+              },
+            },
+          },
+        },
+      },
+    ] as unknown as InitializeParams[];
+
+    for (const params of malformedParams) {
+      assert.doesNotThrow(() => sanitizeSlangServerInitializeParams(params));
+    }
   });
 
   test('initializes and stops without enabled servers', async () => {
@@ -92,3 +150,34 @@ suite('Language Server smoke', () => {
     assert.deepStrictEqual(options.debug.args, ['--lsp', '--define', 'A=B C']);
   });
 });
+
+function initializeParamsWithCodeActionKinds(valueSet: string[]): InitializeParams {
+  return {
+    capabilities: {
+      textDocument: {
+        codeAction: {
+          codeActionLiteralSupport: {
+            codeActionKind: {
+              valueSet,
+            },
+          },
+        },
+      },
+    },
+  } as unknown as InitializeParams;
+}
+
+function getCodeActionKindValueSet(params: InitializeParams): unknown {
+  const capabilities = params.capabilities as unknown as {
+    textDocument?: {
+      codeAction?: {
+        codeActionLiteralSupport?: {
+          codeActionKind?: {
+            valueSet?: unknown;
+          };
+        };
+      };
+    };
+  };
+  return capabilities.textDocument?.codeAction?.codeActionLiteralSupport?.codeActionKind?.valueSet;
+}

@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
-import { LanguageClient } from 'vscode-languageclient/node';
+import {
+  LanguageClient,
+  type InitializeParams,
+  type LanguageClientOptions,
+  type ServerOptions,
+} from 'vscode-languageclient/node';
 import { getExtensionLogger } from '../logging';
 import { splitCommandLineArgs } from '../utils/commandLine';
 import { LanguageServerDefinition } from './definitions';
@@ -22,6 +27,23 @@ export function buildServerOptions(input: BuildServerOptionsInput): BuiltServerO
     run: { command: input.command, args: input.definition.serverArgs.concat(customArgs) },
     debug: { command: input.command, args: input.definition.serverDebugArgs.concat(customArgs) },
   };
+}
+
+class SanitizingLanguageClient extends LanguageClient {
+  constructor(
+    id: string,
+    name: string,
+    serverOptions: ServerOptions,
+    clientOptions: LanguageClientOptions,
+    private readonly sanitizeInitializeParams: (params: InitializeParams) => void
+  ) {
+    super(id, name, serverOptions, clientOptions);
+  }
+
+  protected fillInitializeParams(params: InitializeParams): void {
+    super.fillInitializeParams(params);
+    this.sanitizeInitializeParams(params);
+  }
 }
 
 export class LanguageServerManager {
@@ -58,12 +80,7 @@ export class LanguageServerManager {
 
     const serverOptions = buildServerOptions({ definition, command: binPath, customArgs });
 
-    const client = new LanguageClient(
-      definition.name,
-      `${definition.name  } language server`,
-      serverOptions,
-      definition.buildClientOptions()
-    );
+    const client = createLanguageClient(definition, serverOptions);
     this.languageClients.set(definition.name, client);
 
     if (!enabled) {
@@ -77,4 +94,22 @@ export class LanguageServerManager {
     client.start();
     this.logger.info`"${definition.name}" language server started.`;
   }
+}
+
+function createLanguageClient(
+  definition: LanguageServerDefinition,
+  serverOptions: ServerOptions
+): LanguageClient {
+  const name = `${definition.name  } language server`;
+  const clientOptions = definition.buildClientOptions();
+  if (definition.sanitizeInitializeParams) {
+    return new SanitizingLanguageClient(
+      definition.name,
+      name,
+      serverOptions,
+      clientOptions,
+      definition.sanitizeInitializeParams
+    );
+  }
+  return new LanguageClient(definition.name, name, serverOptions, clientOptions);
 }
