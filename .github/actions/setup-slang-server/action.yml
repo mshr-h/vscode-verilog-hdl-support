@@ -1,0 +1,91 @@
+name: Setup slang-server
+description: Install a pinned slang-server release and expose it on PATH.
+
+inputs:
+  version:
+    description: slang-server release tag to install.
+    default: v0.2.7
+    required: false
+  asset:
+    description: slang-server release asset to install.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Cache slang-server
+      id: cache-slang-server
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      with:
+        path: ~/.cache/veriloghdl-tools/slang-server/${{ inputs.version }}/${{ inputs.asset }}
+        key: ${{ runner.os }}-slang-server-${{ inputs.version }}-${{ inputs.asset }}
+
+    - name: Install slang-server (Unix)
+      if: runner.os != 'Windows' && steps.cache-slang-server.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        set -euxo pipefail
+        install_dir="$HOME/.cache/veriloghdl-tools/slang-server/${{ inputs.version }}/${{ inputs.asset }}"
+        archive="$RUNNER_TEMP/${{ inputs.asset }}"
+        curl -fsSL --retry 3 --retry-delay 5 \
+          -o "$archive" \
+          "https://github.com/hudson-trading/slang-server/releases/download/${{ inputs.version }}/${{ inputs.asset }}"
+        rm -rf "$install_dir"
+        mkdir -p "$install_dir"
+        tar -xzf "$archive" -C "$install_dir"
+
+    - name: Install slang-server (Windows)
+      if: runner.os == 'Windows' && steps.cache-slang-server.outputs.cache-hit != 'true'
+      shell: pwsh
+      run: |
+        $installDir = Join-Path $env:USERPROFILE ".cache/veriloghdl-tools/slang-server/${{ inputs.version }}/${{ inputs.asset }}"
+        $archive = Join-Path $env:RUNNER_TEMP "${{ inputs.asset }}"
+        curl.exe -fsSL --retry 3 --retry-delay 5 `
+          -o $archive `
+          "https://github.com/hudson-trading/slang-server/releases/download/${{ inputs.version }}/${{ inputs.asset }}"
+        if (Test-Path $installDir) {
+          Remove-Item -Recurse -Force $installDir
+        }
+        New-Item -ItemType Directory -Force $installDir | Out-Null
+        Expand-Archive -LiteralPath $archive -DestinationPath $installDir
+
+    - name: Export slang-server path (Unix)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        set -euxo pipefail
+        install_dir="$HOME/.cache/veriloghdl-tools/slang-server/${{ inputs.version }}/${{ inputs.asset }}"
+        server_path="$(find "$install_dir" -type f -name slang-server -perm -u+x | head -n 1)"
+        if [ -z "$server_path" ]; then
+          server_path="$(find "$install_dir" -type f -name slang-server | head -n 1)"
+        fi
+        if [ -z "$server_path" ]; then
+          echo "Could not find slang-server in $install_dir" >&2
+          exit 1
+        fi
+        chmod +x "$server_path"
+        dirname "$server_path" >> "$GITHUB_PATH"
+        echo "SLANG_SERVER_PATH=$server_path" >> "$GITHUB_ENV"
+
+    - name: Export slang-server path (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        $installDir = Join-Path $env:USERPROFILE ".cache/veriloghdl-tools/slang-server/${{ inputs.version }}/${{ inputs.asset }}"
+        $serverPath = Get-ChildItem -LiteralPath $installDir -Recurse -File -Filter "slang-server.exe" |
+          Select-Object -First 1 -ExpandProperty FullName
+        if (-not $serverPath) {
+          throw "Could not find slang-server.exe in $installDir"
+        }
+        Split-Path -Parent $serverPath | Out-File -FilePath $env:GITHUB_PATH -Append
+        "SLANG_SERVER_PATH=$serverPath" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+    - name: Verify slang-server (Unix)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: '"$SLANG_SERVER_PATH" --version'
+
+    - name: Verify slang-server (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: '& $env:SLANG_SERVER_PATH --version'
