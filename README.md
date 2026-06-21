@@ -259,6 +259,7 @@ We currently support the following language servers. You can enable multiple lan
 | -------------------------------------------------------------- | ------------------ |
 | [svls](https://github.com/dalance/svls)                        | SystemVerilog |
 | [veridian](https://github.com/vivekmalneedi/veridian)          | SystemVerilog |
+| [slang-server](https://github.com/hudson-trading/slang-server) | SystemVerilog |
 | [HDL Checker](https://github.com/suoto/hdl_checker)            | Verilog-HDL, SystemVerilog, VHDL |
 | [verible-verilog-ls](https://github.com/chipsalliance/verible) | Verilog-HDL, SystemVerilog |
 | [vhdl_ls](https://github.com/VHDL-LS/rust_hdl)                 | VHDL |
@@ -268,10 +269,13 @@ Enable only the language servers you need. For example:
 
 ```json
 {
+    "verilog.languageServer.slangServer.enabled": true,
     "verilog.languageServer.veribleVerilogLs.enabled": true,
     "verilog.languageServer.tclsp.enabled": true
 }
 ```
+
+Install [slang-server](https://github.com/hudson-trading/slang-server) and enable `verilog.languageServer.slangServer.enabled` when you want Slang-backed SystemVerilog language intelligence.
 
 Install [svls](https://github.com/dalance/svls) via `cargo`:
 

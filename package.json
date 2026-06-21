@@ -624,6 +624,24 @@
             "default": "",
             "markdownDescription": "Add custom arguments for the HDL Checker Veridian Language Server."
           },
+          "verilog.languageServer.slangServer.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "Enable slang-server Language Server for SystemVerilog."
+          },
+          "verilog.languageServer.slangServer.path": {
+            "scope": "window",
+            "type": "string",
+            "default": "slang-server",
+            "markdownDescription": "A path to the slang-server Language Server binary."
+          },
+          "verilog.languageServer.slangServer.arguments": {
+            "scope": "window",
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Add custom arguments for the slang-server Language Server."
+          },
           "verilog.languageServer.hdlChecker.enabled": {
             "scope": "window",
             "type": "boolean",

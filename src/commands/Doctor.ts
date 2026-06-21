@@ -110,6 +110,7 @@ const linterVersionArgs = new Map<string, string[]>([
 const languageServerLabels: Record<string, string> = {
   svls: 'svls',
   veridian: 'veridian',
+  slangServer: 'slang-server',
   hdlChecker: 'hdlChecker',
   veribleVerilogLs: 'verible-verilog-ls',
   tclsp: 'tclsp',

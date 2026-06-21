@@ -3,8 +3,10 @@ import * as assert from 'assert';
 import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import which = require('which');
 import {
   buildFormatterChecks,
+  createDefaultDoctorDependencies,
   buildLanguageServerConflictChecks,
   buildLanguageServerChecks,
   buildLinterChecks,
@@ -200,6 +202,34 @@ suite('Doctor', () => {
     assert.ok(
       checks.some(
         (check) => check.status === 'ok' && check.message.includes('verible-verilog-ls 1.0')
+      )
+    );
+  });
+
+  test('installed slang-server version probe works when available', async function () {
+    const slangServerPath = process.env.SLANG_SERVER_PATH || which.sync('slang-server', { nothrow: true });
+    if (!slangServerPath) {
+      this.skip();
+    }
+
+    const checks = await buildLanguageServerChecks(
+      {
+        name: 'slang-server',
+        enabled: true,
+        path: slangServerPath,
+        arguments: '',
+      },
+      createDefaultDoctorDependencies()
+    );
+
+    assert.ok(
+      checks.some(
+        (check) => check.status === 'ok' && check.message.includes('slang-server binary')
+      )
+    );
+    assert.ok(
+      checks.some(
+        (check) => check.status === 'ok' && check.message.includes('slang-server version')
       )
     );
   });
