@@ -3,8 +3,10 @@ import * as vscode from 'vscode';
 import { getExtensionLogger } from '../logging';
 import type { ProjectService } from '../project/ProjectService';
 import type { ProjectSnapshot } from '../project/ProjectTypes';
-import { FastIndexerBackend } from './backends/FastIndexerBackend';
+import type { AnalysisResult } from './backends/AnalysisBackend';
+import { ConfiguredAnalysisBackend } from './backends/ConfiguredAnalysisBackend';
 import { SemanticIndex } from './SemanticIndex';
+import type { SymbolRecord } from './SymbolRecords';
 
 const logger = getExtensionLogger('Semantic', 'IndexService');
 
@@ -17,12 +19,18 @@ export class IndexService implements vscode.Disposable {
   readonly onDidChangeIndex = this.emitter.event;
 
   constructor(
-    projectService: ProjectService,
-    private readonly backend = new FastIndexerBackend()
+    private readonly projectService: ProjectService,
+    private readonly backend: { build(snapshot: ProjectSnapshot): Promise<AnalysisResult | SymbolRecord[]> } =
+      new ConfiguredAnalysisBackend()
   ) {
     this.disposables.push(
       projectService.onDidChangeSnapshot((snapshot) => {
         void this.rebuild(snapshot);
+      }),
+      vscode.workspace.onDidChangeConfiguration((event) => {
+        if (event.affectsConfiguration('verilog.analysis')) {
+          void this.rebuild(this.projectService.getSnapshot());
+        }
       })
     );
   }
@@ -40,13 +48,16 @@ export class IndexService implements vscode.Disposable {
       files: snapshot.compileUnits.reduce((sum, compileUnit) => sum + compileUnit.files.length, 0),
     });
     try {
-      const symbols = await this.backend.build(snapshot);
+      const result = toAnalysisResult(await this.backend.build(snapshot));
       if (serial === this.rebuildSerial) {
-        this.index = new SemanticIndex(snapshot.version, symbols);
+        this.index = new SemanticIndex(snapshot.version, result.symbols, result.metadata);
         this.emitter.fire(this.index);
         logger.info('Rebuilt Verilog semantic index', {
           version: snapshot.version,
-          symbols: symbols.length,
+          symbols: result.symbols.length,
+          engine: result.metadata.actualEngine,
+          requestedEngine: result.metadata.requestedEngine,
+          fallbackReason: result.metadata.fallbackReason,
         });
       }
     } catch (error) {
@@ -69,4 +80,17 @@ export class IndexService implements vscode.Disposable {
     }
     this.emitter.dispose();
   }
+}
+
+function toAnalysisResult(result: AnalysisResult | SymbolRecord[]): AnalysisResult {
+  if (Array.isArray(result)) {
+    return {
+      symbols: result,
+      metadata: {
+        requestedEngine: 'fast',
+        actualEngine: 'fast',
+      },
+    };
+  }
+  return result;
 }

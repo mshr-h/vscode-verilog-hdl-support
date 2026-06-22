@@ -12,6 +12,8 @@ import {
   createLanguageServerDefinitions,
   type LanguageServerDefinition,
 } from '../languageServer/definitions';
+import type { IndexService } from '../semantic/IndexService';
+import { getAnalysisSettings } from '../semantic/backends/AnalysisSettings';
 import type { ProjectService } from '../project/ProjectService';
 import { activeEditorContextDiagnostic, summarizeContext } from '../project/ProjectCommands';
 import { getCompileUnitLintContext } from '../linter/ProjectLintContext';
@@ -119,15 +121,19 @@ const languageServerLabels: Record<string, string> = {
 
 export function registerDoctorCommand(
   context: vscode.ExtensionContext,
-  projectService?: ProjectService
+  projectService?: ProjectService,
+  indexService?: IndexService
 ): vscode.Disposable {
-  return vscode.commands.registerCommand('verilog.doctor', () => runDoctor(context, createDefaultDoctorDependencies(), projectService));
+  return vscode.commands.registerCommand('verilog.doctor', () =>
+    runDoctor(context, createDefaultDoctorDependencies(), projectService, indexService)
+  );
 }
 
 export async function runDoctor(
   context: vscode.ExtensionContext,
   deps: DoctorDependencies = createDefaultDoctorDependencies(),
-  projectService?: ProjectService
+  projectService?: ProjectService,
+  indexService?: IndexService
 ): Promise<void> {
   let report: DoctorReport;
   try {
@@ -137,7 +143,7 @@ export async function runDoctor(
         title: 'Running Verilog Doctor',
         cancellable: true,
       },
-      async (_progress, token) => buildDoctorReport(context, deps, token, projectService)
+      async (_progress, token) => buildDoctorReport(context, deps, token, projectService, indexService)
     );
   } catch (err) {
     if (err instanceof ToolRunError && err.reason === 'cancelled') {
@@ -166,7 +172,8 @@ export async function buildDoctorReport(
   context: vscode.ExtensionContext,
   deps: DoctorDependencies,
   token?: vscode.CancellationToken,
-  projectService?: ProjectService
+  projectService?: ProjectService,
+  indexService?: IndexService
 ): Promise<DoctorReport> {
   const activeDocument = vscode.window.activeTextEditor?.document;
   const activeWorkspaceFolder = activeDocument
@@ -184,6 +191,7 @@ export async function buildDoctorReport(
     await buildLintingSectionFromConfiguration(deps, workspaceFolderPath, token, projectService),
     await buildFormattingSection(deps, workspaceFolderPath, token),
     await buildLanguageServersSection(deps, workspaceFolderPaths, token),
+    await buildAnalysisSection(deps, token, indexService),
     buildProjectSection(projectService),
   ];
   sections.push(buildSummarySection(sections));
@@ -245,6 +253,45 @@ function buildProjectSection(projectService?: ProjectService): DoctorSection {
   }
 
   return { title: 'Project', checks };
+}
+
+async function buildAnalysisSection(
+  deps: DoctorDependencies,
+  token?: vscode.CancellationToken,
+  indexService?: IndexService
+): Promise<DoctorSection> {
+  const settings = getAnalysisSettings();
+  const metadata = indexService?.getIndex().metadata;
+  const checks: DoctorCheck[] = [
+    { status: 'info', message: `verilog.analysis.engine = ${settings.engine}` },
+    { status: 'info', message: `verilog.analysis.cache.enabled = ${String(settings.cacheEnabled)}` },
+    { status: 'info', message: `verilog.analysis.slang.arguments = ${settings.slangArguments.join(' ')}` },
+  ];
+
+  if (settings.engine !== 'fast') {
+    const resolved = await appendBinaryChecks(
+      checks,
+      'slang binary',
+      settings.slangPath,
+      deps,
+      token
+    );
+    if (resolved) {
+      await appendVersionCheck(checks, 'slang version', resolved, ['--version'], deps, token);
+    }
+  }
+
+  if (metadata) {
+    checks.push({ status: 'info', message: `requested analysis engine = ${metadata.requestedEngine}` });
+    checks.push({ status: 'info', message: `actual analysis engine = ${metadata.actualEngine}` });
+    if (metadata.fallbackReason) {
+      checks.push({ status: 'warn', message: `analysis fallback reason = ${metadata.fallbackReason}` });
+    }
+  } else {
+    checks.push({ status: 'info', message: 'semantic index unavailable in this Doctor context.' });
+  }
+
+  return { title: 'Analysis', checks };
 }
 
 export function renderDoctorReport(report: DoctorReport): string {

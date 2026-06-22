@@ -321,7 +321,7 @@ suite('Minimal IDE Model Stabilization', () => {
       watcher.dispose();
     });
 
-    test('ProjectWatcher creates filelist watcher only while project indexing is enabled', () => {
+    test('ProjectWatcher creates filelist and source watchers only while project indexing is enabled', () => {
       let enabled = false;
       let watchersCreated = 0;
       let watchersDisposed = 0;
@@ -362,17 +362,17 @@ suite('Minimal IDE Model Stabilization', () => {
 
       enabled = true;
       configListener?.(projectConfigurationChangeEvent());
-      assert.strictEqual(watchersCreated, 1);
+      assert.strictEqual(watchersCreated, 2);
       assert.strictEqual(watchersDisposed, 0);
 
       enabled = false;
       configListener?.(projectConfigurationChangeEvent());
-      assert.strictEqual(watchersCreated, 1);
-      assert.strictEqual(watchersDisposed, 1);
-      assert.strictEqual(watcherEventDisposablesDisposed, 3);
+      assert.strictEqual(watchersCreated, 2);
+      assert.strictEqual(watchersDisposed, 2);
+      assert.strictEqual(watcherEventDisposablesDisposed, 6);
 
       watcher.dispose();
-      assert.strictEqual(watchersDisposed, 1);
+      assert.strictEqual(watchersDisposed, 2);
     });
 
     test('auto-discovery excludes large ignored directories before indexing', async function () {

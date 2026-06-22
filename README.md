@@ -38,7 +38,11 @@ Project-aware Verilog/SystemVerilog features are also disabled by default. Enabl
 }
 ```
 
+The project index uses `verilog.analysis.engine: "auto"` by default. When the [Slang](https://github.com/MikePopoloski/slang) binary is available, the extension uses Slang-backed analysis to enrich the built-in fast scanner; otherwise it falls back to the fast scanner without disabling existing features.
+
 Use **Verilog: Doctor** from the command palette to inspect external tool paths, enabled language servers, formatter setup, linter configuration, WSL setup, include paths, and project configuration.
+
+Use **Verilog: Configure HDL Project** to enable project indexing and set basic filelist, include directory, and Slang path settings from VS Code.
 
 To try the project-aware features together, open the [HDL Feature Showcase](examples/hdl-feature-showcase/README.md). It walks through project-aware navigation, HDL Explorer hierarchy, semantic diagnostics, compile-unit linting, and inactive preprocessor regions with a small multi-target SystemVerilog project.
 
@@ -54,6 +58,7 @@ To try the project-aware features together, open the [HDL Feature Showcase](exam
 - Optional compile-unit linting for Slang, Verilator, and Icarus Verilog.
 - Formatting support from `verilog-format`, `iStyle`, and `verible-verilog-format`.
 - Project-aware HDL editing: go-to-definition, Find References, Rename Symbol, hover, workspace symbols, completion, module instantiation, and code actions.
+- Slang-backed analysis engine selection with automatic fallback to the built-in fast scanner.
 - Ctags-backed fallback features for autocomplete, document symbols, hover, go-to-definition, peek definition, and module instantiation.
 - Optional language-server integration for Verilog/SystemVerilog, VHDL, Tcl, SDC, XDC, and UPF.
 
@@ -93,6 +98,10 @@ To try the project-aware features together, open the [HDL Feature Showcase](exam
 - **Verilog: Reload Project**
 
     Reload the project-aware HDL model from configured filelists, project settings, or workspace discovery.
+
+- **Verilog: Configure HDL Project**
+
+    Enable project-aware indexing and configure basic filelist, include directory, and Slang path settings for the current workspace.
 
 - **Verilog: Select Active HDL Target**
 
@@ -158,6 +167,23 @@ Configure filelists with `verilog.project.filelists`, or leave that setting empt
 ```
 
 The project model powers cross-file module lookup, include resolution, workspace symbols, hover, completion, module instantiation, HDL Explorer, semantic diagnostics, and compile-unit linting. Existing Ctags behavior remains available as a fallback when the project index has no answer or the project model is disabled.
+
+### Analysis Engine
+
+The extension can build its project index with the built-in fast scanner or with Slang-backed analysis:
+
+```json
+{
+    "verilog.analysis.engine": "auto",
+    "verilog.analysis.slang.path": "slang",
+    "verilog.analysis.slang.arguments": "",
+    "verilog.analysis.cache.enabled": true
+}
+```
+
+`auto` is the default. It tries Slang first and falls back to the fast scanner if Slang is not installed or the Slang run fails. `fast` forces the built-in scanner. `slang` requests Slang-backed analysis, but still falls back to the fast scanner instead of emptying the index when the external tool is unavailable.
+
+Slang-backed analysis currently enriches the existing project index while preserving fast scanner locations and existing editor behavior. Use **Verilog: Doctor** to see the requested analysis engine, the actual engine used for the current index, and any fallback reason.
 
 For a guided multi-target filelist example, see the [HDL Feature Showcase](examples/hdl-feature-showcase/README.md).
 
@@ -312,6 +338,7 @@ The `verilog.formatting.verilogFormat.settings` path supports `${env:VAR}` and `
 ### Limitations
 
 - Project-aware features are lightweight and do not perform full SystemVerilog elaboration or full lexical scope resolution.
+- Slang-backed analysis is optional and falls back to the fast scanner when the `slang` binary is unavailable or returns unusable AST JSON.
 - Project indexing is opt-in and may be skipped when automatic discovery exceeds `verilog.project.maxAutoDiscoveredFiles`.
 - Compile-unit linting is supported by Slang, Verilator, and Icarus Verilog. Other linters use file-mode linting.
 - Ctags integration indexes the currently opened file and is used as a fallback for several editor features.

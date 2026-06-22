@@ -14,8 +14,10 @@ export interface ProjectWatcherOptions {
 export class ProjectWatcher implements vscode.Disposable {
   private readonly disposables: vscode.Disposable[] = [];
   private readonly filelistWatcherDisposables: vscode.Disposable[] = [];
+  private readonly sourceWatcherDisposables: vscode.Disposable[] = [];
   private reloadTimer: NodeJS.Timeout | undefined;
   private filelistWatcher: vscode.FileSystemWatcher | undefined;
+  private sourceWatcher: vscode.FileSystemWatcher | undefined;
   private readonly debounceMs: number;
   private readonly createFileSystemWatcher: typeof vscode.workspace.createFileSystemWatcher;
   private readonly onDidChangeConfiguration: typeof vscode.workspace.onDidChangeConfiguration;
@@ -41,9 +43,11 @@ export class ProjectWatcher implements vscode.Disposable {
         }
         this.scheduleReload('configuration changed');
         this.refreshFilelistWatcher();
+        this.refreshSourceWatcher();
       })
     );
     this.refreshFilelistWatcher();
+    this.refreshSourceWatcher();
   }
 
   scheduleReload(reason: string): void {
@@ -62,6 +66,7 @@ export class ProjectWatcher implements vscode.Disposable {
       this.reloadTimer = undefined;
     }
     this.disposeFilelistWatcher();
+    this.disposeSourceWatcher();
     for (const disposable of this.disposables) {
       disposable.dispose();
     }
@@ -87,6 +92,28 @@ export class ProjectWatcher implements vscode.Disposable {
       this.filelistWatcherDisposables.pop()?.dispose();
     }
     this.filelistWatcher = undefined;
+  }
+
+  private refreshSourceWatcher(): void {
+    this.disposeSourceWatcher();
+    if (!this.isProjectEnabled()) {
+      return;
+    }
+
+    this.sourceWatcher = this.createFileSystemWatcher('**/*.{v,V,vh,VH,vl,sv,SV,svh,SVH}');
+    this.sourceWatcherDisposables.push(this.sourceWatcher);
+    this.sourceWatcherDisposables.push(
+      this.sourceWatcher.onDidCreate(() => this.scheduleReload('HDL source created')),
+      this.sourceWatcher.onDidChange(() => this.scheduleReload('HDL source changed')),
+      this.sourceWatcher.onDidDelete(() => this.scheduleReload('HDL source deleted'))
+    );
+  }
+
+  private disposeSourceWatcher(): void {
+    while (this.sourceWatcherDisposables.length > 0) {
+      this.sourceWatcherDisposables.pop()?.dispose();
+    }
+    this.sourceWatcher = undefined;
   }
 
   private isProjectEnabled(): boolean {

@@ -753,6 +753,40 @@
         }
       },
       {
+        "title": "Verilog: Analysis",
+        "properties": {
+          "verilog.analysis.engine": {
+            "scope": "window",
+            "type": "string",
+            "enum": [
+              "auto",
+              "fast",
+              "slang"
+            ],
+            "default": "auto",
+            "markdownDescription": "Choose the Verilog/SystemVerilog analysis engine. `auto` uses Slang when available and falls back to the built-in fast scanner."
+          },
+          "verilog.analysis.slang.path": {
+            "scope": "window",
+            "type": "string",
+            "default": "slang",
+            "markdownDescription": "A path to the Slang binary used by the Slang-backed analysis engine."
+          },
+          "verilog.analysis.slang.arguments": {
+            "scope": "window",
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Additional arguments passed to Slang before project include directories, defines, and source files."
+          },
+          "verilog.analysis.cache.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Enable analysis cache support for engines that can reuse project analysis data. The initial Slang integration records this preference but falls back to full analysis when no cache is available."
+          }
+        }
+      },
+      {
         "title": "Verilog: Project",
         "properties": {
           "verilog.project.enabled": {
@@ -1039,6 +1073,10 @@
       {
         "command": "verilog.reloadProject",
         "title": "Verilog: Reload Project"
+      },
+      {
+        "command": "verilog.configureProject",
+        "title": "Verilog: Configure HDL Project"
       },
       {
         "command": "verilog.showProjectStatus",

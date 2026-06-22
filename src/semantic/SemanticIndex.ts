@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import type { FileContext } from '../project/FileContext';
+import type { AnalysisMetadata } from './backends/AnalysisBackend';
 import type { ModuleRecord, SymbolRecord, SymbolRecordKind } from './SymbolRecords';
 
 export class SemanticIndex {
@@ -13,7 +14,11 @@ export class SemanticIndex {
 
   constructor(
     readonly version: number,
-    private readonly symbols: SymbolRecord[]
+    private readonly symbols: SymbolRecord[],
+    readonly metadata: AnalysisMetadata = {
+      requestedEngine: 'fast',
+      actualEngine: 'fast',
+    }
   ) {
     for (const symbol of symbols) {
       addToMap(this.symbolsByFile, symbol.uri.fsPath, symbol);

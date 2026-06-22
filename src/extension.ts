@@ -274,7 +274,7 @@ export async function activate(context: vscode.ExtensionContext) {
       openWaveform(context, arg)
     )
   );
-  context.subscriptions.push(registerDoctorCommand(context, projectService));
+  context.subscriptions.push(registerDoctorCommand(context, projectService, indexService));
 
   context.subscriptions.push(
     vscode.window.registerCustomEditorProvider(

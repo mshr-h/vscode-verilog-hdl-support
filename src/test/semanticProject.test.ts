@@ -8,8 +8,10 @@ import { buildCompileUnit } from '../project/ProjectModelMerger';
 import type { ProjectSnapshot } from '../project/ProjectTypes';
 import { FastIndexerBackend } from '../semantic/backends/FastIndexerBackend';
 import { FastScanner } from '../semantic/backends/FastScanner';
+import { buildSlangAstArgs, SlangIndexerBackend } from '../semantic/backends/SlangIndexerBackend';
 import { SemanticIndex } from '../semantic/SemanticIndex';
 import type { ModuleRecord } from '../semantic/SymbolRecords';
+import type { ToolRunOptions, ToolRunResult } from '../tools/ToolRunner';
 import { assertSameFsPath } from './pathTestUtils';
 
 suite('FastScanner', () => {
@@ -154,6 +156,104 @@ suite('FastIndexerBackend', () => {
   });
 });
 
+suite('SlangIndexerBackend', () => {
+  test('falls back to fast index when slang is not available', async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'verilog-slang-index-'));
+    const filePath = path.join(root, 'top.sv');
+    fs.writeFileSync(filePath, 'module top; endmodule\n');
+    const snapshot = createSnapshot(root, [filePath]);
+
+    const result = await new SlangIndexerBackend(
+      { engine: 'slang', slangPath: 'missing-slang', slangArguments: [], cacheEnabled: true },
+      new FastIndexerBackend(),
+      {
+        resolveExecutable: async () => undefined,
+        runTool: async () => {
+          throw new Error('should not run');
+        },
+      }
+    ).build(snapshot);
+
+    assert.strictEqual(result.metadata.actualEngine, 'fast');
+    assert.ok(result.metadata.fallbackReason?.includes('missing-slang'));
+    assert.ok(result.symbols.some((symbol) => symbol.kind === 'module' && symbol.name === 'top'));
+  });
+
+  test('uses slang AST JSON to enrich missing module port and parameter metadata', async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'verilog-slang-index-'));
+    const filePath = path.join(root, 'top.sv');
+    fs.writeFileSync(filePath, 'module top; endmodule\n');
+    const snapshot = createSnapshot(root, [filePath]);
+    const ast = {
+      members: [
+        {
+          kind: 'Instance',
+          name: 'top',
+          body: {
+            members: [
+              { kind: 'Port', name: 'clk', direction: 'In', type: 'logic' },
+              { kind: 'Parameter', name: 'WIDTH', type: 'int', value: 32 },
+            ],
+          },
+        },
+      ],
+    };
+
+    const result = await new SlangIndexerBackend(
+      { engine: 'slang', slangPath: 'slang', slangArguments: ['--single-unit'], cacheEnabled: true },
+      new FastIndexerBackend(),
+      {
+        resolveExecutable: async () => '/usr/bin/slang',
+        runTool: async (options: ToolRunOptions): Promise<ToolRunResult> => ({
+          exitCode: 0,
+          signal: null,
+          stdout: JSON.stringify(ast),
+          stderr: '',
+          command: options.command,
+          args: options.args,
+        }),
+      }
+    ).build(snapshot);
+    const index = new SemanticIndex(snapshot.version, result.symbols, result.metadata);
+    const moduleRecord = index.findBestModule('top');
+
+    assert.strictEqual(result.metadata.actualEngine, 'slang');
+    assert.ok(moduleRecord?.ports.some((port) => port.name === 'clk' && port.direction === 'input'));
+    assert.ok(moduleRecord?.parameters.some((parameter) => parameter.name === 'WIDTH'));
+  });
+
+  test('builds slang AST arguments from compile unit context', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'verilog-slang-args-'));
+    const includeDir = path.join(root, 'include');
+    const filePath = path.join(root, 'rtl', 'top.sv');
+    fs.mkdirSync(includeDir);
+    fs.mkdirSync(path.dirname(filePath));
+    fs.writeFileSync(filePath, 'module top; endmodule\n');
+    const compileUnit = buildCompileUnit({
+      id: 'unit',
+      name: 'unit',
+      root: vscode.Uri.file(root),
+      files: [{ resolvedPath: filePath, kind: 'source' }],
+      includeDirs: [{ resolvedPath: includeDir }],
+      defines: [{ name: 'SIM', value: true, line: 0, character: 0 }],
+      settingsIncludeDirs: [],
+      settingsDefines: { WIDTH: 32 },
+      source: { type: 'settings' },
+    });
+
+    const args = buildSlangAstArgs(compileUnit, ['--single-unit']);
+
+    assert.deepStrictEqual(args, [
+      '--single-unit',
+      '--ast-json',
+      `-I${includeDir}`,
+      '-DSIM',
+      '-DWIDTH=32',
+      path.join('rtl', 'top.sv'),
+    ]);
+  });
+});
+
 suite('SemanticIndex query helpers', () => {
   test('findBestModule prefers the requested compile unit for duplicate modules', () => {
     const first = createModuleRecord('dupe', 'unitA');
@@ -208,5 +308,27 @@ function createSymbolRecord(
     range: selectionRange,
     selectionRange,
     compileUnitId,
+  };
+}
+
+function createSnapshot(root: string, files: string[]): ProjectSnapshot {
+  return {
+    version: 1,
+    workspaceRoot: vscode.Uri.file(root),
+    activeTargetId: 'unit',
+    compileUnits: [
+      buildCompileUnit({
+        id: 'unit',
+        name: 'unit',
+        root: vscode.Uri.file(root),
+        files: files.map((file) => ({ resolvedPath: file, kind: 'source' })),
+        includeDirs: [],
+        defines: [],
+        settingsIncludeDirs: [],
+        settingsDefines: {},
+        source: { type: 'settings' },
+      }),
+    ],
+    diagnostics: [],
   };
 }

@@ -141,6 +141,7 @@ suite('Extension Test Suite', () => {
     }
 
     const commands = await vscode.commands.getCommands(true);
+    assert.ok(commands.includes('verilog.configureProject'));
     assert.ok(commands.includes('verilog.reloadProject'));
     assert.ok(commands.includes('verilog.showProjectStatus'));
     assert.ok(commands.includes('verilog.showProjectModules'));
@@ -186,6 +187,10 @@ suite('Extension Test Suite', () => {
     assert.ok(properties['verilog.project.defines']);
     assert.ok(properties['verilog.project.exclude']);
     assert.ok(properties['verilog.project.maxAutoDiscoveredFiles']);
+    assert.ok(properties['verilog.analysis.engine']);
+    assert.ok(properties['verilog.analysis.slang.path']);
+    assert.ok(properties['verilog.analysis.slang.arguments']);
+    assert.ok(properties['verilog.analysis.cache.enabled']);
     assert.ok(properties['verilog.hierarchy.enabled']);
     assert.ok(properties['verilog.hierarchy.maxDepth']);
     assert.ok(properties['verilog.hierarchy.showUnresolved']);

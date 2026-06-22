@@ -39,6 +39,53 @@ export function registerProjectCommands(
         { placeHolder: 'Project modules' }
       );
     }),
+    vscode.commands.registerCommand('verilog.configureProject', async () => {
+      const workspaceFolder = vscode.workspace.workspaceFolders?.at(0);
+      if (!workspaceFolder) {
+        vscode.window.showErrorMessage('Verilog: Open a workspace folder before configuring an HDL project.');
+        return;
+      }
+
+      const configTarget = vscode.ConfigurationTarget.Workspace;
+      const projectConfig = vscode.workspace.getConfiguration('verilog.project', workspaceFolder.uri);
+      const analysisConfig = vscode.workspace.getConfiguration('verilog.analysis', workspaceFolder.uri);
+
+      await projectConfig.update('enabled', true, configTarget);
+
+      const filelists = await vscode.window.showInputBox({
+        title: 'Configure HDL Project',
+        prompt: 'Filelists, comma-separated. Leave empty to keep automatic workspace discovery.',
+        value: projectConfig.get<string[]>('filelists', []).join(', '),
+      });
+      if (filelists !== undefined) {
+        await projectConfig.update('filelists', splitCommaList(filelists), configTarget);
+      }
+
+      const includeDirs = await vscode.window.showInputBox({
+        title: 'Configure HDL Project',
+        prompt: 'Include directories, comma-separated. Leave empty for none.',
+        value: projectConfig.get<string[]>('includeDirs', []).join(', '),
+      });
+      if (includeDirs !== undefined) {
+        await projectConfig.update('includeDirs', splitCommaList(includeDirs), configTarget);
+      }
+
+      const slangPath = await vscode.window.showInputBox({
+        title: 'Configure HDL Project',
+        prompt: 'Slang binary path. Leave empty to use "slang" from PATH.',
+        value: vscode.workspace.getConfiguration('verilog.analysis.slang', workspaceFolder.uri).get<string>('path', 'slang'),
+      });
+      if (slangPath !== undefined) {
+        await analysisConfig.update('engine', 'auto', configTarget);
+        await vscode
+          .workspace
+          .getConfiguration('verilog.analysis.slang', workspaceFolder.uri)
+          .update('path', slangPath.trim() || 'slang', configTarget);
+      }
+
+      await projectService.reload('configure project command');
+      vscode.window.showInformationMessage('Verilog HDL project configuration updated.');
+    }),
   ];
 }
 
@@ -142,4 +189,11 @@ function formatDiagnostic(diagnostic: ProjectDiagnostic): string {
     ? ` (${diagnostic.location.uri.fsPath}:${diagnostic.location.range.start.line + 1})`
     : '';
   return `[${diagnostic.severity.toUpperCase()}] ${diagnostic.message}${location}`;
+}
+
+function splitCommaList(value: string): string[] {
+  return value
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
 }
