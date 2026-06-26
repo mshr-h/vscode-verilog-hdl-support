@@ -6,9 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [1.27.2] - 2026-06-27
+
 ### Added
 
-- Added `verilog.linting.runOnOpen` and `verilog.linting.runOnSave` settings to control automatic lint triggers independently.
+- Added `verilog.linting.runOnOpen` and `verilog.linting.runOnSave` settings to control automatic lint triggers independently. [#625](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/625)
 
 ## [1.27.1] - 2026-06-21
 
