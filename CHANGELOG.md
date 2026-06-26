@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [Unreleased]
+
+### Added
+
+- Added `verilog.linting.runOnOpen` and `verilog.linting.runOnSave` settings to control automatic lint triggers independently.
+
 ## [1.27.1] - 2026-06-21
 
 ### Changed
