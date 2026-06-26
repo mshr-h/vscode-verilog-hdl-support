@@ -108,7 +108,7 @@
           "include": "#keywords"
         },
         {
-          "begin": "^\\s*(?!always|and|assign|output|input|inout|wire|module)([a-zA-Z_][a-zA-Z0-9_$]*)\\s+([a-zA-Z_][a-zA-Z0-9_$]*)(?<!begin|if)\\s*(?=\\(|$)",
+          "begin": "^\\s*(?!\\b(?:always|and|assign|output|input|inout|wire|reg|integer|time|real|realtime|parameter|localparam|signed|unsigned|module)\\b)([a-zA-Z_][a-zA-Z0-9_$]*)\\s+([a-zA-Z_][a-zA-Z0-9_$]*)(?<!begin|if)\\s*(?=\\(|$)",
           "beginCaptures": {
             "1": {
               "name": "entity.name.tag.module.reference.verilog"
@@ -160,6 +160,40 @@
             {
               "match": "[a-zA-Z_][a-zA-Z0-9_$]*",
               "name": "entity.name.tag.module.identifier.verilog"
+            }
+          ]
+        }
+      ]
+    },
+    "port_declarations": {
+      "patterns": [
+        {
+          "begin": "(^|(?<=[(,]))\\s*\\b(input|output|inout)\\b",
+          "beginCaptures": {
+            "2": {
+              "name": "storage.type.port.verilog"
+            }
+          },
+          "end": "(?=,\\s*(?:input|output|inout)\\b|[);]|$)",
+          "name": "meta.block.port-declaration.verilog",
+          "patterns": [
+            {
+              "include": "#comments"
+            },
+            {
+              "include": "#constants"
+            },
+            {
+              "include": "#strings"
+            },
+            {
+              "include": "#keywords"
+            },
+            {
+              "include": "#operators"
+            },
+            {
+              "include": "#identifiers"
             }
           ]
         }
@@ -244,6 +278,9 @@
             },
             {
               "include": "#strings"
+            },
+            {
+              "include": "#port_declarations"
             },
             {
               "include": "#instantiation_patterns"
