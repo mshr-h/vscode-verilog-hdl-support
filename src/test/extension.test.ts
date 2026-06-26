@@ -199,6 +199,12 @@ suite('Extension Test Suite', () => {
     assert.ok(properties['verilog.semanticDiagnostics.maxFiles']);
     assert.ok(properties['verilog.instantiate.useProjectIndex']);
     assert.ok(properties['verilog.preprocessor.useProjectDefines']);
+    const runOnOpen = properties['verilog.linting.runOnOpen'] as { default?: unknown };
+    const runOnSave = properties['verilog.linting.runOnSave'] as { default?: unknown };
+    assert.ok(runOnOpen);
+    assert.strictEqual(runOnOpen.default, true);
+    assert.ok(runOnSave);
+    assert.strictEqual(runOnSave.default, true);
     assert.ok(properties['verilog.linting.useProjectContext']);
     assert.ok(properties['verilog.linting.mode']);
     assert.ok(properties['verilog.linting.compileUnit.maxFiles']);
