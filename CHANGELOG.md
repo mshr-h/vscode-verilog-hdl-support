@@ -6,9 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [1.27.3] - 2026-06-28
+
 ### Fixed
 
-- Kept `xvlog` linting enabled while directing Vivado's work library to a temporary directory outside the workspace unless the user configures `-work` or `--work`.
+- Kept `xvlog` linting enabled while directing Vivado's work library to a temporary directory outside the workspace unless the user configures `-work` or `--work`. [#626](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/626)
 
 ## [1.27.2] - 2026-06-27
 

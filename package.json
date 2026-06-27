@@ -2,7 +2,7 @@
   "name": "veriloghdl",
   "displayName": "Verilog-HDL/SystemVerilog",
   "description": "Verilog-HDL/SystemVerilog support for VS Code",
-  "version": "1.27.2",
+  "version": "1.27.3",
   "publisher": "mshr-h",
   "license": "SEE LICENSE IN LICENSE",
   "homepage": "https://github.com/mshr-h/vscode-verilog-hdl-support",
