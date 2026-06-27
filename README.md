@@ -134,7 +134,9 @@ All linters expect the executable binary (`iverilog`, `verilator`, and so on) to
 
 On Windows, Vivado `xvlog` can be discovered when it is provided as `xvlog.bat` or `xvlog.cmd` on `PATH` or under `verilog.linting.path`.
 
-Set `verilog.linting.linter` to `none` to disable automatic linting without warnings. Automatic linting runs for Verilog/SystemVerilog files when they are opened or saved and a linter other than `none` is configured. Use `verilog.linting.runOnOpen` and `verilog.linting.runOnSave` to control these triggers independently. For example, users of `xvlog` can disable lint-on-open to avoid Vivado-generated workspace artifacts while keeping lint-on-save or manual linting enabled.
+Set `verilog.linting.linter` to `none` to disable automatic linting without warnings. Automatic linting runs for Verilog/SystemVerilog files when they are opened or saved and a linter other than `none` is configured. Use `verilog.linting.runOnOpen` and `verilog.linting.runOnSave` to control these triggers independently.
+
+When `xvlog` is used as the linter, Vivado may create simulator/compiler artifacts such as `xsim.dir` and `xvlog.pb`. The extension directs xvlog's temporary work library outside the workspace, so grammar checking can remain enabled without writing the work library into the workspace. If `verilog.linting.xvlog.arguments` includes `-work` or `--work`, the extension leaves that user-managed work library unchanged instead of adding its own temporary work library. `verilog.linting.runOnOpen` and `verilog.linting.runOnSave` can still be used to control automatic lint triggers independently.
 
 While using `` `include`` directives, the path to the files should be relative to the workspace directory, unless `runAtFileLocation` is enabled (not supported by all linters).
 

@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+
+- Kept `xvlog` linting enabled while directing Vivado's work library to a temporary directory outside the workspace unless the user configures `-work` or `--work`.
+
 ## [1.27.2] - 2026-06-27
 
 ### Added
