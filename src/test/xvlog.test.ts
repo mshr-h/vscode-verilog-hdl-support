@@ -70,7 +70,7 @@ suite('Xvlog Linter', () => {
 
   test('preserves user-provided work library arguments when managed work library is omitted', () => {
     const documentPath = path.join(os.tmpdir(), 'top.v');
-    const customWorkLibrary = `work=${path.join(os.tmpdir(), 'user-xvlog-work')}`;
+    const customWorkLibrary = 'work=/tmp/user-xvlog-work';
     const args = buildXvlogArgs({
       languageId: 'verilog',
       includePaths: [],
