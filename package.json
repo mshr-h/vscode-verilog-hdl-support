@@ -398,7 +398,7 @@
             "scope": "window",
             "type": "boolean",
             "default": true,
-            "markdownDescription": "Run the configured linter automatically when Verilog/SystemVerilog files are opened. Disable this to avoid linter side effects such as generated tool files on file open."
+            "markdownDescription": "Run the configured linter automatically when Verilog/SystemVerilog files are opened."
           },
           "verilog.linting.runOnSave": {
             "scope": "window",
