@@ -12,13 +12,14 @@ import {
   createLanguageServerDefinitions,
   type LanguageServerDefinition,
 } from '../languageServer/definitions';
-import type { ProjectService } from '../project/ProjectService';
-import { activeEditorContextDiagnostic, summarizeContext } from '../project/ProjectCommands';
-import { getCompileUnitLintContext } from '../linter/ProjectLintContext';
-import { supportsCompileUnitLint, type LintMode } from '../linter/LintMode';
 import { splitCommandLineArgs } from '../utils/commandLine';
 import { expandPathVariables, resolveConfigPath } from '../utils/configPath';
 import { getWorkspaceFolderForUri } from '../utils/workspace';
+import type { SlangServerManager } from '../slangServer/SlangServerManager';
+import { SlangConfigService } from '../slangServer/SlangConfigService';
+import { getSlangServerSettings, selectSlangServerRuntime } from '../slangServer/settings';
+import { resolveNativeExecutable } from '../slangServer/NativeSlangServerRuntime';
+import { getWasmArtifactStatus, readBundledMetadata } from '../slangServer/WasmSlangServerRuntime';
 
 export { expandPathVariables, resolveConfigPath } from '../utils/configPath';
 
@@ -68,7 +69,7 @@ export interface LinterDoctorOptions {
   useWSL?: boolean;
   modelsimWork?: string;
   isWindows?: boolean;
-  lintMode?: LintMode;
+  lintMode?: string;
   activeCompileUnit?: { id: string; name: string; files: number };
 }
 
@@ -118,15 +119,15 @@ const languageServerLabels: Record<string, string> = {
 
 export function registerDoctorCommand(
   context: vscode.ExtensionContext,
-  projectService?: ProjectService
+  service?: SlangServerManager
 ): vscode.Disposable {
-  return vscode.commands.registerCommand('verilog.doctor', () => runDoctor(context, createDefaultDoctorDependencies(), projectService));
+  return vscode.commands.registerCommand('verilog.doctor', () => runDoctor(context, createDefaultDoctorDependencies(), service));
 }
 
 export async function runDoctor(
   context: vscode.ExtensionContext,
   deps: DoctorDependencies = createDefaultDoctorDependencies(),
-  projectService?: ProjectService
+  service?: SlangServerManager
 ): Promise<void> {
   let report: DoctorReport;
   try {
@@ -136,7 +137,7 @@ export async function runDoctor(
         title: 'Running Verilog Doctor',
         cancellable: true,
       },
-      async (_progress, token) => buildDoctorReport(context, deps, token, projectService)
+      async (_progress, token) => buildDoctorReport(context, deps, token, service)
     );
   } catch (err) {
     if (err instanceof ToolRunError && err.reason === 'cancelled') {
@@ -165,7 +166,7 @@ export async function buildDoctorReport(
   context: vscode.ExtensionContext,
   deps: DoctorDependencies,
   token?: vscode.CancellationToken,
-  projectService?: ProjectService
+  service?: SlangServerManager
 ): Promise<DoctorReport> {
   const activeDocument = vscode.window.activeTextEditor?.document;
   const activeWorkspaceFolder = activeDocument
@@ -176,14 +177,12 @@ export async function buildDoctorReport(
   const workspaceFolderPaths = (vscode.workspace.workspaceFolders ?? []).map(
     (folder) => folder.uri.fsPath
   );
-
   const sections: DoctorSection[] = [
     buildWorkspaceSection(activeDocument, activeWorkspaceFolder),
-    await buildCtagsSection(deps, token),
-    await buildLintingSectionFromConfiguration(deps, workspaceFolderPath, token, projectService),
+    await buildSlangServerSection(context, deps, service),
+    await buildLintingSectionFromConfiguration(deps, workspaceFolderPath, token),
     await buildFormattingSection(deps, workspaceFolderPath, token),
     await buildLanguageServersSection(deps, workspaceFolderPaths, token),
-    buildProjectSection(projectService),
   ];
   sections.push(buildSummarySection(sections));
 
@@ -199,51 +198,76 @@ export async function buildDoctorReport(
   };
 }
 
-function buildProjectSection(projectService?: ProjectService): DoctorSection {
-  if (!projectService) {
-    return {
-      title: 'Project',
-      checks: [{ status: 'info', message: 'Project service unavailable in this Doctor context.' }],
-    };
-  }
-
-  const snapshot = projectService.getSnapshot();
-  const activeUri = vscode.window.activeTextEditor?.document.uri;
-  const activeContext = activeUri ? projectService.getPreferredFileContext(activeUri) : undefined;
-  const diagnostics = snapshot.diagnostics.concat(activeEditorContextDiagnostic(projectService) ?? []);
+async function buildSlangServerSection(
+  context: vscode.ExtensionContext,
+  _deps: DoctorDependencies,
+  service?: SlangServerManager
+): Promise<DoctorSection> {
+  const settings = getSlangServerSettings();
+  const selection = selectSlangServerRuntime(settings);
+  const managerStatus = isSlangServerManager(service) ? service.getStatus() : undefined;
+  const metadata = managerStatus?.bundledMetadata ?? readBundledMetadata(context.extensionUri);
+  const configService = new SlangConfigService();
+  const configUri = configService.getConfigUri();
+  const config = await configService.readConfig();
   const checks: DoctorCheck[] = [
+    { status: 'info', message: `configured runtime = ${settings.runtime}` },
+    { status: 'info', message: `selected runtime = ${selection.kind} (${selection.reason})` },
+    { status: 'info', message: `config path = ${configUri?.fsPath ?? '(no workspace)'}` },
     {
-      status: snapshot.diagnostics.some((diagnostic) => diagnostic.code === 'project-disabled') ? 'info' : 'ok',
-      message: `Project enabled = ${String(!snapshot.diagnostics.some((diagnostic) => diagnostic.code === 'project-disabled'))}`,
+      status: configUri && fs.existsSync(configUri.fsPath) ? 'ok' : 'warn',
+      message: `.slang/server.json exists = ${String(configUri ? fs.existsSync(configUri.fsPath) : false)}`,
     },
-    { status: 'info', message: `Workspace root = ${snapshot.workspaceRoot.fsPath}` },
-    { status: 'info', message: `Active target = ${snapshot.activeTargetId || '(none)'}` },
-    { status: 'info', message: `Compile units = ${snapshot.compileUnits.length}` },
-    {
-      status: 'info',
-      message: `Files = ${snapshot.compileUnits.reduce((sum, compileUnit) => sum + compileUnit.files.length, 0)}`,
-    },
-    { status: 'info', message: `Active editor context = ${summarizeContext(activeContext)}` },
+    { status: 'info', message: `wasm memory limit = ${settings.wasmMemoryLimitMb} MiB` },
+    { status: 'info', message: `wasm user config allowed = ${String(settings.wasmAllowUserConfig)}` },
   ];
 
-  for (const compileUnit of snapshot.compileUnits) {
+  if (selection.kind === 'native') {
+    const resolved = await resolveNativeExecutable(settings.path || 'slang-server');
     checks.push({
-      status: 'info',
-      message: `compile unit ${compileUnit.id}: files=${compileUnit.files.length}, includeDirs=${compileUnit.includeDirs.length}, defines=${Object.keys(compileUnit.defines).length}`,
+      status: resolved ? 'ok' : 'error',
+      message: `native slang-server path = ${resolved ?? '(not found)'}`,
+      detail: settings.args.length > 0 ? `args: ${settings.args.join(' ')}` : undefined,
     });
+  } else {
+    checks.push({
+      status: metadata ? 'ok' : 'error',
+      message: `bundled wasm metadata = ${metadata ? metadata.slangServerVersion : '(missing)'}`,
+      detail: metadata
+        ? `target=${metadata.target}, slang-server=${metadata.slangServerCommit}, slang=${metadata.slangCommit}`
+        : 'resources/slang-server/slang-server.meta.json is missing',
+    });
+    const wasmArtifact = getWasmArtifactStatus(context.extensionUri);
+    checks.push({
+      status: wasmArtifact.isWasm ? 'ok' : wasmArtifact.exists ? 'warn' : 'error',
+      message: `bundled wasm artifact = ${wasmArtifact.path}`,
+      detail: wasmArtifact.isWasm
+        ? `${wasmArtifact.size} bytes, WebAssembly module`
+        : wasmArtifact.exists
+          ? `${wasmArtifact.size} bytes, not a WebAssembly module`
+          : 'missing',
+    });
+    if (configService.hasWasmUnsupportedCommandBuild(config)) {
+      checks.push({
+        status: 'error',
+        message: 'WASM runtime does not support command-backed builds; use native slang-server.',
+      });
+    }
   }
 
-  for (const diagnostic of diagnostics) {
-    checks.push({
-      status: diagnostic.severity === 'error' ? 'error' : diagnostic.severity === 'warning' ? 'warn' : 'info',
-      message: diagnostic.message,
-      detail: diagnostic.location
-        ? `${diagnostic.location.uri.fsPath}:${diagnostic.location.range.start.line + 1}`
-        : undefined,
-    });
+  const serverInfo = managerStatus?.serverInfo;
+  checks.push({
+    status: serverInfo ? 'ok' : 'info',
+    message: `server version = ${serverInfo?.version ?? '(not running)'}`,
+  });
+  if (managerStatus?.lastError) {
+    checks.push({ status: 'error', message: `last startup error = ${managerStatus.lastError}` });
   }
+  return { title: 'Slang Server', checks };
+}
 
-  return { title: 'Project', checks };
+function isSlangServerManager(input: unknown): input is SlangServerManager {
+  return typeof input === 'object' && input !== null && 'getStatus' in input;
 }
 
 export function renderDoctorReport(report: DoctorReport): string {
@@ -346,19 +370,6 @@ export async function buildLinterChecks(
   const checks: DoctorCheck[] = [
     { status: 'info', message: `verilog.linting.linter = ${options.linter}` },
   ];
-  if (options.lintMode) {
-    checks.push({ status: 'info', message: `verilog.linting.mode = ${options.lintMode}` });
-    checks.push({
-      status: options.lintMode === 'compileUnit' && !supportsCompileUnitLint(options.linter) ? 'warn' : 'info',
-      message: `compileUnit support = ${String(supportsCompileUnitLint(options.linter))}`,
-    });
-  }
-  if (options.activeCompileUnit) {
-    checks.push({
-      status: 'info',
-      message: `active compile unit = ${options.activeCompileUnit.name} (${options.activeCompileUnit.id}), files=${options.activeCompileUnit.files}`,
-    });
-  }
 
   if (options.linter === 'none') {
     checks.push({ status: 'info', message: 'no linter selected' });
@@ -495,70 +506,21 @@ function buildWorkspaceSection(
   return { title: 'Workspace', checks };
 }
 
-async function buildCtagsSection(
-  deps: DoctorDependencies,
-  token?: vscode.CancellationToken
-): Promise<DoctorSection> {
-  const config = vscode.workspace.getConfiguration('verilog.ctags');
-  const enabled = config.get<boolean>('enabled', true);
-  const ctagsPath = config.get<string>('path', 'ctags');
-  const checks: DoctorCheck[] = [
-    { status: 'info', message: `verilog.ctags.enabled = ${String(enabled)}` },
-  ];
-
-  if (!enabled) {
-    checks.push({ status: 'info', message: 'disabled' });
-    return { title: 'Ctags', checks };
-  }
-
-  const resolved = await appendBinaryChecks(checks, 'ctags binary', ctagsPath, deps, token);
-  if (resolved) {
-    const probe = await probeToolVersion(resolved, ['--version'], deps, token);
-    if (probe.ok && probe.output) {
-      checks.push({ status: 'ok', message: `ctags version: ${probe.output}` });
-      if (!probe.output.includes('Universal Ctags')) {
-        checks.push({
-          status: 'warn',
-          message: 'ctags is not Universal Ctags; SystemVerilog support may be limited.',
-        });
-      }
-    } else {
-      checks.push({ status: 'warn', message: 'version unknown; ctags --version failed.' });
-    }
-  }
-
-  return { title: 'Ctags', checks };
-}
-
 async function buildLintingSectionFromConfiguration(
   deps: DoctorDependencies,
   workspaceFolder?: string,
-  token?: vscode.CancellationToken,
-  projectService?: ProjectService
+  token?: vscode.CancellationToken
 ): Promise<DoctorSection> {
   const lintConfig = vscode.workspace.getConfiguration('verilog.linting');
   const linter = lintConfig.get<string>('linter', 'none');
   const linterPath = lintConfig.get<string>('path', '');
-  const lintMode = lintConfig.get<LintMode>('mode', 'file');
   const specificConfig = linter === 'none' ? undefined : getLinterSpecificConfiguration(linter);
-  const activeDocument = vscode.window.activeTextEditor?.document;
-  const activeCompileUnitContext = activeDocument
-    ? getCompileUnitLintContext(projectService, activeDocument)
-    : undefined;
 
   const checks = await buildLinterChecks(
     {
       linter,
       linterPath,
       workspaceFolder,
-      lintMode,
-      activeCompileUnit: activeCompileUnitContext
-        ? {
-            id: activeCompileUnitContext.compileUnit.id,
-            name: activeCompileUnitContext.compileUnit.name,
-            files: activeCompileUnitContext.files.length,
-          }
-        : undefined,
       includePath: specificConfig?.get<string[]>('includePath', []),
       arguments: specificConfig?.get<string>('arguments', ''),
       runAtFileLocation: specificConfig?.get<boolean>('runAtFileLocation', false),
@@ -921,8 +883,6 @@ function buildRecommendations(sections: DoctorSection[]): string[] {
     for (const check of section.checks) {
       if (check.status === 'error' && check.message.includes('linter binary')) {
         recommendations.add('Install the selected linter or update `verilog.linting.path`.');
-      } else if (check.status === 'error' && check.message.includes('ctags binary')) {
-        recommendations.add('Install Universal Ctags or update `verilog.ctags.path`.');
       } else if (
         check.status === 'error' &&
         (check.message.includes('language server') || section.title === 'Language Servers')
@@ -932,12 +892,12 @@ function buildRecommendations(sections: DoctorSection[]): string[] {
         recommendations.add('Install the selected formatter or update its path setting.');
       } else if (check.status === 'warn' && check.message.includes('missing include path')) {
         recommendations.add('Create the missing include directory or remove it from settings.');
+      } else if (check.status === 'warn' && check.message.includes('bundled wasm artifact')) {
+        recommendations.add('Rebuild the bundled slang-server artifact or configure a native slang-server path.');
       } else if (check.status === 'warn' && check.message.includes('configPath')) {
         recommendations.add('Create the missing language server config file or clear the setting.');
       } else if (check.status === 'warn' && check.message.includes('settings file')) {
         recommendations.add('Create the missing formatter settings file or clear the setting.');
-      } else if (check.status === 'warn' && check.message.includes('not Universal Ctags')) {
-        recommendations.add('Set `verilog.ctags.path` to the Universal Ctags executable.');
       }
     }
   }

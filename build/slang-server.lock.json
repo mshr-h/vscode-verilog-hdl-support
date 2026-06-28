@@ -1,0 +1,49 @@
+{
+  "slangServer": {
+    "repo": "https://github.com/hudson-trading/slang-server",
+    "commit": "f7465a87bff05460d6639f476312c755d7004a6f"
+  },
+  "submodules": {
+    "slang": {
+      "repo": "https://github.com/AndrewNolte/slang.git",
+      "commit": "32df78162671a501d2b3dee2fec413ab0c53db01"
+    },
+    "reflectCpp": {
+      "repo": "https://github.com/getml/reflect-cpp.git",
+      "commit": "a26047a4d3bdbd5cf6b65995cbc5e7862e241c57"
+    },
+    "ctre": {
+      "repo": "https://github.com/hanickadot/compile-time-regular-expressions.git",
+      "commit": "6225211806c48230e5d17a1e555ef69e7325051c"
+    }
+  },
+  "toolchain": {
+    "wasiSdkVersion": "27.0",
+    "wasiSdkSha256": "055c3dc2766772c38e71a05d353e35c322c7b2c6458a36a26a836f9808a550f8",
+    "stripTool": "llvm-strip 20.1.8-wasi-sdk",
+    "wasmOptimizationTool": "none"
+  },
+  "target": "wasm32-wasi",
+  "patches": [
+    {
+      "path": "build/slang-server-patches/wasm32-wasi-single-thread.patch",
+      "sha256": "f2cfc531d97e859814544de35f1c2a10ef082362995f1567d3fcb06a4c093539"
+    }
+  ],
+  "artifact": {
+    "path": "resources/slang-server/slang-server.wasm",
+    "sha256": "fc726f6853817566eacc47b5701389420e067da47e96b7a5dacf167e1c1750e3"
+  },
+  "features": {
+    "threads": false,
+    "externalBuildCommands": false,
+    "wcp": false
+  },
+  "buildNotes": [
+    "Configured with SLANG_USE_THREADS=OFF, SLANG_SERVER_INCLUDE_TESTS=OFF, and SLANG_SERVER_INCLUDE_INSTALL=OFF.",
+    "Disabled CMake precompiled headers and C++ module scanning for the WASI build.",
+    "Excluded WcpClient.cpp and compiled a WASI stub because the bundled runtime does not support WCP sockets or external waveform viewer processes.",
+    "Compiled the indexer serially for WASI; generated configs default to indexingThreads: 1.",
+    "Linked a WASI exception shim because wasi-sdk 27 ships a no-unwind libc++abi; unexpected server throw paths terminate the WASM process."
+  ]
+}

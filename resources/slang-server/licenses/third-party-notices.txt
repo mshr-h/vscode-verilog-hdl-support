@@ -1,0 +1,30 @@
+Bundled slang-server WASM third-party notices
+
+Artifact:
+  resources/slang-server/slang-server.wasm
+
+Pinned sources:
+  slang-server: https://github.com/hudson-trading/slang-server
+  slang-server commit: f7465a87bff05460d6639f476312c755d7004a6f
+  slang commit: 32df78162671a501d2b3dee2fec413ab0c53db01
+
+Included license files:
+  slang-server.LICENSE
+  slang.LICENSE
+  reflect-cpp.LICENSE
+  ctre.LICENSE
+  fmt.LICENSE
+  tomlplusplus.LICENSE
+
+Build/runtime notes:
+  The bundled artifact was built as a single-threaded wasm32-wasi executable
+  using WASI SDK 27.0 and stripped with llvm-strip from the same SDK.
+
+  The bundled WASM runtime disables WCP and external command execution. WCP
+  socket/process support is intentionally available only through a user-selected
+  native slang-server executable.
+
+  The WASI SDK provides the libc/libc++ runtime objects linked into the module.
+  WASI SDK and LLVM runtime components are distributed under their upstream
+  permissive licenses; see the pinned WASI SDK release referenced in
+  build/slang-server.lock.json.

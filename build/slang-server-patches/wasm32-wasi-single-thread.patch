@@ -1,0 +1,144 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0000000..0000000 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -283,7 +283,6 @@ add_library(
+   src/SystemTaskDocs.cpp
+   src/ast/ServerCompilation.cpp
+   src/ast/ServerCompilationAnalysis.cpp
+-  src/ast/WcpClient.cpp
+   src/document/DefinitionInfo.cpp
+   src/document/ShallowAnalysis.cpp
+   src/document/SlangDoc.cpp
+@@ -310,6 +309,12 @@ add_library(
+   src/SlangServer.cpp
+   src/ServerDiagClient.cpp)
+ 
++if(NOT CMAKE_SYSTEM_NAME MATCHES "WASI")
++  target_sources(slang_server_obj_lib PRIVATE src/ast/WcpClient.cpp)
++else()
++  target_sources(slang_server_obj_lib PRIVATE src/WasiExceptionShim.cpp)
++endif()
++
+ target_include_directories(slang_server_obj_lib PUBLIC include)
+ target_include_directories(slang_server_obj_lib SYSTEM
+                            PRIVATE external/reflect-cpp/include)
+diff --git a/include/ast/WcpClient.h b/include/ast/WcpClient.h
+index 0000000..0000000 100644
+--- a/include/ast/WcpClient.h
++++ b/include/ast/WcpClient.h
+@@ -8,6 +8,31 @@
+ #pragma once
+ 
+ #include "SlangServerWcp.h"
++
++#ifdef __wasi__
++
++#    include <string>
++
++namespace waves {
++
++struct ItemToWaveform {
++    std::string path;
++    bool recursive;
++};
++
++class WcpClient {
++public:
++    WcpClient(SlangServerWcp*, std::string&) {}
++
++    bool running() { return false; }
++
++    void addItem(const ItemToWaveform&) {}
++
++    void loadWaveform(const std::string&) {}
++};
++
++} // namespace waves
++
++#else
++
+ #include "wcp/WcpTypes.h"
+ #include <atomic>
+ #include <mutex>
+@@ -160,3 +185,5 @@ public:
+ };
+ 
+ } // namespace waves
++
++#endif
+diff --git a/src/Indexer.cpp b/src/Indexer.cpp
+index 0000000..0000000 100644
+--- a/src/Indexer.cpp
++++ b/src/Indexer.cpp
+@@ -8,7 +8,9 @@
+ 
+ #include "Config.h"
+ #include "util/Logging.h"
+-#include <BS_thread_pool.hpp>
++#ifndef __wasi__
++#    include <BS_thread_pool.hpp>
++#endif
+ #include <cctype>
+ #include <filesystem>
+ #include <fmt/format.h>
+@@ -77,10 +79,12 @@ std::vector<Indexer::IndexedPath> Indexer::indexPaths(const std::vector<fs::path
+     using namespace slang;
+     using namespace parsing;
+ 
++#ifndef __wasi__
+     uint32_t numThreads = numThreads_;
+     if (paths.size() < MinFilesForThreading) {
+         numThreads = 1;
+     }
++#endif
+ 
+     std::vector<IndexedPath> loadResults;
+     loadResults.resize(paths.size());
+@@ -121,6 +125,7 @@ std::vector<Indexer::IndexedPath> Indexer::indexPaths(const std::vector<fs::path
+         }
+     };
+ 
++#ifndef __wasi__
+     if (numThreads != 1) {
+         BS::thread_pool threadPool(numThreads);
+         threadPool.detach_blocks(size_t(0), paths.size(), processRange);
+@@ -129,6 +134,9 @@ std::vector<Indexer::IndexedPath> Indexer::indexPaths(const std::vector<fs::path
+     else {
+         processRange(0, paths.size());
+     }
++#else
++    processRange(0, paths.size());
++#endif
+ 
+     return loadResults;
+ }
+diff --git a/src/WasiExceptionShim.cpp b/src/WasiExceptionShim.cpp
+new file mode 100644
+index 0000000..0000000
+--- /dev/null
++++ b/src/WasiExceptionShim.cpp
+@@ -0,0 +1,22 @@
++// SPDX-License-Identifier: MIT
++
++#include <cstdlib>
++
++extern "C" {
++
++void* __cxa_allocate_exception(size_t thrownSize) {
++    return std::malloc(thrownSize);
++}
++
++void __cxa_free_exception(void* thrownException) {
++    std::free(thrownException);
++}
++
++[[noreturn]] void __cxa_throw(void* thrownException, void*, void (*destructor)(void*)) {
++    if (destructor != nullptr && thrownException != nullptr) {
++        destructor(thrownException);
++    }
++    std::free(thrownException);
++    std::abort();
++}
++
++}

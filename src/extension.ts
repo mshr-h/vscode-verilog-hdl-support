@@ -2,15 +2,6 @@
 import * as vscode from 'vscode';
 
 import LintManager from './linter/LintManager';
-import { CtagsManager } from './ctags';
-import * as DocumentSymbolProvider from './providers/DocumentSymbolProvider';
-import * as HoverProvider from './providers/HoverProvider';
-import * as DefinitionProvider from './providers/DefinitionProvider';
-import * as ReferenceProvider from './providers/ReferenceProvider';
-import * as RenameProvider from './providers/RenameProvider';
-import * as CompletionItemProvider from './providers/CompletionItemProvider';
-import * as CodeActionProvider from './providers/CodeActionProvider';
-import * as ModuleInstantiation from './commands/ModuleInstantiation';
 import { registerDoctorCommand } from './commands/Doctor';
 import * as FormatProvider from './providers/FormatProvider';
 import { ExtensionManager } from './extensionManager';
@@ -20,245 +11,77 @@ import { FliplotPanel } from './fliplot/FliplotPanel';
 import { FliplotCustomEditor } from './fliplot/FliplotCustomEditor';
 import { openWaveform } from './waveform/OpenWaveform';
 import { InactivePreprocessorDecorationProvider } from './providers/InactivePreprocessorDecorationProvider';
-import { DefinitionService } from './hdl/DefinitionService';
-import { InstantiationService } from './hdl/InstantiationService';
-import { CompletionService } from './hdl/CompletionService';
-import { ModuleInstanceCodeActionService } from './hdl/ModuleInstanceCodeActionService';
-import { HoverService } from './hdl/HoverService';
-import { ReferenceService } from './hdl/ReferenceService';
-import { RenameService } from './hdl/RenameService';
-import { HierarchyService } from './hierarchy/HierarchyService';
-import { ProjectDiagnosticManager } from './project/ProjectDiagnosticManager';
-import { ProjectService } from './project/ProjectService';
-import { ProjectWatcher } from './project/ProjectWatcher';
-import { registerProjectCommands } from './project/ProjectCommands';
-import { IndexService } from './semantic/IndexService';
-import { SemanticDiagnosticService } from './semantic/SemanticDiagnosticService';
-import { VerilogWorkspaceSymbolProvider } from './providers/WorkspaceSymbolProvider';
+import * as ModuleInstantiation from './commands/ModuleInstantiation';
 import { HdlExplorerProvider, registerHdlExplorerCommands } from './views/HdlExplorerProvider';
+import { SlangCommandClient } from './slangServer/SlangCommandClient';
+import { SlangConfigService } from './slangServer/SlangConfigService';
+import { SlangServerManager } from './slangServer/SlangServerManager';
 
-let ctagsManager: CtagsManager | undefined;
-const extensionID: string = 'mshr-h.veriloghdl';
+const extensionID = 'mshr-h.veriloghdl';
 
 let lintManager: LintManager;
+let slangServerManager: SlangServerManager | undefined;
 
 export async function activate(context: vscode.ExtensionContext) {
   await bootstrapLogging();
 
   const logger = getExtensionLogger();
-  logger.info("Extension activating", { extensionId: extensionID });
+  logger.info('Extension activating', { extensionId: extensionID });
 
   const extMgr = new ExtensionManager(context, extensionID);
   if (extMgr.isVersionUpdated()) {
     extMgr.showChangelogNotification();
   }
 
-  ctagsManager = new CtagsManager();
-  ctagsManager.configure();
-  context.subscriptions.push(ctagsManager);
+  const slangCommands = new SlangCommandClient();
+  const slangConfigService = new SlangConfigService();
+  slangServerManager = new SlangServerManager(context, slangConfigService);
+  context.subscriptions.push(slangServerManager);
+  await slangServerManager.start();
 
-  const projectService = new ProjectService();
-  const projectDiagnosticManager = new ProjectDiagnosticManager(projectService);
-  const indexService = new IndexService(projectService);
-  const definitionService = new DefinitionService(projectService, indexService, ctagsManager);
-  const instantiationService = new InstantiationService(indexService);
-  const completionService = new CompletionService(projectService, indexService, ctagsManager);
-  const codeActionService = new ModuleInstanceCodeActionService(projectService, indexService);
-  const hoverService = new HoverService(projectService, indexService, ctagsManager);
-  const referenceService = new ReferenceService(projectService, indexService, ctagsManager);
-  const renameService = new RenameService(projectService, indexService, referenceService);
-  const hierarchyService = new HierarchyService(projectService, indexService);
-  const semanticDiagnosticService = new SemanticDiagnosticService(projectService, indexService);
-  const hdlExplorerProvider = new HdlExplorerProvider(projectService, indexService, hierarchyService);
-  context.subscriptions.push(
-    projectService,
-    projectDiagnosticManager,
-    indexService,
-    hierarchyService,
-    semanticDiagnosticService,
-    hdlExplorerProvider,
-    new ProjectWatcher(projectService)
-  );
-  context.subscriptions.push(...registerProjectCommands(projectService, indexService));
-  context.subscriptions.push(
-    ...registerHdlExplorerCommands(
-      projectService,
-      hierarchyService,
-      instantiationService,
-      referenceService,
-      hdlExplorerProvider
-    )
-  );
+  const hdlExplorerProvider = new HdlExplorerProvider(slangCommands, slangConfigService);
+  context.subscriptions.push(hdlExplorerProvider);
+  context.subscriptions.push(...registerHdlExplorerCommands(slangCommands, slangServerManager, hdlExplorerProvider));
   context.subscriptions.push(
     vscode.window.createTreeView('verilog.hdlExplorer', {
       treeDataProvider: hdlExplorerProvider,
       showCollapseAll: true,
     })
   );
-  void projectService.reload('activation');
 
-  // Configure Document Symbol Provider
-  const verilogDocumentSymbolProvider = new DocumentSymbolProvider.VerilogDocumentSymbolProvider(
-    ctagsManager,
-  );
   context.subscriptions.push(
-    vscode.languages.registerDocumentSymbolProvider(
-      { scheme: 'file', language: 'verilog' },
-      verilogDocumentSymbolProvider
-    )
-  );
-  context.subscriptions.push(
-    vscode.languages.registerDocumentSymbolProvider(
-      { scheme: 'file', language: 'systemverilog' },
-      verilogDocumentSymbolProvider
+    vscode.commands.registerCommand('verilog.configureSlangProject', () =>
+      slangServerManager?.configureProject()
+    ),
+    vscode.commands.registerCommand('verilog.restartSlangServer', () =>
+      slangServerManager?.restart()
     )
   );
 
-  // Configure Completion Item Provider
-  // Trigger on ".", "(", "="
-  const verilogCompletionItemProvider = new CompletionItemProvider.VerilogCompletionItemProvider(
-    completionService,
-  );
-  context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(
-      { scheme: 'file', language: 'verilog' },
-      verilogCompletionItemProvider,
-      '.',
-      '(',
-      '=',
-      '`',
-      '"'
-    )
-  );
-  context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(
-      { scheme: 'file', language: 'systemverilog' },
-      verilogCompletionItemProvider,
-      '.',
-      '(',
-      '=',
-      '`',
-      '"'
-    )
-  );
-
-  // Configure Hover Providers
-  const verilogHoverProvider = new HoverProvider.VerilogHoverProvider(
-    hoverService,
-  );
-  context.subscriptions.push(
-    vscode.languages.registerHoverProvider(
-      { scheme: 'file', language: 'verilog' },
-      verilogHoverProvider
-    )
-  );
-  context.subscriptions.push(
-    vscode.languages.registerHoverProvider(
-      { scheme: 'file', language: 'systemverilog' },
-      verilogHoverProvider
-    )
-  );
-
-  // Configure Definition Providers
-  const verilogDefinitionProvider = new DefinitionProvider.VerilogDefinitionProvider(
-    definitionService
-  );
-  context.subscriptions.push(
-    vscode.languages.registerDefinitionProvider(
-      { scheme: 'file', language: 'verilog' },
-      verilogDefinitionProvider
-    )
-  );
-  context.subscriptions.push(
-    vscode.languages.registerDefinitionProvider(
-      { scheme: 'file', language: 'systemverilog' },
-      verilogDefinitionProvider
-    )
-  );
-  context.subscriptions.push(
-    vscode.languages.registerWorkspaceSymbolProvider(
-      new VerilogWorkspaceSymbolProvider(indexService)
-    )
-  );
-
-  const verilogReferenceProvider = new ReferenceProvider.VerilogReferenceProvider(
-    referenceService
-  );
-  context.subscriptions.push(
-    vscode.languages.registerReferenceProvider(
-      { scheme: 'file', language: 'verilog' },
-      verilogReferenceProvider
-    )
-  );
-  context.subscriptions.push(
-    vscode.languages.registerReferenceProvider(
-      { scheme: 'file', language: 'systemverilog' },
-      verilogReferenceProvider
-    )
-  );
-
-  const verilogRenameProvider = new RenameProvider.VerilogRenameProvider(
-    renameService
-  );
-  context.subscriptions.push(
-    vscode.languages.registerRenameProvider(
-      { scheme: 'file', language: 'verilog' },
-      verilogRenameProvider
-    )
-  );
-  context.subscriptions.push(
-    vscode.languages.registerRenameProvider(
-      { scheme: 'file', language: 'systemverilog' },
-      verilogRenameProvider
-    )
-  );
-
-  const verilogCodeActionProvider = new CodeActionProvider.VerilogCodeActionProvider(
-    codeActionService
-  );
-  context.subscriptions.push(
-    vscode.languages.registerCodeActionsProvider(
-      { scheme: 'file', language: 'verilog' },
-      verilogCodeActionProvider,
-      { providedCodeActionKinds: CodeActionProvider.VerilogCodeActionProvider.providedCodeActionKinds }
-    )
-  );
-  context.subscriptions.push(
-    vscode.languages.registerCodeActionsProvider(
-      { scheme: 'file', language: 'systemverilog' },
-      verilogCodeActionProvider,
-      { providedCodeActionKinds: CodeActionProvider.VerilogCodeActionProvider.providedCodeActionKinds }
-    )
-  );
-
-  // Configure Format Provider
-  const verilogFormatProvider = new FormatProvider.VerilogFormatProvider();
+  // Keep formatter providers: slang-server owns semantic language features, while
+  // existing external formatter integrations remain explicit VS Code commands.
   context.subscriptions.push(
     vscode.languages.registerDocumentFormattingEditProvider(
       { scheme: 'file', language: 'verilog' },
-      verilogFormatProvider
+      new FormatProvider.VerilogFormatProvider()
     )
   );
-  const systemVerilogFormatProvider = new FormatProvider.SystemVerilogFormatProvider();
   context.subscriptions.push(
     vscode.languages.registerDocumentFormattingEditProvider(
       { scheme: 'file', language: 'systemverilog' },
-      systemVerilogFormatProvider
+      new FormatProvider.SystemVerilogFormatProvider()
     )
   );
 
-  context.subscriptions.push(new InactivePreprocessorDecorationProvider(projectService));
+  context.subscriptions.push(new InactivePreprocessorDecorationProvider());
 
-  // Configure command to instantiate a module
   context.subscriptions.push(
-    vscode.commands.registerCommand(
-      'verilog.instantiateModule',
-      () => ModuleInstantiation.instantiateModuleInteractWithProjectIndex(instantiationService)
+    vscode.commands.registerCommand('verilog.instantiateModule', () =>
+      ModuleInstantiation.instantiateModuleInteract(slangCommands)
     )
   );
 
-  // Register command for manual linting
-  lintManager = new LintManager(projectService);
+  lintManager = new LintManager();
   context.subscriptions.push(lintManager);
   context.subscriptions.push(
     vscode.commands.registerCommand('verilog.lint', lintManager.runLintTool, lintManager)
@@ -274,7 +97,7 @@ export async function activate(context: vscode.ExtensionContext) {
       openWaveform(context, arg)
     )
   );
-  context.subscriptions.push(registerDoctorCommand(context, projectService));
+  context.subscriptions.push(registerDoctorCommand(context, slangServerManager));
 
   context.subscriptions.push(
     vscode.window.registerCustomEditorProvider(
@@ -286,7 +109,8 @@ export async function activate(context: vscode.ExtensionContext) {
     )
   );
 
-  // Configure language server
+  // Keep non-HDL language servers, such as Tcl and VHDL. HDL semantic servers are
+  // intentionally not registered here to avoid conflicts with slang-server.
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (!event.affectsConfiguration('verilog.languageServer')) {
@@ -299,12 +123,13 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   initAllLanguageClients();
 
-  logger.info("Extension activated", { extensionId: extensionID });
+  logger.info('Extension activated', { extensionId: extensionID });
 }
 
 export async function deactivate(): Promise<void> {
   const logger = getExtensionLogger();
-  logger.info("Extension deactivating");
+  logger.info('Extension deactivating');
+  await slangServerManager?.stop();
   await stopAllLanguageClients();
   await disposeLogging();
 }
