@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [1.27.4] - 2026-06-28
+
+### Fixed
+
+- Restored prior `xvlog` lint behavior by reverting the temporary Vivado work-library redirection from [#626](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/626).
+
 ## [1.27.3] - 2026-06-28
 
 ### Fixed
