@@ -112,21 +112,18 @@ suite('Doctor', () => {
     assert.ok(checks.some((check) => check.status === 'error' && check.message.includes('iverilog')));
   });
 
-  test('linter checks report compile-unit mode support and active compile unit', async () => {
+  test('linter checks stay file-based after project index removal', async () => {
     const checks = await buildLinterChecks(
       {
         linter: 'verible-verilog-lint',
         linterPath: '',
         arguments: '',
-        lintMode: 'compileUnit',
-        activeCompileUnit: { id: 'unit', name: 'unit', files: 2 },
       },
       makeDeps({ executables: { 'verible-verilog-lint': '/usr/bin/verible-verilog-lint' } })
     );
 
-    assert.ok(checks.some((check) => check.message === 'verilog.linting.mode = compileUnit'));
-    assert.ok(checks.some((check) => check.status === 'warn' && check.message === 'compileUnit support = false'));
-    assert.ok(checks.some((check) => check.message.includes('active compile unit = unit (unit), files=2')));
+    assert.ok(checks.some((check) => check.message === 'verilog.linting.linter = verible-verilog-lint'));
+    assert.ok(checks.every((check) => !check.message.includes('compileUnit')));
   });
 
   test('disabled language server produces info, not error', async () => {

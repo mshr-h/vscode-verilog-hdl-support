@@ -11,15 +11,9 @@ import {
   type WslPathConversionOptions,
 } from '../tools/WslPathConverter';
 import { getWorkspaceRootForDocument } from '../utils/workspace';
-import type { ProjectService } from '../project/ProjectService';
 import { splitCommandLineArgs } from '../utils/commandLine';
 import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
-import {
-  getCompileUnitDefineArgs,
-  getCompileUnitIncludePaths,
-  getCompileUnitSourcePaths,
-} from './CompileUnitLintArgs';
 import type { LintRunOptions } from './LintMode';
 
 const isWindows = process.platform === 'win32';
@@ -352,10 +346,9 @@ export default class VerilatorLinter extends BaseLinter {
 
   constructor(
     diagnosticManager: LinterDiagnosticManager,
-    runManager: LintRunManager,
-    projectService?: ProjectService
+    runManager: LintRunManager
   ) {
-    super('verilator', diagnosticManager, runManager, projectService);
+    super('verilator', diagnosticManager, runManager);
     this.updateConfig();
   }
 
@@ -401,16 +394,10 @@ export default class VerilatorLinter extends BaseLinter {
         runAtFileLocation: this.config.runAtFileLocation,
         workspaceFolder: getWorkspaceRootForDocument(doc),
         linterInstalledPath: this.config.linterInstalledPath,
-        includePaths: decision.kind === 'compileUnit'
-          ? this.resolveIncludePaths(this.config.includePath, doc).concat(getCompileUnitIncludePaths(decision.context))
-          : this.getConfiguredAndProjectIncludePaths(doc),
-        defineArgs: decision.kind === 'compileUnit'
-          ? getCompileUnitDefineArgs(decision.context)
-          : this.getProjectContext(doc).defineArgs,
+        includePaths: this.getConfiguredAndProjectIncludePaths(doc),
+        defineArgs: this.getConfiguredDefineArgs(doc),
         customArguments: this.config.arguments,
-        sourcePaths: decision.kind === 'compileUnit'
-          ? getCompileUnitSourcePaths(decision.context)
-          : undefined,
+        sourcePaths: undefined,
         cancellationToken: run.cancellationToken,
       });
       if (!run.isCurrent()) {

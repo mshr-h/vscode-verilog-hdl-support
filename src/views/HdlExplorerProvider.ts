@@ -1,61 +1,59 @@
 // SPDX-License-Identifier: MIT
-import * as path from 'path';
 import * as vscode from 'vscode';
-import type { HierarchyService } from '../hierarchy/HierarchyService';
-import type { HierarchyNode } from '../hierarchy/HierarchyTypes';
-import type { InstantiationService } from '../hdl/InstantiationService';
-import type { ReferenceService } from '../hdl/ReferenceService';
-import type { ProjectService } from '../project/ProjectService';
-import type { CompileUnit, MacroDefine } from '../project/ProjectTypes';
-import { getActiveCompileUnit } from '../project/ProjectTargetResolver';
-import type { IndexService } from '../semantic/IndexService';
-import type { ModuleRecord } from '../semantic/SymbolRecords';
+import type { SlangServerManager } from '../slangServer/SlangServerManager';
 import {
-  createCompileUnitItem,
-  createCompileUnitsItem,
-  createDefineItem,
-  createFileItem,
-  createGroupItem,
-  createHierarchyInstanceItem,
-  createHierarchyModuleItem,
-  createIncludeDirItem,
-  createInfoItem,
-  createSymbolItem,
-  HdlExplorerPayload,
-  HdlExplorerItem,
-  RootSection,
-} from './HdlExplorerItems';
+  SlangKind,
+  SlangCommandClient,
+  toVscodeLocation,
+  type SlangHierItem,
+  type SlangModule,
+  type SlangQualifiedInstance,
+} from '../slangServer/SlangCommandClient';
+import type { SlangConfigService } from '../slangServer/SlangConfigService';
+import { HdlExplorerItem, createInfoItem } from './HdlExplorerItems';
 
-interface HierarchyRootFilter {
-  moduleName: string;
-  compileUnitId?: string;
-}
+type RootSection = 'project' | 'modules' | 'hierarchy' | 'instances';
 
-interface ActiveTargetQuickPickItem extends vscode.QuickPickItem {
-  targetId: string;
+type SlangExplorerPayload =
+  | { kind: 'section'; section: RootSection }
+  | { kind: 'module'; module: SlangModule }
+  | { kind: 'scope'; hierPath: string; item: SlangHierItem }
+  | { kind: 'instance'; moduleName: string; instance: SlangQualifiedInstance }
+  | { kind: 'info' };
+
+class SlangExplorerItem extends HdlExplorerItem {
+  constructor(
+    label: string,
+    contextValue: string,
+    collapsibleState: vscode.TreeItemCollapsibleState,
+    readonly slangPayload: SlangExplorerPayload
+  ) {
+    super(label, contextValue as never, collapsibleState);
+    this.contextValue = contextValue;
+  }
 }
 
 export class HdlExplorerProvider implements vscode.TreeDataProvider<HdlExplorerItem>, vscode.Disposable {
   private readonly emitter = new vscode.EventEmitter<HdlExplorerItem | undefined>();
   private readonly disposables: vscode.Disposable[] = [];
-  private hierarchyRootFilter?: HierarchyRootFilter;
+  private readonly slangCommands: SlangCommandClient;
+  private readonly configService: SlangConfigService | undefined;
+  private hierarchyRootFilter: string | undefined;
 
   readonly onDidChangeTreeData = this.emitter.event;
 
   constructor(
-    private readonly projectService: ProjectService,
-    private readonly indexService: IndexService,
-    private readonly hierarchyService: HierarchyService
+    slangCommands: SlangCommandClient | unknown,
+    configService?: SlangConfigService | unknown,
+    _legacyHierarchyService?: unknown
   ) {
+    this.slangCommands = isSlangCommandClient(slangCommands)
+      ? slangCommands
+      : new SlangCommandClient();
+    this.configService = isSlangConfigService(configService) ? configService : undefined;
     this.disposables.push(
-      projectService.onDidChangeSnapshot(() => this.refresh()),
-      indexService.onDidChangeIndex(() => this.refresh()),
-      hierarchyService.onDidChangeHierarchy(() => this.refresh()),
       vscode.workspace.onDidChangeConfiguration((event) => {
-        if (
-          event.affectsConfiguration('verilog.hdlExplorer')
-          || event.affectsConfiguration('verilog.hierarchy')
-        ) {
+        if (event.affectsConfiguration('verilog.hdlExplorer')) {
           this.refresh();
         }
       })
@@ -70,36 +68,30 @@ export class HdlExplorerProvider implements vscode.TreeDataProvider<HdlExplorerI
     return element;
   }
 
-  getChildren(element?: HdlExplorerItem): vscode.ProviderResult<HdlExplorerItem[]> {
+  async getChildren(element?: HdlExplorerItem): Promise<HdlExplorerItem[]> {
     if (!isHdlExplorerEnabled()) {
       return [createInfoItem('HDL Explorer disabled', 'verilog.hdlExplorer.enabled=false')];
     }
     if (!element) {
       return this.getRootItems();
     }
-    if (element.payload.kind === 'section') {
-      return this.getSectionChildren(element.payload.section);
+    if (!(element instanceof SlangExplorerItem)) {
+      return [];
     }
-    if (element.payload.kind === 'compileUnit') {
-      return this.getCompileUnitChildren(element.payload.compileUnit);
+    switch (element.slangPayload.kind) {
+      case 'section':
+        return this.getSectionChildren(element.slangPayload.section);
+      case 'module':
+        return this.getModuleChildren(element.slangPayload.module);
+      case 'scope':
+        return this.getScopeChildren(element.slangPayload.hierPath, element.slangPayload.item);
+      default:
+        return [];
     }
-    if (element.payload.kind === 'compileUnits') {
-      return element.payload.compileUnits.map(createCompileUnitItem);
-    }
-    if (element.payload.kind === 'compileUnitGroup') {
-      return this.getCompileUnitGroupChildren(element.payload);
-    }
-    if (element.payload.kind === 'hierarchyModule') {
-      return this.getHierarchyNodeChildren(element.payload.node);
-    }
-    if (element.payload.kind === 'hierarchyInstance' && element.payload.instance.children) {
-      return this.getHierarchyNodeChildren(element.payload.instance.children);
-    }
-    return [];
   }
 
-  setHierarchyRootFilter(moduleName: string, compileUnitId?: string): void {
-    this.hierarchyRootFilter = { moduleName, compileUnitId };
+  setHierarchyRootFilter(moduleName: string): void {
+    this.hierarchyRootFilter = moduleName;
     this.refresh();
   }
 
@@ -116,517 +108,295 @@ export class HdlExplorerProvider implements vscode.TreeDataProvider<HdlExplorerI
   }
 
   private getRootItems(): HdlExplorerItem[] {
-    const items = [
-      createRootSectionItem('HDL Project', 'project'),
-      createRootSectionItem('Modules', 'modules'),
-      createRootSectionItem('Packages', 'packages'),
-      createRootSectionItem('Hierarchy (best-effort)', 'hierarchy'),
+    return [
+      rootItem('Slang Project', 'project'),
+      rootItem('Modules', 'modules'),
+      rootItem('Hierarchy', 'hierarchy'),
+      rootItem('Instances', 'instances'),
     ];
-    if (isShowUnresolvedEnabled()) {
-      items.push(createRootSectionItem('Unresolved Instances', 'unresolved'));
-    }
-    return items;
   }
 
-  private getSectionChildren(section: RootSection): HdlExplorerItem[] {
+  private async getSectionChildren(section: RootSection): Promise<HdlExplorerItem[]> {
     switch (section) {
       case 'project':
         return this.getProjectChildren();
       case 'modules':
-        return this.indexService.getIndex().getAllModules().map(createSymbolItem);
-      case 'packages':
-        return this.indexService
-          .getIndex()
-          .getAllSymbols()
-          .filter((symbol) => symbol.kind === 'package')
-          .map(createSymbolItem);
+        return (await this.safeGetModules()).map(createModuleItem);
       case 'hierarchy':
-        return this.getHierarchySectionChildren();
-      case 'unresolved':
-        return this.hierarchyService.getHierarchy().unresolvedInstances.map(createHierarchyInstanceItem);
+        return this.getHierarchyChildren();
+      case 'instances':
+        return this.getInstancesSectionChildren();
     }
   }
 
-  private getHierarchySectionChildren(): HdlExplorerItem[] {
-    const roots = filterHierarchyRoots(this.hierarchyService.getHierarchy().roots, this.hierarchyRootFilter);
-    const items = roots.map(createHierarchyModuleItem);
+  private async getProjectChildren(): Promise<HdlExplorerItem[]> {
+    const configUri = this.configService?.getConfigUri();
+    const items = [
+      createInfoItem('Backend', 'slang-server'),
+      createInfoItem('Config', configUri?.fsPath ?? '(no workspace)'),
+    ];
     if (this.hierarchyRootFilter) {
-      return [
-        createInfoItem('Filtered root', this.hierarchyRootFilter.moduleName),
-        ...items,
-      ];
+      items.push(createInfoItem('Filtered root', this.hierarchyRootFilter));
     }
     return items;
   }
 
-  private getProjectChildren(): HdlExplorerItem[] {
-    const snapshot = this.projectService.getSnapshot();
-    const activeCompileUnit = getActiveCompileUnit(snapshot);
-    return [
-      createInfoItem('Active Target', snapshot.activeTargetId || '(none)'),
-      createInfoItem('Active Compile Unit', activeCompileUnit ? `${activeCompileUnit.name} (${activeCompileUnit.id})` : '(none)'),
-      createInfoItem('Diagnostics', String(snapshot.diagnostics.length)),
-      createInfoItem('Workspace Root', snapshot.workspaceRoot.fsPath),
-      createCompileUnitsItem(snapshot.compileUnits),
-    ];
+  private async getHierarchyChildren(): Promise<HdlExplorerItem[]> {
+    const items = await this.safeGetScope('');
+    const roots = this.hierarchyRootFilter
+      ? items.filter((item) => getDisplayModuleName(item) === this.hierarchyRootFilter)
+      : items;
+    return roots.map((item) => createScopeItem(item.instName, item.instName, item));
   }
 
-  private getCompileUnitChildren(compileUnit: CompileUnit): HdlExplorerItem[] {
-    return [
-      createInfoItem('Id', compileUnit.id),
-      createInfoItem('Source', formatCompileUnitSource(compileUnit)),
-      createGroupItem('Files', 'files', compileUnit),
-      createGroupItem('Include Dirs', 'includeDirs', compileUnit),
-      createGroupItem('Defines', 'defines', compileUnit),
-    ];
+  private async getInstancesSectionChildren(): Promise<HdlExplorerItem[]> {
+    const modules = await this.safeGetModules();
+    return modules.map((module) => {
+      const item = createModuleItem(module);
+      item.collapsibleState = module.instCount > 0
+        ? vscode.TreeItemCollapsibleState.Collapsed
+        : vscode.TreeItemCollapsibleState.None;
+      item.description = `${module.instCount} instance${module.instCount === 1 ? '' : 's'}`;
+      return item;
+    });
   }
 
-  private getCompileUnitGroupChildren(payload: Extract<HdlExplorerPayload, { kind: 'compileUnitGroup' }>): HdlExplorerItem[] {
-    switch (payload.group) {
-      case 'files':
-        return payload.compileUnit.files.map(createFileItem);
-      case 'includeDirs':
-        return payload.compileUnit.includeDirs.map(createIncludeDirItem);
-      case 'defines':
-        return Object.entries(payload.compileUnit.defines).map(([name, define]) => createDefineItem(name, define));
+  private async getModuleChildren(module: SlangModule): Promise<HdlExplorerItem[]> {
+    const instances = await this.safeGetInstancesOfModule(module.declName);
+    return instances.map((instance) => {
+      const item = new SlangExplorerItem(
+        instance.instPath,
+        'hdlExplorer.hierarchyInstance',
+        vscode.TreeItemCollapsibleState.None,
+        { kind: 'instance', moduleName: module.declName, instance }
+      );
+      item.command = {
+        command: 'verilog.openInstanceFromExplorer',
+        title: 'Open Instance',
+        arguments: [toVscodeLocation(instance.instLoc)],
+      };
+      return item;
+    });
+  }
+
+  private async getScopeChildren(hierPath: string, item: SlangHierItem): Promise<HdlExplorerItem[]> {
+    if ('children' in item && item.children.length > 0) {
+      return item.children.map((child) => createScopeItem(`${hierPath}.${child.instName}`.replace(/^\./, ''), child.instName, child));
+    }
+    if (item.kind === SlangKind.Instance || item.kind === SlangKind.InstanceArray || item.kind === SlangKind.Package) {
+      return (await this.safeGetScope(hierPath)).map((child) => createScopeItem(`${hierPath}.${child.instName}`.replace(/^\./, ''), child.instName, child));
+    }
+    return [];
+  }
+
+  private async safeGetModules(): Promise<SlangModule[]> {
+    try {
+      return await this.slangCommands.getScopesByModule();
+    } catch {
+      return [];
     }
   }
 
-  private getHierarchyNodeChildren(node: HierarchyNode): HdlExplorerItem[] {
-    return [
-      ...node.instances.map(createHierarchyInstanceItem),
-      ...node.unresolvedInstances.map(createHierarchyInstanceItem),
-    ];
+  private async safeGetScope(hierPath: string): Promise<SlangHierItem[]> {
+    try {
+      return await this.slangCommands.getScope(hierPath);
+    } catch {
+      return [];
+    }
+  }
+
+  private async safeGetInstancesOfModule(moduleName: string): Promise<SlangQualifiedInstance[]> {
+    try {
+      return await this.slangCommands.getInstancesOfModule(moduleName);
+    } catch {
+      return [];
+    }
   }
 }
 
+function isSlangCommandClient(input: unknown): input is SlangCommandClient {
+  return typeof input === 'object' && input !== null && 'getScope' in input && 'getScopesByModule' in input;
+}
+
+function isSlangConfigService(input: unknown): input is SlangConfigService {
+  return typeof input === 'object' && input !== null && 'getConfigUri' in input;
+}
+
 export function registerHdlExplorerCommands(
-  projectService: ProjectService,
-  hierarchyService: HierarchyService,
-  instantiationService: InstantiationService,
-  referenceService: ReferenceService,
+  slangCommands: SlangCommandClient,
+  slangServerManager: SlangServerManager,
   provider: HdlExplorerProvider
 ): vscode.Disposable[] {
   return [
-    vscode.commands.registerCommand('verilog.refreshHierarchy', async () => {
-      await hierarchyService.rebuild('command');
-      vscode.window.showInformationMessage('Verilog hierarchy refreshed.');
-    }),
-    vscode.commands.registerCommand('verilog.refreshHdlExplorer', async () => {
-      await hierarchyService.rebuild('explorer-command');
-      provider.refresh();
-    }),
-    vscode.commands.registerCommand('verilog.setActiveTargetFromExplorer', async (arg: unknown) => {
-      const compileUnit = getCompileUnitFromArg(arg);
-      if (!compileUnit) {
-        vscode.window.showWarningMessage('No HDL compile unit selected.');
-        return;
-      }
-      await setActiveTarget(projectService, hierarchyService, provider, compileUnit.id);
-      vscode.window.showInformationMessage(`Active HDL target set to ${compileUnit.id}`);
-    }),
-    vscode.commands.registerCommand('verilog.selectActiveTarget', async () => {
-      const snapshot = projectService.getSnapshot();
-      if (snapshot.compileUnits.length === 0) {
-        vscode.window.showWarningMessage('No HDL compile units are available.');
-        return;
-      }
-      const selected = await vscode.window.showQuickPick(buildActiveTargetQuickPickItems(snapshot.compileUnits), {
-        placeHolder: 'Select active HDL target',
-        matchOnDescription: true,
-        matchOnDetail: true,
-      });
-      if (!selected) {
-        return;
-      }
-      await setActiveTarget(projectService, hierarchyService, provider, selected.targetId);
-      vscode.window.showInformationMessage(
-        selected.targetId ? `Active HDL target set to ${selected.targetId}` : 'Active HDL target cleared.'
-      );
-    }),
-    vscode.commands.registerCommand('verilog.openModuleFromExplorer', (arg: unknown) => {
-      void openOptionalLocation(getModuleLocationFromArg(arg));
-    }),
-    vscode.commands.registerCommand('verilog.instantiateModuleFromExplorer', async (arg: unknown) => {
-      const moduleRecord = getModuleRecordFromArg(arg);
-      if (!moduleRecord) {
-        vscode.window.showWarningMessage('No resolved HDL module selected.');
-        return;
-      }
-      await instantiationService.instantiateModule(moduleRecord);
-    }),
+    vscode.commands.registerCommand('verilog.refreshHierarchy', () => provider.refresh()),
+    vscode.commands.registerCommand('verilog.refreshHdlExplorer', () => provider.refresh()),
+    vscode.commands.registerCommand('verilog.selectSlangBuildFile', () => selectBuildFile(slangServerManager)),
+    vscode.commands.registerCommand('verilog.showSlangServerStatus', () => vscode.commands.executeCommand('verilog.doctor')),
+    vscode.commands.registerCommand('verilog.showSlangModules', () => provider.refresh()),
+    vscode.commands.registerCommand('verilog.openModuleFromExplorer', (arg: unknown) => openOptionalLocation(getLocationFromArg(arg))),
+    vscode.commands.registerCommand('verilog.instantiateModuleFromExplorer', () => vscode.commands.executeCommand('verilog.instantiateModule')),
     vscode.commands.registerCommand('verilog.showHierarchyFromModule', (arg: unknown) => {
-      const moduleRecord = getModuleRecordFromArg(arg);
-      const moduleName = moduleRecord?.name ?? getHierarchyModuleNameFromArg(arg);
-      if (!moduleName) {
-        vscode.window.showWarningMessage('No HDL module selected.');
-        return;
+      const moduleName = getModuleNameFromArg(arg);
+      if (moduleName) {
+        provider.setHierarchyRootFilter(moduleName);
       }
-      provider.setHierarchyRootFilter(moduleName, moduleRecord?.compileUnitId);
     }),
-    vscode.commands.registerCommand('verilog.clearHierarchyRootFilter', () => {
-      provider.clearHierarchyRootFilter();
-    }),
-    vscode.commands.registerCommand('verilog.findModuleReferencesFromExplorer', (arg: unknown) => {
-      void showModuleReferences(referenceService, getModuleRecordFromArg(arg));
-    }),
-    vscode.commands.registerCommand('verilog.openInstanceFromExplorer', (arg: unknown) => {
-      void openOptionalLocation(getInstanceLocationFromArg(arg));
-    }),
-    vscode.commands.registerCommand('verilog.openInstanceModuleFromExplorer', (arg: unknown) => {
-      void openOptionalLocation(getModuleLocationFromArg(arg));
-    }),
-    vscode.commands.registerCommand('verilog.findInstanceModuleReferencesFromExplorer', (arg: unknown) => {
-      void showModuleReferences(referenceService, getModuleRecordFromArg(arg));
-    }),
-    vscode.commands.registerCommand('verilog.searchUnresolvedModule', async (arg: unknown) => {
+    vscode.commands.registerCommand('verilog.clearHierarchyRootFilter', () => provider.clearHierarchyRootFilter()),
+    vscode.commands.registerCommand('verilog.findModuleReferencesFromExplorer', async (arg: unknown) => {
       const moduleName = getModuleNameFromArg(arg);
       if (!moduleName) {
-        vscode.window.showWarningMessage('No unresolved HDL module selected.');
         return;
       }
-      await vscode.commands.executeCommand('workbench.action.findInFiles', { query: moduleName });
+      const files = await slangCommands.getFilesContainingModule(moduleName);
+      vscode.window.showInformationMessage(`${moduleName}: ${files.length} file(s) reported by slang-server.`);
     }),
-    vscode.commands.registerCommand('verilog.copyModuleNameFromExplorer', async (arg: unknown) => {
-      await copyText(getModuleNameFromArg(arg), 'No HDL module name selected.', 'HDL module name copied.');
+    vscode.commands.registerCommand('verilog.openInstanceFromExplorer', (arg: unknown) => openOptionalLocation(getLocationFromArg(arg))),
+    vscode.commands.registerCommand('verilog.openInstanceModuleFromExplorer', (arg: unknown) => openOptionalLocation(getLocationFromArg(arg))),
+    vscode.commands.registerCommand('verilog.findInstanceModuleReferencesFromExplorer', (arg: unknown) => vscode.commands.executeCommand('verilog.findModuleReferencesFromExplorer', arg)),
+    vscode.commands.registerCommand('verilog.searchUnresolvedModule', async (arg: unknown) => {
+      const moduleName = getModuleNameFromArg(arg);
+      if (moduleName) {
+        await vscode.commands.executeCommand('workbench.action.findInFiles', { query: moduleName });
+      }
     }),
-    vscode.commands.registerCommand('verilog.openFileFromExplorer', (arg: unknown) => {
-      void openOptionalUri(getUriFromArg(arg));
-    }),
-    vscode.commands.registerCommand('verilog.revealFileInOs', (arg: unknown) => {
-      void revealOptionalUri(getUriFromArg(arg));
-    }),
-    vscode.commands.registerCommand('verilog.revealIncludeDirInOs', (arg: unknown) => {
-      void revealOptionalUri(getUriFromArg(arg));
-    }),
-    vscode.commands.registerCommand('verilog.copyPathFromExplorer', async (arg: unknown) => {
-      await copyText(getUriFromArg(arg)?.fsPath, 'No HDL path selected.', 'HDL path copied.');
-    }),
-    vscode.commands.registerCommand('verilog.copyRelativePathFromExplorer', async (arg: unknown) => {
-      const uri = getUriFromArg(arg);
-      await copyText(uri ? getRelativePath(uri) : undefined, 'No HDL path selected.', 'HDL relative path copied.');
-    }),
-    vscode.commands.registerCommand('verilog.openCompileUnitSource', (arg: unknown) => {
-      void openOptionalUri(getCompileUnitFromArg(arg)?.source.uri);
-    }),
-    vscode.commands.registerCommand('verilog.copyDefineNameFromExplorer', async (arg: unknown) => {
-      await copyText(getDefineFromArg(arg)?.name, 'No HDL define selected.', 'HDL define name copied.');
-    }),
-    vscode.commands.registerCommand('verilog.copyDefineArgumentFromExplorer', async (arg: unknown) => {
-      const entry = getDefineFromArg(arg);
-      await copyText(entry ? formatDefineArgument(entry.name, entry.define) : undefined, 'No HDL define selected.', 'HDL define argument copied.');
-    }),
-    vscode.commands.registerCommand('verilog.openDefineLocationFromExplorer', (arg: unknown) => {
-      const location = getDefineFromArg(arg)?.define.location;
-      void openOptionalLocation(location, 'Selected HDL define does not have a source location.');
-    }),
+    vscode.commands.registerCommand('verilog.copyModuleNameFromExplorer', (arg: unknown) => copyText(getModuleNameFromArg(arg))),
   ];
 }
 
-function createRootSectionItem(label: string, section: RootSection): HdlExplorerItem {
-  return new HdlExplorerItem(
+function rootItem(label: string, section: RootSection): HdlExplorerItem {
+  return new SlangExplorerItem(
     label,
-    section === 'project' ? 'hdlExplorer.projectRoot' : 'hdlExplorer.section',
+    section === 'project' ? 'hdlExplorer.slangProject' : 'hdlExplorer.section',
     vscode.TreeItemCollapsibleState.Expanded,
     { kind: 'section', section }
   );
 }
 
-async function openLocation(location: vscode.Location): Promise<void> {
+function createModuleItem(module: SlangModule): SlangExplorerItem {
+  const item = new SlangExplorerItem(
+    module.declName,
+    'hdlExplorer.module',
+    vscode.TreeItemCollapsibleState.None,
+    { kind: 'module', module }
+  );
+  const location = toVscodeLocation(module.declLoc);
+  if (location) {
+    item.resourceUri = location.uri;
+    item.command = {
+      command: 'verilog.openModuleFromExplorer',
+      title: 'Open Module',
+      arguments: [location],
+    };
+  }
+  return item;
+}
+
+function createScopeItem(hierPath: string, label: string, item: SlangHierItem): SlangExplorerItem {
+  const context = item.kind === SlangKind.Package
+    ? 'hdlExplorer.package'
+    : item.kind === SlangKind.Instance || item.kind === SlangKind.InstanceArray
+      ? 'hdlExplorer.hierarchyInstance'
+      : 'hdlExplorer.hierarchyModule';
+  const treeItem = new SlangExplorerItem(
+    label,
+    context,
+    'children' in item || item.kind === SlangKind.Instance || item.kind === SlangKind.InstanceArray
+      ? vscode.TreeItemCollapsibleState.Collapsed
+      : vscode.TreeItemCollapsibleState.None,
+    { kind: 'scope', hierPath, item }
+  );
+  const location = toVscodeLocation(item.instLoc);
+  if (location) {
+    treeItem.resourceUri = location.uri;
+    treeItem.command = {
+      command: 'verilog.openInstanceFromExplorer',
+      title: 'Open HDL Item',
+      arguments: [location],
+    };
+  }
+  if ('declName' in item) {
+    treeItem.description = item.declName;
+  } else if ('type' in item) {
+    treeItem.description = item.type;
+  }
+  return treeItem;
+}
+
+async function selectBuildFile(slangServerManager: SlangServerManager): Promise<void> {
+  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+  if (!workspaceFolder) {
+    vscode.window.showWarningMessage('Open a workspace before selecting a slang build file.');
+    return;
+  }
+  const files = await vscode.workspace.findFiles(new vscode.RelativePattern(workspaceFolder, '**/*.f'));
+  const selected = await vscode.window.showQuickPick(
+    files.map((uri) => ({
+      label: vscode.workspace.asRelativePath(uri, false),
+      uri,
+    })),
+    { placeHolder: 'Select slang build file' }
+  );
+  if (selected) {
+    await slangServerManager.setBuildFile(selected.uri.fsPath);
+  }
+}
+
+async function openOptionalLocation(location: vscode.Location | undefined): Promise<void> {
+  if (!location) {
+    vscode.window.showWarningMessage('Selected HDL item does not have a source location.');
+    return;
+  }
   const document = await vscode.workspace.openTextDocument(location.uri);
   const editor = await vscode.window.showTextDocument(document);
   editor.revealRange(location.range, vscode.TextEditorRevealType.InCenter);
   editor.selection = new vscode.Selection(location.range.start, location.range.end);
 }
 
-async function openOptionalLocation(
-  location: vscode.Location | undefined,
-  missingMessage = 'Selected HDL item does not have a source location.'
-): Promise<void> {
-  if (!location) {
-    vscode.window.showWarningMessage(missingMessage);
-    return;
-  }
-  await openLocation(location);
-}
-
-async function openOptionalUri(uri: vscode.Uri | undefined): Promise<void> {
-  if (!uri) {
-    vscode.window.showWarningMessage('Selected HDL item does not have a file path.');
-    return;
-  }
-  try {
-    await vscode.workspace.fs.stat(uri);
-    await vscode.commands.executeCommand('vscode.open', uri);
-  } catch {
-    vscode.window.showWarningMessage(`HDL path does not exist: ${uri.fsPath}`);
+async function copyText(text: string | undefined): Promise<void> {
+  if (text) {
+    await vscode.env.clipboard.writeText(text);
   }
 }
 
-async function revealOptionalUri(uri: vscode.Uri | undefined): Promise<void> {
-  if (!uri) {
-    vscode.window.showWarningMessage('Selected HDL item does not have a file path.');
-    return;
-  }
-  try {
-    await vscode.workspace.fs.stat(uri);
-    await vscode.commands.executeCommand('revealFileInOS', uri);
-  } catch {
-    vscode.window.showWarningMessage(`HDL path does not exist: ${uri.fsPath}`);
-  }
-}
-
-async function copyText(text: string | undefined, missingMessage: string, successMessage: string): Promise<void> {
-  if (!text) {
-    vscode.window.showWarningMessage(missingMessage);
-    return;
-  }
-  await vscode.env.clipboard.writeText(text);
-  vscode.window.showInformationMessage(successMessage);
-}
-
-async function setActiveTarget(
-  projectService: ProjectService,
-  hierarchyService: HierarchyService,
-  provider: HdlExplorerProvider,
-  targetId: string
-): Promise<void> {
-  const configTarget = vscode.workspace.workspaceFolders?.length
-    ? vscode.ConfigurationTarget.Workspace
-    : vscode.ConfigurationTarget.Global;
-  await vscode.workspace.getConfiguration('verilog.project').update('activeTarget', targetId, configTarget);
-  await projectService.reload('active-target-command');
-  await hierarchyService.rebuild('active-target-command');
-  provider.refresh();
-}
-
-async function showModuleReferences(
-  referenceService: ReferenceService,
-  moduleRecord: ModuleRecord | undefined
-): Promise<void> {
-  if (!moduleRecord) {
-    vscode.window.showWarningMessage('No resolved HDL module selected.');
-    return;
-  }
-  const document = await vscode.workspace.openTextDocument(moduleRecord.uri);
-  const tokenSource = new vscode.CancellationTokenSource();
-  try {
-    const locations = await referenceService.provideReferences(
-      document,
-      moduleRecord.selectionRange.start,
-      { includeDeclaration: true },
-      tokenSource.token
-    );
-    if (locations.length === 0) {
-      vscode.window.showInformationMessage(`No references found for ${moduleRecord.name}.`);
-      return;
-    }
-    await vscode.commands.executeCommand(
-      'editor.action.showReferences',
-      moduleRecord.uri,
-      moduleRecord.selectionRange.start,
-      locations
-    );
-  } finally {
-    tokenSource.dispose();
-  }
-}
-
-function isHdlExplorerEnabled(): boolean {
-  return vscode.workspace.getConfiguration('verilog.hdlExplorer').get<boolean>('enabled', true);
-}
-
-function isShowUnresolvedEnabled(): boolean {
-  return vscode.workspace.getConfiguration('verilog.hierarchy').get<boolean>('showUnresolved', true);
-}
-
-function formatCompileUnitSource(compileUnit: CompileUnit): string {
-  return compileUnit.source.uri
-    ? `${compileUnit.source.type} ${compileUnit.source.uri.fsPath}`
-    : compileUnit.source.type;
-}
-
-export function buildActiveTargetQuickPickItems(compileUnits: readonly CompileUnit[]): ActiveTargetQuickPickItem[] {
-  return [
-    {
-      label: '(auto / none)',
-      description: 'Use automatic target selection',
-      targetId: '',
-    },
-    ...compileUnits.map((compileUnit) => ({
-      label: compileUnit.name,
-      description: compileUnit.id,
-      detail: formatCompileUnitSource(compileUnit),
-      targetId: compileUnit.id,
-    })),
-  ];
-}
-
-export function filterHierarchyRoots(
-  roots: readonly HierarchyNode[],
-  filter?: HierarchyRootFilter
-): HierarchyNode[] {
-  if (!filter) {
-    return roots.slice();
-  }
-  const matches: HierarchyNode[] = [];
-  for (const root of roots) {
-    collectMatchingHierarchyNodes(root, filter, matches);
-  }
-  return matches;
-}
-
-function collectMatchingHierarchyNodes(
-  node: HierarchyNode,
-  filter: HierarchyRootFilter,
-  matches: HierarchyNode[]
-): void {
-  if (
-    node.moduleName === filter.moduleName
-    && (!filter.compileUnitId || node.module?.compileUnitId === filter.compileUnitId)
-  ) {
-    matches.push(node);
-  }
-  for (const instance of [...node.instances, ...node.unresolvedInstances]) {
-    if (instance.children) {
-      collectMatchingHierarchyNodes(instance.children, filter, matches);
-    }
-  }
-}
-
-export function getRelativePath(uri: vscode.Uri, workspaceRoot?: vscode.Uri): string {
-  const root = workspaceRoot ?? vscode.workspace.getWorkspaceFolder(uri)?.uri ?? vscode.workspace.workspaceFolders?.[0]?.uri;
-  if (!root) {
-    return uri.fsPath;
-  }
-  const relative = path.relative(root.fsPath, uri.fsPath);
-  return relative.length > 0 && !relative.startsWith('..') && !path.isAbsolute(relative)
-    ? relative.split(path.sep).join('/')
-    : uri.fsPath;
-}
-
-export function formatDefineArgument(name: string, define: MacroDefine): string {
-  return define.value === true ? `+define+${name}` : `+define+${name}=${define.value}`;
-}
-
-function getPayload(arg: unknown): HdlExplorerPayload | undefined {
-  if (arg instanceof HdlExplorerItem) {
-    return arg.payload;
-  }
-  if (typeof arg === 'object' && arg !== null && 'payload' in arg) {
-    return (arg as { payload?: HdlExplorerPayload }).payload;
-  }
-  return undefined;
-}
-
-function getCompileUnitFromArg(arg: unknown): CompileUnit | undefined {
-  const payload = getPayload(arg);
-  if (payload?.kind === 'compileUnit') {
-    return payload.compileUnit;
-  }
-  if (isCompileUnitLike(arg)) {
-    return arg;
-  }
-  return undefined;
-}
-
-function getUriFromArg(arg: unknown): vscode.Uri | undefined {
-  if (arg instanceof vscode.Uri) {
-    return arg;
-  }
+function getLocationFromArg(arg: unknown): vscode.Location | undefined {
   if (arg instanceof vscode.Location) {
-    return arg.uri;
+    return arg;
   }
-  const payload = getPayload(arg);
-  switch (payload?.kind) {
-    case 'sourceFile':
-      return payload.file.uri;
-    case 'includeDir':
-      return payload.uri;
-    case 'compileUnit':
-      return payload.compileUnit.source.uri;
-    case 'symbol':
-      return payload.symbol.uri;
-    case 'hierarchyModule':
-      return payload.node.module?.uri;
-    case 'hierarchyInstance':
-      return payload.instance.location.uri;
-    default:
-      return undefined;
-  }
-}
-
-function getDefineFromArg(arg: unknown): { name: string; define: MacroDefine } | undefined {
-  const payload = getPayload(arg);
-  return payload?.kind === 'define' ? { name: payload.name, define: payload.define } : undefined;
-}
-
-function getModuleRecordFromArg(arg: unknown): ModuleRecord | undefined {
-  const payload = getPayload(arg);
-  if (payload?.kind === 'symbol' && isModuleRecordLike(payload.symbol)) {
-    return payload.symbol;
-  }
-  if (payload?.kind === 'hierarchyModule') {
-    return payload.node.module;
-  }
-  if (payload?.kind === 'hierarchyInstance') {
-    return payload.instance.resolvedModule;
-  }
-  return isModuleRecordLike(arg) ? arg : undefined;
-}
-
-function getHierarchyModuleNameFromArg(arg: unknown): string | undefined {
-  const payload = getPayload(arg);
-  if (payload?.kind === 'hierarchyModule') {
-    return payload.node.moduleName;
+  if (arg instanceof SlangExplorerItem) {
+    const payload = arg.slangPayload;
+    if (payload.kind === 'module') {
+      return toVscodeLocation(payload.module.declLoc);
+    }
+    if (payload.kind === 'scope') {
+      return toVscodeLocation(payload.item.instLoc);
+    }
+    if (payload.kind === 'instance') {
+      return toVscodeLocation(payload.instance.instLoc);
+    }
   }
   return undefined;
 }
 
 function getModuleNameFromArg(arg: unknown): string | undefined {
-  const payload = getPayload(arg);
-  switch (payload?.kind) {
-    case 'symbol':
-      return payload.symbol.name;
-    case 'hierarchyModule':
-      return payload.node.moduleName;
-    case 'hierarchyInstance':
-      return payload.instance.moduleName;
-    default:
-      return isModuleRecordLike(arg) ? arg.name : undefined;
+  if (arg instanceof SlangExplorerItem) {
+    const payload = arg.slangPayload;
+    if (payload.kind === 'module') {
+      return payload.module.declName;
+    }
+    if (payload.kind === 'scope') {
+      return getDisplayModuleName(payload.item);
+    }
+    if (payload.kind === 'instance') {
+      return payload.moduleName;
+    }
   }
+  return undefined;
 }
 
-function getModuleLocationFromArg(arg: unknown): vscode.Location | undefined {
-  if (arg instanceof vscode.Location) {
-    return arg;
-  }
-  const moduleRecord = getModuleRecordFromArg(arg);
-  return moduleRecord ? new vscode.Location(moduleRecord.uri, moduleRecord.selectionRange) : undefined;
+function getDisplayModuleName(item: SlangHierItem): string {
+  return 'declName' in item ? item.declName : item.instName;
 }
 
-function getInstanceLocationFromArg(arg: unknown): vscode.Location | undefined {
-  if (arg instanceof vscode.Location) {
-    return arg;
-  }
-  const payload = getPayload(arg);
-  return payload?.kind === 'hierarchyInstance' ? payload.instance.location : undefined;
-}
-
-function isCompileUnitLike(value: unknown): value is CompileUnit {
-  return typeof value === 'object'
-    && value !== null
-    && 'id' in value
-    && 'files' in value
-    && 'includeDirs' in value
-    && 'defines' in value;
-}
-
-function isModuleRecordLike(value: unknown): value is ModuleRecord {
-  return typeof value === 'object'
-    && value !== null
-    && 'kind' in value
-    && (value as { kind?: unknown }).kind === 'module'
-    && 'uri' in value
-    && 'selectionRange' in value;
+function isHdlExplorerEnabled(): boolean {
+  return vscode.workspace.getConfiguration('verilog.hdlExplorer').get<boolean>('enabled', true);
 }

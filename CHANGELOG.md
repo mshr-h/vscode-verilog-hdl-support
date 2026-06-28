@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+
+- Added bundled `slang-server` WASM support as the default Verilog/SystemVerilog semantic backend, with native `slang-server` executable override settings, slang project configuration commands, Doctor/status reporting, and HDL Explorer integration.
+- Added validation and reproducible-build metadata for the bundled `resources/slang-server/slang-server.wasm` artifact.
+
+### Removed
+
+- Removed the old TypeScript FastScanner/FastIndexer/SemanticIndex project model and the duplicate TypeScript language-feature providers for SystemVerilog semantics.
+
 ## [1.27.3] - 2026-06-28
 
 ### Fixed

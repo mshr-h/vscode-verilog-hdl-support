@@ -1,200 +1,79 @@
 // SPDX-License-Identifier: MIT
-import * as vscode from 'vscode';
-import * as fs from 'fs';
 import * as path from 'path';
-import { Ctags, Symbol } from '../ctags';
-import type { InstantiationService } from '../hdl/InstantiationService';
-import { getExtensionLogger } from '../logging';
-import { getWorkspaceRootForDocument } from '../utils/workspace';
+import * as vscode from 'vscode';
+import type { SlangCommandClient } from '../slangServer/SlangCommandClient';
 
-const logger = () => getExtensionLogger('Command', 'ModuleInstantiation');
+interface ModuleQuickPickItem extends vscode.QuickPickItem {
+  moduleName: string;
+  uri: vscode.Uri;
+}
 
-export function instantiateModuleInteract() {
-  if (!isCtagsEnabled()) {
+export async function instantiateModuleInteract(
+  slangCommands: SlangCommandClient
+): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor || !isHdlDocument(editor.document)) {
+    vscode.window.showWarningMessage('Open a Verilog/SystemVerilog editor before instantiating a module.');
+    return;
+  }
+
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri)
+    ?? vscode.workspace.workspaceFolders?.[0];
+  if (!workspaceFolder) {
+    vscode.window.showWarningMessage('Open a workspace before instantiating a module.');
+    return;
+  }
+
+  const files = await vscode.workspace.findFiles(
+    new vscode.RelativePattern(workspaceFolder, '**/*.{v,sv}'),
+    new vscode.RelativePattern(workspaceFolder, '**/{.git,node_modules,build,sim,out,dist}/**'),
+    500
+  );
+  const moduleItems: ModuleQuickPickItem[] = [];
+  for (const uri of files) {
+    const modules = await safeGetModulesInFile(slangCommands, uri.fsPath);
+    for (const moduleName of modules) {
+      moduleItems.push({
+        label: moduleName,
+        description: path.relative(workspaceFolder.uri.fsPath, uri.fsPath).split(path.sep).join('/'),
+        moduleName,
+        uri,
+      });
+    }
+  }
+
+  if (moduleItems.length === 0) {
     vscode.window.showInformationMessage(
-      'Verilog-HDL/SystemVerilog: Ctags integration is disabled (verilog.ctags.enabled).'
+      'No modules were returned by slang-server. Use completion/code actions after slang-server finishes indexing.'
     );
     return;
   }
-  if (!vscode.window.activeTextEditor) {
-    vscode.window.showErrorMessage('No active text editor found');
-    return;
-  }
-  const activeDoc = vscode.window.activeTextEditor.document;
-  const filePath = path.dirname(activeDoc.uri.fsPath);
-  const workspaceRoot = getWorkspaceRootForDocument(activeDoc);
-  selectFile(filePath, workspaceRoot).then((srcpath) => {
-    if (srcpath === undefined) {
-      return;
-    }
-    instantiateModule(srcpath).then((inst) => {
-      if (inst && vscode.window.activeTextEditor) {
-        vscode.window.activeTextEditor.insertSnippet(inst);
-      }
-    });
+
+  const selected = await vscode.window.showQuickPick(moduleItems, {
+    placeHolder: 'Choose a module to instantiate',
+    matchOnDescription: true,
   });
-}
-
-export function instantiateModuleInteractWithProjectIndex(
-  instantiationService: InstantiationService
-) {
-  void instantiationService.instantiateModuleInteract(instantiateModuleInteract);
-}
-
-export async function instantiateModule(srcpath: string): Promise<vscode.SnippetString | undefined> {
-    if (!isCtagsEnabled()) {
-      return undefined;
-    }
-    // Using Ctags to get all the modules in the file
-    let moduleName: string = '';
-    if (!vscode.window.activeTextEditor) {
-      return undefined;
-    }
-    const file: vscode.TextDocument = vscode.window.activeTextEditor.document;
-    const log = logger();
-    const ctags: ModuleTags = new ModuleTags(log, file);
-    log.info`Executing ctags for module instantiation`;
-    const output = await ctags.execCtags(srcpath);
-    await ctags.buildSymbolsList(output);
-    let module: Symbol | undefined;
-    const modules: Symbol[] = ctags.symbols.filter((tag) => tag.type === 'module');
-    // No modules found
-    if (modules.length <= 0) {
-      vscode.window.showErrorMessage('Verilog-HDL/SystemVerilog: No modules found in the file');
-      return undefined;
-    }
-    // Only one module found
-    else if (modules.length === 1) {
-      module = modules[0];
-    }
-    // many modules found
-    else if (modules.length > 1) {
-      const selectedModuleName = await vscode.window.showQuickPick(
-        ctags.symbols.filter((tag) => tag.type === 'module').map((tag) => tag.name),
-        {
-          placeHolder: 'Choose a module to instantiate',
-        }
-      );
-      if (selectedModuleName === undefined) {
-        return undefined;
-      }
-      moduleName = selectedModuleName;
-      module = modules.filter((tag) => tag.name === moduleName)[0];
-    }
-    if (!module) {
-      return undefined;
-    }
-    const scope = module.parentScope !== '' ? `${module.parentScope  }.${  module.name}` : module.name;
-    const ports: Symbol[] = ctags.symbols.filter(
-      (tag) => tag.type === 'port' && tag.parentType === 'module' && tag.parentScope === scope
-    );
-    const portsName = ports.map((tag) => tag.name);
-    const params: Symbol[] = ctags.symbols.filter(
-      (tag) =>
-        tag.type === 'parameter' && tag.parentType === 'module' && tag.parentScope === scope
-    );
-    const parametersName = params.map((tag) => tag.name);
-    log.info`Module name: ${module.name}`;
-    let paramString = ``;
-    if (parametersName.length > 0) {
-      paramString = `\n#(\n${instantiatePort(parametersName)})\n`;
-    }
-    log.info`portsName: ${portsName.toString()}`;
-    return new vscode.SnippetString()
-        .appendText(`${module.name  } `)
-        .appendText(paramString)
-        .appendPlaceholder('u_')
-        .appendPlaceholder(`${module.name}(\n`)
-        .appendText(instantiatePort(portsName))
-        .appendText(');\n');
-}
-
-function isCtagsEnabled(): boolean {
-  const config = vscode.workspace.getConfiguration('verilog.ctags');
-  return config.get<boolean>('enabled', false);
-}
-
-function getIndentationString(): string {
-  const editorConfig = vscode.workspace.getConfiguration('editor');
-
-  const useSpaces = editorConfig.get<boolean>('insertSpaces', true);
-  const tabSize = editorConfig.get<number>('tabSize', 4);
-
-  if (useSpaces) {
-    return ' '.repeat(tabSize);
-  } 
-    return '\t';
-  
-}
-
-function instantiatePort(ports: string[]): string {
-  let port = '';
-  let maxLen = 0;
-  const indent = getIndentationString();
-
-  for (let i = 0; i < ports.length; i++) {
-    if (ports[i].length > maxLen) {
-      maxLen = ports[i].length;
-    }
-  }
-  // .NAME(NAME)
-  for (let i = 0; i < ports.length; i++) {
-    let element = ports[i];
-    const padding = maxLen - element.length + 1;
-    element = element + ' '.repeat(padding);
-    port += indent;
-    port += `.${element}(${element})`;
-    if (i !== ports.length - 1) {
-      port += ',';
-    }
-    port += '\n';
-  }
-  return port;
-}
-
-export async function selectFile(
-  currentDir: string,
-  workspaceRoot?: string
-): Promise<string | undefined> {
-  const dirs = getDirectories(currentDir);
-  // if is subdirectory, add '../'
-  if (shouldShowParentDirectory(currentDir, workspaceRoot)) {
-    dirs.unshift('..');
-  }
-  // all files ends with '.sv'
-  const files = getFiles(currentDir).filter((file) => file.endsWith('.v') || file.endsWith('.sv'));
-
-  // available quick pick items
-  // Indicate folders in the Quick pick
-  const items: vscode.QuickPickItem[] = [];
-  dirs.forEach((dir) => {
-    items.push({
-      label: dir,
-      description: 'folder',
-    });
-  });
-  files.forEach((file) => {
-    items.push({
-      label: file,
-    });
-  });
-
-  const selected = await vscode.window
-    .showQuickPick(items, {
-      placeHolder: 'Choose the module file',
-    });
   if (!selected) {
-    return undefined;
+    return;
   }
 
-  // if is a directory
-  const location = path.join(currentDir, selected.label);
-  if (fs.statSync(location).isDirectory()) {
-    return selectFile(location, workspaceRoot);
-  }
+  await editor.insertSnippet(buildMinimalInstantiationSnippet(selected.moduleName));
+  vscode.window.showInformationMessage(
+    'Inserted a minimal instance. Use slang-server completion/code actions to expand ports and parameters.'
+  );
+}
 
-  // return file path
-  return location;
+export function buildMinimalInstantiationSnippet(moduleName: string): vscode.SnippetString {
+  return new vscode.SnippetString()
+    .appendText(`${moduleName} `)
+    .appendPlaceholder(`u_${moduleName}`)
+    .appendText(' (\n')
+    .appendPlaceholder('// ports')
+    .appendText('\n);\n');
+}
+
+export async function instantiateModule(_srcpath: string): Promise<vscode.SnippetString | undefined> {
+  return undefined;
 }
 
 export function shouldShowParentDirectory(currentDir: string, workspaceRoot?: string): boolean {
@@ -205,34 +84,17 @@ export function shouldShowParentDirectory(currentDir: string, workspaceRoot?: st
   return relative.length > 0 && !relative.startsWith('..') && !path.isAbsolute(relative);
 }
 
-function getDirectories(srcpath: string): string[] {
-  return fs
-    .readdirSync(srcpath)
-    .filter((file) => fs.statSync(path.join(srcpath, file)).isDirectory());
-}
-
-function getFiles(srcpath: string): string[] {
-  return fs.readdirSync(srcpath).filter((file) => fs.statSync(path.join(srcpath, file)).isFile());
-}
-
-class ModuleTags extends Ctags {
-  buildSymbolsList(tags: string): Promise<void> {
-    if (tags === '') {
-      return Promise.resolve();
-    }
-    // Parse ctags output
-    const lines: string[] = tags.split(/\r?\n/);
-    lines.forEach((line) => {
-      if (line !== '') {
-        const tag: Symbol | undefined = this.parseTagLine(line);
-        // add only modules, ports and parameters
-        // Use 'parameter' type instead of 'constant' after #102
-        if (tag && (tag.type === 'module' || tag.type === 'port' || tag.type === 'parameter')) {
-          this.symbols.push(tag);
-        }
-      }
-    });
-    // skip finding end tags
-    return Promise.resolve();
+async function safeGetModulesInFile(
+  slangCommands: SlangCommandClient,
+  fsPath: string
+): Promise<string[]> {
+  try {
+    return await slangCommands.getModulesInFile(fsPath);
+  } catch {
+    return [];
   }
+}
+
+function isHdlDocument(document: vscode.TextDocument): boolean {
+  return document.languageId === 'verilog' || document.languageId === 'systemverilog';
 }

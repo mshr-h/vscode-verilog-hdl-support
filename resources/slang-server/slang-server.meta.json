@@ -1,0 +1,12 @@
+{
+  "slangServerVersion": "0.2.7",
+  "slangServerCommit": "f7465a87bff05460d6639f476312c755d7004a6f",
+  "slangCommit": "32df78162671a501d2b3dee2fec413ab0c53db01",
+  "target": "wasm32-wasi",
+  "buildDate": "2026-06-28T09:50:16.000Z",
+  "features": {
+    "threads": false,
+    "externalBuildCommands": false,
+    "wcp": false
+  }
+}

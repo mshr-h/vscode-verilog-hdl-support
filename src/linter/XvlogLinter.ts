@@ -4,7 +4,6 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import BaseLinter from './BaseLinter';
-import type { ProjectService } from '../project/ProjectService';
 import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from '../utils/commandLine';
@@ -81,10 +80,9 @@ export function parseXvlogDiagnostics(stdout: string): vscode.Diagnostic[] {
 export default class XvlogLinter extends BaseLinter {
   constructor(
     diagnosticManager: LinterDiagnosticManager,
-    runManager: LintRunManager,
-    projectService?: ProjectService
+    runManager: LintRunManager
   ) {
-    super('xvlog', diagnosticManager, runManager, projectService);
+    super('xvlog', diagnosticManager, runManager);
     this.updateConfig();
   }
 
@@ -114,7 +112,7 @@ export default class XvlogLinter extends BaseLinter {
     const args = buildXvlogArgs({
       languageId: doc.languageId,
       includePaths: this.getConfiguredAndProjectIncludePaths(doc),
-      defineArgs: this.getProjectContext(doc).defineArgs,
+      defineArgs: this.getConfiguredDefineArgs(doc),
       customArguments: this.config.arguments,
       documentPath: doc.fileName,
       workLibrary: tempWorkDir ? `work=${tempWorkDir}` : undefined,
