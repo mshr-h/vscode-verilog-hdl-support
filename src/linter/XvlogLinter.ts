@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
-import * as fs from 'fs';
-import * as os from 'os';
 import * as path from 'path';
 import BaseLinter from './BaseLinter';
 import type { ProjectService } from '../project/ProjectService';
@@ -18,7 +16,6 @@ export interface BuildXvlogArgsOptions {
   defineArgs?: string[];
   customArguments: string;
   documentPath: string;
-  workLibrary?: string;
 }
 
 export function buildXvlogArgs(options: BuildXvlogArgsOptions): string[] {
@@ -32,18 +29,9 @@ export function buildXvlogArgs(options: BuildXvlogArgsOptions): string[] {
   for (const defineArg of options.defineArgs ?? []) {
     args.push('--define', defineArg);
   }
-  if (options.workLibrary) {
-    args.push('-work', options.workLibrary);
-  }
   args.push(...splitCommandLineArgs(options.customArguments));
   args.push(options.documentPath);
   return args;
-}
-
-export function hasXvlogWorkArgument(customArguments: string): boolean {
-  return splitCommandLineArgs(customArguments).some((arg) =>
-    arg === '-work' || arg === '--work' || arg.startsWith('-work=') || arg.startsWith('--work=')
-  );
 }
 
 function convertXvlogSeverity(severityString: string): vscode.DiagnosticSeverity {
@@ -101,15 +89,6 @@ export default class XvlogLinter extends BaseLinter {
   protected async lint(doc: vscode.TextDocument, run: LintRunHandle, options: LintRunOptions): Promise<void> {
     this.warnUnsupportedCompileUnitMode(options);
     const binPath: string = path.join(this.config.linterInstalledPath, 'xvlog');
-    const cwd = this.getWorkingDirectory(doc);
-    const userManagedWorkLibrary = hasXvlogWorkArgument(this.config.arguments);
-    const tempDir = userManagedWorkLibrary
-      ? undefined
-      : fs.mkdtempSync(path.join(os.tmpdir(), 'vscode-verilog-xvlog-'));
-    const tempWorkDir = tempDir ? path.join(tempDir, 'work') : undefined;
-    if (tempWorkDir) {
-      fs.mkdirSync(tempWorkDir, { recursive: true });
-    }
 
     const args = buildXvlogArgs({
       languageId: doc.languageId,
@@ -117,29 +96,12 @@ export default class XvlogLinter extends BaseLinter {
       defineArgs: this.getProjectContext(doc).defineArgs,
       customArguments: this.config.arguments,
       documentPath: doc.fileName,
-      workLibrary: tempWorkDir ? `work=${tempWorkDir}` : undefined,
     });
+    const cwd = this.getWorkingDirectory(doc);
 
-    try {
-      this.logger.info("Executing", { command: binPath, args, cwd, tempDir });
+    this.logger.info("Executing", { command: binPath, args, cwd });
 
-      await this.runXvlog(binPath, args, cwd, doc, run);
-    } finally {
-      if (tempDir) {
-        this.cleanupTempDir(tempDir);
-      }
-    }
-  }
-
-  private cleanupTempDir(tempDir: string): void {
-    try {
-      fs.rmSync(tempDir, { recursive: true, force: true });
-    } catch (err) {
-      this.logger.warn('Failed to clean xvlog temporary directory', {
-        tempDir,
-        error: String(err),
-      });
-    }
+    await this.runXvlog(binPath, args, cwd, doc, run);
   }
 
   private async runXvlog(
