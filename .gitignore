@@ -3,8 +3,11 @@
 /out
 /syntaxes/.antlr/*
 /dist
+/.cache
 /.vscode-test/
 /.vscode-dev/
+/resources/wasm/slang-server.wasm
+/resources/wasm/slang-server.meta.json
 **/.hdl_checker/*
 svls.log
 .DS_Store

@@ -10,8 +10,8 @@ export default defineConfig({
 		'out/src/test/verilator.test.js',
 		'out/src/test/slang.test.js',
 	],
+	installExtensions: ['ms-vscode.wasm-wasi-core'],
 	launchArgs: [
 		`--user-data-dir=${path.join(testTempRoot, 'user-data')}`,
-		`--extensions-dir=${path.join(testTempRoot, 'extensions')}`,
 	],
 });

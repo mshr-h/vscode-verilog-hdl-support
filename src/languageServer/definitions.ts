@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-import * as vscode from 'vscode';
-import { LanguageClientOptions, Message } from 'vscode-languageclient/node';
+import { LanguageClientOptions } from 'vscode-languageclient/node';
 
 import { buildTclspInitializationOptions } from './tclspOptions';
 
@@ -15,76 +14,6 @@ export type LanguageServerDefinition = {
 
 export function createLanguageServerDefinitions(): LanguageServerDefinition[] {
   return [
-    {
-      name: 'svls',
-      defaultPath: 'svls',
-      serverArgs: [],
-      serverDebugArgs: ['--debug'],
-      buildClientOptions: () => ({
-        documentSelector: [{ scheme: 'file', language: 'systemverilog' }],
-      }),
-      applyProcessEnv: () => {
-        // TODO: move to svls extension setting
-        const svlint_toml: string | undefined = vscode.workspace
-          .getConfiguration('verilog.languageServer.svls')
-          .get('svlintTomlPath');
-        if (svlint_toml !== undefined) {
-          process.env.SVLINT_CONFIG = svlint_toml;
-        }
-      },
-    },
-    {
-      name: 'veridian',
-      defaultPath: 'veridian',
-      serverArgs: [],
-      serverDebugArgs: [],
-      buildClientOptions: () => ({
-        documentSelector: [{ scheme: 'file', language: 'systemverilog' }],
-      }),
-    },
-    {
-      name: 'hdlChecker',
-      defaultPath: 'hdl_checker',
-      serverArgs: ['--lsp'],
-      serverDebugArgs: ['--lsp'],
-      buildClientOptions: () => ({
-        documentSelector: [
-          { scheme: 'file', language: 'verilog' },
-          { scheme: 'file', language: 'systemverilog' },
-          { scheme: 'file', language: 'vhdl' },
-        ],
-      }),
-    },
-    {
-      name: 'veribleVerilogLs',
-      defaultPath: 'verible-verilog-ls',
-      serverArgs: [],
-      serverDebugArgs: [],
-      buildClientOptions: () => ({
-        connectionOptions: {
-          messageStrategy: {
-            handleMessage: (message, next) => {
-              if (
-                Message.isResponse(message) &&
-                message.result &&
-                typeof message.result === 'object' &&
-                'capabilities' in message.result
-              ) {
-                const result = message.result as Record<string, Record<string, unknown>>;
-                delete result['capabilities']['diagnosticProvider'];
-                delete result['capabilities']['documentFormattingProvider'];
-                delete result['capabilities']['documentRangeFormattingProvider'];
-              }
-              next(message);
-            },
-          },
-        },
-        documentSelector: [
-          { scheme: 'file', language: 'verilog' },
-          { scheme: 'file', language: 'systemverilog' },
-        ],
-      }),
-    },
     {
       name: 'tclsp',
       defaultPath: 'tclsp',

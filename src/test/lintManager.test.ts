@@ -68,7 +68,9 @@ function stubConfiguredLinter(fakeLinter: FakeLinter): () => void {
   };
 }
 
-suite('LintManager', () => {
+suite('LintManager', function () {
+  this.timeout(10000);
+
   const logCapture = new LogCapture();
 
   suiteSetup(async () => {

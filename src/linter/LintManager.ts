@@ -10,9 +10,6 @@ import XvlogLinter from './XvlogLinter';
 import VeribleVerilogLintLinter from './VeribleVerilogLintLinter';
 import LinterDiagnosticManager from './LinterDiagnosticManager';
 import LintRunManager from './LintRunManager';
-import type { ProjectService } from '../project/ProjectService';
-import { getCompileUnitLintContext } from './ProjectLintContext';
-import { getLintRunSettings, supportsCompileUnitLint } from './LintMode';
 
 export default class LintManager {
   private subscriptions: vscode.Disposable[];
@@ -23,7 +20,7 @@ export default class LintManager {
   private runManager: LintRunManager;
   private readonly logger = getExtensionLogger('Linter', 'Manager');
 
-  constructor(private readonly projectService?: ProjectService) {
+  constructor() {
     this.subscriptions = [];
     this.linter = null;
     this.diagnosticCollection = vscode.languages.createDiagnosticCollection('verilog-lint');
@@ -46,15 +43,15 @@ export default class LintManager {
   getLinterFromString(name: string): BaseLinter | null {
     switch (name) {
       case 'iverilog':
-        return new IcarusLinter(this.diagnosticManager, this.runManager, this.projectService);
+        return new IcarusLinter(this.diagnosticManager, this.runManager);
       case 'xvlog':
-        return new XvlogLinter(this.diagnosticManager, this.runManager, this.projectService);
+        return new XvlogLinter(this.diagnosticManager, this.runManager);
       case 'modelsim':
         return new ModelsimLinter(this.diagnosticManager, this.runManager);
       case 'verilator':
-        return new VerilatorLinter(this.diagnosticManager, this.runManager, this.projectService);
+        return new VerilatorLinter(this.diagnosticManager, this.runManager);
       case 'slang':
-        return new SlangLinter(this.diagnosticManager, this.runManager, this.projectService);
+        return new SlangLinter(this.diagnosticManager, this.runManager);
       case 'verible-verilog-lint':
         return new VeribleVerilogLintLinter(this.diagnosticManager, this.runManager);
       default:
@@ -209,20 +206,11 @@ export default class LintManager {
       this.logger.error("Linter selection cancelled");
       return;
     }
-    const lintSettings = getLintRunSettings();
-    const compileUnitContext =
-      lintSettings.mode === 'compileUnit' && supportsCompileUnitLint(linterStr.label)
-        ? getCompileUnitLintContext(this.projectService, editor.document)
-        : undefined;
-    const title = compileUnitContext
-      ? `Verilog-HDL/SystemVerilog: Running lint for compile unit ${compileUnitContext.compileUnit.name}...`
-      : 'Verilog-HDL/SystemVerilog: Running lint tool...';
-
     // Create and run the linter with progress bar
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title,
+        title: 'Verilog-HDL/SystemVerilog: Running lint tool...',
       },
       async (_progress, _token) => {
         const linter: BaseLinter | null = this.getLinterFromString(linterStr.label);

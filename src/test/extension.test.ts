@@ -67,7 +67,7 @@ suite('Extension Test Suite', () => {
     );
   });
 
-  test('extension should register verilog.instantiateModule command', async function () {
+  test('extension should register slang-server commands', async function () {
     this.timeout(10000);
     const extension = vscode.extensions.getExtension(EXTENSION_ID);
     assert.ok(extension, 'Extension should be present');
@@ -77,10 +77,14 @@ suite('Extension Test Suite', () => {
     }
 
     const commands = await vscode.commands.getCommands(true);
-    assert.ok(
-      commands.includes('verilog.instantiateModule'),
-      'verilog.instantiateModule command should be registered'
-    );
+    assert.ok(commands.includes('verilog.restartSlangServer'));
+    assert.ok(commands.includes('verilog.showSlangServerOutput'));
+    assert.ok(commands.includes('verilog.showSlangServerStatus'));
+    assert.ok(commands.includes('verilog.selectSlangServerRuntime'));
+    assert.ok(commands.includes('verilog.showSlangServerQuickActions'));
+    assert.ok(commands.includes('verilog.configureSlangProject'));
+    assert.ok(commands.includes('verilog.openSlangProjectConfig'));
+    assert.ok(commands.includes('verilog.validateSlangProjectConfig'));
   });
 
   test('extension should register verilog.openFliplot command', async function () {
@@ -131,7 +135,7 @@ suite('Extension Test Suite', () => {
     );
   });
 
-  test('extension should register project commands', async function () {
+  test('extension should register only slang-backed HDL Explorer commands', async function () {
     this.timeout(10000);
     const extension = vscode.extensions.getExtension(EXTENSION_ID);
     assert.ok(extension, 'Extension should be present');
@@ -141,82 +145,62 @@ suite('Extension Test Suite', () => {
     }
 
     const commands = await vscode.commands.getCommands(true);
-    assert.ok(commands.includes('verilog.reloadProject'));
-    assert.ok(commands.includes('verilog.showProjectStatus'));
-    assert.ok(commands.includes('verilog.showProjectModules'));
-    assert.ok(commands.includes('verilog.refreshHierarchy'));
     assert.ok(commands.includes('verilog.refreshHdlExplorer'));
-    assert.ok(commands.includes('verilog.setActiveTargetFromExplorer'));
-    assert.ok(commands.includes('verilog.selectActiveTarget'));
+    assert.ok(commands.includes('verilog.setSlangBuildFile'));
+    assert.ok(commands.includes('verilog.setSlangTopLevel'));
     assert.ok(commands.includes('verilog.openModuleFromExplorer'));
+    assert.ok(commands.includes('verilog.instantiateModule'));
     assert.ok(commands.includes('verilog.instantiateModuleFromExplorer'));
     assert.ok(commands.includes('verilog.showHierarchyFromModule'));
-    assert.ok(commands.includes('verilog.clearHierarchyRootFilter'));
     assert.ok(commands.includes('verilog.findModuleReferencesFromExplorer'));
     assert.ok(commands.includes('verilog.openInstanceFromExplorer'));
-    assert.ok(commands.includes('verilog.openInstanceModuleFromExplorer'));
-    assert.ok(commands.includes('verilog.findInstanceModuleReferencesFromExplorer'));
-    assert.ok(commands.includes('verilog.searchUnresolvedModule'));
-    assert.ok(commands.includes('verilog.copyModuleNameFromExplorer'));
-    assert.ok(commands.includes('verilog.openFileFromExplorer'));
-    assert.ok(commands.includes('verilog.copyPathFromExplorer'));
-    assert.ok(commands.includes('verilog.copyRelativePathFromExplorer'));
-    assert.ok(commands.includes('verilog.copyDefineNameFromExplorer'));
-    assert.ok(commands.includes('verilog.copyDefineArgumentFromExplorer'));
+
+    assert.ok(!commands.includes('verilog.reloadProject'));
   });
 
-  test('package should contribute project settings', () => {
+  test('package should contribute slang settings and remove legacy settings', () => {
     const packageJson = JSON.parse(
       fs.readFileSync(path.join(getRepositoryRoot(), 'package.json'), 'utf8')
     ) as {
+      extensionPack?: string[];
       contributes: { configuration: Array<{ properties: Record<string, unknown> }> };
     };
+    assert.ok(packageJson.extensionPack?.includes('ms-vscode.wasm-wasi-core'));
+
     const properties = Object.assign(
       {},
       ...packageJson.contributes.configuration.map((configuration) => configuration.properties)
     ) as Record<string, unknown>;
 
-    const projectEnabled = properties['verilog.project.enabled'] as { default?: unknown };
-    assert.ok(projectEnabled);
-    assert.strictEqual(projectEnabled.default, false);
-    assert.ok(properties['verilog.project.filelists']);
-    assert.ok(properties['verilog.project.activeTarget']);
-    assert.ok(properties['verilog.project.topModules']);
-    assert.ok(properties['verilog.project.includeDirs']);
-    assert.ok(properties['verilog.project.defines']);
-    assert.ok(properties['verilog.project.exclude']);
-    assert.ok(properties['verilog.project.maxAutoDiscoveredFiles']);
-    assert.ok(properties['verilog.hierarchy.enabled']);
-    assert.ok(properties['verilog.hierarchy.maxDepth']);
-    assert.ok(properties['verilog.hierarchy.showUnresolved']);
+    const enabled = properties['verilog.slangServer.enabled'] as { default?: unknown };
+    const runtime = properties['verilog.slangServer.runtime'] as { default?: unknown };
+    assert.ok(enabled);
+    assert.strictEqual(enabled.default, true);
+    assert.ok(runtime);
+    assert.strictEqual(runtime.default, 'auto');
+    assert.ok(properties['verilog.slangServer.path']);
+    assert.ok(properties['verilog.slangServer.args']);
+    assert.ok(properties['verilog.slangServer.trace.server']);
+    assert.ok(properties['verilog.slangServer.wasm.allowUserConfig']);
+    assert.ok(properties['verilog.slangServer.wasm.logStderr']);
+    assert.ok(properties['verilog.slangServer.wasm.memoryLimitMb']);
     assert.ok(properties['verilog.hdlExplorer.enabled']);
-    assert.ok(properties['verilog.semanticDiagnostics.enabled']);
-    assert.ok(properties['verilog.semanticDiagnostics.unresolvedModules.enabled']);
-    assert.ok(properties['verilog.semanticDiagnostics.unknownPorts.enabled']);
-    assert.ok(properties['verilog.semanticDiagnostics.unknownParameters.enabled']);
-    assert.ok(properties['verilog.semanticDiagnostics.unresolvedIncludes.enabled']);
-    assert.ok(properties['verilog.semanticDiagnostics.unresolvedMacros.enabled']);
-    assert.ok(properties['verilog.semanticDiagnostics.maxFiles']);
-    assert.ok(properties['verilog.instantiate.useProjectIndex']);
-    assert.ok(properties['verilog.preprocessor.useProjectDefines']);
     const runOnOpen = properties['verilog.linting.runOnOpen'] as { default?: unknown };
     const runOnSave = properties['verilog.linting.runOnSave'] as { default?: unknown };
     assert.ok(runOnOpen);
     assert.strictEqual(runOnOpen.default, true);
     assert.ok(runOnSave);
     assert.strictEqual(runOnSave.default, true);
-    assert.ok(properties['verilog.linting.useProjectContext']);
-    assert.ok(properties['verilog.linting.mode']);
-    assert.ok(properties['verilog.linting.compileUnit.maxFiles']);
-    assert.ok(properties['verilog.linting.compileUnit.warnBeforeLargeRun']);
-    assert.ok(properties['verilog.completion.ports.enabled']);
-    assert.ok(properties['verilog.completion.parameters.enabled']);
-    assert.ok(properties['verilog.completion.autoConnectPorts']);
-    assert.ok(properties['verilog.completion.autoConnectParameters']);
-    assert.ok(properties['verilog.references.maxFiles']);
-    assert.ok(properties['verilog.codeActions.fillMissingPorts.enabled']);
-    assert.ok(properties['verilog.codeActions.fillMissingParameters.enabled']);
-    assert.ok(properties['verilog.codeActions.alignment.enabled']);
+
+    for (const key of Object.keys(properties)) {
+      assert.ok(!key.startsWith('verilog.project.'), key);
+      assert.ok(!key.startsWith('verilog.semanticDiagnostics.'), key);
+      assert.ok(!key.startsWith('verilog.ctags.'), key);
+      assert.ok(!key.startsWith('verilog.completion.'), key);
+      assert.ok(!key.startsWith('verilog.references.'), key);
+      assert.ok(!key.startsWith('verilog.codeActions.'), key);
+      assert.ok(!key.startsWith('verilog.instantiate.'), key);
+    }
   });
 
   test('package should contribute HDL Explorer view', () => {
@@ -244,20 +228,20 @@ suite('Extension Test Suite', () => {
     const itemMenus = packageJson.contributes.menus['view/item/context'];
     const titleMenus = packageJson.contributes.menus['view/title'];
     assert.ok(itemMenus.some((menu) =>
-      menu.command === 'verilog.setActiveTargetFromExplorer' &&
-      menu.when.includes('viewItem == hdlExplorer.compileUnit')
+      menu.command === 'verilog.openModuleFromExplorer' &&
+      menu.when.includes('viewItem == hdlExplorer.module')
+    ));
+    assert.ok(itemMenus.some((menu) =>
+      menu.command === 'verilog.setSlangTopLevel' &&
+      menu.when.includes('viewItem == hdlExplorer.module')
     ));
     assert.ok(itemMenus.some((menu) =>
       menu.command === 'verilog.instantiateModuleFromExplorer' &&
       menu.when.includes('viewItem == hdlExplorer.module')
     ));
     assert.ok(itemMenus.some((menu) =>
-      menu.command === 'verilog.searchUnresolvedModule' &&
-      menu.when.includes('viewItem == hdlExplorer.unresolvedInstance')
-    ));
-    assert.ok(itemMenus.some((menu) =>
-      menu.command === 'verilog.copyDefineArgumentFromExplorer' &&
-      menu.when.includes('viewItem == hdlExplorer.define')
+      menu.command === 'verilog.openInstanceFromExplorer' &&
+      menu.when.includes('viewItem == hdlExplorer.instance')
     ));
     assert.deepStrictEqual(
       titleMenus
@@ -265,5 +249,16 @@ suite('Extension Test Suite', () => {
         .map((menu) => menu.command),
       ['verilog.refreshHdlExplorer']
     );
+  });
+
+  test('slang-backed module instantiation does not import legacy intelligence', () => {
+    const source = fs.readFileSync(
+      path.join(getRepositoryRoot(), 'src', 'slangServer', 'SlangModuleInstantiationService.ts'),
+      'utf8'
+    );
+    assert.ok(!source.includes('../semantic/'));
+    assert.ok(!source.includes('../project/'));
+    assert.ok(!source.includes('../hdl/'));
+    assert.ok(!source.includes('../ctags'));
   });
 });

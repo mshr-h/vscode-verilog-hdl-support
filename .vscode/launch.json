@@ -7,7 +7,6 @@
 	"configurations": [
 		{
 			"args": [
-				"--disable-extensions",
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--user-data-dir=${workspaceFolder}/.vscode-dev/user-data",
 				"--extensions-dir=${workspaceFolder}/.vscode-dev/extensions",
@@ -17,13 +16,12 @@
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js"
 			],
-			"preLaunchTask": "${defaultBuildTask}",
+			"preLaunchTask": "debug: prepare",
 			"request": "launch",
 			"type": "extensionHost"
 		},
 		{
 			"args": [
-				"--disable-extensions",
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--user-data-dir=${workspaceFolder}/.vscode-dev/user-data",
 				"--extensions-dir=${workspaceFolder}/.vscode-dev/extensions",
@@ -33,7 +31,7 @@
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js"
 			],
-			"preLaunchTask": "${defaultBuildTask}",
+			"preLaunchTask": "debug: prepare",
 			"request": "launch",
 			"type": "extensionHost"
 		}

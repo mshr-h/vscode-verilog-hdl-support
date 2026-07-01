@@ -9,8 +9,8 @@ const testTempRoot = path.join(
 
 export default defineConfig({
 	files: 'out/src/test/*.test.js',
+	installExtensions: ['ms-vscode.wasm-wasi-core'],
 	launchArgs: [
 		`--user-data-dir=${path.join(testTempRoot, 'user-data')}`,
-		`--extensions-dir=${path.join(testTempRoot, 'extensions')}`,
 	],
 });

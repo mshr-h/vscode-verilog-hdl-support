@@ -7,16 +7,9 @@ import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { convertToWslPath, type WslPathConversionOptions } from '../tools/WslPathConverter';
 import { getWorkspaceRootForDocument } from '../utils/workspace';
-import type { ProjectService } from '../project/ProjectService';
 import { splitCommandLineArgs } from '../utils/commandLine';
-import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
+import LinterDiagnosticManager from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
-import {
-  buildSlangCompileUnitArgs,
-  getCompileUnitDefineArgs,
-  getCompileUnitIncludePaths,
-  getCompileUnitSourcePaths,
-} from './CompileUnitLintArgs';
 import type { LintRunOptions } from './LintMode';
 
 const isWindows = process.platform === 'win32';
@@ -189,10 +182,9 @@ export default class SlangLinter extends BaseLinter {
 
   constructor(
     diagnosticManager: LinterDiagnosticManager,
-    runManager: LintRunManager,
-    projectService?: ProjectService
+    runManager: LintRunManager
   ) {
-    super('slang', diagnosticManager, runManager, projectService);
+    super('slang', diagnosticManager, runManager);
     this.updateConfig();
   }
 
@@ -225,43 +217,10 @@ export default class SlangLinter extends BaseLinter {
       this.publishDocumentDiagnosticsIfCurrent(doc, run, []);
       return;
     }
-    if (decision.kind === 'compileUnit') {
-      const compileUnitPaths = await this.convertCompileUnitPaths(
-        getCompileUnitSourcePaths(decision.context),
-        commandInfo.command,
-        run
-      );
-      const compileUnitIncludePaths = await this.convertCompileUnitPaths(
-        this.resolveIncludePaths(this.config.includePath, doc).concat(getCompileUnitIncludePaths(decision.context)),
-        commandInfo.command,
-        run
-      );
-      const args = commandInfo.leadingArgs.concat(
-        buildSlangCompileUnitArgs({
-          docFolder: paths.docFolder,
-          includePaths: compileUnitIncludePaths,
-          defineArgs: getCompileUnitDefineArgs(decision.context),
-          customArguments: this.config.arguments,
-          sourcePaths: compileUnitPaths,
-        })
-      );
-      this.logger.info("Executing compile-unit lint", {
-        command: commandInfo.command,
-        args,
-        cwd: paths.cwd,
-        compileUnit: decision.context.compileUnit.id,
-      });
-      await this.runSlangCompileUnit(commandInfo.command, args, paths.cwd, paths.docUri, doc, run);
-      return;
-    }
     const args = commandInfo.leadingArgs.concat(
       buildSlangArgs({
         docFolder: paths.docFolder,
-        includePaths: this.getConfiguredAndProjectIncludePaths(doc),
-        // Argument order is: tool defaults, configured include paths, project include
-        // paths/defines, user custom args, document. Custom args stay later so users
-        // can override or supplement project context.
-        defineArgs: this.getProjectContext(doc).defineArgs,
+        includePaths: this.getConfiguredIncludePaths(doc),
         customArguments: this.config.arguments,
         documentPath: paths.docUri,
       })
@@ -270,21 +229,6 @@ export default class SlangLinter extends BaseLinter {
     this.logger.info("Executing", { command: commandInfo.command, args, cwd: paths.cwd });
 
     await this.runSlang(commandInfo.command, args, paths.cwd, paths.docUri, doc, run);
-  }
-
-  private async convertCompileUnitPaths(
-    paths: string[],
-    wslCommand: string,
-    run: LintRunHandle
-  ): Promise<string[]> {
-    if (!isWindows || !this.useWSL) {
-      return isWindows ? paths.map((inputPath) => inputPath.replace(/\\/g, '/')) : paths;
-    }
-    const conversionOptions: WslPathConversionOptions = {
-      cancellationToken: run.cancellationToken,
-      wslCommand,
-    };
-    return Promise.all(paths.map((inputPath) => convertToWslPath(inputPath, conversionOptions)));
   }
 
   private async getRunPaths(
@@ -363,50 +307,4 @@ export default class SlangLinter extends BaseLinter {
     }
   }
 
-  private async runSlangCompileUnit(
-    command: string,
-    args: string[],
-    cwd: string,
-    ownerDocumentPath: string,
-    doc: vscode.TextDocument,
-    run: LintRunHandle
-  ): Promise<void> {
-    try {
-      const result = await runTool({
-        command,
-        args,
-        cwd,
-        collectStdout: true,
-        collectStderr: true,
-        cancellationToken: run.cancellationToken,
-      });
-      if (!run.isCurrent()) {
-        return;
-      }
-      const diagnosticsByFile = parseSlangDiagnosticsByFile({
-        stderr: result.stderr,
-        documentPath: ownerDocumentPath,
-        isWindows,
-        useWSL: this.useWSL,
-        cwd,
-      });
-      const diagnosticsByUri: DiagnosticMap = new Map();
-      diagnosticsByFile.forEach((diagnostics, fileName) => {
-        const uri = vscode.Uri.file(fileName);
-        diagnosticsByUri.set(uri.toString(), { uri, diagnostics });
-      });
-      this.logger.info`${diagnosticsByUri.size} files with errors/warnings returned`;
-      this.publishDiagnosticsIfCurrent(doc, run, diagnosticsByUri);
-    } catch (err) {
-      if (err instanceof ToolRunError && err.reason === 'cancelled') {
-        return;
-      }
-      if (err instanceof ToolRunError) {
-        this.logger.error`slang failed: ${err.message}`;
-      } else {
-        this.logger.error`slang exception: ${err}`;
-      }
-      this.publishDocumentDiagnosticsIfCurrent(doc, run, []);
-    }
-  }
 }
