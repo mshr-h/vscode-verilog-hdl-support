@@ -78,7 +78,7 @@ suite('SlangServerApi', () => {
     });
 
     assert.ok(location);
-    assert.strictEqual(location.uri.fsPath, path.join(workspaceRoot, 'rtl', 'top.sv'));
+    assertFsPathEqual(location.uri.fsPath, path.join(workspaceRoot, 'rtl', 'top.sv'));
     assert.strictEqual(location.range.start.line, 1);
     assert.strictEqual(location.range.end.character, 4);
   });
@@ -93,7 +93,7 @@ suite('SlangServerApi', () => {
     });
 
     assert.ok(location);
-    assert.strictEqual(location.uri.fsPath, path.join(workspaceRoot, 'rtl', 'top.sv'));
+    assertFsPathEqual(location.uri.fsPath, path.join(workspaceRoot, 'rtl', 'top.sv'));
   });
 
   test('does not treat host absolute paths under tmp as workspace-relative WASI paths', async () => {
@@ -116,7 +116,7 @@ suite('SlangServerApi', () => {
 
     const files = await api.getFilesContainingModule('top');
 
-    assert.deepStrictEqual(files, [
+    assertFsPathsEqual(files, [
       path.join(workspaceRoot, 'rtl', 'top.sv'),
       path.join(workspaceRoot, 'rtl', 'child.sv'),
     ]);
@@ -264,4 +264,17 @@ function createApi(
     index: 0,
   };
   return new SlangServerApi(manager as never, () => workspaceFolder);
+}
+
+function assertFsPathEqual(actual: string, expected: string): void {
+  assert.strictEqual(normalizeFsPath(actual), normalizeFsPath(expected));
+}
+
+function assertFsPathsEqual(actual: string[], expected: string[]): void {
+  assert.deepStrictEqual(actual.map(normalizeFsPath), expected.map(normalizeFsPath));
+}
+
+function normalizeFsPath(value: string): string {
+  const normalized = path.normalize(value);
+  return process.platform === 'win32' ? normalized.toLowerCase() : normalized;
 }
