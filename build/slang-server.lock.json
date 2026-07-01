@@ -1,0 +1,18 @@
+{
+  "slangServerRepo": "hudson-trading/slang-server",
+  "slangServerUrl": "https://github.com/hudson-trading/slang-server.git",
+  "slangServerCommit": "f7465a87bff05460d6639f476312c755d7004a6f",
+  "slangCommit": "32df78162671a501d2b3dee2fec413ab0c53db01",
+  "wasiSdkVersion": "25.0",
+  "wasiSdkRelease": "wasi-sdk-25",
+  "wasiSdkUrl": "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-25/wasi-sdk-25.0-x86_64-linux.tar.gz",
+  "wasiSdkUrls": {
+    "linux-x64": "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-25/wasi-sdk-25.0-x86_64-linux.tar.gz",
+    "darwin-x64": "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-25/wasi-sdk-25.0-x86_64-macos.tar.gz",
+    "darwin-arm64": "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-25/wasi-sdk-25.0-arm64-macos.tar.gz"
+  },
+  "buildType": "Release",
+  "cmakeGenerator": "Ninja",
+  "wasmSizeLimitMb": 100,
+  "wasmSizeLimitBytes": 104857600
+}

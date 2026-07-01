@@ -1,6 +1,6 @@
 # HDL support for VS Code <img src="images/icon.png" alt="HDL support for VS Code icon" width="56" style="vertical-align: middle;" />
 
-HDL support for VS Code with syntax highlighting, snippets, linting, formatting, project-aware navigation, waveform viewing, and language-server integration.
+HDL support for VS Code with syntax highlighting, snippets, linting, formatting, slang-server-powered SystemVerilog intelligence, waveform viewing, and selected language-server integration for non-SystemVerilog languages.
 
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/10949/badge)](https://www.bestpractices.dev/projects/10949)
 [Ask DeepWiki](https://deepwiki.com/mshr-h/vscode-verilog-hdl-support)
@@ -13,9 +13,21 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 
 ## Quick Start
 
-Syntax highlighting, snippets, basic editor integration, and waveform opening work immediately after installation.
+Syntax highlighting, snippets, basic editor integration, inactive preprocessor highlighting, and waveform opening work immediately after installation.
 
-Linting is disabled by default. Pick a linter after installing the external tool:
+SystemVerilog language intelligence is provided by `slang-server`. Configure a native executable when your build does not include bundled WASM:
+
+```json
+{
+    "verilog.slangServer.enabled": true,
+    "verilog.slangServer.runtime": "native",
+    "verilog.slangServer.path": "/path/to/slang-server"
+}
+```
+
+Use **Verilog: Configure Slang Project** to create a workspace `.slang/server.json` from a filelist. slang-server owns project indexing, builds, top level, diagnostics, navigation, completion, hover, references, rename, symbols, hierarchy, and HDL Explorer data.
+
+Linting is separate from slang-server LSP support and is disabled by default. Pick a file-mode linter after installing the external tool:
 
 ```json
 {
@@ -23,106 +35,182 @@ Linting is disabled by default. Pick a linter after installing the external tool
 }
 ```
 
-Project-aware Verilog/SystemVerilog features are also disabled by default. Enable them when you want cross-file HDL intelligence, preferably with explicit filelists in large workspaces:
-
-```json
-{
-    "verilog.project.enabled": true,
-    "verilog.project.filelists": ["rtl/files.f"],
-    "verilog.project.includeDirs": ["rtl/include"],
-    "verilog.project.defines": {
-        "SIMULATION": true,
-        "DATA_WIDTH": 32
-    },
-    "verilog.project.topModules": ["top"]
-}
-```
-
-Use **Verilog: Doctor** from the command palette to inspect external tool paths, enabled language servers, formatter setup, linter configuration, WSL setup, include paths, and project configuration.
-
-To try the project-aware features together, open the [HDL Feature Showcase](examples/hdl-feature-showcase/README.md). It walks through project-aware navigation, HDL Explorer hierarchy, semantic diagnostics, compile-unit linting, and inactive preprocessor regions with a small multi-target SystemVerilog project.
+Use **Verilog: Doctor** from the command palette to inspect slang-server runtime status, `.slang/server.json`, external tool paths, formatter setup, linter configuration, and retained Tcl/VHDL language-server setup.
 
 ## Features
 
 - Syntax highlighting and language modes for HDL, constraint, script, filelist, and waveform files.
-- Inactive Verilog/SystemVerilog preprocessor region highlighting.
+- SystemVerilog and Verilog intelligence through `slang-server` LSP.
+- `.slang/server.json` project configuration creation, opening, validation, and Doctor reporting.
+- HDL Explorer backed by slang-server commands for modules, scopes, hierarchy, build file, and top-level actions.
+- Inactive Verilog/SystemVerilog preprocessor region highlighting from explicitly configured defines.
 - VCD waveform viewer integration with embedded [Fliplot](https://github.com/raczben/fliplot) and optional [Vaporview](https://marketplace.visualstudio.com/items?itemName=lramseyer.vaporview).
-- Project-aware Verilog/SystemVerilog model from filelists, project settings, or workspace discovery.
-- HDL Explorer with project summaries, compile units, include directories, defines, indexed modules/packages, and best-effort hierarchy.
-- Lightweight semantic diagnostics for unresolved modules/includes, unknown named ports/parameters, and optional unresolved macros.
-- Linting support for Icarus Verilog, ModelSim, Verilator, Vivado `xvlog`, Slang, and Verible Verilog Lint.
-- Optional compile-unit linting for Slang, Verilator, and Icarus Verilog.
+- File-mode linting support for Icarus Verilog, ModelSim, Verilator, Vivado `xvlog`, Slang, and Verible Verilog Lint.
 - Formatting support from `verilog-format`, `iStyle`, and `verible-verilog-format`.
-- Project-aware HDL editing: go-to-definition, Find References, Rename Symbol, hover, workspace symbols, completion, module instantiation, and code actions.
-- Ctags-backed fallback features for autocomplete, document symbols, hover, go-to-definition, peek definition, and module instantiation.
-- Optional language-server integration for Verilog/SystemVerilog, VHDL, Tcl, SDC, XDC, and UPF.
+- Optional language-server integration for VHDL, Tcl, SDC, XDC, and UPF.
 
 ## Supported Languages and File Types
 
 | Language / file type | Extensions / usage | Notes |
 | --- | --- | --- |
-| Verilog-HDL | `.v`, `.vh`, `.vl` | Syntax highlighting, snippets, formatting, linting, Ctags fallback, and optional project-aware features |
-| SystemVerilog | `.sv`, `.svh`, `.SV` | Syntax highlighting, snippets, formatting, linting, Ctags fallback, and optional project-aware features |
+| Verilog-HDL | `.v`, `.vh`, `.vl` | Syntax highlighting, snippets, formatting, linting, and slang-server intelligence |
+| SystemVerilog | `.sv`, `.svh`, `.SV` | Syntax highlighting, snippets, formatting, linting, and slang-server intelligence |
 | Verilog-AMS | `.vams`, `.va` | Syntax highlighting and Verilog snippets |
-| VHDL | `.vhd`, `.vhdl`, `.vho` | Syntax highlighting and optional language-server support |
+| VHDL | `.vhd`, `.vhdl`, `.vho` | Syntax highlighting and optional `vhdl_ls` support |
 | UCF constraints | `.ucf` | Syntax highlighting |
 | SDC constraints | `.sdc` | Syntax highlighting and optional `tclsp` support |
 | XDC constraints | `.xdc` | Syntax highlighting and optional `tclsp` support |
 | Tcl | `.tcl`, `.tm`, `.tk` | Syntax highlighting and optional `tclsp` support |
 | UPF | `.upf` | Tcl-based syntax highlighting and optional `tclsp` support |
-| Verilog filelists | `.f` | Filelist language mode used by project indexing |
+| Verilog filelists | `.f` | Filelist language mode and Slang project config input |
 | VCD waveform dumps | `.vcd` | Open with **Verilog: Open Waveform** |
 | Markdown fenced code blocks | `verilog` / `systemverilog` | Embedded highlighting in Markdown |
 
-## Usage Instructions
+## Commands
 
-### Commands
+- **Verilog: Restart slang-server**
 
-- **Verilog: Rerun lint tool**
+    Restart the managed slang-server language client.
 
-    Choose a lint tool from the list and run it manually. Useful if the code was changed by an external script or version control system.
+- **Verilog: Show slang-server Output**
 
-- **Verilog: Doctor**
+    Open the `Verilog slang-server` output channel.
 
-    Diagnose the configured external tools and write a report to the `Verilog Doctor` output channel. It checks Ctags, the selected linter, formatters, WSL setup, enabled language servers, include paths, and config files without running linting or formatting on user files.
+- **Verilog: Show slang-server Status**
 
-- **Verilog: Instantiate Module**
+    Show the current slang-server runtime, state, and startup error if one exists.
 
-    Choose a module present in your workspace to instantiate it in the current file. When the project index has modules and `verilog.instantiate.useProjectIndex` is enabled, the project index is used before falling back to Ctags/file picking.
+- **Verilog: Select slang-server Runtime**
 
-- **Verilog: Reload Project**
+    Switch between `auto`, bundled WASM, and a native `slang-server` executable. Native mode prompts for an executable path.
 
-    Reload the project-aware HDL model from configured filelists, project settings, or workspace discovery.
+- **Verilog: Configure Slang Project**
 
-- **Verilog: Select Active HDL Target**
+    Search the workspace for common filelists and generate `.slang/server.json`.
 
-    Select the active project target / compile unit when multiple targets are available.
+- **Verilog: Open Slang Project Config**
 
-- **Verilog: Show Project Status**
+    Open the workspace `.slang/server.json`, or offer to create one when it is missing.
 
-    Write the current project snapshot, file context, and project diagnostics summary to the output channel.
+- **Verilog: Validate Slang Project Config**
 
-- **Verilog: Show Project Modules**
-
-    Show indexed project modules in a quick pick.
+    Validate that the workspace `.slang/server.json` is valid JSON.
 
 - **Verilog: Refresh HDL Explorer**
 
-    Refresh the HDL Explorer tree view.
+    Refresh the slang-backed HDL Explorer tree view.
 
-- **Verilog: Refresh Hierarchy**
+- **Verilog: Set slang-server Build File**
 
-    Rebuild the best-effort module hierarchy used by HDL Explorer.
+    Pick a filelist and send `slang.setBuildFile` to slang-server.
+
+- **Verilog: Set slang-server Top Level**
+
+    Send `slang.setTopLevel` using the selected Explorer module or active HDL editor path.
+
+- **Verilog: Instantiate Module**
+
+    Select a module from slang-server and insert the instantiation snippet returned by LSP completion.
+
+- **Verilog: Rerun lint tool**
+
+    Choose a lint tool from the list and run it manually on the active file.
+
+- **Verilog: Doctor**
+
+    Diagnose slang-server, Slang project config, retained language servers, linter, and formatter setup without modifying HDL files.
 
 - **Verilog: Open Waveform**
 
-    Open a VCD waveform file with the configured waveform viewer. By default, this command uses Vaporview when the `lramseyer.vaporview` extension is installed and falls back to the embedded Fliplot viewer otherwise. Configure waveform viewer behavior under `verilog.waveform`.
+    Open a VCD waveform file with the configured waveform viewer. By default, this command uses Vaporview when the `lramseyer.vaporview` extension is installed and falls back to the embedded Fliplot viewer otherwise.
 
 - **Verilog: Open Fliplot Waveform Viewer**
 
     Open the embedded Fliplot waveform viewer and load a VCD file.
 
-### Linting
+## Using slang-server
+
+The extension uses slang-server as the only project-aware Verilog/SystemVerilog intelligence engine. The previous TypeScript-side project index, hierarchy inference, fallback navigation, and module-instantiation scanner are no longer active; module instantiation snippets come from slang-server LSP completion.
+
+Runtime settings:
+
+```json
+{
+    "verilog.slangServer.enabled": true,
+    "verilog.slangServer.runtime": "auto",
+    "verilog.slangServer.path": "",
+    "verilog.slangServer.args": "",
+    "verilog.slangServer.trace.server": "off",
+    "verilog.slangServer.wasm.memoryLimitMb": 2048
+}
+```
+
+Set `verilog.slangServer.runtime` to `native` and `verilog.slangServer.path` to a native `slang-server` executable when native mode is desired. `auto` selects native only when a path is configured; builds that include a bundled WASM artifact can use bundled WASM without a native install.
+
+The status bar shows the active state as `slang-server: WASM`, `slang-server: native`, `slang-server: stopped`, or `slang-server: error`. Click it for quick actions: restart, show output, open config, select runtime, or run Doctor.
+
+### Rebuilding bundled slang-server.wasm
+
+Maintainers can rebuild the bundled WASM artifact on macOS or Linux:
+
+```sh
+npm run build:slang-wasm
+npm run verify:wasm-bundle
+```
+
+The build is pinned by `build/slang-server.lock.json`. The script checks out the locked `hudson-trading/slang-server` commit, verifies the locked `external/slang` submodule commit, uses WASI SDK 25.0, builds with CMake/Ninja, and writes:
+
+- `resources/wasm/slang-server.wasm`
+- `resources/wasm/slang-server.meta.json`
+- `resources/wasm/licenses/*`
+
+`slang-server.wasm` and `slang-server.meta.json` are generated release artifacts and are not tracked in Git. The lock file, build scripts, and license notices are tracked; CI builds and uploads the artifact for packaging.
+
+Set `WASI_SDK_PATH` to use an existing WASI SDK install; the version must match the lock file. GitHub Actions builds the same artifact on Ubuntu and uploads it as `slang-server-wasm`. The workflow does not commit the binary automatically.
+
+The production bundled runtime uses the Microsoft VS Code WASM/WASI language-server path through `@vscode/wasm-wasi` and `@vscode/wasm-wasi-lsp`. The extension includes `ms-vscode.wasm-wasi-core` in its extension pack so the WASM WASI Core provider is installed with the extension without blocking activation. Maintainers can temporarily force the legacy Node helper with `VERILOGHDL_SLANG_WASM_RUNTIME=node` when debugging runtime differences.
+
+Before publishing a VSIX, run:
+
+```sh
+npm run package
+npm run verify:vsix -- veriloghdl-*.vsix
+```
+
+`npm run package` fails if the bundled WASM artifact, metadata, or license notices are missing.
+
+## Slang Project Configuration
+
+slang-server reads project configuration from:
+
+- workspace `.slang/server.json`
+- user `~/.slang/server.json`
+- workspace `.slang/local/server.json`
+
+A typical workspace config is:
+
+```json
+{
+  "flags": "-f rtl/files.f",
+  "index": [
+    {
+      "dirs": ["rtl", "tb"],
+      "excludeDirs": ["build", "sim", "node_modules"]
+    }
+  ],
+  "build": "rtl/files.f"
+}
+```
+
+Use `flags` for normal slang command-line flags, `index` for directories slang-server should index, and `build`, `buildPattern`, or `builds` when your workspace has one or more build files. **Verilog: Configure Slang Project** creates a starter config from an existing filelist and opens it for review.
+
+## HDL Explorer
+
+The **HDL Explorer** view appears in VS Code's Explorer sidebar when `verilog.hdlExplorer.enabled` is enabled. It is powered by slang-server custom commands, so modules and hierarchy require a running slang-server and a build file or top level known to slang-server.
+
+The Explorer shows slang-server status, Slang config summary, modules, and hierarchy. Build/top actions are sent to slang-server; missing data is shown as an unavailable state rather than falling back to TypeScript-side parsing.
+
+## Linting
 
 All linters expect the executable binary (`iverilog`, `verilator`, and so on) to be present in the `PATH` environment variable, unless otherwise specified.
 
@@ -132,90 +220,17 @@ All linters expect the executable binary (`iverilog`, `verilator`, and so on) to
 }
 ```
 
-On Windows, Vivado `xvlog` can be discovered when it is provided as `xvlog.bat` or `xvlog.cmd` on `PATH` or under `verilog.linting.path`.
+Automatic linting runs for Verilog/SystemVerilog files when they are opened or saved and a linter other than `none` is configured. Use `verilog.linting.runOnOpen` and `verilog.linting.runOnSave` to control these triggers independently. Linting is file-mode only; project-wide semantic diagnostics come from slang-server.
 
-Set `verilog.linting.linter` to `none` to disable automatic linting without warnings. Automatic linting runs for Verilog/SystemVerilog files when they are opened or saved and a linter other than `none` is configured. Use `verilog.linting.runOnOpen` and `verilog.linting.runOnSave` to control these triggers independently. For example, users of `xvlog` can disable lint-on-open to avoid Vivado-generated workspace artifacts while keeping lint-on-save or manual linting enabled.
+While using ``include` directives, the path to included files should be relative to the workspace directory unless `runAtFileLocation` is enabled for the selected linter.
 
-While using `` `include`` directives, the path to the files should be relative to the workspace directory, unless `runAtFileLocation` is enabled (not supported by all linters).
+## Inactive Preprocessor Regions
 
-### Project-Aware HDL Features
-
-The extension can build a lightweight project model for Verilog/SystemVerilog workspaces when `verilog.project.enabled` is enabled. Project indexing is disabled by default to avoid unexpected overhead in very large workspaces. Users who only need formatting or syntax highlighting can leave it disabled.
-
-Configure filelists with `verilog.project.filelists`, or leave that setting empty to let the extension discover `*.v`, `*.vh`, `*.sv`, and `*.svh` files in the workspace. Project-level include directories and defines can be configured with `verilog.project.includeDirs` and `verilog.project.defines`.
-
-```json
-{
-    "verilog.project.enabled": true,
-    "verilog.project.filelists": ["rtl/files.f"],
-    "verilog.project.includeDirs": ["rtl/include"],
-    "verilog.project.defines": {
-        "SIMULATION": true,
-        "DATA_WIDTH": 32
-    },
-    "verilog.project.topModules": ["top"]
-}
-```
-
-The project model powers cross-file module lookup, include resolution, workspace symbols, hover, completion, module instantiation, HDL Explorer, semantic diagnostics, and compile-unit linting. Existing Ctags behavior remains available as a fallback when the project index has no answer or the project model is disabled.
-
-For a guided multi-target filelist example, see the [HDL Feature Showcase](examples/hdl-feature-showcase/README.md).
-
-Large workspaces should either keep `"verilog.project.enabled": false`, configure explicit `verilog.project.filelists`, narrow indexing with `verilog.project.exclude`, or raise `verilog.project.maxAutoDiscoveredFiles` after confirming automatic discovery is acceptable. Automatic discovery is skipped when more files than `verilog.project.maxAutoDiscoveredFiles` are found.
-
-Project diagnostics with source locations are published to VS Code Problems; diagnostics without a precise location remain visible in Project Status, Doctor, and HDL Explorer. When multiple compile units exist, `verilog.project.activeTarget` can match either a compile unit id or name; if it is empty, a single compile unit is selected automatically.
-
-Use **Verilog: Reload Project**, **Verilog: Select Active HDL Target**, **Verilog: Show Project Status**, and **Verilog: Show Project Modules** to inspect or refresh the current project model.
-
-### HDL Explorer and Hierarchy
-
-The **HDL Explorer** view appears in VS Code's Explorer sidebar when `verilog.hdlExplorer.enabled` is enabled. It shows the active project target, compile units, source files, include directories, defines, indexed modules/packages, a best-effort module hierarchy, and unresolved instances when enabled. Explorer context menus provide common project actions such as selecting the active target, opening HDL files or declarations, instantiating modules, filtering hierarchy roots, finding references, searching unresolved modules, revealing files or include directories in the OS, and copying paths or defines.
-
-Hierarchy detection is intentionally lightweight and does not perform full SystemVerilog elaboration. Configure top modules with `verilog.project.topModules` when inference is ambiguous, and control hierarchy behavior with `verilog.hierarchy.*` settings.
-
-### Project-Aware Editing
-
-For Verilog/SystemVerilog files, the project index improves go-to-definition, Find References, Rename Symbol, hover, workspace symbol search, completions, and module instantiation. Module names can resolve across the workspace even when the file name differs from the module name, and `` `include`` paths can resolve through the active file context include directories.
-
-Completion can suggest indexed module names, macros, include paths, ports, and parameters. Named port and parameter completion can insert `.port(port)` / `.PARAM(PARAM)` snippets when `verilog.completion.autoConnectPorts` or `verilog.completion.autoConnectParameters` is enabled. Code actions can fill missing named ports or parameters in module instances when the target module is available from the project index.
-
-Go-to-definition supports modules, macros, include paths, named ports/parameters in module instances, and indexed packages, interfaces, classes, and typedefs. Find References is project/filelist-aware and best-effort. It supports modules, macros, include paths, and exact-name references for packages, interfaces, classes, and typedefs. Rename Symbol is limited to project-indexed module names and source-defined macros.
-
-These features do not perform full SystemVerilog lexical scope resolution.
-
-### Semantic Diagnostics
-
-Lightweight project-aware semantic diagnostics are enabled with `verilog.semanticDiagnostics.enabled`. They can report unresolved module instantiations, unknown named ports, unknown named parameter overrides, unresolved includes, and optionally unresolved macros.
-
-```json
-{
-    "verilog.semanticDiagnostics.enabled": true,
-    "verilog.semanticDiagnostics.unresolvedModules.enabled": true,
-    "verilog.semanticDiagnostics.unknownPorts.enabled": true,
-    "verilog.semanticDiagnostics.unknownParameters.enabled": true,
-    "verilog.semanticDiagnostics.unresolvedIncludes.enabled": true,
-    "verilog.semanticDiagnostics.unresolvedMacros.enabled": false
-}
-```
-
-Semantic diagnostics use the project index and are intentionally lightweight. Use `verilog.semanticDiagnostics.maxFiles` to limit how many project files are scanned.
-
-### Compile-Unit Linting
-
-File linting remains the default. To lint the active file's project compile unit, set `verilog.linting.mode` to `compileUnit`. Compile-unit mode is supported for Slang, Verilator, and Icarus Verilog; Verible, Xvlog, and ModelSim fall back to file-mode linting with a warning.
-
-Compile-unit linting uses the active file's preferred project context, ordered compile-unit source files, include directories, defines, and existing custom linter arguments. Large automatic runs are guarded by `verilog.linting.compileUnit.maxFiles` and `verilog.linting.compileUnit.warnBeforeLargeRun`.
-
-Set `verilog.linting.useProjectContext` to pass active project include directories and preprocessor defines to supported lint tools while staying in file linting mode.
-
-### Inactive Preprocessor Regions
-
-Inactive Verilog/SystemVerilog preprocessor branches controlled by `` `ifdef``, `` `ifndef``, `` `elsif``, `` `else``, and `` `endif`` are highlighted in the editor. The lightweight scanner uses macros defined in the current document plus any workspace-wide macros configured in `verilog.preprocessor.defines`. When `verilog.preprocessor.useProjectDefines` is enabled, project defines from the active file context are merged in as well.
+Inactive Verilog/SystemVerilog preprocessor branches controlled by ``ifdef`, ``ifndef`, ``elsif`, ``else`, and ``endif` are highlighted in the editor. The decoration helper uses macros defined in the current document plus workspace-wide macros configured in `verilog.preprocessor.defines`.
 
 ```json
 {
     "verilog.preprocessor.defines": ["SIMULATION", "USE_VENDOR_IP"],
-    "verilog.preprocessor.useProjectDefines": true,
     "verilog.preprocessor.inactiveCode.enabled": true,
     "verilog.preprocessor.inactiveCode.opacity": 0.45,
     "verilog.preprocessor.inactiveCode.foregroundColor": "",
@@ -223,61 +238,16 @@ Inactive Verilog/SystemVerilog preprocessor branches controlled by `` `ifdef``, 
 }
 ```
 
-Leave `foregroundColor` or `backgroundColor` empty to use the theme/default styling. This feature is a lightweight editor aid and does not perform full preprocessing.
+Leave `foregroundColor` or `backgroundColor` empty to use the theme/default styling. This feature is a lightweight editor aid and does not replace slang-server preprocessing or semantic analysis.
 
-### Ctags Integration
+## Language Servers
 
-This extension uses tags created with Ctags to provide many fallback HDL editing features. It is recommended to use [Universal Ctags](https://github.com/universal-ctags/ctags), because it supports SystemVerilog better than Exuberant Ctags and older versions. The tags are stored in memory and not as separate files.
+slang-server owns Verilog/SystemVerilog intelligence. The retained auxiliary language-server manager is for non-Verilog languages:
 
-Currently the integrated Ctags feature supports only tags in the currently opened file, not tags in other files. Project-aware features can provide workspace-wide HDL lookup when the project index has enough information. Enable this integration with the `verilog.ctags.enabled` setting.
-
-However, you can use other independent Ctags extensions to find definitions from any file.
-
-For example [Ctags Companion](https://github.com/gediminasz/ctags-companion) works well with this extension by adding the following settings in `.vscode/settings.json` in your workspace.
-
-```json
-{
-    "ctags-companion.command": "ctags -R --fields=+nKz --langmap=SystemVerilog:+.v -R rtl /opt/uvm-1.2/src"
-}
-```
-
-It searches for definitions not only in the workspace, but also in files outside the workspace (for example, `/opt/uvm-1.2/src` in the settings above). It also supports the `readtags` command included in Universal Ctags, allowing for fast searches from large workspaces.
-
-#### Installation of Universal Ctags
-
-- Windows - Daily builds are available at [ctags-win32](https://github.com/universal-ctags/ctags-win32)
-- Linux - Installation instructions are [here](https://github.com/universal-ctags/ctags/blob/master/docs/autotools.rst)
-- macOS - Install through Homebrew from [here](https://github.com/universal-ctags/homebrew-universal-ctags)
-
-Add the installation path of Ctags binary in your `PATH` environment variable or mention it in the `verilog.ctags.path` setting.
-
-### Language Servers
-
-We currently support the following language servers. You can enable multiple language servers at the same time. If you encounter unexpected language-server behavior, deleting the related `verilog.languageServer.*` configuration may help.
-
-| Language Server                                                | Document languages |
-| -------------------------------------------------------------- | ------------------ |
-| [svls](https://github.com/dalance/svls)                        | SystemVerilog |
-| [veridian](https://github.com/vivekmalneedi/veridian)          | SystemVerilog |
-| [HDL Checker](https://github.com/suoto/hdl_checker)            | Verilog-HDL, SystemVerilog, VHDL |
-| [verible-verilog-ls](https://github.com/chipsalliance/verible) | Verilog-HDL, SystemVerilog |
-| [vhdl_ls](https://github.com/VHDL-LS/rust_hdl)                 | VHDL |
-| [tclsp](https://github.com/nmoroze/tclint)                     | Tcl, SDC, XDC, UPF |
-
-Enable only the language servers you need. For example:
-
-```json
-{
-    "verilog.languageServer.veribleVerilogLs.enabled": true,
-    "verilog.languageServer.tclsp.enabled": true
-}
-```
-
-Install [svls](https://github.com/dalance/svls) via `cargo`:
-
-```sh
-cargo install svls
-```
+| Language Server | Document languages |
+| --- | --- |
+| [vhdl_ls](https://github.com/VHDL-LS/rust_hdl) | VHDL |
+| [tclsp](https://github.com/nmoroze/tclint) | Tcl, SDC, XDC, UPF |
 
 Install [vhdl_ls](https://github.com/VHDL-LS/rust_hdl) via `cargo`:
 
@@ -285,13 +255,13 @@ Install [vhdl_ls](https://github.com/VHDL-LS/rust_hdl) via `cargo`:
 cargo install vhdl_ls
 ```
 
-Tcl support is provided by [tclsp](https://github.com/nmoroze/tclint) for Tcl/SDC/XDC/UPF files. Configure it under `verilog.languageServer.tclsp` and install `tclint` (provides the `tclsp` binary). Recommended install via `uv`:
+Tcl support is provided by [tclsp](https://github.com/nmoroze/tclint). Configure it under `verilog.languageServer.tclsp` and install `tclint`, which provides the `tclsp` binary:
 
 ```sh
 uv tool install tclint
 ```
 
-### Formatting
+## Formatting
 
 We currently support document formatting for Verilog-HDL and SystemVerilog files with the following formatters.
 
@@ -305,12 +275,21 @@ You can format the current file by typing `Ctrl-Shift-p`, then selecting `Format
 
 The `verilog.formatting.verilogFormat.settings` path supports `${env:VAR}` and `~` expansion, so values such as `${env:HOME}/.verilog-format.properties` and `~/.verilog-format.properties` can be used.
 
-### Limitations
+## Troubleshooting slang-server
 
-- Project-aware features are lightweight and do not perform full SystemVerilog elaboration or full lexical scope resolution.
-- Project indexing is opt-in and may be skipped when automatic discovery exceeds `verilog.project.maxAutoDiscoveredFiles`.
-- Compile-unit linting is supported by Slang, Verilator, and Icarus Verilog. Other linters use file-mode linting.
-- Ctags integration indexes the currently opened file and is used as a fallback for several editor features.
+- **WASM startup failure**: run **Verilog: Doctor** and **Verilog: Show slang-server Output**. Missing `resources/wasm/slang-server.wasm`, VS Code Web, virtual workspaces, or non-file workspace folders prevent bundled WASM startup. If the output shows `bad_alloc`, increase `verilog.slangServer.wasm.memoryLimitMb` or switch to native. Use **Verilog: Select slang-server Runtime** to switch to native when needed.
+- **Native path invalid**: set `verilog.slangServer.path` to the native `slang-server` executable or choose **Verilog: Select slang-server Runtime** and pick **Native executable**.
+- **No `.slang/server.json`**: run **Verilog: Configure Slang Project**. The first SystemVerilog file opened in a workspace without config offers this action once, with a local “Don’t Show Again” option.
+- **Large project performance**: prefer a precise `.slang/server.json` with filelists and focused `index.dirs`. Switch to native runtime for performance-sensitive workspaces.
+- **Workspace path or include path issues**: verify filelist paths are relative to the workspace config, check `flags`, `build`, and `index` entries, then rerun Doctor.
+
+The extension does not send telemetry. slang-server diagnostics remain local in VS Code notifications, the status bar, Doctor, and the `Verilog slang-server` output channel.
+
+## Limitations
+
+- Verilog/SystemVerilog project-aware intelligence requires slang-server.
+- Bundled WASM startup depends on a build that includes the WASM artifact; configure native `slang-server` when it is not bundled.
+- File-mode linting remains separate from slang-server diagnostics.
 - Formatting supports whole-document formatting. Range formatting is not supported.
 
 ## [Guidelines for Contributing](./CONTRIBUTING.md)
@@ -320,7 +299,7 @@ The `verilog.formatting.verilogFormat.settings` path supports `${env:VAR}` and `
 ### Launch in Debug Mode
 
 1. Install dependencies with `npm install`.
-2. Open the repository in VS Code and start the default build task (`watch`) or simply press `F5`—the `Launch Extension` configuration in [.vscode/launch.json](.vscode/launch.json) will run the build task automatically.
+2. Open the repository in VS Code and start the default build task (`watch`) or simply press `F5`—the `Launch Extension` configuration in [.vscode/launch.json](.vscode/launch.json) will install `ms-vscode.wasm-wasi-core` into `.vscode-dev/extensions` and run the build task automatically.
 3. In the Run and Debug view, pick **Launch Extension** and start debugging. VS Code will open an Extension Development Host pointing at the bundled `language_examples` workspace so you can try the features immediately.
 4. Set breakpoints in the `src` files; the compiled output in `out` is mapped via sourcemaps so the breakpoints hit your TypeScript sources.
 

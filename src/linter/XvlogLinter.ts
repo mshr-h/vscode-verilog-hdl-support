@@ -2,7 +2,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import BaseLinter from './BaseLinter';
-import type { ProjectService } from '../project/ProjectService';
 import { END_OF_LINE } from '../constants';
 import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from '../utils/commandLine';
@@ -69,10 +68,9 @@ export function parseXvlogDiagnostics(stdout: string): vscode.Diagnostic[] {
 export default class XvlogLinter extends BaseLinter {
   constructor(
     diagnosticManager: LinterDiagnosticManager,
-    runManager: LintRunManager,
-    projectService?: ProjectService
+    runManager: LintRunManager
   ) {
-    super('xvlog', diagnosticManager, runManager, projectService);
+    super('xvlog', diagnosticManager, runManager);
     this.updateConfig();
   }
 
@@ -86,14 +84,12 @@ export default class XvlogLinter extends BaseLinter {
     return convertXvlogSeverity(severityString);
   }
 
-  protected async lint(doc: vscode.TextDocument, run: LintRunHandle, options: LintRunOptions): Promise<void> {
-    this.warnUnsupportedCompileUnitMode(options);
+  protected async lint(doc: vscode.TextDocument, run: LintRunHandle, _options: LintRunOptions): Promise<void> {
     const binPath: string = path.join(this.config.linterInstalledPath, 'xvlog');
 
     const args = buildXvlogArgs({
       languageId: doc.languageId,
-      includePaths: this.getConfiguredAndProjectIncludePaths(doc),
-      defineArgs: this.getProjectContext(doc).defineArgs,
+      includePaths: this.getConfiguredIncludePaths(doc),
       customArguments: this.config.arguments,
       documentPath: doc.fileName,
     });

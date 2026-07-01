@@ -1,0 +1,32 @@
+{
+  "flags": "-f filelists/rtl.f",
+  "index": [
+    {
+      "dirs": [
+        "filelists",
+        "rtl",
+        "tb"
+      ],
+      "excludeDirs": [
+        "build",
+        "sim",
+        "node_modules"
+      ]
+    }
+  ],
+  "build": "filelists/rtl.f",
+  "builds": [
+    {
+      "name": "rtl",
+      "glob": "filelists/rtl.f"
+    },
+    {
+      "name": "sim",
+      "glob": "filelists/sim.f"
+    },
+    {
+      "name": "broken",
+      "glob": "filelists/broken.f"
+    }
+  ]
+}

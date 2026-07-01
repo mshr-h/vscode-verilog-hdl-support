@@ -91,8 +91,7 @@ export default class ModelsimLinter extends BaseLinter {
     return convertModelsimSeverity(severityString);
   }
 
-  protected async lint(doc: vscode.TextDocument, run: LintRunHandle, options: LintRunOptions): Promise<void> {
-    this.warnUnsupportedCompileUnitMode(options);
+  protected async lint(doc: vscode.TextDocument, run: LintRunHandle, _options: LintRunOptions): Promise<void> {
     this.logger.info`modelsim lint requested`;
     const cwd: string = this.getWorkingDirectory(doc);
     // no change needed for systemverilog
