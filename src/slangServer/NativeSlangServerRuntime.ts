@@ -10,6 +10,7 @@ import {
 import { runTool } from '../tools/ToolRunner';
 import type { SlangServerConfig } from './SlangServerConfig';
 import type { SlangServerRuntime, SlangServerStatus, SlangServerState } from './SlangServerRuntime';
+import { toLanguageClientTrace } from './SlangServerTrace';
 
 export interface NativeSlangServerRuntimeOptions {
   outputChannel: vscode.LogOutputChannel;
@@ -77,6 +78,7 @@ export class NativeSlangServerRuntime implements SlangServerRuntime {
 
     try {
       await this.client.start();
+      await this.client.setTrace(toLanguageClientTrace(this.config.traceServer));
       this.state = 'running';
       this.startupTimeMs = Date.now() - startedAt;
       this.emitStatus();

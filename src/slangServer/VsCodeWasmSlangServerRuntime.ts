@@ -19,6 +19,7 @@ import type {
   SlangServerStatus,
   SlangServerWasmMetadata,
 } from './SlangServerRuntime';
+import { createWasmServerEnv, toLanguageClientTrace } from './SlangServerTrace';
 import { WasiFileSystemMapper } from './WasiFileSystemMapper';
 import { readWasmMetadata, type WasmRuntimePaths } from './WasmSlangServerRuntime';
 
@@ -86,10 +87,7 @@ export class VsCodeWasmSlangServerRuntime implements SlangServerRuntime {
         const wasm = await Wasm.load();
         const processOptions: ProcessOptions = {
           args: this.config.args,
-          env: {
-            SLANG_SERVER_TESTS: '1',
-            SLANG_SERVER_WASI_SKIP_STARTUP_INDEXING: '1',
-          },
+          env: createWasmServerEnv(this.config.traceServer),
           stdio: createStdioOptions(),
           mountPoints: [
             { kind: 'vscodeFileSystem', uri: workspaceRoot, mountPoint: '/workspace' },
@@ -145,6 +143,7 @@ export class VsCodeWasmSlangServerRuntime implements SlangServerRuntime {
         30000,
         'Timed out waiting for slang-server WASM to respond to initialize.'
       );
+      await this.client.setTrace(toLanguageClientTrace(this.config.traceServer));
       this.state = 'running';
       this.startupTimeMs = Date.now() - startedAt;
       this.options.outputChannel.info(`slang-server WASM client started in ${this.startupTimeMs} ms.`);

@@ -18,6 +18,7 @@ import type {
   SlangServerState,
   SlangServerWasmMetadata,
 } from './SlangServerRuntime';
+import { toLanguageClientTrace } from './SlangServerTrace';
 import { WasiFileSystemMapper } from './WasiFileSystemMapper';
 
 export interface WasmRuntimePaths {
@@ -133,6 +134,7 @@ export class WasmSlangServerRuntime implements SlangServerRuntime {
 
     try {
       await this.client.start();
+      await this.client.setTrace(toLanguageClientTrace(this.config.traceServer));
       this.state = 'running';
       this.startupTimeMs = Date.now() - startedAt;
       this.emitStatus();

@@ -6,6 +6,7 @@ import * as vscode from 'vscode';
 import { selectSlangServerRuntime } from '../slangServer/SlangServerRuntimeSelector';
 import { formatSlangServerStatusBarText } from '../slangServer/SlangServerStatusBar';
 import type { SlangServerConfig } from '../slangServer/SlangServerConfig';
+import { createWasmServerEnv, toLanguageClientTrace } from '../slangServer/SlangServerTrace';
 import {
   createSlangWasmUriConverters,
   createWasmMemoryDescriptor,
@@ -14,6 +15,7 @@ import {
 import { WasmSlangServerRuntime } from '../slangServer/WasmSlangServerRuntime';
 import { WasiFileSystemMapper } from '../slangServer/WasiFileSystemMapper';
 import { getRepositoryRoot } from './pathTestUtils';
+import { Trace } from 'vscode-languageclient/node';
 
 suite('slang-server runtime UX', () => {
   test('runtime selector follows native, bundled-wasm, and auto rules', () => {
@@ -72,6 +74,26 @@ suite('slang-server runtime UX', () => {
     assert.deepStrictEqual(createWasmMemoryDescriptor(1), { initial: 16, maximum: 16, shared: true });
     assert.deepStrictEqual(createWasmMemoryDescriptor(512), { initial: 4096, maximum: 8192, shared: true });
     assert.deepStrictEqual(createWasmMemoryDescriptor(2048), { initial: 4096, maximum: 32768, shared: true });
+  });
+
+  test('slang-server trace setting maps to language client trace level', () => {
+    assert.strictEqual(toLanguageClientTrace('off'), Trace.Off);
+    assert.strictEqual(toLanguageClientTrace('messages'), Trace.Messages);
+    assert.strictEqual(toLanguageClientTrace('verbose'), Trace.Verbose);
+  });
+
+  test('VS Code WASM runtime only enables server trace env when configured', () => {
+    assert.deepStrictEqual(createWasmServerEnv('off'), {
+      SLANG_SERVER_WASI_SKIP_STARTUP_INDEXING: '1',
+    });
+    assert.deepStrictEqual(createWasmServerEnv('messages'), {
+      SLANG_SERVER_WASI_SKIP_STARTUP_INDEXING: '1',
+      SLANG_SERVER_TESTS: '1',
+    });
+    assert.deepStrictEqual(createWasmServerEnv('verbose'), {
+      SLANG_SERVER_WASI_SKIP_STARTUP_INDEXING: '1',
+      SLANG_SERVER_TESTS: '1',
+    });
   });
 
   test('VS Code WASM URI converters map workspace diagnostics back to host files', () => {
