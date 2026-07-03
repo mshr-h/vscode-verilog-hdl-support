@@ -20,7 +20,6 @@ export class SlangServerManager implements vscode.Disposable {
 
   constructor(private readonly context: vscode.ExtensionContext) {
     this.disposables.push(
-      this.outputChannel,
       this.statusEmitter,
       vscode.workspace.onDidChangeConfiguration((event) => {
         if (event.affectsConfiguration('verilog.slangServer')) {
@@ -106,6 +105,7 @@ export class SlangServerManager implements vscode.Disposable {
 
   dispose(): void {
     void this.stop();
+    // Let VS Code own OutputChannel teardown to avoid create/dispose races during extension host shutdown.
     for (const disposable of this.disposables) {
       disposable.dispose();
     }
