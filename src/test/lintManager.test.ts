@@ -268,6 +268,7 @@ suite('LintManager', function () {
 
   test('lint-on-save follows runOnSave setting', async () => {
     const previousLinter = await setConfiguredLinter('iverilog');
+    const previousRunOnOpen = await setLintConfigValue('runOnOpen', false);
     const previousRunOnSave = await setLintConfigValue('runOnSave', false);
     const lintedDocuments: vscode.TextDocument[] = [];
     const restoreGetLinter = stubConfiguredLinter({
@@ -292,6 +293,7 @@ suite('LintManager', function () {
       manager.dispose();
       restoreGetLinter();
       await restoreLintConfigValue('runOnSave', previousRunOnSave);
+      await restoreLintConfigValue('runOnOpen', previousRunOnOpen);
       await restoreConfiguredLinter(previousLinter);
     }
   });
