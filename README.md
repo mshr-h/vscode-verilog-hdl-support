@@ -13,9 +13,9 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 
 ## Quick Start
 
-Syntax highlighting, snippets, basic editor integration, inactive preprocessor highlighting, and waveform opening work immediately after installation.
+Syntax highlighting, snippets, basic editor integration, inactive preprocessor highlighting, waveform opening, and bundled WASM slang-server support work immediately after installation.
 
-SystemVerilog language intelligence is provided by `slang-server`. Configure a native executable when your build does not include bundled WASM:
+SystemVerilog language intelligence is provided by `slang-server`. By default, `auto` uses the bundled WASM runtime when no native executable path is configured. To use a native `slang-server` instead, configure the executable path:
 
 ```json
 {
@@ -145,7 +145,7 @@ Runtime settings:
 }
 ```
 
-Set `verilog.slangServer.runtime` to `native` and `verilog.slangServer.path` to a native `slang-server` executable when native mode is desired. `auto` selects native only when a path is configured; builds that include a bundled WASM artifact can use bundled WASM without a native install.
+With the default `auto` runtime, the extension starts bundled WASM slang-server when `verilog.slangServer.path` is empty. If `verilog.slangServer.path` points to a native `slang-server` executable, `auto` selects native instead. Set `verilog.slangServer.runtime` to `native` to require the native executable, or to `bundled-wasm` to require the bundled WASM runtime.
 
 The status bar shows the active state as `slang-server: WASM`, `slang-server: native`, `slang-server: stopped`, or `slang-server: error`. Click it for quick actions: restart, show output, open config, select runtime, or run Doctor.
 
@@ -288,7 +288,7 @@ The extension does not send telemetry. slang-server diagnostics remain local in 
 ## Limitations
 
 - Verilog/SystemVerilog project-aware intelligence requires slang-server.
-- Bundled WASM startup depends on a build that includes the WASM artifact; configure native `slang-server` when it is not bundled.
+- Bundled WASM startup requires VS Code Desktop, a filesystem workspace, and the packaged WASM runtime. Configure native `slang-server` if bundled WASM cannot start in your environment.
 - File-mode linting remains separate from slang-server diagnostics.
 - Formatting supports whole-document formatting. Range formatting is not supported.
 
@@ -328,7 +328,8 @@ Third-party syntax grammars and related notices are listed in [THIRD_PARTY_NOTIC
 - [chipsalliance/verible](https://github.com/chipsalliance/verible)
 - [ericsonj/verilog-format](https://github.com/ericsonj/verilog-format)
 - [thomasrussellmurphy/istyle-verilog-formatter](https://github.com/thomasrussellmurphy/istyle-verilog-formatter)
-- [slang C++ docs](https://sv-lang.com/)
+- [hudson-trading/slang-server](https://github.com/hudson-trading/slang-server)
+- [MikePopoloski/slang](https://github.com/MikePopoloski/slang)
 - [Digital-EDA/Digital-IDE: All in one vscode plugin for HDL development](https://github.com/Digital-EDA/Digital-IDE)
   - `configs/tcl.configuration.json` and `syntaxes/tcl.tmlanguage.json` are obtained from the repo.
 - [eirikpre/VSCode-SystemVerilog: SystemVerilog support in VS Code](https://github.com/eirikpre/VSCode-SystemVerilog)
