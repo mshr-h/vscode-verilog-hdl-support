@@ -29,11 +29,11 @@ export async function bootstrapLogging(): Promise<void> {
 }
 
 /**
- * Disposes logging resources and resets LogTape configuration.
+ * Resets LogTape configuration.
  */
 export async function disposeLogging(): Promise<void> {
   await reset();
-  vscodeSink?.dispose();
+  // Let VS Code own OutputChannel teardown to avoid create/dispose races during extension host shutdown.
   vscodeSink = undefined;
   configured = false;
 }

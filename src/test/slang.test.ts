@@ -7,7 +7,6 @@ import * as vscode from 'vscode';
 import which from 'which';
 import LinterDiagnosticManager from '../linter/LinterDiagnosticManager';
 import LintRunManager from '../linter/LintRunManager';
-import type { LintMode } from '../linter/LintMode';
 import SlangLinter, {
   buildSlangArgs,
   buildSlangCommand,
@@ -15,8 +14,6 @@ import SlangLinter, {
   parseSlangDiagnostics,
   parseSlangDiagnosticsByFile,
 } from '../linter/SlangLinter';
-import type { ProjectService } from '../project/ProjectService';
-import type { ProjectSnapshot } from '../project/ProjectTypes';
 
 async function waitForDiagnostics(
   collection: vscode.DiagnosticCollection,
@@ -59,18 +56,14 @@ async function withSlangConfig(
   options: {
     arguments?: string;
     includePath?: string[];
-    mode?: LintMode;
     runAtFileLocation?: boolean;
     useWSL?: boolean;
   },
   run: () => Promise<void>
 ): Promise<void> {
   const lintConfig = vscode.workspace.getConfiguration('verilog.linting');
-  const compileUnitConfig = vscode.workspace.getConfiguration('verilog.linting.compileUnit');
   const slangConfig = vscode.workspace.getConfiguration('verilog.linting.slang');
   const previousLintPath = lintConfig.get('path');
-  const previousMode = lintConfig.get('mode');
-  const previousMaxFiles = compileUnitConfig.get('maxFiles');
   const previousArgs = slangConfig.get('arguments');
   const previousInclude = slangConfig.get('includePath');
   const previousRunAtFile = slangConfig.get('runAtFileLocation');
@@ -78,8 +71,6 @@ async function withSlangConfig(
 
   try {
     await lintConfig.update('path', path.dirname(slangPath), vscode.ConfigurationTarget.Global);
-    await lintConfig.update('mode', options.mode ?? 'file', vscode.ConfigurationTarget.Global);
-    await compileUnitConfig.update('maxFiles', 10, vscode.ConfigurationTarget.Global);
     await slangConfig.update('arguments', options.arguments ?? '', vscode.ConfigurationTarget.Global);
     await slangConfig.update(
       'includePath',
@@ -96,8 +87,6 @@ async function withSlangConfig(
     await run();
   } finally {
     await lintConfig.update('path', previousLintPath, vscode.ConfigurationTarget.Global);
-    await lintConfig.update('mode', previousMode, vscode.ConfigurationTarget.Global);
-    await compileUnitConfig.update('maxFiles', previousMaxFiles, vscode.ConfigurationTarget.Global);
     await slangConfig.update('arguments', previousArgs, vscode.ConfigurationTarget.Global);
     await slangConfig.update('includePath', previousInclude, vscode.ConfigurationTarget.Global);
     await slangConfig.update('runAtFileLocation', previousRunAtFile, vscode.ConfigurationTarget.Global);
@@ -109,52 +98,6 @@ function createTempSvFile(tempRoot: string, name: string, contents: string): str
   const tempFilePath = path.join(tempRoot, name);
   fs.writeFileSync(tempFilePath, contents);
   return tempFilePath;
-}
-
-function createProjectServiceForCompileUnit(
-  workspaceRoot: vscode.Uri,
-  ownerUri: vscode.Uri,
-  childUri: vscode.Uri
-): ProjectService {
-  const snapshot: ProjectSnapshot = {
-    version: 1,
-    workspaceRoot,
-    activeTargetId: 'unit',
-    compileUnits: [{
-      id: 'unit',
-      name: 'unit',
-      root: workspaceRoot,
-      files: [
-        {
-          uri: ownerUri,
-          languageId: 'systemverilog',
-          kind: 'source',
-          order: 0,
-        },
-        {
-          uri: childUri,
-          languageId: 'systemverilog',
-          kind: 'source',
-          order: 1,
-        },
-      ],
-      includeDirs: [],
-      defines: {},
-      topModules: [],
-      source: { type: 'settings' },
-    }],
-    diagnostics: [],
-  };
-
-  return {
-    getPreferredFileContext: () => ({
-      file: ownerUri,
-      compileUnitId: 'unit',
-      includeDirs: [],
-      defines: {},
-    }),
-    getSnapshot: () => snapshot,
-  } as unknown as ProjectService;
 }
 
 suite('Slang Linter', () => {
@@ -383,47 +326,4 @@ suite('Slang Linter', () => {
     }
   });
 
-  test('publishes compile-unit diagnostics for child files with installed slang', async function () {
-    this.timeout(10000);
-    const slangPath = which.sync('slang', { nothrow: true });
-    if (!slangPath) {
-      this.skip();
-      return;
-    }
-
-    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'slang-compile-unit-test-'));
-    const ownerPath = createTempSvFile(tempRoot, 'top.sv', 'module top;\nendmodule\n');
-    const childPath = createTempSvFile(tempRoot, 'child.sv', 'module child\nendmodule\n');
-    const ownerUri = vscode.Uri.file(ownerPath);
-    const childUri = vscode.Uri.file(childPath);
-    const projectService = createProjectServiceForCompileUnit(vscode.Uri.file(tempRoot), ownerUri, childUri);
-    const diagnostics = vscode.languages.createDiagnosticCollection('slang-compile-unit-test');
-
-    try {
-      await withSlangConfig(slangPath, { mode: 'compileUnit' }, async () => {
-        const linter = new SlangLinter(
-          new LinterDiagnosticManager(diagnostics),
-          new LintRunManager(),
-          projectService
-        );
-        const document = await vscode.workspace.openTextDocument(ownerPath);
-
-        await linter.startLint(document);
-        const results = await waitForDiagnostics(diagnostics, childUri, 4000);
-
-        assert.ok(
-          results.some(
-            (diag) => diag.source === 'slang' && diag.severity === vscode.DiagnosticSeverity.Error
-          ),
-          `Expected a child-file slang diagnostic in compile-unit mode\n${formatDiagnosticsDump(
-            diagnostics,
-            childUri
-          )}`
-        );
-      });
-    } finally {
-      diagnostics.dispose();
-      fs.rmSync(tempRoot, { recursive: true, force: true });
-    }
-  });
 });

@@ -4,6 +4,7 @@
 .vscode-dev/**
 out/**
 node_modules/**
+.cache/**
 src/**
 .gitignore
 .github/**
@@ -21,3 +22,4 @@ esbuild.js
 **/.vscode-test.*
 .devcontainer/**
 examples/
+!resources/wasm/**

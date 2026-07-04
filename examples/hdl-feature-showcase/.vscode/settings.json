@@ -1,32 +1,17 @@
 {
-  "verilog.project.enabled": true,
-  "verilog.project.filelists": [
-    "filelists/rtl.f",
-    "filelists/sim.f",
-    "filelists/broken.f"
-  ],
-  "verilog.project.activeTarget": "filelist:2:broken.f",
-  "verilog.project.topModules": [
-    "soc_top",
-    "tb_soc",
-    "bad_instance_top"
-  ],
+  "verilog.slangServer.enabled": true,
+  "verilog.slangServer.runtime": "bundled-wasm",
+  "verilog.slangServer.path": "/Users/mshr/.local/bin/slang-server",
+  "verilog.slangServer.args": "",
+  "verilog.slangServer.trace.server": "off",
   "verilog.hdlExplorer.enabled": true,
-  "verilog.hierarchy.enabled": true,
-  "verilog.hierarchy.showUnresolved": true,
-  "verilog.semanticDiagnostics.enabled": true,
-  "verilog.semanticDiagnostics.unresolvedModules.enabled": true,
-  "verilog.semanticDiagnostics.unknownPorts.enabled": true,
-  "verilog.semanticDiagnostics.unknownParameters.enabled": true,
-  "verilog.semanticDiagnostics.unresolvedIncludes.enabled": true,
-  "verilog.semanticDiagnostics.unresolvedMacros.enabled": true,
-  "verilog.preprocessor.useProjectDefines": true,
+  "verilog.preprocessor.defines": [
+    "FPGA",
+    "HAS_UART"
+  ],
   "verilog.preprocessor.inactiveCode.enabled": true,
   "verilog.preprocessor.inactiveCode.opacity": 0.45,
   "verilog.preprocessor.inactiveCode.foregroundColor": "",
   "verilog.preprocessor.inactiveCode.backgroundColor": "",
-  "verilog.linting.linter": "slang",
-  "verilog.linting.mode": "compileUnit",
-  "verilog.linting.useProjectContext": true,
-  "verilog.linting.path": "/Users/mshr/.local/bin/"
+  "verilog.linting.linter": "none"
 }

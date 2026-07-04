@@ -1,105 +1,151 @@
 # HDL Feature Showcase
 
-This sample is a small SystemVerilog project for trying the extension's project-aware editing, HDL Explorer, semantic diagnostics, compile-unit linting, and inactive preprocessor region highlighting together.
+This sample is a small SystemVerilog workspace for trying the extension with
+`slang-server` as the project-aware HDL engine.
+
+The workspace is configured with `.slang/server.json`, which is the source of
+project truth for slang-server.
 
 ## What this sample demonstrates
 
-- Project-aware Go to Definition, hover, completions, and workspace symbols across packages, macros, includes, and modules.
-- HDL Explorer compile units, include directories, defines, indexed modules/packages, hierarchy roots, and unresolved instances.
-- Semantic diagnostics for unresolved modules, unknown named ports, unknown named parameters, unresolved includes, and unresolved macros.
-- Compile-unit linting using project filelist context.
-- Inactive preprocessor regions driven by active target defines.
+- `slang-server` diagnostics, Go to Definition, hover, completion, symbols, and references.
+- HDL Explorer data coming from slang-server commands.
+- Build-file and top-level selection through slang-server.
+- `.slang/server.json` validation and Doctor reporting.
+- Inactive preprocessor region highlighting from configured editor defines.
 
-## How to open the sample in VS Code
+## Workspace layout
+
+- `.slang/server.json` is the slang-server project config.
+- `filelists/rtl.f` is the default RTL build.
+- `filelists/sim.f` adds the testbench and simulation RAM model.
+- `filelists/broken.f` is intentionally incomplete for diagnostics checks.
+- `rtl/`, `tb/`, and `broken/` are indexed by slang-server.
+
+## Open the sample
 
 1. Open this folder as the workspace: `examples/hdl-feature-showcase/`.
 2. Open `rtl/soc_top.sv`.
-3. Run **Verilog: Reload Project** from the command palette.
-4. Run **Verilog: Show Project Status** and confirm `rtl.f`, `sim.f`, and `broken.f` are listed.
-5. Open the Explorer sidebar and find **HDL Explorer**. If needed, run **Verilog: Refresh HDL Explorer**.
+3. Run **Verilog: Doctor**.
+4. Confirm the report shows:
+   - slang-server is enabled.
+   - runtime is `bundled-wasm`, `native`, or `auto`.
+   - `.slang/server.json` is found and valid.
+   - build is `filelists/rtl.f`.
+5. If slang-server is not running, run **Verilog: Restart slang-server** and check
+   **Verilog: Show slang-server Output**.
 
-The sample workspace settings enable the project model, semantic diagnostics, HDL Explorer, hierarchy, inactive regions, and compile-unit linting. The configured linter is `slang`; install it separately or change `verilog.linting.linter` to another supported tool.
+## Slang project config
 
-## Project-Aware HDL Features walkthrough
+The sample config uses:
+
+```json
+{
+  "flags": "-f filelists/rtl.f",
+  "build": "filelists/rtl.f",
+  "builds": [
+    { "name": "rtl", "glob": "filelists/rtl.f" },
+    { "name": "sim", "glob": "filelists/sim.f" },
+    { "name": "broken", "glob": "filelists/broken.f" }
+  ]
+}
+```
+
+Useful commands:
+
+- **Verilog: Open Slang Project Config**
+- **Verilog: Validate Slang Project Config**
+- **Verilog: Set slang-server Build File**
+- **Verilog: Set slang-server Top Level**
+
+## Language feature walkthrough
 
 1. Open `rtl/soc_top.sv`.
-2. Use Go to Definition on the `uart_core` instance type and expect to land in `rtl/ip/uart_core.sv`.
-3. Use Go to Definition on `` `include "config.svh"`` and expect to land in `rtl/include/config.svh`.
-4. Hover over or Go to Definition on `` `DATA_WIDTH`` or `` `UART_BAUD`` and expect macro information from the include files.
-5. Go to Definition on `bus_req_t` or `bus_rsp_t` and expect to land in `rtl/pkg/soc_types_pkg.sv`.
-6. Run **Verilog: Show Project Modules** and confirm modules such as `soc_top`, `cpu_stub`, `uart_core`, `timer_core`, and `soc_ram` are indexed.
-7. In `rtl/soc_top.sv`, use completion inside named port or parameter connections. Port and parameter snippets are available when `verilog.completion.autoConnectPorts` and `verilog.completion.autoConnectParameters` are enabled.
+2. Use Go to Definition on the `uart_core` instance type and expect to land in
+   `rtl/ip/uart_core.sv`.
+3. Use Go to Definition on `` `include "config.svh"`` and expect to land in
+   `rtl/include/config.svh`.
+4. Hover over or Go to Definition on `` `DATA_WIDTH`` or `` `UART_BAUD`` and
+   expect information from slang-server.
+5. Go to Definition on `bus_req_t` or `bus_rsp_t` and expect to land in
+   `rtl/pkg/soc_types_pkg.sv`.
+6. Try completion inside named port or parameter connections.
 
-`rtl/ip/ram_wrapper.sv` contains module `soc_ram`, so resolving `soc_ram` demonstrates that the project index is semantic and not only filename-based.
+`rtl/ip/ram_wrapper.sv` contains module `soc_ram`, so resolving `soc_ram`
+demonstrates that module lookup is not filename-only.
 
-## HDL Explorer and Hierarchy walkthrough
+## HDL Explorer walkthrough
 
-1. Run **Verilog: Select Active HDL Target** and choose `rtl.f`.
-2. Run **Verilog: Refresh Hierarchy**.
-3. In **HDL Explorer**, confirm the active target, compile units, include directories, defines, indexed modules, and package entries are visible.
-4. Expand the hierarchy rooted at `soc_top`.
-5. Confirm the hierarchy includes `cpu_stub`, `bus_mux`, `uart_core`, `timer_core`, `soc_ram`, `generic_ram`, and `feature_switch`.
-6. Confirm `gpio_core` appears as unresolved where hierarchy diagnostics are shown.
-7. Switch the active target to `sim.f`, refresh, and confirm `tb_soc` is available as a top-level testbench root.
+1. Run **Verilog: Refresh HDL Explorer**.
+2. Confirm the **slang-server** section shows a running server or a clear
+   unavailable state.
+3. Confirm the **Build** section shows `.slang/server.json` and the configured
+   build summary.
+4. Expand **Modules** and look for `soc_top`, `cpu_stub`, `uart_core`,
+   `timer_core`, and `soc_ram`.
+5. Run **Verilog: Set slang-server Top Level** from `rtl/soc_top.sv`, or use the
+   module context menu in HDL Explorer.
+6. Expand **Hierarchy** and confirm slang-server returns hierarchy data.
+7. Run **Verilog: Set slang-server Build File** and select `filelists/sim.f` to
+   switch to the simulation build. Refresh HDL Explorer and look for `tb_soc`.
 
-Hierarchy detection is intentionally lightweight and does not perform full SystemVerilog elaboration.
+If a section is empty, check **Verilog: Show slang-server Output**. The extension
+does not fall back to TypeScript-side HDL parsing.
 
-## Semantic Diagnostics walkthrough
+## Diagnostics walkthrough
 
-1. Run **Verilog: Select Active HDL Target** and choose `broken.f`.
+1. Run **Verilog: Set slang-server Build File** and select `filelists/broken.f`.
 2. Open `broken/bad_instance_top.sv`.
-3. Expect diagnostics for:
+3. Expect slang-server diagnostics for intentional issues such as:
    - `.BAUD_RATE`, because `uart_core` defines parameter `BAUD`.
    - `.rx_i`, because `uart_core` defines port `rx`.
-   - `missing_accelerator`, because the module is intentionally absent.
+   - `missing_accelerator`, because that module is intentionally absent.
 4. Open `broken/diagnostics_playground.sv`.
-5. Expect diagnostics for missing include `missing_header.svh` and unresolved macro `` `MISSING_MACRO``.
-6. Open `rtl/soc_top.sv` and expect `gpio_core` to remain unresolved by design.
+5. Expect diagnostics for the missing include and missing macro if the active
+   slang-server build analyzes that file.
+6. Open `rtl/soc_top.sv` in the RTL build and note that `gpio_core` is
+   intentionally absent for hierarchy and diagnostics experiments.
 
-Unresolved macro diagnostics are enabled in `.vscode/settings.json` with `verilog.semanticDiagnostics.unresolvedMacros.enabled`.
+## Inactive preprocessor regions
 
-## Compile-Unit Linting walkthrough
+Inactive branch highlighting is a local editor decoration. It is controlled by
+`verilog.preprocessor.defines`, not by slang-server.
 
-1. Install `slang` and make sure it is available on `PATH`, or configure its path with the extension's linting settings.
-2. Open `rtl/soc_top.sv`.
-3. Run **Verilog: Select Active HDL Target** and choose `rtl.f`.
-4. Run **Verilog: Rerun lint tool**.
-5. Change `verilog.linting.mode` between `file` and `compileUnit` and compare results.
+The sample starts with:
 
-File-mode linting sees the current file in isolation and may miss filelist include directories, defines, packages, or dependent modules. Compile-unit mode passes the active file's project compile unit to supported linters, so the linter can see ordered source files, include directories, and defines from the selected filelist.
+```json
+"verilog.preprocessor.defines": ["FPGA", "HAS_UART"]
+```
 
-Compile-unit mode is supported by Slang, Verilator, and Icarus Verilog. Verible, Xvlog, and ModelSim use file-mode linting. External linters such as `slang`, `verilator`, and `iverilog` must be installed separately and available on `PATH` or configured through extension settings.
-
-## Inactive Preprocessor Regions walkthrough
+Try this:
 
 1. Open `rtl/feature_switch.sv`.
-2. Run **Verilog: Select Active HDL Target** and choose `rtl.f`.
-3. Confirm the `FPGA` branch is active and the `SIMULATION` / fallback branches are inactive.
-4. Switch the active target to `sim.f`.
-5. Confirm the `SIMULATION` branch becomes active and the `FPGA` branch becomes inactive.
-6. Open `rtl/ip/ram_wrapper.sv`.
-7. Switch between `rtl.f` and `sim.f` and observe the active RAM implementation change between `generic_ram` and `vendor_ram_model`.
+2. Confirm the `FPGA` branch is active.
+3. Change `verilog.preprocessor.defines` to `["SIMULATION"]`.
+4. Confirm the `SIMULATION` branch becomes active.
+5. Open `rtl/ip/ram_wrapper.sv` and compare the `generic_ram` and
+   `vendor_ram_model` branches by changing the configured defines.
 
-Inactive regions use project defines because `verilog.preprocessor.useProjectDefines` is enabled.
+This decoration is only a lightweight editor aid. Project semantics and
+diagnostics come from slang-server.
 
-## Expected files and expected observations
+## Optional file-mode linting
 
-| File | Intentional issue | Expected feature |
-|---|---|---|
-| `rtl/soc_top.sv` | `gpio_core` missing | unresolved hierarchy / unresolved module |
-| `broken/bad_instance_top.sv` | `.rx_i` does not exist | unknown named port |
-| `broken/bad_instance_top.sv` | `.BAUD_RATE` does not exist | unknown named parameter |
-| `broken/bad_instance_top.sv` | `missing_accelerator` missing | unresolved module |
-| `broken/diagnostics_playground.sv` | missing include | unresolved include |
-| `broken/diagnostics_playground.sv` | missing macro | unresolved macro |
-| `rtl/feature_switch.sv` | target-dependent `ifdef` branches | inactive region highlighting |
-| `rtl/ip/ram_wrapper.sv` | target-dependent RAM implementation | inactive region + hierarchy difference |
+The sample sets `verilog.linting.linter` to `none` so slang-server diagnostics
+are not mixed with external linter output.
+
+To try linting separately, install a supported linter and set
+`verilog.linting.linter` to `slang`, `verilator`, `iverilog`, or another
+supported file-mode linter.
 
 ## Troubleshooting
 
-- If the project model looks stale, run **Verilog: Reload Project** and then **Verilog: Show Project Status**.
-- If HDL Explorer does not update, run **Verilog: Refresh HDL Explorer**.
-- If hierarchy does not update after switching targets, run **Verilog: Refresh Hierarchy**.
-- If linting reports that `slang` cannot be found, install Slang or change `verilog.linting.linter` to `verilator`, `iverilog`, or `none`.
-- If unresolved macro diagnostics are too noisy in your own projects, disable `verilog.semanticDiagnostics.unresolvedMacros.enabled`.
-- If inactive regions do not change after switching targets, confirm `verilog.preprocessor.useProjectDefines` and `verilog.preprocessor.inactiveCode.enabled` are enabled.
+- If `.slang/server.json` is not detected, run **Verilog: Open Slang Project Config**.
+- If config parsing fails, run **Verilog: Validate Slang Project Config**.
+- If the server is stopped or in error state, run **Verilog: Restart slang-server**.
+- If bundled WASM fails, run **Verilog: Show slang-server Output** and
+  **Verilog: Doctor**.
+- If native mode is desired, run **Verilog: Select slang-server Runtime** and
+  choose a native `slang-server` executable.
+- If HDL Explorer does not update after build or top changes, run
+  **Verilog: Refresh HDL Explorer**.

@@ -135,7 +135,7 @@ jobs:
         run: |
           export CARGO_TARGET_DIR="$HOME/.cache/veriloghdl-cargo-install-target"
           sudo apt update
-          sudo apt install -y iverilog verilator
+          sudo apt install -y cmake ninja-build iverilog verilator
           cargo install svls
           cargo install --git https://github.com/vivekmalneedi/veridian.git
         if: runner.os == 'Linux'
@@ -145,9 +145,26 @@ jobs:
         if: runner.os == 'macOS'
       - run: npm test
         if: runner.os == 'Windows'
-      - run: npm run compile
-        if: runner.os != 'Windows'
-      - run: npx @vscode/vsce package
+      - name: Cache slang-server WASM build
+        if: runner.os == 'Linux'
+        uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8 # v6.0.0
+        with:
+          path: .cache/slang-server-wasm
+          key: ${{ runner.os }}-slang-server-wasm-${{ hashFiles('build/slang-server.lock.json', 'scripts/build-slang-server-wasm.sh', 'scripts/patch-slang-server-wasi.mjs') }}
+          restore-keys: |
+            ${{ runner.os }}-slang-server-wasm-
+      - name: Build bundled slang-server WASM
+        if: runner.os == 'Linux'
+        run: npm run build:slang-wasm
+      - name: Verify bundled slang-server WASM
+        if: runner.os == 'Linux'
+        run: npm run verify:wasm-bundle
+      - name: Package VSIX with bundled WASM
+        if: runner.os == 'Linux'
+        run: npm run package
+      - name: Verify VSIX contents
+        if: runner.os == 'Linux'
+        run: npm run verify:vsix -- veriloghdl-*.vsix
       - name: upload vsix package
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -2,17 +2,10 @@
 import * as vscode from 'vscode';
 import { type Logger } from '@logtape/logtape';
 import { getExtensionLogger } from '../logging';
-import type { ProjectService } from '../project/ProjectService';
 import { getWorkingDirectoryForDocument, resolvePathsForDocument } from '../utils/workspace';
 import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
-import {
-  getCompileUnitLintContext,
-  getLintProjectContext,
-  type CompileUnitLintContext,
-  type LintProjectContext,
-} from './ProjectLintContext';
-import { getLintRunSettings, type LintRunOptions } from './LintMode';
+import type { LintRunOptions } from './LintMode';
 
 /** Common configuration interface for linters */
 export interface LinterConfig {
@@ -28,7 +21,6 @@ export interface LinterConfig {
 
 export type LintDecision =
   | { kind: 'file' }
-  | { kind: 'compileUnit'; context: CompileUnitLintContext }
   | { kind: 'skip' };
 
 const DEFAULT_LINT_RUN_OPTIONS: LintRunOptions = { trigger: 'automatic' };
@@ -65,8 +57,7 @@ export default abstract class BaseLinter implements vscode.Disposable {
   constructor(
     name: string,
     diagnosticManager: LinterDiagnosticManager,
-    runManager: LintRunManager,
-    private readonly projectService?: ProjectService
+    runManager: LintRunManager
   ) {
     this.diagnosticManager = diagnosticManager;
     this.runManager = runManager;
@@ -123,13 +114,8 @@ export default abstract class BaseLinter implements vscode.Disposable {
     return resolvePathsForDocument(paths, doc);
   }
 
-  protected getProjectContext(doc: vscode.TextDocument): LintProjectContext {
-    return getLintProjectContext(this.projectService, doc);
-  }
-
-  protected getConfiguredAndProjectIncludePaths(doc: vscode.TextDocument): string[] {
-    const projectContext = this.getProjectContext(doc);
-    return this.resolveIncludePaths(this.config.includePath, doc).concat(projectContext.includePaths);
+  protected getConfiguredIncludePaths(doc: vscode.TextDocument): string[] {
+    return this.resolveIncludePaths(this.config.includePath, doc);
   }
 
   /**
@@ -197,47 +183,8 @@ export default abstract class BaseLinter implements vscode.Disposable {
     this.publishDiagnosticsIfCurrent(ownerDoc, run, diagnosticsByUri);
   }
 
-  protected async getLintDecision(doc: vscode.TextDocument, options: LintRunOptions): Promise<LintDecision> {
-    const settings = getLintRunSettings();
-    if (settings.mode !== 'compileUnit') {
-      return { kind: 'file' };
-    }
-    const context = getCompileUnitLintContext(this.projectService, doc);
-    if (!context) {
-      this.logger.warn('Compile-unit lint requested but active document has no project compile unit; using file lint.');
-      return { kind: 'file' };
-    }
-    if (context.files.length <= settings.maxFiles) {
-      return { kind: 'compileUnit', context };
-    }
-
-    const message =
-      `Compile-unit lint skipped for ${context.compileUnit.name}: `
-      + `${context.files.length} files exceeds verilog.linting.compileUnit.maxFiles=${settings.maxFiles}.`;
-    if (options.trigger !== 'manual') {
-      this.logger.warn(message);
-      return { kind: 'skip' };
-    }
-    if (!settings.warnBeforeLargeRun) {
-      return { kind: 'compileUnit', context };
-    }
-    const selected = await vscode.window.showWarningMessage(
-      `${message} Run anyway?`,
-      { modal: true },
-      'Run Lint'
-    );
-    return selected === 'Run Lint' ? { kind: 'compileUnit', context } : { kind: 'skip' };
-  }
-
-  protected warnUnsupportedCompileUnitMode(options: LintRunOptions): void {
-    if (getLintRunSettings().mode !== 'compileUnit') {
-      return;
-    }
-    const message = `${this.name} does not support compile-unit lint mode yet; using file lint.`;
-    this.logger.warn(message);
-    if (options.trigger === 'manual') {
-      void vscode.window.showWarningMessage(message);
-    }
+  protected getLintDecision(_doc: vscode.TextDocument, _options: LintRunOptions): LintDecision {
+    return { kind: 'file' };
   }
 
   /**

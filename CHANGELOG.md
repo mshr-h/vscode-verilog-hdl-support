@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+
+- Added bundled `slang-server` WASM runtime support, Slang project configuration commands, and a slang-backed HDL Explorer.
+
+### Changed
+
+- Moved Verilog/SystemVerilog language intelligence to `slang-server` and removed the legacy TypeScript-side project index, Ctags providers, project-aware lint mode, module instantiation command, and related settings.
+
 ## [1.27.4] - 2026-06-28
 
 ### Fixed

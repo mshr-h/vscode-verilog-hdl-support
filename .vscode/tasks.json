@@ -4,6 +4,31 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "debug: install wasm-wasi-core",
+			"type": "process",
+			"command": "node",
+			"args": [
+				"${workspaceFolder}/scripts/install-vscode-extension.mjs",
+				"${execPath}",
+				"${workspaceFolder}/.vscode-dev/extensions",
+				"ms-vscode.wasm-wasi-core"
+			],
+			"problemMatcher": [],
+			"presentation": {
+				"group": "debug",
+				"reveal": "never"
+			}
+		},
+		{
+			"label": "debug: prepare",
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"debug: install wasm-wasi-core",
+				"watch"
+			],
+			"problemMatcher": []
+		},
+		{
             "label": "watch",
             "dependsOn": [
                 "npm: watch:tsc",

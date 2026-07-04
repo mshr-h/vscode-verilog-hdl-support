@@ -101,8 +101,7 @@ export default class VeribleVerilogLintLinter extends BaseLinter {
     return convertVeribleSeverity(message);
   }
 
-  protected async lint(doc: vscode.TextDocument, run: LintRunHandle, options: LintRunOptions): Promise<void> {
-    this.warnUnsupportedCompileUnitMode(options);
+  protected async lint(doc: vscode.TextDocument, run: LintRunHandle, _options: LintRunOptions): Promise<void> {
     this.logger.info`Executing VeribleVerilogLintLinter.lint()`;
 
     const binName = isWindows ? 'verible-verilog-lint.exe' : 'verible-verilog-lint';

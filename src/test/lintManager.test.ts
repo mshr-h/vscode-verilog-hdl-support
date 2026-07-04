@@ -68,7 +68,9 @@ function stubConfiguredLinter(fakeLinter: FakeLinter): () => void {
   };
 }
 
-suite('LintManager', () => {
+suite('LintManager', function () {
+  this.timeout(10000);
+
   const logCapture = new LogCapture();
 
   suiteSetup(async () => {
@@ -266,6 +268,7 @@ suite('LintManager', () => {
 
   test('lint-on-save follows runOnSave setting', async () => {
     const previousLinter = await setConfiguredLinter('iverilog');
+    const previousRunOnOpen = await setLintConfigValue('runOnOpen', false);
     const previousRunOnSave = await setLintConfigValue('runOnSave', false);
     const lintedDocuments: vscode.TextDocument[] = [];
     const restoreGetLinter = stubConfiguredLinter({
@@ -290,6 +293,7 @@ suite('LintManager', () => {
       manager.dispose();
       restoreGetLinter();
       await restoreLintConfigValue('runOnSave', previousRunOnSave);
+      await restoreLintConfigValue('runOnOpen', previousRunOnOpen);
       await restoreConfiguredLinter(previousLinter);
     }
   });

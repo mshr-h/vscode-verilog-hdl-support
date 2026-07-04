@@ -9,12 +9,8 @@ suite('Language Server smoke', () => {
   test('defines expected servers', () => {
     const names = createLanguageServerDefinitions().map((definition) => definition.name).sort();
     const expected = [
-      'hdlChecker',
       'rustHdl',
-      'svls',
       'tclsp',
-      'veribleVerilogLs',
-      'veridian',
     ].sort();
     assert.deepStrictEqual(names, expected);
   });
@@ -37,46 +33,46 @@ suite('Language Server smoke', () => {
   });
 
   test('omits empty custom server arguments', () => {
-    const definition = createLanguageServerDefinitions().find((server) => server.name === 'svls');
+    const definition = createLanguageServerDefinitions().find((server) => server.name === 'tclsp');
     assert.ok(definition);
 
     const options = buildServerOptions({
       definition,
-      command: 'svls',
+      command: 'tclsp',
       customArgs: '',
     });
 
     assert.deepStrictEqual(options.run.args, []);
-    assert.deepStrictEqual(options.debug.args, ['--debug']);
+    assert.deepStrictEqual(options.debug.args, []);
   });
 
   test('splits custom server arguments', () => {
-    const definition = createLanguageServerDefinitions().find((server) => server.name === 'svls');
+    const definition = createLanguageServerDefinitions().find((server) => server.name === 'tclsp');
     assert.ok(definition);
 
     const options = buildServerOptions({
       definition,
-      command: 'svls',
+      command: 'tclsp',
       customArgs: '--foo bar',
     });
 
     assert.deepStrictEqual(options.run.args, ['--foo', 'bar']);
-    assert.deepStrictEqual(options.debug.args, ['--debug', '--foo', 'bar']);
+    assert.deepStrictEqual(options.debug.args, ['--foo', 'bar']);
   });
 
   test('preserves quoted custom server argument values', () => {
     const definition = createLanguageServerDefinitions().find(
-      (server) => server.name === 'hdlChecker'
+      (server) => server.name === 'rustHdl'
     );
     assert.ok(definition);
 
     const options = buildServerOptions({
       definition,
-      command: 'hdl_checker',
+      command: 'vhdl_ls',
       customArgs: '--define "A=B C"',
     });
 
-    assert.deepStrictEqual(options.run.args, ['--lsp', '--define', 'A=B C']);
-    assert.deepStrictEqual(options.debug.args, ['--lsp', '--define', 'A=B C']);
+    assert.deepStrictEqual(options.run.args, ['--define', 'A=B C']);
+    assert.deepStrictEqual(options.debug.args, ['--define', 'A=B C']);
   });
 });

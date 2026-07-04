@@ -23,6 +23,9 @@
     "Formatters",
     "Visualization"
   ],
+  "extensionPack": [
+    "ms-vscode.wasm-wasi-core"
+  ],
   "icon": "images/icon.png",
   "main": "./dist/extension.js",
   "contributes": {
@@ -281,23 +284,6 @@
     ],
     "configuration": [
       {
-        "title": "Verilog: Ctags",
-        "properties": {
-          "verilog.ctags.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Enable Ctags integration."
-          },
-          "verilog.ctags.path": {
-            "scope": "window",
-            "type": "string",
-            "default": "ctags",
-            "markdownDescription": "A path to the Ctags binary. Specify the binary name if it's in your `PATH`, or provide an absolute path to the executable."
-          }
-        }
-      },
-      {
         "title": "Verilog: Formatting",
         "properties": {
           "verilog.formatting.verilogHDL.formatter": {
@@ -405,35 +391,6 @@
             "type": "boolean",
             "default": true,
             "markdownDescription": "Run the configured linter automatically when Verilog/SystemVerilog files are saved."
-          },
-          "verilog.linting.useProjectContext": {
-            "scope": "window",
-            "type": "boolean",
-            "default": false,
-            "markdownDescription": "When enabled, pass active project include directories and preprocessor defines to supported lint tools. Existing custom linter arguments are still appended after project context arguments."
-          },
-          "verilog.linting.mode": {
-            "scope": "window",
-            "type": "string",
-            "enum": [
-              "file",
-              "compileUnit"
-            ],
-            "default": "file",
-            "markdownDescription": "Choose lint scope. `file` preserves existing current-document linting. `compileUnit` lints the active project compile unit when supported by the selected linter."
-          },
-          "verilog.linting.compileUnit.maxFiles": {
-            "scope": "window",
-            "type": "number",
-            "default": 500,
-            "minimum": 1,
-            "markdownDescription": "Maximum number of source files allowed for automatic compile-unit linting."
-          },
-          "verilog.linting.compileUnit.warnBeforeLargeRun": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Ask for confirmation before manual compile-unit linting when the compile unit exceeds the maximum file guard."
           },
           "verilog.linting.iverilog.arguments": {
             "scope": "window",
@@ -590,88 +547,72 @@
         }
       },
       {
+        "title": "Verilog: slang-server",
+        "properties": {
+          "verilog.slangServer.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Enable slang-server as the Verilog/SystemVerilog language intelligence engine."
+          },
+          "verilog.slangServer.runtime": {
+            "scope": "window",
+            "type": "string",
+            "enum": [
+              "auto",
+              "native",
+              "bundled-wasm"
+            ],
+            "default": "auto",
+            "markdownDescription": "`auto` uses native slang-server when `verilog.slangServer.path` is set. Bundled WASM is planned for builds that include the WASM artifact."
+          },
+          "verilog.slangServer.path": {
+            "scope": "window",
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Path to the native slang-server executable. Required when `verilog.slangServer.runtime` is `native`."
+          },
+          "verilog.slangServer.args": {
+            "scope": "window",
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Additional arguments passed to slang-server."
+          },
+          "verilog.slangServer.trace.server": {
+            "scope": "window",
+            "type": "string",
+            "enum": [
+              "off",
+              "messages",
+              "verbose"
+            ],
+            "default": "off",
+            "markdownDescription": "Trace slang-server protocol messages."
+          },
+          "verilog.slangServer.wasm.allowUserConfig": {
+            "scope": "window",
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "Allow bundled WASM slang-server to read user-level ~/.slang/server.json by mounting the home directory read/write into WASI."
+          },
+          "verilog.slangServer.wasm.logStderr": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Route bundled WASM slang-server stderr to the Verilog slang-server output channel."
+          },
+          "verilog.slangServer.wasm.memoryLimitMb": {
+            "scope": "window",
+            "type": "number",
+            "default": 2048,
+            "minimum": 64,
+            "markdownDescription": "Maximum WebAssembly memory in MB for bundled WASM slang-server. Increase this for large projects or if the output shows bad_alloc."
+          }
+        }
+      },
+      {
         "title": "Verilog: Language Servers",
         "properties": {
-          "verilog.languageServer.svls.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": false,
-            "markdownDescription": "Enable svls Language Server for SystemVerilog."
-          },
-          "verilog.languageServer.svls.path": {
-            "scope": "window",
-            "type": "string",
-            "default": "svls",
-            "markdownDescription": "A path to the Svls Language Server binary."
-          },
-          "verilog.languageServer.svls.svlintTomlPath": {
-            "scope": "window",
-            "type": "string",
-            "default": "",
-            "markdownDescription": "[Experimental] Override the .toml configuration file to be used by svlint. Sets the `SVLINT_CONFIG` environment variable. When not set svlint searches for `.svlint.toml` within the Workspace folder.",
-            "pattern": "^(?:(?:~?\\/|[a-zA-Z]:\\\\)?[\\/\\\\\\w\\._-]*\\.toml)$|^$",
-            "patternErrorMessage": "Must be a path to a .toml file"
-          },
-          "verilog.languageServer.svls.arguments": {
-            "scope": "window",
-            "type": "string",
-            "default": "",
-            "markdownDescription": "Add custom arguments for the Svls Language Server."
-          },
-          "verilog.languageServer.veridian.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": false,
-            "markdownDescription": "Enable veridian Language Server for SystemVerilog."
-          },
-          "verilog.languageServer.veridian.path": {
-            "scope": "window",
-            "type": "string",
-            "default": "veridian",
-            "markdownDescription": "A path to the Veridian Language Server binary."
-          },
-          "verilog.languageServer.veridian.arguments": {
-            "scope": "window",
-            "type": "string",
-            "default": "",
-            "markdownDescription": "Add custom arguments for the HDL Checker Veridian Language Server."
-          },
-          "verilog.languageServer.hdlChecker.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": false,
-            "markdownDescription": "Enable HDL Checker Language Server for Verilog-HDL, SystemVerilog, and VHDL."
-          },
-          "verilog.languageServer.hdlChecker.path": {
-            "scope": "window",
-            "type": "string",
-            "default": "hdl_checker",
-            "markdownDescription": "A path to the HDL Checker Language Server binary."
-          },
-          "verilog.languageServer.hdlChecker.arguments": {
-            "scope": "window",
-            "type": "string",
-            "default": "",
-            "markdownDescription": "Add custom arguments for the HDL Checker Language Server."
-          },
-          "verilog.languageServer.veribleVerilogLs.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": false,
-            "markdownDescription": "Enable verible-verilog-ls Language Server for SystemVerilog."
-          },
-          "verilog.languageServer.veribleVerilogLs.path": {
-            "scope": "window",
-            "type": "string",
-            "default": "verible-verilog-ls",
-            "markdownDescription": "A path to the verible-verilog-ls Language Server binary."
-          },
-          "verilog.languageServer.veribleVerilogLs.arguments": {
-            "scope": "window",
-            "type": "string",
-            "default": "",
-            "markdownDescription": "Add custom arguments for the verible-verilog-ls Language Server."
-          },
           "verilog.languageServer.tclsp.enabled": {
             "scope": "window",
             "type": "boolean",
@@ -747,226 +688,13 @@
         }
       },
       {
-        "title": "Verilog: Project",
+        "title": "Verilog: HDL Explorer",
         "properties": {
-          "verilog.project.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": false,
-            "markdownDescription": "Opt in to the project-aware Verilog/SystemVerilog model and semantic index. This can be expensive in large workspaces; users who only need formatting or syntax highlighting can leave it disabled."
-          },
-          "verilog.project.filelists": {
-            "scope": "window",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "default": [],
-            "markdownDescription": "List of Verilog/SystemVerilog filelists to use for project indexing."
-          },
-          "verilog.project.activeTarget": {
-            "scope": "window",
-            "type": "string",
-            "default": "",
-            "markdownDescription": "Active HDL project target / compile unit name."
-          },
-          "verilog.project.topModules": {
-            "scope": "window",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "default": [],
-            "markdownDescription": "Top modules to use for best-effort HDL hierarchy roots. When empty, roots are inferred from module instantiations."
-          },
-          "verilog.project.includeDirs": {
-            "scope": "window",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "default": [],
-            "markdownDescription": "Additional include directories."
-          },
-          "verilog.project.defines": {
-            "scope": "window",
-            "type": "object",
-            "default": {},
-            "markdownDescription": "Additional preprocessor defines."
-          },
-          "verilog.project.exclude": {
-            "scope": "window",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "default": [
-              "**/.git/**",
-              "**/node_modules/**",
-              "**/build/**",
-              "**/sim/**"
-            ],
-            "markdownDescription": "Glob patterns excluded from project indexing."
-          },
-          "verilog.project.maxAutoDiscoveredFiles": {
-            "scope": "window",
-            "type": "number",
-            "default": 5000,
-            "minimum": 1,
-            "markdownDescription": "Maximum number of HDL files discovered automatically when `verilog.project.filelists` is empty. If the limit is exceeded, project indexing is skipped. Configure `verilog.project.filelists` or `verilog.project.exclude` for large workspaces."
-          }
-        }
-      },
-      {
-        "title": "Verilog: Hierarchy",
-        "properties": {
-          "verilog.hierarchy.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Enable best-effort project-aware HDL module hierarchy."
-          },
-          "verilog.hierarchy.maxDepth": {
-            "scope": "window",
-            "type": "number",
-            "default": 20,
-            "minimum": 1,
-            "markdownDescription": "Maximum recursion depth for the best-effort HDL hierarchy tree."
-          },
-          "verilog.hierarchy.showUnresolved": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Show unresolved module instantiations in the HDL hierarchy and explorer."
-          },
           "verilog.hdlExplorer.enabled": {
             "scope": "window",
             "type": "boolean",
             "default": true,
             "markdownDescription": "Enable the HDL Explorer tree view."
-          }
-        }
-      },
-      {
-        "title": "Verilog: Semantic Diagnostics",
-        "properties": {
-          "verilog.semanticDiagnostics.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Enable lightweight project-aware Verilog/SystemVerilog semantic diagnostics."
-          },
-          "verilog.semanticDiagnostics.unresolvedModules.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Report unresolved module instantiations from the project index."
-          },
-          "verilog.semanticDiagnostics.unknownPorts.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Report named instance port connections that do not exist on the resolved module."
-          },
-          "verilog.semanticDiagnostics.unknownParameters.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Report named parameter overrides that do not exist on the resolved module."
-          },
-          "verilog.semanticDiagnostics.unresolvedIncludes.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Report unresolved `include paths using the active file context."
-          },
-          "verilog.semanticDiagnostics.unresolvedMacros.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": false,
-            "markdownDescription": "Report unresolved macro usages. Disabled by default to avoid noisy diagnostics in macro-heavy projects."
-          },
-          "verilog.semanticDiagnostics.maxFiles": {
-            "scope": "window",
-            "type": "number",
-            "default": 1000,
-            "minimum": 1,
-            "markdownDescription": "Maximum number of project files scanned by lightweight semantic diagnostics."
-          }
-        }
-      },
-      {
-        "title": "Verilog: Completion",
-        "properties": {
-          "verilog.completion.ports.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Enable project-index completion for named module port connections."
-          },
-          "verilog.completion.parameters.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Enable project-index completion for named module parameter overrides."
-          },
-          "verilog.completion.autoConnectPorts": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Insert `.port(port)` snippets for named port completion."
-          },
-          "verilog.completion.autoConnectParameters": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Insert `.PARAM(PARAM)` snippets for named parameter completion."
-          }
-        }
-      },
-      {
-        "title": "Verilog: References",
-        "properties": {
-          "verilog.references.maxFiles": {
-            "scope": "window",
-            "type": "number",
-            "default": 1000,
-            "minimum": 1,
-            "markdownDescription": "Maximum number of project files scanned by lightweight project-aware Find References."
-          }
-        }
-      },
-      {
-        "title": "Verilog: Code Actions",
-        "properties": {
-          "verilog.codeActions.fillMissingPorts.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Enable code actions that fill missing named module port connections from the project index."
-          },
-          "verilog.codeActions.fillMissingParameters.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Enable code actions that fill missing named module parameter overrides from the project index."
-          },
-          "verilog.codeActions.alignment.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Align generated named module port and parameter connections in code actions."
-          }
-        }
-      },
-      {
-        "title": "Verilog: Module Instantiation",
-        "properties": {
-          "verilog.instantiate.useProjectIndex": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Use the project index for module instantiation when project modules are available. Falls back to the ctags file picker when disabled or when the project index has no modules."
           }
         }
       },
@@ -981,12 +709,6 @@
             },
             "default": [],
             "markdownDescription": "Macro names to treat as predefined for Verilog/SystemVerilog preprocessor inactive-code highlighting."
-          },
-          "verilog.preprocessor.useProjectDefines": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Use active project preprocessor defines when highlighting inactive Verilog/SystemVerilog preprocessor regions."
           },
           "verilog.preprocessor.inactiveCode.enabled": {
             "scope": "window",
@@ -1019,10 +741,6 @@
     ],
     "commands": [
       {
-        "command": "verilog.instantiateModule",
-        "title": "Verilog: Instantiate Module"
-      },
-      {
         "command": "verilog.lint",
         "title": "Verilog: Rerun lint tool"
       },
@@ -1031,20 +749,40 @@
         "title": "Verilog: Doctor"
       },
       {
-        "command": "verilog.reloadProject",
-        "title": "Verilog: Reload Project"
+        "command": "verilog.restartSlangServer",
+        "title": "Verilog: Restart slang-server"
       },
       {
-        "command": "verilog.showProjectStatus",
-        "title": "Verilog: Show Project Status"
+        "command": "verilog.showSlangServerOutput",
+        "title": "Verilog: Show slang-server Output"
       },
       {
-        "command": "verilog.showProjectModules",
-        "title": "Verilog: Show Project Modules"
+        "command": "verilog.showSlangServerStatus",
+        "title": "Verilog: Show slang-server Status"
       },
       {
-        "command": "verilog.refreshHierarchy",
-        "title": "Verilog: Refresh Hierarchy"
+        "command": "verilog.selectSlangServerRuntime",
+        "title": "Verilog: Select slang-server Runtime"
+      },
+      {
+        "command": "verilog.showSlangServerQuickActions",
+        "title": "Verilog: Show slang-server Quick Actions"
+      },
+      {
+        "command": "verilog.configureSlangProject",
+        "title": "Verilog: Configure Slang Project"
+      },
+      {
+        "command": "verilog.openSlangProjectConfig",
+        "title": "Verilog: Open Slang Project Config"
+      },
+      {
+        "command": "verilog.validateSlangProjectConfig",
+        "title": "Verilog: Validate Slang Project Config"
+      },
+      {
+        "command": "verilog.instantiateModule",
+        "title": "Verilog: Instantiate Module"
       },
       {
         "command": "verilog.refreshHdlExplorer",
@@ -1052,12 +790,12 @@
         "icon": "$(refresh)"
       },
       {
-        "command": "verilog.setActiveTargetFromExplorer",
-        "title": "Verilog: Set Active Target From Explorer"
+        "command": "verilog.setSlangBuildFile",
+        "title": "Verilog: Set slang-server Build File"
       },
       {
-        "command": "verilog.selectActiveTarget",
-        "title": "Verilog: Select Active HDL Target"
+        "command": "verilog.setSlangTopLevel",
+        "title": "Verilog: Set slang-server Top Level"
       },
       {
         "command": "verilog.openModuleFromExplorer",
@@ -1072,68 +810,12 @@
         "title": "Verilog: Show Hierarchy From This Module"
       },
       {
-        "command": "verilog.clearHierarchyRootFilter",
-        "title": "Verilog: Clear HDL Hierarchy Root Filter"
-      },
-      {
         "command": "verilog.findModuleReferencesFromExplorer",
         "title": "Verilog: Find Module References From Explorer"
       },
       {
         "command": "verilog.openInstanceFromExplorer",
         "title": "Verilog: Open Instance From Explorer"
-      },
-      {
-        "command": "verilog.openInstanceModuleFromExplorer",
-        "title": "Verilog: Open Instance Module From Explorer"
-      },
-      {
-        "command": "verilog.findInstanceModuleReferencesFromExplorer",
-        "title": "Verilog: Find Instance Module References From Explorer"
-      },
-      {
-        "command": "verilog.searchUnresolvedModule",
-        "title": "Verilog: Search Unresolved Module"
-      },
-      {
-        "command": "verilog.copyModuleNameFromExplorer",
-        "title": "Verilog: Copy Module Name From Explorer"
-      },
-      {
-        "command": "verilog.openFileFromExplorer",
-        "title": "Verilog: Open File From Explorer"
-      },
-      {
-        "command": "verilog.revealFileInOs",
-        "title": "Verilog: Reveal File in OS"
-      },
-      {
-        "command": "verilog.revealIncludeDirInOs",
-        "title": "Verilog: Reveal Include Directory in OS"
-      },
-      {
-        "command": "verilog.copyPathFromExplorer",
-        "title": "Verilog: Copy Path From Explorer"
-      },
-      {
-        "command": "verilog.copyRelativePathFromExplorer",
-        "title": "Verilog: Copy Relative Path From Explorer"
-      },
-      {
-        "command": "verilog.openCompileUnitSource",
-        "title": "Verilog: Open Compile Unit Source"
-      },
-      {
-        "command": "verilog.copyDefineNameFromExplorer",
-        "title": "Verilog: Copy Define Name From Explorer"
-      },
-      {
-        "command": "verilog.copyDefineArgumentFromExplorer",
-        "title": "Verilog: Copy Define Argument From Explorer"
-      },
-      {
-        "command": "verilog.openDefineLocationFromExplorer",
-        "title": "Verilog: Open Define Location From Explorer"
       },
       {
         "command": "verilog.openFliplot",
@@ -1160,165 +842,45 @@
           "group": "navigation"
         },
         {
-          "command": "verilog.refreshHierarchy",
+          "command": "verilog.setSlangBuildFile",
           "when": "view == verilog.hdlExplorer",
-          "group": "1_hierarchy@1"
+          "group": "1_slang@1"
         },
         {
-          "command": "verilog.selectActiveTarget",
+          "command": "verilog.setSlangTopLevel",
           "when": "view == verilog.hdlExplorer",
-          "group": "2_project@1"
-        },
-        {
-          "command": "verilog.showProjectStatus",
-          "when": "view == verilog.hdlExplorer",
-          "group": "2_project@2"
-        },
-        {
-          "command": "verilog.clearHierarchyRootFilter",
-          "when": "view == verilog.hdlExplorer",
-          "group": "1_hierarchy@2"
+          "group": "1_slang@2"
         }
       ],
       "view/item/context": [
         {
-          "command": "verilog.selectActiveTarget",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.projectRoot",
-          "group": "navigation@1"
-        },
-        {
-          "command": "verilog.showProjectStatus",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.projectRoot",
-          "group": "navigation@2"
-        },
-        {
-          "command": "verilog.refreshHdlExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.projectRoot",
-          "group": "navigation@3"
-        },
-        {
-          "command": "verilog.setActiveTargetFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.compileUnit",
-          "group": "navigation@1"
-        },
-        {
-          "command": "verilog.openCompileUnitSource",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.compileUnit",
-          "group": "navigation@2"
-        },
-        {
-          "command": "verilog.openFileFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.sourceFile",
-          "group": "navigation@1"
-        },
-        {
-          "command": "verilog.revealFileInOs",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.sourceFile",
-          "group": "navigation@2"
-        },
-        {
-          "command": "verilog.copyPathFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.sourceFile",
-          "group": "clipboard@1"
-        },
-        {
-          "command": "verilog.copyRelativePathFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.sourceFile",
-          "group": "clipboard@2"
-        },
-        {
-          "command": "verilog.revealIncludeDirInOs",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.includeDir",
-          "group": "navigation@1"
-        },
-        {
-          "command": "verilog.copyPathFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.includeDir",
-          "group": "clipboard@1"
-        },
-        {
           "command": "verilog.openModuleFromExplorer",
           "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.module",
           "group": "navigation@1"
         },
         {
-          "command": "verilog.instantiateModuleFromExplorer",
+          "command": "verilog.setSlangTopLevel",
           "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.module",
           "group": "navigation@2"
+        },
+        {
+          "command": "verilog.instantiateModuleFromExplorer",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.module",
+          "group": "navigation@3"
         },
         {
           "command": "verilog.showHierarchyFromModule",
           "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.module",
-          "group": "navigation@3"
+          "group": "navigation@4"
         },
         {
           "command": "verilog.findModuleReferencesFromExplorer",
           "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.module",
-          "group": "navigation@4"
-        },
-        {
-          "command": "verilog.openModuleFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.hierarchyModule",
-          "group": "navigation@1"
-        },
-        {
-          "command": "verilog.instantiateModuleFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.hierarchyModule",
-          "group": "navigation@2"
-        },
-        {
-          "command": "verilog.showHierarchyFromModule",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.hierarchyModule",
-          "group": "navigation@3"
-        },
-        {
-          "command": "verilog.findModuleReferencesFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.hierarchyModule",
-          "group": "navigation@4"
+          "group": "navigation@5"
         },
         {
           "command": "verilog.openInstanceFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.hierarchyInstance",
-          "group": "navigation@1"
-        },
-        {
-          "command": "verilog.openInstanceModuleFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.hierarchyInstance",
-          "group": "navigation@2"
-        },
-        {
-          "command": "verilog.findInstanceModuleReferencesFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.hierarchyInstance",
-          "group": "navigation@3"
-        },
-        {
-          "command": "verilog.openInstanceFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.unresolvedInstance",
-          "group": "navigation@1"
-        },
-        {
-          "command": "verilog.searchUnresolvedModule",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.unresolvedInstance",
-          "group": "navigation@2"
-        },
-        {
-          "command": "verilog.copyModuleNameFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.unresolvedInstance",
-          "group": "clipboard@1"
-        },
-        {
-          "command": "verilog.copyDefineNameFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.define",
-          "group": "clipboard@1"
-        },
-        {
-          "command": "verilog.copyDefineArgumentFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.define",
-          "group": "clipboard@2"
-        },
-        {
-          "command": "verilog.openDefineLocationFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.define",
+          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.instance",
           "group": "navigation@1"
         }
       ]
@@ -1337,12 +899,16 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run package",
+    "vscode:prepublish": "npm run package:prepare",
     "compile": "npm run check-types && npm run lint && node esbuild.js",
     "watch": "npm-run-all -p watch:*",
     "watch:esbuild": "node esbuild.js --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
-    "package": "npm run check-types && npm run lint && node esbuild.js --production",
+    "package:prepare": "npm run check-types && npm run lint && node esbuild.js --production",
+    "package": "npm run package:prepare && npm run verify:wasm-bundle && npx @vscode/vsce package",
+    "build:slang-wasm": "bash scripts/build-slang-server-wasm.sh",
+    "verify:wasm-bundle": "node scripts/check-wasm-bundle.mjs",
+    "verify:vsix": "node scripts/check-vsix-contents.mjs",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
@@ -1355,9 +921,11 @@
   },
   "dependencies": {
     "@logtape/logtape": "^2.0.0",
+    "@vscode/wasm-wasi": "1.0.2",
+    "@vscode/wasm-wasi-lsp": "0.1.0-pre.8",
     "js-yaml": "^4.1.1",
     "semver": "^7.7.3",
-    "vscode-languageclient": "^10.0.0",
+    "vscode-languageclient": "^10.0.0-next.12",
     "which": "^7.0.0"
   },
   "devDependencies": {
