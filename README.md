@@ -13,7 +13,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 
 ## Quick Start
 
-Syntax highlighting, snippets, basic editor integration, inactive preprocessor highlighting, waveform opening, and bundled WASM slang-server support work immediately after installation.
+Syntax highlighting, snippets, basic editor integration, inactive preprocessor highlighting, waveform opening, and bundled WASM slang-server support work immediately after installation in VS Code Desktop with a filesystem workspace.
 
 SystemVerilog language intelligence is provided by `slang-server`. By default, `auto` uses the bundled WASM runtime when no native executable path is configured. To use a native `slang-server` instead, configure the executable path:
 
@@ -66,7 +66,9 @@ Use **Verilog: Doctor** from the command palette to inspect slang-server runtime
 | VCD waveform dumps | `.vcd` | Open with **Verilog: Open Waveform** |
 | Markdown fenced code blocks | `verilog` / `systemverilog` | Embedded highlighting in Markdown |
 
-## Commands
+## Common Commands
+
+These are the main commands most users run from the command palette. Additional HDL Explorer actions are available from the Explorer view and item context menus.
 
 - **Verilog: Restart slang-server**
 
@@ -79,6 +81,10 @@ Use **Verilog: Doctor** from the command palette to inspect slang-server runtime
 - **Verilog: Show slang-server Status**
 
     Show the current slang-server runtime, state, and startup error if one exists.
+
+- **Verilog: Show slang-server Quick Actions**
+
+    Open the slang-server status quick actions used by the status bar.
 
 - **Verilog: Select slang-server Runtime**
 
@@ -141,6 +147,8 @@ Runtime settings:
     "verilog.slangServer.path": "",
     "verilog.slangServer.args": "",
     "verilog.slangServer.trace.server": "off",
+    "verilog.slangServer.wasm.allowUserConfig": false,
+    "verilog.slangServer.wasm.logStderr": true,
     "verilog.slangServer.wasm.memoryLimitMb": 2048
 }
 ```
@@ -149,36 +157,6 @@ With the default `auto` runtime, the extension starts bundled WASM slang-server 
 
 The status bar shows the active state as `slang-server: WASM`, `slang-server: native`, `slang-server: stopped`, or `slang-server: error`. Click it for quick actions: restart, show output, open config, select runtime, or run Doctor.
 
-### Rebuilding bundled slang-server.wasm
-
-Maintainers can rebuild the bundled WASM artifact on macOS or Linux:
-
-```sh
-npm run build:slang-wasm
-npm run verify:wasm-bundle
-```
-
-The build is pinned by `build/slang-server.lock.json`. The script checks out the locked `hudson-trading/slang-server` commit, verifies the locked `external/slang` submodule commit, uses WASI SDK 25.0, builds with CMake/Ninja, and writes:
-
-- `resources/wasm/slang-server.wasm`
-- `resources/wasm/slang-server.meta.json`
-- `resources/wasm/licenses/*`
-
-`slang-server.wasm` and `slang-server.meta.json` are generated release artifacts and are not tracked in Git. The lock file, build scripts, and license notices are tracked; CI builds and uploads the artifact for packaging.
-
-Set `WASI_SDK_PATH` to use an existing WASI SDK install; the version must match the lock file. GitHub Actions builds the same artifact on Ubuntu and uploads it as `slang-server-wasm`. The workflow does not commit the binary automatically.
-
-The production bundled runtime uses the Microsoft VS Code WASM/WASI language-server path through `@vscode/wasm-wasi` and `@vscode/wasm-wasi-lsp`. The extension includes `ms-vscode.wasm-wasi-core` in its extension pack so the WASM WASI Core provider is installed with the extension without blocking activation. Maintainers can temporarily force the legacy Node helper with `VERILOGHDL_SLANG_WASM_RUNTIME=node` when debugging runtime differences.
-
-Before publishing a VSIX, run:
-
-```sh
-npm run package
-npm run verify:vsix -- veriloghdl-*.vsix
-```
-
-`npm run package` fails if the bundled WASM artifact, metadata, or license notices are missing.
-
 ## Slang Project Configuration
 
 slang-server reads project configuration from:
@@ -186,6 +164,8 @@ slang-server reads project configuration from:
 - workspace `.slang/server.json`
 - user `~/.slang/server.json`
 - workspace `.slang/local/server.json`
+
+When using the bundled WASM runtime, the home directory is not mounted by default. Set `verilog.slangServer.wasm.allowUserConfig` to `true` if bundled WASM slang-server should read user-level `~/.slang/server.json`.
 
 A typical workspace config is:
 
@@ -209,6 +189,8 @@ Use `flags` for normal slang command-line flags, `index` for directories slang-s
 The **HDL Explorer** view appears in VS Code's Explorer sidebar when `verilog.hdlExplorer.enabled` is enabled. It is powered by slang-server custom commands, so modules and hierarchy require a running slang-server and a build file or top level known to slang-server.
 
 The Explorer shows slang-server status, Slang config summary, modules, and hierarchy. Build/top actions are sent to slang-server; missing data is shown as an unavailable state rather than falling back to TypeScript-side parsing.
+
+From the HDL Explorer view and item context menus, you can open modules, instantiate modules, show hierarchy from a module, find module references, and open instances.
 
 ## Linting
 
