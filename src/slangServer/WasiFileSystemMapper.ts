@@ -38,7 +38,7 @@ export class WasiFileSystemMapper {
     if (relative === '') {
       return mountRoot;
     }
-    if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    if (hasParentPathSegment(relative) || path.isAbsolute(relative)) {
       return undefined;
     }
     return `${mountRoot}/${relative.replace(/\\/g, '/')}`;
@@ -51,6 +51,14 @@ export class WasiFileSystemMapper {
     if (!wasiPath.startsWith(`${mountRoot}/`)) {
       return undefined;
     }
-    return path.join(hostRoot, wasiPath.slice(mountRoot.length + 1));
+    const relative = wasiPath.slice(mountRoot.length + 1);
+    if (hasParentPathSegment(relative)) {
+      return undefined;
+    }
+    return path.join(hostRoot, relative);
   }
+}
+
+function hasParentPathSegment(value: string): boolean {
+  return value.replace(/\\/g, '/').split('/').some((segment) => segment === '..');
 }
