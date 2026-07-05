@@ -65,21 +65,65 @@ suite('Slang-backed HDL Explorer', () => {
     assert.strictEqual(children.length, 1);
     assert.strictEqual(children[0].label, 'u_child : child');
   });
+
+  test('refreshes when slang-server status changes', () => {
+    const fixture = createProviderFixture();
+    let refreshCount = 0;
+    const subscription = fixture.provider.onDidChangeTreeData(() => {
+      refreshCount += 1;
+    });
+
+    fixture.fireStatus();
+
+    assert.strictEqual(refreshCount, 1);
+    subscription.dispose();
+    fixture.provider.dispose();
+    fixture.statusEmitter.dispose();
+  });
+
+  test('stops refreshing after dispose', () => {
+    const fixture = createProviderFixture();
+    let refreshCount = 0;
+    const subscription = fixture.provider.onDidChangeTreeData(() => {
+      refreshCount += 1;
+    });
+
+    fixture.provider.dispose();
+    fixture.fireStatus();
+
+    assert.strictEqual(refreshCount, 0);
+    subscription.dispose();
+    fixture.statusEmitter.dispose();
+  });
 });
 
 function createProvider(input: {
   modules?: Awaited<ReturnType<SlangServerApi['getScopesByModule']>>;
   scope?: Awaited<ReturnType<SlangServerApi['getScope']>>;
 } = {}): HdlExplorerProvider {
+  return createProviderFixture(input).provider;
+}
+
+function createProviderFixture(input: {
+  modules?: Awaited<ReturnType<SlangServerApi['getScopesByModule']>>;
+  scope?: Awaited<ReturnType<SlangServerApi['getScope']>>;
+} = {}): {
+  provider: HdlExplorerProvider;
+  fireStatus: () => void;
+  statusEmitter: vscode.EventEmitter<ReturnType<SlangServerManager['getStatus']>>;
+} {
+  const status = {
+    enabled: true,
+    configuredRuntime: 'native',
+    resolvedRuntime: 'native',
+    state: 'running',
+    path: '/usr/bin/slang-server',
+    args: [],
+  } as ReturnType<SlangServerManager['getStatus']>;
+  const statusEmitter = new vscode.EventEmitter<ReturnType<SlangServerManager['getStatus']>>();
   const manager = {
-    getStatus: () => ({
-      enabled: true,
-      configuredRuntime: 'native',
-      resolvedRuntime: 'native',
-      state: 'running',
-      path: '/usr/bin/slang-server',
-      args: [],
-    }),
+    getStatus: () => status,
+    onDidChangeStatus: statusEmitter.event,
     executeCommand: async <T,>(command: string): Promise<T> => {
       if (command === 'slang.getScopesByModule') {
         return (input.modules ?? []) as T;
@@ -97,5 +141,9 @@ function createProvider(input: {
       workspaceConfig: vscode.Uri.file('/tmp/.slang/server.json'),
     }),
   } as unknown as SlangConfigService;
-  return new HdlExplorerProvider(api, manager, configService);
+  return {
+    provider: new HdlExplorerProvider(api, manager, configService),
+    fireStatus: () => statusEmitter.fire(status),
+    statusEmitter,
+  };
 }

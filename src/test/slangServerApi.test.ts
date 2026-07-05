@@ -51,11 +51,28 @@ suite('SlangServerApi', () => {
 
     await api.setTopLevel('/rtl/top.sv');
     await api.setTopLevel('rtl/top.sv');
+    await api.setTopLevel('/workspace/rtl/top.sv');
 
     assert.deepStrictEqual(calls, [
       { command: 'slang.setTopLevel', args: ['/workspace/rtl/top.sv'] },
       { command: 'slang.setTopLevel', args: ['/workspace/rtl/top.sv'] },
+      { command: 'slang.setTopLevel', args: ['/workspace/rtl/top.sv'] },
     ]);
+  });
+
+  test('rejects bundled WASM command paths with parent segments', async () => {
+    const workspaceRoot = path.join(process.cwd(), 'tmp', 'slang-api-workspace');
+    const calls: ExecuteCall[] = [];
+    const api = createApi('bundled-wasm', workspaceRoot, calls);
+
+    for (const pathValue of ['rtl/..', 'rtl/../top.sv', '/workspace/../outside.sv']) {
+      await assert.rejects(
+        () => api.setTopLevel(pathValue),
+        /outside the WASI workspace/,
+        pathValue
+      );
+    }
+    assert.deepStrictEqual(calls, []);
   });
 
   test('rejects bundled WASM command paths outside the mounted workspace', async () => {
@@ -94,6 +111,18 @@ suite('SlangServerApi', () => {
 
     assert.ok(location);
     assertFsPathEqual(location.uri.fsPath, path.join(workspaceRoot, 'rtl', 'top.sv'));
+  });
+
+  test('does not map WASI locations with parent segments back to host files', () => {
+    const workspaceRoot = path.join(process.cwd(), 'tmp', 'slang-api-workspace');
+    const api = createApi('bundled-wasm', workspaceRoot, []);
+
+    const location = api.toLocation({
+      path: '/workspace/../outside.sv',
+      range: { start: { line: 1, character: 2 }, end: { line: 3, character: 4 } },
+    });
+
+    assert.strictEqual(location, undefined);
   });
 
   test('does not treat host absolute paths under tmp as workspace-relative WASI paths', async () => {

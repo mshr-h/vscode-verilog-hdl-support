@@ -409,6 +409,9 @@ export class SlangServerApi {
 
   private toWorkspaceWasiPath(value: string): string | undefined {
     const normalized = value.replace(/\\/g, '/');
+    if (hasParentPathSegment(normalized)) {
+      return undefined;
+    }
     if (this.isWasiWorkspacePath(normalized)) {
       return normalized;
     }
@@ -424,9 +427,7 @@ export class SlangServerApi {
     const relativePath = normalized.replace(/^\/+/, '');
     if (
       !relativePath
-      || relativePath === '..'
-      || relativePath.startsWith('../')
-      || relativePath.includes('/../')
+      || hasParentPathSegment(relativePath)
     ) {
       return undefined;
     }
@@ -502,4 +503,8 @@ function looksLikeHostAbsolutePath(value: string): boolean {
     '/usr',
     '/var',
   ].some((root) => normalized === root || normalized.startsWith(`${root}/`));
+}
+
+function hasParentPathSegment(value: string): boolean {
+  return value.split('/').some((segment) => segment === '..');
 }

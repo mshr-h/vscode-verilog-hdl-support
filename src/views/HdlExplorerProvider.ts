@@ -16,6 +16,7 @@ import {
 
 export class HdlExplorerProvider implements vscode.TreeDataProvider<HdlExplorerItem>, vscode.Disposable {
   private readonly emitter = new vscode.EventEmitter<HdlExplorerItem | undefined>();
+  private readonly statusSubscription: vscode.Disposable;
   private focusedHierarchyPath = '';
   readonly onDidChangeTreeData = this.emitter.event;
 
@@ -23,7 +24,9 @@ export class HdlExplorerProvider implements vscode.TreeDataProvider<HdlExplorerI
     private readonly api: SlangServerApi,
     private readonly manager: SlangServerManager,
     private readonly configService: SlangConfigService
-  ) {}
+  ) {
+    this.statusSubscription = this.manager.onDidChangeStatus(() => this.refresh());
+  }
 
   refresh(): void {
     this.emitter.fire(undefined);
@@ -63,6 +66,7 @@ export class HdlExplorerProvider implements vscode.TreeDataProvider<HdlExplorerI
   }
 
   dispose(): void {
+    this.statusSubscription.dispose();
     this.emitter.dispose();
   }
 
