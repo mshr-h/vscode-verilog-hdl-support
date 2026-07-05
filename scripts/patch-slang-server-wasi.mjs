@@ -35,53 +35,6 @@ patchFile('include/lsp/LspServer.h', [
   [
     '        std::cerr << "Registered command: " << name << "\\n";\n',
     '#ifndef __wasi__\n        std::cerr << "Registered command: " << name << "\\n";\n#endif\n'
-  ],
-  [
-    '    void registerInitialize() {\n        this->template registerMethod<InitializeParams, InitializeResult, &Impl::getInitialize>(\n            "initialize");\n    };\n',
-    `    void registerInitialize() {
-#ifdef __wasi__
-        this->requests["initialize"] = [this](std::optional<rfl::Generic> paramsJson) -> rfl::Generic {
-            InitializeParams params{};
-            if (paramsJson) {
-                auto root = paramsJson->to_object();
-                if (root) {
-                    auto rootPath = (*root)["rootPath"].to_string();
-                    if (rootPath)
-                        params.rootPath = rootPath.value();
-
-                    auto rootUri = (*root)["rootUri"].to_string();
-                    if (rootUri)
-                        params.rootUri = URI(rootUri.value());
-
-                    auto folders = (*root)["workspaceFolders"].to_array();
-                    if (folders && !folders->empty()) {
-                        std::vector<WorkspaceFolder> parsedFolders;
-                        auto first = folders->front().to_object();
-                        if (first) {
-                            WorkspaceFolder folder;
-                            auto uri = (*first)["uri"].to_string();
-                            auto name = (*first)["name"].to_string();
-                            if (uri)
-                                folder.uri = URI(uri.value());
-                            if (name)
-                                folder.name = name.value();
-                            else
-                                folder.name = "workspace";
-                            parsedFolders.push_back(folder);
-                            params.workspaceFolders = parsedFolders;
-                        }
-                    }
-                }
-            }
-            return rfl::to_generic<rfl::UnderlyingEnums>(
-                (static_cast<Impl*>(this)->getInitialize(params)));
-        };
-#else
-        this->template registerMethod<InitializeParams, InitializeResult, &Impl::getInitialize>(
-            "initialize");
-#endif
-    };
-`
   ]
 ]);
 

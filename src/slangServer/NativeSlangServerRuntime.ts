@@ -8,6 +8,7 @@ import {
   type ServerOptions,
 } from 'vscode-languageclient/node';
 import { runTool } from '../tools/ToolRunner';
+import { SlangLanguageClient } from './SlangLanguageClientCompat';
 import type { SlangServerConfig } from './SlangServerConfig';
 import type { SlangServerRuntime, SlangServerStatus, SlangServerState } from './SlangServerRuntime';
 import { toLanguageClientTrace } from './SlangServerTrace';
@@ -64,7 +65,7 @@ export class NativeSlangServerRuntime implements SlangServerRuntime {
       traceOutputChannel: this.options.outputChannel,
     };
 
-    this.client = new LanguageClient(
+    this.client = new SlangLanguageClient(
       'verilog-slang-server',
       'Verilog slang-server',
       serverOptions,
