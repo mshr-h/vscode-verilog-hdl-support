@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.28.1] - 2026-07-06
+
+### Fixed
+
+- Fixed `slang-server` initialization compatibility with newer VS Code language-client code action kinds. [#632](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/632)
+- Refreshed HDL Explorer when `slang-server` status changes, disposed its status subscription with the tree provider, and rejected parent path segments in WASI workspace path mapping. [#630](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/630)
+
 ## [1.28.0] - 2026-07-04
 
 ### Added
