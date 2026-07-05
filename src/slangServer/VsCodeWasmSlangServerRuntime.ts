@@ -19,6 +19,7 @@ import type {
   SlangServerStatus,
   SlangServerWasmMetadata,
 } from './SlangServerRuntime';
+import { SlangLanguageClient } from './SlangLanguageClientCompat';
 import { createWasmServerEnv, toLanguageClientTrace } from './SlangServerTrace';
 import { WasiFileSystemMapper } from './WasiFileSystemMapper';
 import { readWasmMetadata, type WasmRuntimePaths } from './WasmSlangServerRuntime';
@@ -125,7 +126,7 @@ export class VsCodeWasmSlangServerRuntime implements SlangServerRuntime {
         uriConverters: createSlangWasmUriConverters(this.mapper),
       };
 
-      this.client = new LanguageClient(
+      this.client = new SlangLanguageClient(
         'verilog-slang-server-vscode-wasm',
         'Verilog slang-server VS Code WASM',
         serverOptions,

@@ -18,6 +18,7 @@ import type {
   SlangServerState,
   SlangServerWasmMetadata,
 } from './SlangServerRuntime';
+import { SlangLanguageClient } from './SlangLanguageClientCompat';
 import { toLanguageClientTrace } from './SlangServerTrace';
 import { WasiFileSystemMapper } from './WasiFileSystemMapper';
 
@@ -120,7 +121,7 @@ export class WasmSlangServerRuntime implements SlangServerRuntime {
       traceOutputChannel: this.options.outputChannel,
     };
 
-    this.client = new LanguageClient(
+    this.client = new SlangLanguageClient(
       'verilog-slang-server-wasm',
       'Verilog slang-server WASM',
       serverOptions,
