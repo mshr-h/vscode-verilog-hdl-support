@@ -1,0 +1,10 @@
+{
+  "flags": "-f filelists/all_sources.f",
+  "index": [
+    {
+      "dirs": ["rtl", "vivado_ip"],
+      "excludeDirs": ["build", "sim", "node_modules"]
+    }
+  ],
+  "build": "filelists/all_sources.f"
+}

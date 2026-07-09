@@ -1,0 +1,6 @@
+{
+  "verilog.linting.linter": "none",
+  "verilog.slangServer.enabled": true,
+  "verilog.slangServer.runtime": "auto",
+  "verilog.slangServer.trace.server": "off"
+}
