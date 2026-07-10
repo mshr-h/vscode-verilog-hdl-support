@@ -19,6 +19,7 @@ export interface SlangServerConfig {
 export interface SlangServerWasmConfig {
   allowUserConfig: boolean;
   logStderr: boolean;
+  maxAutoIndexedFiles: number;
   memoryLimitMb: number;
 }
 
@@ -37,6 +38,7 @@ export function readSlangServerConfig(): SlangServerConfig {
     wasm: {
       allowUserConfig: config.get<boolean>('wasm.allowUserConfig', false),
       logStderr: config.get<boolean>('wasm.logStderr', true),
+      maxAutoIndexedFiles: config.get<number>('wasm.maxAutoIndexedFiles', 5000),
       memoryLimitMb: config.get<number>('wasm.memoryLimitMb', 2048),
     },
   };

@@ -601,6 +601,13 @@
             "default": true,
             "markdownDescription": "Route bundled WASM slang-server stderr to the Verilog slang-server output channel."
           },
+          "verilog.slangServer.wasm.maxAutoIndexedFiles": {
+            "scope": "window",
+            "type": "number",
+            "default": 5000,
+            "minimum": 1,
+            "markdownDescription": "Maximum number of HDL files that bundled WASM slang-server will automatically index when `.slang/server.json` has no explicit `index`. Explicit index configuration is not limited."
+          },
           "verilog.slangServer.wasm.memoryLimitMb": {
             "scope": "window",
             "type": "number",
@@ -914,7 +921,8 @@
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "check-types": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
-    "test": "vscode-test",
+    "test": "vscode-test && npm run test:slang-wasm-indexing",
+    "test:slang-wasm-indexing": "vscode-test --config .vscode-test.slang-wasm-indexing.mjs",
     "test:windows": "vscode-test --config .vscode-test.windows.mjs --fgrep \"[windows]\"",
     "test:windows-wsl2": "vscode-test --config .vscode-test.windows.mjs --fgrep \"[windows-wsl2]\"",
     "syntax": "js-yaml ./syntaxes/systemverilog.tmLanguage.yaml >./syntaxes/systemverilog.tmLanguage.json"

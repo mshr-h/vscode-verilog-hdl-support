@@ -5,8 +5,12 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { selectSlangServerRuntime } from '../slangServer/SlangServerRuntimeSelector';
 import { formatSlangServerStatusBarText } from '../slangServer/SlangServerStatusBar';
-import type { SlangServerConfig } from '../slangServer/SlangServerConfig';
-import { createWasmServerEnv, toLanguageClientTrace } from '../slangServer/SlangServerTrace';
+import { readSlangServerConfig, type SlangServerConfig } from '../slangServer/SlangServerConfig';
+import { toLanguageClientTrace } from '../slangServer/SlangServerTrace';
+import {
+  createWasmServerEnv,
+  resolveSlangWasmStartupPolicy,
+} from '../slangServer/SlangWasmStartupPolicy';
 import {
   createSlangWasmUriConverters,
   createWasmMemoryDescriptor,
@@ -83,17 +87,87 @@ suite('slang-server runtime UX', () => {
   });
 
   test('VS Code WASM runtime only enables server trace env when configured', () => {
-    assert.deepStrictEqual(createWasmServerEnv('off'), {
-      SLANG_SERVER_WASI_SKIP_STARTUP_INDEXING: '1',
+    assert.deepStrictEqual(createWasmServerEnv('off', false), {
+      SLANG_SERVER_WASI_DEFER_CONFIG_LOAD: '1',
     });
-    assert.deepStrictEqual(createWasmServerEnv('messages'), {
-      SLANG_SERVER_WASI_SKIP_STARTUP_INDEXING: '1',
+    assert.deepStrictEqual(createWasmServerEnv('messages', false), {
+      SLANG_SERVER_WASI_DEFER_CONFIG_LOAD: '1',
       SLANG_SERVER_TESTS: '1',
     });
-    assert.deepStrictEqual(createWasmServerEnv('verbose'), {
-      SLANG_SERVER_WASI_SKIP_STARTUP_INDEXING: '1',
+    assert.deepStrictEqual(createWasmServerEnv('verbose', true), {
+      SLANG_SERVER_WASI_DEFER_CONFIG_LOAD: '1',
+      SLANG_SERVER_WASI_SKIP_AUTO_INDEXING: '1',
       SLANG_SERVER_TESTS: '1',
     });
+  });
+
+  test('WASM auto-index file limit is read from configuration', async () => {
+    const settings = vscode.workspace.getConfiguration('verilog.slangServer');
+    const previous = settings.inspect<number>('wasm.maxAutoIndexedFiles')?.globalValue;
+    try {
+      await settings.update('wasm.maxAutoIndexedFiles', 1234, vscode.ConfigurationTarget.Global);
+      assert.strictEqual(readSlangServerConfig().wasm.maxAutoIndexedFiles, 1234);
+    } finally {
+      await settings.update('wasm.maxAutoIndexedFiles', previous, vscode.ConfigurationTarget.Global);
+    }
+  });
+
+  test('WASM startup policy bounds file discovery and skips only above the limit', async () => {
+    const folder = workspaceFolderFixture();
+    const warnings: string[] = [];
+    let requestedMaxResults: number | undefined;
+    let requestedPattern: string | undefined;
+    let requestedExclude: vscode.GlobPattern | null | undefined;
+    const findFiles = (async (
+      include: vscode.GlobPattern,
+      exclude?: vscode.GlobPattern | null,
+      maxResults?: number
+    ) => {
+      requestedMaxResults = maxResults;
+      requestedPattern = include instanceof vscode.RelativePattern ? include.pattern : String(include);
+      requestedExclude = exclude;
+      return Array.from({ length: 6 }, (_, index) => vscode.Uri.file(path.join(folder.uri.fsPath, `${index}.sv`)));
+    }) as typeof vscode.workspace.findFiles;
+
+    const policy = await resolveSlangWasmStartupPolicy({
+      workspaceFolder: folder,
+      maxAutoIndexedFiles: 5,
+      traceServer: 'off',
+      outputChannel: { warn: (message) => warnings.push(message) },
+      findFiles,
+    });
+
+    assert.strictEqual(requestedPattern, '**/*.{v,vh,sv,svh}');
+    assert.strictEqual(requestedExclude, null);
+    assert.strictEqual(requestedMaxResults, 6);
+    assert.strictEqual(policy.skipAutoIndexing, true);
+    assert.strictEqual(policy.env.SLANG_SERVER_WASI_SKIP_AUTO_INDEXING, '1');
+    assert.match(warnings[0], /more than 5 HDL files/);
+
+    const allowed = await resolveSlangWasmStartupPolicy({
+      workspaceFolder: folder,
+      maxAutoIndexedFiles: 6,
+      traceServer: 'off',
+      outputChannel: { warn: (message) => warnings.push(message) },
+      findFiles,
+    });
+    assert.strictEqual(allowed.skipAutoIndexing, false);
+    assert.ok(!('SLANG_SERVER_WASI_SKIP_AUTO_INDEXING' in allowed.env));
+  });
+
+  test('WASM startup policy safely skips automatic indexing when file discovery fails', async () => {
+    const warnings: string[] = [];
+    const policy = await resolveSlangWasmStartupPolicy({
+      workspaceFolder: workspaceFolderFixture(),
+      maxAutoIndexedFiles: 5000,
+      traceServer: 'off',
+      outputChannel: { warn: (message) => warnings.push(message) },
+      findFiles: (async () => { throw new Error('search failed'); }) as typeof vscode.workspace.findFiles,
+    });
+
+    assert.strictEqual(policy.skipAutoIndexing, true);
+    assert.strictEqual(policy.env.SLANG_SERVER_WASI_SKIP_AUTO_INDEXING, '1');
+    assert.match(warnings[0], /search failed/);
   });
 
   test('VS Code WASM URI converters map workspace diagnostics back to host files', () => {
@@ -162,8 +236,17 @@ function config(input: { runtime: SlangServerConfig['runtime']; path: string }):
     wasm: {
       allowUserConfig: false,
       logStderr: true,
+      maxAutoIndexedFiles: 5000,
       memoryLimitMb: 2048,
     },
+  };
+}
+
+function workspaceFolderFixture(): vscode.WorkspaceFolder {
+  return {
+    uri: vscode.Uri.file(path.join(os.tmpdir(), 'slang-startup-policy-workspace')),
+    name: 'slang-startup-policy-workspace',
+    index: 0,
   };
 }
 
