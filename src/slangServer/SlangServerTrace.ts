@@ -13,15 +13,3 @@ export function toLanguageClientTrace(traceServer: SlangServerConfig['traceServe
       return Trace.Off;
   }
 }
-
-export function createWasmServerEnv(traceServer: SlangServerConfig['traceServer']): Record<string, string> {
-  const env: Record<string, string> = {
-    SLANG_SERVER_WASI_SKIP_STARTUP_INDEXING: '1',
-  };
-
-  if (traceServer !== 'off') {
-    env.SLANG_SERVER_TESTS = '1';
-  }
-
-  return env;
-}

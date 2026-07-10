@@ -20,6 +20,7 @@ import type {
 } from './SlangServerRuntime';
 import { SlangLanguageClient } from './SlangLanguageClientCompat';
 import { toLanguageClientTrace } from './SlangServerTrace';
+import { resolveSlangWasmStartupPolicy } from './SlangWasmStartupPolicy';
 import { WasiFileSystemMapper } from './WasiFileSystemMapper';
 
 export interface WasmRuntimePaths {
@@ -75,6 +76,13 @@ export class WasmSlangServerRuntime implements SlangServerRuntime {
       return;
     }
 
+    const startupPolicy = await resolveSlangWasmStartupPolicy({
+      workspaceFolder,
+      maxAutoIndexedFiles: this.config.wasm.maxAutoIndexedFiles,
+      traceServer: this.config.traceServer,
+      outputChannel: this.options.outputChannel,
+    });
+
     await fs.promises.mkdir(paths.tmpRoot, { recursive: true });
     this.metadata = await readWasmMetadata(paths.metadataPath);
     this.mapper = new WasiFileSystemMapper({
@@ -95,6 +103,7 @@ export class WasmSlangServerRuntime implements SlangServerRuntime {
         }),
       ], {
         stdio: ['pipe', 'pipe', 'pipe'],
+        env: { ...process.env, ...startupPolicy.env },
       });
       this.helper.stderr.setEncoding('utf8');
       this.helper.stderr.on('data', (chunk: string) => {

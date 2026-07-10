@@ -183,6 +183,12 @@ suite('Extension Test Suite', () => {
     assert.ok(properties['verilog.slangServer.trace.server']);
     assert.ok(properties['verilog.slangServer.wasm.allowUserConfig']);
     assert.ok(properties['verilog.slangServer.wasm.logStderr']);
+    const maxAutoIndexedFiles = properties['verilog.slangServer.wasm.maxAutoIndexedFiles'] as {
+      default?: unknown;
+      minimum?: unknown;
+    };
+    assert.strictEqual(maxAutoIndexedFiles.default, 5000);
+    assert.strictEqual(maxAutoIndexedFiles.minimum, 1);
     assert.ok(properties['verilog.slangServer.wasm.memoryLimitMb']);
     assert.ok(properties['verilog.hdlExplorer.enabled']);
     const runOnOpen = properties['verilog.linting.runOnOpen'] as { default?: unknown };

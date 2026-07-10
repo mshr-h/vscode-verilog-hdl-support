@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [Unreleased]
+
+### Fixed
+
+- Restored deferred workspace indexing for bundled WASM `slang-server`, including explicit indexes used for cross-file navigation, while limiting automatic whole-workspace indexing in large projects.
+
 ## [1.28.1] - 2026-07-06
 
 ### Fixed

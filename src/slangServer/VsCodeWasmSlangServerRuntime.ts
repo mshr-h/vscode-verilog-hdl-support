@@ -20,7 +20,8 @@ import type {
   SlangServerWasmMetadata,
 } from './SlangServerRuntime';
 import { SlangLanguageClient } from './SlangLanguageClientCompat';
-import { createWasmServerEnv, toLanguageClientTrace } from './SlangServerTrace';
+import { toLanguageClientTrace } from './SlangServerTrace';
+import { resolveSlangWasmStartupPolicy } from './SlangWasmStartupPolicy';
 import { WasiFileSystemMapper } from './WasiFileSystemMapper';
 import { readWasmMetadata, type WasmRuntimePaths } from './WasmSlangServerRuntime';
 
@@ -75,6 +76,12 @@ export class VsCodeWasmSlangServerRuntime implements SlangServerRuntime {
     }
 
     try {
+      const startupPolicy = await resolveSlangWasmStartupPolicy({
+        workspaceFolder,
+        maxAutoIndexedFiles: this.config.wasm.maxAutoIndexedFiles,
+        traceServer: this.config.traceServer,
+        outputChannel: this.options.outputChannel,
+      });
       await fs.promises.mkdir(paths.tmpRoot, { recursive: true });
       this.metadata = await readWasmMetadata(paths.metadataPath);
       this.mapper = new WasiFileSystemMapper({
@@ -88,7 +95,7 @@ export class VsCodeWasmSlangServerRuntime implements SlangServerRuntime {
         const wasm = await Wasm.load();
         const processOptions: ProcessOptions = {
           args: this.config.args,
-          env: createWasmServerEnv(this.config.traceServer),
+          env: startupPolicy.env,
           stdio: createStdioOptions(),
           mountPoints: [
             { kind: 'vscodeFileSystem', uri: workspaceRoot, mountPoint: '/workspace' },

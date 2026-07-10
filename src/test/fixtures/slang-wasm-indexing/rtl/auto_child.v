@@ -1,0 +1,2 @@
+module veriloghdl_wasm_auto_child;
+endmodule

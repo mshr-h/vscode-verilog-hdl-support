@@ -186,7 +186,7 @@ patchFile('src/SlangServer.cpp', [
   ],
   [
     '    loadConfig();\n\n    if (params.capabilities.experimental) {\n',
-    '#ifdef __wasi__\n    if (std::getenv("SLANG_SERVER_WASI_SKIP_STARTUP_INDEXING") == nullptr) {\n        loadConfig();\n    }\n    else if (std::getenv("SLANG_SERVER_WASI_TRACE_INIT")) {\n        std::cerr << "WASI initialize checkpoint: skipping startup config load" << std::endl;\n    }\n#else\n    loadConfig();\n#endif\n\n    if (params.capabilities.experimental) {\n'
+    '#ifdef __wasi__\n    if (std::getenv("SLANG_SERVER_WASI_DEFER_CONFIG_LOAD") == nullptr) {\n        loadConfig();\n    }\n    else if (std::getenv("SLANG_SERVER_WASI_TRACE_INIT")) {\n        std::cerr << "WASI initialize checkpoint: deferring startup config load" << std::endl;\n    }\n#else\n    loadConfig();\n#endif\n\n    if (params.capabilities.experimental) {\n'
   ],
   [
     '    auto result =\n        lsp::InitializeResult{\n',
@@ -198,15 +198,15 @@ patchFile('src/SlangServer.cpp', [
   ],
   [
     'void SlangServer::onInitialized(const lsp::InitializedParams&) {\n    INFO("Server initialized at {}", m_workspaceFolder ? m_workspaceFolder->uri.getPath() : "none");\n    m_client.setConfig(m_config);\n',
-    'void SlangServer::onInitialized(const lsp::InitializedParams&) {\n    INFO("Server initialized at {}", m_workspaceFolder ? m_workspaceFolder->uri.getPath() : "none");\n#ifdef __wasi__\n    if (std::getenv("SLANG_SERVER_WASI_SKIP_STARTUP_INDEXING") != nullptr) {\n        loadConfig();\n    }\n    else {\n        m_client.setConfig(m_config);\n    }\n#else\n    m_client.setConfig(m_config);\n#endif\n'
+    'void SlangServer::onInitialized(const lsp::InitializedParams&) {\n    INFO("Server initialized at {}", m_workspaceFolder ? m_workspaceFolder->uri.getPath() : "none");\n#ifdef __wasi__\n    if (std::getenv("SLANG_SERVER_WASI_DEFER_CONFIG_LOAD") != nullptr) {\n        loadConfig();\n    }\n    else {\n        m_client.setConfig(m_config);\n    }\n#else\n    m_client.setConfig(m_config);\n#endif\n'
   ],
   [
     'void SlangServer::loadConfig(const Config& config, bool forceIndexing) {\n    auto old_config = m_config;\n    m_config = Config(config);\n',
     'void SlangServer::loadConfig(const Config& config, bool forceIndexing) {\n    auto old_config = m_config;\n    m_config = Config(config);\n#ifdef __wasi__\n    if (m_config.build.value().has_value()) {\n        m_config.build = makeWasiWorkspaceAbsolute(*m_config.build.value(), m_workspaceFolder);\n    }\n#endif\n'
   ],
   [
-    '    loadConfig(Config::fromFiles(workspaceConf, userConf, localConf, m_client), true);\n',
-    '    bool forceIndexing = true;\n#ifdef __wasi__\n    forceIndexing = std::getenv("SLANG_SERVER_WASI_SKIP_STARTUP_INDEXING") == nullptr;\n#endif\n    loadConfig(Config::fromFiles(workspaceConf, userConf, localConf, m_client), forceIndexing);\n'
+    '    else if (forceIndexing) {\n        auto maybePath = m_workspaceFolder.has_value()\n                             ? std::optional<std::string_view>(m_workspaceFolder->uri.getPath())\n                             : std::nullopt;\n\n        m_indexer.setNumThreads(m_config.indexingThreads.value());\n        m_indexer.startIndexing(m_config.index.value(), maybePath);\n    }\n',
+    '    else if (forceIndexing) {\n#ifdef __wasi__\n        if (m_config.index.value().empty() &&\n            std::getenv("SLANG_SERVER_WASI_SKIP_AUTO_INDEXING") != nullptr) {\n            WARN("Skipping automatic workspace indexing because the client file limit was exceeded; "\n                 "configure an explicit index or increase the client limit");\n        }\n        else\n#endif\n        {\n            auto maybePath = m_workspaceFolder.has_value()\n                                 ? std::optional<std::string_view>(m_workspaceFolder->uri.getPath())\n                                 : std::nullopt;\n\n            m_indexer.setNumThreads(m_config.indexingThreads.value());\n            m_indexer.startIndexing(m_config.index.value(), maybePath);\n        }\n    }\n'
   ]
 ]);
 
