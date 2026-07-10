@@ -4,11 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## [Unreleased]
+## [1.28.2] - 2026-07-11
 
 ### Fixed
 
-- Restored deferred workspace indexing for bundled WASM `slang-server`, including explicit indexes used for cross-file navigation, while limiting automatic whole-workspace indexing in large projects.
+- Restored deferred workspace indexing for bundled WASM `slang-server`, including explicit indexes used for cross-file navigation, while limiting automatic whole-workspace indexing in large projects. [#636](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/636)
 
 ## [1.28.1] - 2026-07-06
 
