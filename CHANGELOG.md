@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.28.3] - 2026-07-11
+
+### Changed
+
+- Linked `slang-server` references in the README to its upstream repository.
+
 ## [1.28.2] - 2026-07-11
 
 ### Fixed
