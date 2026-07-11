@@ -921,7 +921,7 @@
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "check-types": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
-    "test": "vscode-test && npm run test:slang-wasm-indexing",
+    "test": "vscode-test",
     "test:slang-wasm-indexing": "vscode-test --config .vscode-test.slang-wasm-indexing.mjs",
     "test:windows": "vscode-test --config .vscode-test.windows.mjs --fgrep \"[windows]\"",
     "test:windows-wsl2": "vscode-test --config .vscode-test.windows.mjs --fgrep \"[windows-wsl2]\"",

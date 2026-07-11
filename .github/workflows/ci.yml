@@ -159,6 +159,9 @@ jobs:
       - name: Verify bundled slang-server WASM
         if: runner.os == 'Linux'
         run: npm run verify:wasm-bundle
+      - name: Test bundled slang-server WASM indexing
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm run test:slang-wasm-indexing
       - name: Package VSIX with bundled WASM
         if: runner.os == 'Linux'
         run: npm run package

@@ -8,12 +8,15 @@ suite('bundled WASM slang-server workspace indexing', () => {
   test('resolves default and explicit-index definitions after deferred startup', async function () {
     this.timeout(90000);
     const folder = vscode.workspace.workspaceFolders?.[0];
-    if (!folder || !vscode.extensions.getExtension('ms-vscode.wasm-wasi-core')) {
-      this.skip();
-    }
-    if (!await fileExists(path.join(getRepositoryRoot(), 'resources', 'wasm', 'slang-server.wasm'))) {
-      this.skip();
-    }
+    assert.ok(folder, 'Expected the slang WASM integration fixture workspace to be open');
+    assert.ok(
+      vscode.extensions.getExtension('ms-vscode.wasm-wasi-core'),
+      'Expected the ms-vscode.wasm-wasi-core extension to be installed'
+    );
+    assert.ok(
+      await fileExists(path.join(getRepositoryRoot(), 'resources', 'wasm', 'slang-server.wasm')),
+      'Expected resources/wasm/slang-server.wasm; run npm run build:slang-wasm first'
+    );
 
     const extension = vscode.extensions.getExtension('mshr-h.veriloghdl');
     assert.ok(extension);
