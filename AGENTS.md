@@ -84,8 +84,8 @@ This repo uses tag-driven publishing.
 ## Testing Notes
 
 - Tests are compiled to `out/` with `npm run compile-tests`.
-- VS Code test runner configuration lives in `.vscode-test.mjs`; Windows-focused
-  tests use `.vscode-test.windows.mjs`.
+- Core and native VS Code test runner configuration lives in `.vscode-test.mjs`;
+  WSL2 integration tests use `.vscode-test.wsl2.mjs`.
 - WSL2 integration tests are gated by `VERILOGHDL_RUN_WSL2_TESTS`.
 - Documentation-only edits normally do not require the full test suite, but
   still review the final diff for accuracy against `README.md`, `package.json`,
