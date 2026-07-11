@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.28.4] - 2026-07-11
+
+### Changed
+
+- Made inactive preprocessor highlighting project-aware through `slang-server`, with the existing local analysis retained as a fallback. [#638](https://github.com/mshr-h/vscode-verilog-hdl-support/pull/638)
+
 ## [1.28.3] - 2026-07-11
 
 ### Changed
