@@ -7,6 +7,14 @@
   "ignoreDeps": [
     "@types/vscode"
   ],
+  "packageRules": [
+    {
+      "matchPackageNames": [
+        "typescript"
+      ],
+      "allowedVersions": "<6.1.0"
+    }
+  ],
   "separateMinorPatch": true,
   "major": {
     "automerge": false
