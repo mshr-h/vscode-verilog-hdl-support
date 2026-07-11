@@ -3,10 +3,36 @@ import * as assert from 'assert';
 import * as fs from 'fs';
 import * as path from 'path';
 import type { InitializeParams } from 'vscode-languageclient/node';
-import { removeUnsupportedSlangCodeActionKinds } from '../slangServer/SlangLanguageClientCompat';
+import {
+  enableSlangInactiveRegions,
+  removeUnsupportedSlangCodeActionKinds,
+} from '../slangServer/SlangLanguageClientCompat';
 import { getRepositoryRoot } from './pathTestUtils';
 
 suite('SlangLanguageClient compatibility', () => {
+  test('advertises inactive region notification support', () => {
+    const params = { capabilities: {} } as InitializeParams;
+
+    enableSlangInactiveRegions(params);
+
+    assert.deepStrictEqual(params.capabilities.experimental, {
+      inactiveRegions: { inactiveRegions: true },
+    });
+  });
+
+  test('preserves other experimental capabilities', () => {
+    const params = {
+      capabilities: { experimental: { existing: true } },
+    } as unknown as InitializeParams;
+
+    enableSlangInactiveRegions(params);
+
+    assert.deepStrictEqual(params.capabilities.experimental, {
+      existing: true,
+      inactiveRegions: { inactiveRegions: true },
+    });
+  });
+
   test('removes only refactor.move from initialize code action kind values', () => {
     const valueSet = [
       '',

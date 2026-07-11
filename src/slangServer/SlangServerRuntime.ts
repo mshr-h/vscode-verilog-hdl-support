@@ -4,6 +4,11 @@ import * as vscode from 'vscode';
 export type SlangServerState = 'stopped' | 'starting' | 'running' | 'error';
 export type SlangServerResolvedRuntime = 'native' | 'bundled-wasm';
 
+export interface SlangInactiveRegions {
+  uri: vscode.Uri;
+  ranges: vscode.Range[];
+}
+
 export interface SlangServerWasmMetadata {
   slangServerCommit?: string;
   slangCommit?: string;

@@ -715,7 +715,7 @@
               "type": "string"
             },
             "default": [],
-            "markdownDescription": "Macro names to treat as predefined for Verilog/SystemVerilog preprocessor inactive-code highlighting."
+            "markdownDescription": "Macro names to treat as predefined for fallback Verilog/SystemVerilog inactive-code highlighting when slang-server regions are unavailable."
           },
           "verilog.preprocessor.inactiveCode.enabled": {
             "scope": "window",

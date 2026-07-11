@@ -72,7 +72,7 @@ export async function activate(context: vscode.ExtensionContext) {
     )
   );
 
-  context.subscriptions.push(new InactivePreprocessorDecorationProvider());
+  context.subscriptions.push(new InactivePreprocessorDecorationProvider(slangServerManager));
 
   lintManager = new LintManager();
   context.subscriptions.push(lintManager);

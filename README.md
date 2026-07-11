@@ -208,7 +208,7 @@ While using ``include` directives, the path to included files should be relative
 
 ## Inactive Preprocessor Regions
 
-Inactive Verilog/SystemVerilog preprocessor branches controlled by ``ifdef`, ``ifndef`, ``elsif`, ``else`, and ``endif` are highlighted in the editor. The decoration helper uses macros defined in the current document plus workspace-wide macros configured in `verilog.preprocessor.defines`.
+Inactive Verilog/SystemVerilog preprocessor branches controlled by `` `ifdef``, `` `ifndef``, `` `elsif``, `` `else``, and `` `endif`` are highlighted in the editor. When slang-server is running, its project-aware inactive-region analysis reflects the active `.slang/server.json`, filelists, includes, and `-D` defines. If slang-server is unavailable or does not support inactive-region notifications, the decoration helper falls back to macros defined in the current document plus workspace-wide macros configured in `verilog.preprocessor.defines`.
 
 ```json
 {

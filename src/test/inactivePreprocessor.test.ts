@@ -3,9 +3,32 @@ import * as assert from 'assert';
 import {
   computeInactivePreprocessorRanges,
   mergePreprocessorDefines,
+  selectInactivePreprocessorRanges,
 } from '../providers/InactivePreprocessorDecorationProvider';
 
 suite('Inactive Preprocessor Ranges', () => {
+  test('prefers server ranges without evaluating the fallback', () => {
+    const serverRanges = [{ startLine: 2, endLine: 4 }];
+    const ranges = selectInactivePreprocessorRanges(serverRanges, () => {
+      assert.fail('fallback should not be evaluated');
+    });
+
+    assert.strictEqual(ranges, serverRanges);
+  });
+
+  test('treats an empty server result as authoritative', () => {
+    const ranges = selectInactivePreprocessorRanges([], () => [{ startLine: 1, endLine: 1 }]);
+
+    assert.deepStrictEqual(ranges, []);
+  });
+
+  test('uses local analysis before a server result is available', () => {
+    const fallback = [{ startLine: 1, endLine: 1 }];
+    const ranges = selectInactivePreprocessorRanges(undefined, () => fallback);
+
+    assert.strictEqual(ranges, fallback);
+  });
+
   test('undefined macro makes ifdef body inactive', () => {
     const ranges = computeInactivePreprocessorRanges(
       ['`ifdef FOO', 'assign a = 1;', '`endif'].join('\n'),
