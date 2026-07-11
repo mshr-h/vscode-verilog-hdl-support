@@ -10,13 +10,14 @@ import {
 import { runTool } from '../tools/ToolRunner';
 import { SlangLanguageClient } from './SlangLanguageClientCompat';
 import type { SlangServerConfig } from './SlangServerConfig';
-import type { SlangServerRuntime, SlangServerStatus, SlangServerState } from './SlangServerRuntime';
+import type { SlangInactiveRegions, SlangServerRuntime, SlangServerStatus, SlangServerState } from './SlangServerRuntime';
 import { toLanguageClientTrace } from './SlangServerTrace';
 
 export interface NativeSlangServerRuntimeOptions {
   outputChannel: vscode.LogOutputChannel;
   onStatusChange?: () => void;
   onCrash?: (reason: string) => void;
+  onInactiveRegions?: (regions: SlangInactiveRegions) => void;
 }
 
 export class NativeSlangServerRuntime implements SlangServerRuntime {
@@ -69,7 +70,8 @@ export class NativeSlangServerRuntime implements SlangServerRuntime {
       'verilog-slang-server',
       'Verilog slang-server',
       serverOptions,
-      clientOptions
+      clientOptions,
+      this.options.onInactiveRegions
     );
     this.client.onDidChangeState((event) => {
       if (!this.stopping && event.newState === State.Stopped && this.state === 'running') {

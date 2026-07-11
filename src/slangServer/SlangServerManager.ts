@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { readSlangServerConfig } from './SlangServerConfig';
 import { NativeSlangServerRuntime } from './NativeSlangServerRuntime';
 import { selectSlangServerRuntime } from './SlangServerRuntimeSelector';
-import type { SlangServerRuntime, SlangServerStatus } from './SlangServerRuntime';
+import type { SlangInactiveRegions, SlangServerRuntime, SlangServerStatus } from './SlangServerRuntime';
 import { VsCodeWasmSlangServerRuntime } from './VsCodeWasmSlangServerRuntime';
 import { WasmSlangServerRuntime } from './WasmSlangServerRuntime';
 
@@ -12,15 +12,18 @@ export class SlangServerManager implements vscode.Disposable {
   private readonly outputChannel = vscode.window.createOutputChannel('Verilog slang-server', { log: true });
   private readonly disposables: vscode.Disposable[] = [];
   private readonly statusEmitter = new vscode.EventEmitter<SlangServerStatus>();
+  private readonly inactiveRegionsEmitter = new vscode.EventEmitter<SlangInactiveRegions | undefined>();
   private lastCrashReason: string | undefined;
   private lastCrashAt: string | undefined;
   private crashNotificationShown = false;
 
   readonly onDidChangeStatus = this.statusEmitter.event;
+  readonly onDidChangeInactiveRegions = this.inactiveRegionsEmitter.event;
 
   constructor(private readonly context: vscode.ExtensionContext) {
     this.disposables.push(
       this.statusEmitter,
+      this.inactiveRegionsEmitter,
       vscode.workspace.onDidChangeConfiguration((event) => {
         if (event.affectsConfiguration('verilog.slangServer')) {
           void this.restart();
@@ -30,6 +33,7 @@ export class SlangServerManager implements vscode.Disposable {
   }
 
   async start(): Promise<void> {
+    this.inactiveRegionsEmitter.fire(undefined);
     const config = readSlangServerConfig();
     await this.runtime?.stop();
     this.runtime = undefined;
@@ -46,6 +50,7 @@ export class SlangServerManager implements vscode.Disposable {
           outputChannel: this.outputChannel,
           onStatusChange: () => this.emitStatus(),
           onCrash: (reason) => this.recordCrash(reason),
+          onInactiveRegions: (regions) => this.inactiveRegionsEmitter.fire(regions),
         })
       : this.createBundledWasmRuntime(config);
     await this.runtime.start();
@@ -56,6 +61,7 @@ export class SlangServerManager implements vscode.Disposable {
   }
 
   async stop(): Promise<void> {
+    this.inactiveRegionsEmitter.fire(undefined);
     await this.runtime?.stop();
     this.emitStatus();
   }
@@ -112,6 +118,7 @@ export class SlangServerManager implements vscode.Disposable {
   }
 
   private recordCrash(reason: string): void {
+    this.inactiveRegionsEmitter.fire(undefined);
     this.lastCrashReason = reason;
     this.lastCrashAt = new Date().toISOString();
     if (this.crashNotificationShown) {
@@ -141,6 +148,7 @@ export class SlangServerManager implements vscode.Disposable {
       outputChannel: this.outputChannel,
       onStatusChange: () => this.emitStatus(),
       onCrash: (reason: string) => this.recordCrash(reason),
+      onInactiveRegions: (regions: SlangInactiveRegions) => this.inactiveRegionsEmitter.fire(regions),
     };
     if (process.env.VERILOGHDL_SLANG_WASM_RUNTIME === 'node') {
       this.outputChannel.info('Using legacy node:wasi helper slang-server runtime provider.');

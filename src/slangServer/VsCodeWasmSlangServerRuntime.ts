@@ -15,6 +15,7 @@ import {
 import type { SlangServerConfig } from './SlangServerConfig';
 import type {
   SlangServerRuntime,
+  SlangInactiveRegions,
   SlangServerState,
   SlangServerStatus,
   SlangServerWasmMetadata,
@@ -30,6 +31,7 @@ export interface VsCodeWasmSlangServerRuntimeOptions {
   outputChannel: vscode.LogOutputChannel;
   onStatusChange?: () => void;
   onCrash?: (reason: string) => void;
+  onInactiveRegions?: (regions: SlangInactiveRegions) => void;
 }
 
 export class VsCodeWasmSlangServerRuntime implements SlangServerRuntime {
@@ -137,7 +139,8 @@ export class VsCodeWasmSlangServerRuntime implements SlangServerRuntime {
         'verilog-slang-server-vscode-wasm',
         'Verilog slang-server VS Code WASM',
         serverOptions,
-        clientOptions
+        clientOptions,
+        this.options.onInactiveRegions
       );
       this.client.onDidChangeState((event) => {
         if (!this.stopping && event.newState === State.Stopped && this.state === 'running') {
