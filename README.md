@@ -13,7 +13,7 @@ Install it from [VS Code Marketplace](https://marketplace.visualstudio.com/items
 
 ## Quick Start
 
-Syntax highlighting, snippets, basic editor integration, inactive preprocessor highlighting, waveform opening, and bundled WASM slang-server support work immediately after installation in VS Code Desktop with a filesystem workspace.
+Syntax highlighting, snippets, basic editor integration, inactive preprocessor highlighting, waveform opening, and bundled WASM [`slang-server`](https://github.com/hudson-trading/slang-server) support work immediately after installation in VS Code Desktop with a filesystem workspace.
 
 SystemVerilog language intelligence is provided by `slang-server`. By default, `auto` uses the bundled WASM runtime when no native executable path is configured. To use a native `slang-server` instead, configure the executable path:
 
@@ -40,7 +40,7 @@ Use **Verilog: Doctor** from the command palette to inspect slang-server runtime
 ## Features
 
 - Syntax highlighting and language modes for HDL, constraint, script, filelist, and waveform files.
-- SystemVerilog and Verilog intelligence through `slang-server` LSP.
+- SystemVerilog and Verilog intelligence through [`slang-server`](https://github.com/hudson-trading/slang-server) LSP.
 - `.slang/server.json` project configuration creation, opening, validation, and Doctor reporting.
 - HDL Explorer backed by slang-server commands for modules, scopes, hierarchy, build file, and top-level actions.
 - Inactive Verilog/SystemVerilog preprocessor region highlighting from explicitly configured defines.
@@ -136,7 +136,7 @@ These are the main commands most users run from the command palette. Additional 
 
 ## Using slang-server
 
-The extension uses slang-server as the only project-aware Verilog/SystemVerilog intelligence engine. The previous TypeScript-side project index, hierarchy inference, fallback navigation, and module-instantiation scanner are no longer active; module instantiation snippets come from slang-server LSP completion.
+The extension uses [slang-server](https://github.com/hudson-trading/slang-server) as the only project-aware Verilog/SystemVerilog intelligence engine. The previous TypeScript-side project index, hierarchy inference, fallback navigation, and module-instantiation scanner are no longer active; module instantiation snippets come from slang-server LSP completion.
 
 Runtime settings:
 
