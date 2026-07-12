@@ -37,4 +37,3 @@ export class VerilogHoverProvider implements vscode.HoverProvider {
     return undefined;
   }
 }
-

@@ -233,4 +233,3 @@ suite('BaseLinter run management', () => {
     assert.ok(!sink.diagnostics.has(doc.uri.toString()));
   });
 });
-

@@ -93,4 +93,3 @@ export class VerilogCompletionItemProvider implements vscode.CompletionItemProvi
     }
   }
 }
-

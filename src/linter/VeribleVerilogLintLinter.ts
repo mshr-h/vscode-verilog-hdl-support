@@ -160,4 +160,3 @@ export default class VeribleVerilogLintLinter extends BaseLinter {
     }
   }
 }
-

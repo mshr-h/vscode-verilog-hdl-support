@@ -307,4 +307,3 @@ suite('Ctags Completion', () => {
     assert.strictEqual(classItem?.kind, vscode.CompletionItemKind.Class);
   });
 });
-

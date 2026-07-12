@@ -115,9 +115,9 @@ function getIndentationString(): string {
 
   if (useSpaces) {
     return ' '.repeat(tabSize);
-  } 
+  }
     return '\t';
-  
+
 }
 
 function instantiatePort(ports: string[]): string {
@@ -229,4 +229,3 @@ class ModuleTags extends Ctags {
     return Promise.resolve();
   }
 }
-

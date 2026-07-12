@@ -12,7 +12,7 @@ import {
 
 const nodeCommand = process.execPath;
 
-suite('ToolRunner', () => {
+suite('[windows] ToolRunner', () => {
   test('resolves Windows command from PATH using PATHEXT', () => {
     const env = {
       PATH: 'C:\\Vivado\\bin;C:\\Other\\bin',

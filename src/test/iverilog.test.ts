@@ -201,4 +201,3 @@ suite('Icarus Linter', () => {
     }
   });
 });
-

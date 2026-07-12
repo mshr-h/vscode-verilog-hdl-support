@@ -233,4 +233,3 @@ export default class IcarusLinter extends BaseLinter {
     this.publishDiagnosticsIfCurrent(doc, run, diagnosticsByUri);
   }
 }
-

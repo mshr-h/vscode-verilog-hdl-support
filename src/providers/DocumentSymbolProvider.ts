@@ -116,4 +116,3 @@ export class VerilogDocumentSymbolProvider implements vscode.DocumentSymbolProvi
     return list;
   }
 }
-

@@ -113,4 +113,3 @@ suite('LintManager', () => {
     }
   });
 });
-

@@ -105,4 +105,3 @@ suite('DefinitionProvider', () => {
     assert.strictEqual(result?.length, 2, 'Expected two definitions');
   });
 });
-

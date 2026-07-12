@@ -24,4 +24,3 @@ export class VerilogDefinitionProvider implements vscode.DefinitionProvider {
     return definitions;
   }
 }
-

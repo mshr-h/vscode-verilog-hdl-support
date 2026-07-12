@@ -184,4 +184,3 @@ export default abstract class BaseLinter implements vscode.Disposable {
    */
   protected abstract lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void>;
 }
-

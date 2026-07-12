@@ -1,8 +1,0 @@
-{
-  "verilog.linting.linter": "iverilog",
-  "verilog.linting.iverilog.includePath": [],
-  "verilog.linting.iverilog.arguments": "-Y .v -y rtl -y vivado_ip/ila_0 -y vivado_ip/vio_0",
-  "verilog.linting.iverilog.runAtFileLocation": false,
-  "verilog.linting.runOnOpen": true,
-  "verilog.linting.runOnSave": true
-}

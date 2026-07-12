@@ -273,4 +273,3 @@ export default class SlangLinter extends BaseLinter {
     }
   }
 }
-

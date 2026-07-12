@@ -78,4 +78,3 @@ suite('tclsp initialization options', () => {
     }
   });
 });
-

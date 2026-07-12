@@ -129,4 +129,3 @@ suite('DocumentSymbolProvider', () => {
     );
   });
 });
-

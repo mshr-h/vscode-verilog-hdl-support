@@ -80,4 +80,3 @@ suite('Language Server smoke', () => {
     assert.deepStrictEqual(options.debug.args, ['--lsp', '--define', 'A=B C']);
   });
 });
-

@@ -115,4 +115,3 @@ suite('Slang Linter', () => {
     assert.ok(!source.includes('exec(command'), 'SlangLinter must not call exec(command)');
   });
 });
-

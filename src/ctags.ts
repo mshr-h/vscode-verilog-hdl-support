@@ -647,13 +647,13 @@ export class CtagsManager implements vscode.Disposable {
     if (this.disposed || !this.enabled) {
       return [];
     }
-    
+
     const textRange = document.getWordRangeAtPosition(position);
     if (!textRange || textRange.isEmpty) {
       return [];
     }
     const targetText = document.getText(textRange);
-    
+
     // always search the current doc
     const tasks = [this.findDefinition(document, targetText)];
 
@@ -679,7 +679,7 @@ export class CtagsManager implements vscode.Disposable {
         tasks.push(this.findDefinition(file, targetText));
       }
     }
-    
+
     // TODO: use promise.race
     const results: vscode.DefinitionLink[][] = await Promise.all(tasks);
     return results.reduce((acc, val) => acc.concat(val), []);
@@ -700,4 +700,3 @@ export class CtagsManager implements vscode.Disposable {
     this.filemap.clear();
   }
 }
-

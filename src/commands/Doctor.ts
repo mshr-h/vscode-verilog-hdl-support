@@ -864,4 +864,3 @@ function firstNonEmptyLine(output: string): string | undefined {
     .map((line) => line.trim())
     .find((line) => line.length > 0);
 }
-

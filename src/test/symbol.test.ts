@@ -147,4 +147,3 @@ suite('Symbol', () => {
     assert.strictEqual(Symbol.isContainer(''), false);
   });
 });
-

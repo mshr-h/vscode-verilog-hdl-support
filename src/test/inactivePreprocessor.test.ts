@@ -140,4 +140,3 @@ suite('Inactive Preprocessor Ranges', () => {
     ]);
   });
 });
-

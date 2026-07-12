@@ -52,7 +52,7 @@ interface XvlogRecord {
   invocation: number;
 }
 
-suite('Xvlog Linter', () => {
+suite('[windows] Xvlog Linter', () => {
   test('builds args with automatic flags and split custom args', () => {
     const includePath = path.join(os.tmpdir(), 'xvlog include');
     const documentPath = path.join(os.tmpdir(), 'xvlog source', 'top file.sv');

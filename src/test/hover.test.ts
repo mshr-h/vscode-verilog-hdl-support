@@ -42,4 +42,3 @@ suite('Hover Provider', () => {
     assert.ok(markdown?.value.includes('module top'), 'Hover should include definition text');
   });
 });
-

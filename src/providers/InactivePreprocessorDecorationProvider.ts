@@ -292,4 +292,3 @@ export class InactivePreprocessorDecorationProvider implements vscode.Disposable
     return new vscode.Range(start, end);
   }
 }
-

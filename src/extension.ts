@@ -190,4 +190,3 @@ export async function deactivate(): Promise<void> {
   await stopAllLanguageClients();
   await disposeLogging();
 }
-

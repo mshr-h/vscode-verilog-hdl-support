@@ -9,8 +9,9 @@ export default defineConfig({
 		'out/src/test/wslPathConverter.test.js',
 		'out/src/test/verilator.test.js',
 		'out/src/test/slang.test.js',
+		'out/src/test/toolRunner.test.js',
+		'out/src/test/xvlog.test.js',
 	],
-	installExtensions: ['ms-vscode.wasm-wasi-core'],
 	launchArgs: [
 		`--user-data-dir=${path.join(testTempRoot, 'user-data')}`,
 	],

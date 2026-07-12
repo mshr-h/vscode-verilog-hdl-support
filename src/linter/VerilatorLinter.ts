@@ -467,4 +467,3 @@ export default class VerilatorLinter extends BaseLinter {
     this.publishDiagnosticsIfCurrent(doc, run, diagnosticsByUri);
   }
 }
-

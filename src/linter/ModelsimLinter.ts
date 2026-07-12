@@ -141,4 +141,3 @@ export default class ModelsimLinter extends BaseLinter {
     }
   }
 }
-
