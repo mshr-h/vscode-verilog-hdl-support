@@ -8,7 +8,6 @@ import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from '../utils/commandLine';
 import LinterDiagnosticManager from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
-import type { LintRunOptions } from './LintMode';
 
 const isWindows = process.platform === 'win32';
 
@@ -101,7 +100,7 @@ export default class VeribleVerilogLintLinter extends BaseLinter {
     return convertVeribleSeverity(message);
   }
 
-  protected async lint(doc: vscode.TextDocument, run: LintRunHandle, _options: LintRunOptions): Promise<void> {
+  protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
     this.logger.info`Executing VeribleVerilogLintLinter.lint()`;
 
     const binName = isWindows ? 'verible-verilog-lint.exe' : 'verible-verilog-lint';
@@ -161,3 +160,4 @@ export default class VeribleVerilogLintLinter extends BaseLinter {
     }
   }
 }
+

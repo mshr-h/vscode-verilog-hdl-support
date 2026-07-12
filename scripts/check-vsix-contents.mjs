@@ -1,10 +1,7 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
-import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
-
-const require = createRequire(import.meta.url);
 
 const requiredEntries = [
   'resources/wasm/slang-server.wasm',
@@ -37,9 +34,7 @@ function readListing() {
     return execFileSync('unzip', ['-Z1', vsixPath], { encoding: 'utf8' });
   }
 
-  const vscePackagePath = require.resolve('@vscode/vsce/package.json');
-  const vsceCliPath = path.join(path.dirname(vscePackagePath), 'vsce');
-  return execFileSync(process.execPath, [vsceCliPath, 'ls'], { encoding: 'utf8' });
+  return execFileSync('npx', ['--yes', '@vscode/vsce', 'ls'], { encoding: 'utf8' });
 }
 
 let listing;

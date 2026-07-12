@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 import * as vscode from 'vscode';
-import type { SlangServerManager } from '../slangServer/SlangServerManager';
 
 interface InactivePreprocessorRange {
   startLine: number;
@@ -196,23 +195,11 @@ export function computeInactivePreprocessorRanges(
   return ranges;
 }
 
-export function mergePreprocessorDefines(configuredDefines: readonly string[]): string[] {
-  return [...new Set(configuredDefines)];
-}
-
-export function selectInactivePreprocessorRanges<T>(
-  serverRanges: readonly T[] | undefined,
-  computeFallback: () => readonly T[]
-): readonly T[] {
-  return serverRanges ?? computeFallback();
-}
-
 export class InactivePreprocessorDecorationProvider implements vscode.Disposable {
   private readonly subscriptions: vscode.Disposable[] = [];
-  private readonly serverRanges = new Map<string, readonly vscode.Range[]>();
   private decorationType: vscode.TextEditorDecorationType | undefined;
 
-  constructor(slangServerManager?: SlangServerManager) {
+  constructor() {
     this.recreateDecorationType();
     this.subscriptions.push(
       vscode.window.onDidChangeActiveTextEditor(() => {
@@ -233,24 +220,6 @@ export class InactivePreprocessorDecorationProvider implements vscode.Disposable
         this.updateVisibleEditors();
       })
     );
-    if (slangServerManager) {
-      this.subscriptions.push(
-        slangServerManager.onDidChangeInactiveRegions((event) => {
-          if (event === undefined) {
-            this.serverRanges.clear();
-            this.updateVisibleEditors();
-            return;
-          }
-          const key = event.uri.toString();
-          this.serverRanges.set(key, event.ranges);
-          for (const editor of vscode.window.visibleTextEditors) {
-            if (editor.document.uri.toString() === key) {
-              this.updateEditor(editor);
-            }
-          }
-        })
-      );
-    }
     this.updateVisibleEditors();
   }
 
@@ -294,12 +263,10 @@ export class InactivePreprocessorDecorationProvider implements vscode.Disposable
       return;
     }
 
-    const key = editor.document.uri.toString();
-    const serverRanges = this.serverRanges.get(key);
-    const ranges = selectInactivePreprocessorRanges(
-      serverRanges,
-      () => this.computeFallbackRanges(editor.document)
-    );
+    const ranges = computeInactivePreprocessorRanges(
+      editor.document.getText(),
+      vscode.workspace.getConfiguration('verilog.preprocessor').get('defines', [])
+    ).map((range) => this.toVscodeRange(editor.document, range));
     editor.setDecorations(this.decorationType, ranges);
   }
 
@@ -315,14 +282,6 @@ export class InactivePreprocessorDecorationProvider implements vscode.Disposable
       .get('enabled', true);
   }
 
-  private computeFallbackRanges(document: vscode.TextDocument): vscode.Range[] {
-    const config = vscode.workspace.getConfiguration('verilog.preprocessor');
-    return computeInactivePreprocessorRanges(
-      document.getText(),
-      mergePreprocessorDefines(config.get<string[]>('defines', []))
-    ).map((range) => this.toVscodeRange(document, range));
-  }
-
   private toVscodeRange(
     document: vscode.TextDocument,
     range: InactivePreprocessorRange
@@ -333,3 +292,4 @@ export class InactivePreprocessorDecorationProvider implements vscode.Disposable
     return new vscode.Range(start, end);
   }
 }
+

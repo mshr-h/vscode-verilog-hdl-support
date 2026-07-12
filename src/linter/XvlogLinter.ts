@@ -7,12 +7,10 @@ import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from '../utils/commandLine';
 import LinterDiagnosticManager from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
-import type { LintRunOptions } from './LintMode';
 
 export interface BuildXvlogArgsOptions {
   languageId: string;
   includePaths: string[];
-  defineArgs?: string[];
   customArguments: string;
   documentPath: string;
 }
@@ -24,9 +22,6 @@ export function buildXvlogArgs(options: BuildXvlogArgsOptions): string[] {
   }
   for (const includePath of options.includePaths) {
     args.push('-i', includePath);
-  }
-  for (const defineArg of options.defineArgs ?? []) {
-    args.push('--define', defineArg);
   }
   args.push(...splitCommandLineArgs(options.customArguments));
   args.push(options.documentPath);
@@ -66,10 +61,7 @@ export function parseXvlogDiagnostics(stdout: string): vscode.Diagnostic[] {
 }
 
 export default class XvlogLinter extends BaseLinter {
-  constructor(
-    diagnosticManager: LinterDiagnosticManager,
-    runManager: LintRunManager
-  ) {
+  constructor(diagnosticManager: LinterDiagnosticManager, runManager: LintRunManager) {
     super('xvlog', diagnosticManager, runManager);
     this.updateConfig();
   }
@@ -84,12 +76,12 @@ export default class XvlogLinter extends BaseLinter {
     return convertXvlogSeverity(severityString);
   }
 
-  protected async lint(doc: vscode.TextDocument, run: LintRunHandle, _options: LintRunOptions): Promise<void> {
+  protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
     const binPath: string = path.join(this.config.linterInstalledPath, 'xvlog');
 
     const args = buildXvlogArgs({
       languageId: doc.languageId,
-      includePaths: this.getConfiguredIncludePaths(doc),
+      includePaths: this.resolveIncludePaths(this.config.includePath, doc),
       customArguments: this.config.arguments,
       documentPath: doc.fileName,
     });
@@ -135,3 +127,4 @@ export default class XvlogLinter extends BaseLinter {
     }
   }
 }
+

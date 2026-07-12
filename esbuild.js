@@ -25,17 +25,16 @@ const esbuildProblemMatcherPlugin = {
 
 async function main() {
 	const ctx = await esbuild.context({
-		entryPoints: {
-			'extension': 'src/extension.ts',
-			'slangServer/wasiHost': 'src/slangServer/wasiHost.ts',
-		},
+		entryPoints: [
+			'src/extension.ts'
+		],
 		bundle: true,
 		format: 'cjs',
 		minify: production,
 		sourcemap: !production,
 		sourcesContent: false,
 		platform: 'node',
-		outdir: 'dist',
+		outfile: 'dist/extension.js',
 		external: ['vscode'],
 		logLevel: 'silent',
 		plugins: [
@@ -55,3 +54,4 @@ main().catch(e => {
 	console.error(e);
 	process.exit(1);
 });
+

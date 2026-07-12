@@ -1,7 +1,0 @@
-{
-  "verilog.linting.linter": "none",
-  "verilog.slangServer.enabled": true,
-  "verilog.slangServer.runtime": "bundled-wasm",
-  "verilog.slangServer.trace.server": "off",
-  "verilog.slangServer.wasm.maxAutoIndexedFiles": 2
-}
