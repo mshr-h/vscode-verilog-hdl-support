@@ -6,7 +6,6 @@ import { runTool, ToolRunError } from '../tools/ToolRunner';
 import { splitCommandLineArgs } from '../utils/commandLine';
 import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
-import type { LintRunOptions } from './LintMode';
 
 export { splitCommandLineArgs } from '../utils/commandLine';
 
@@ -23,7 +22,6 @@ export interface BuildIcarusArgsOptions {
   languageId: string;
   standards: Map<string, string>;
   includePaths: string[];
-  defineArgs?: string[];
   customArguments: string;
   documentPath: string;
 }
@@ -37,9 +35,6 @@ export function buildIcarusArgs(options: BuildIcarusArgsOptions): string[] {
   }
   for (const includePath of options.includePaths) {
     args.push('-I', includePath);
-  }
-  for (const defineArg of options.defineArgs ?? []) {
-    args.push('-D', defineArg);
   }
   args.push(...splitCommandLineArgs(options.customArguments));
   args.push(options.documentPath);
@@ -147,10 +142,7 @@ export default class IcarusLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
   private standards!: Map<string, string>;
 
-  constructor(
-    diagnosticManager: LinterDiagnosticManager,
-    runManager: LintRunManager
-  ) {
+  constructor(diagnosticManager: LinterDiagnosticManager, runManager: LintRunManager) {
     super('iverilog', diagnosticManager, runManager);
     this.updateConfig();
   }
@@ -170,20 +162,16 @@ export default class IcarusLinter extends BaseLinter {
     return convertIcarusSeverity(kind, msg);
   }
 
-  protected async lint(doc: vscode.TextDocument, run: LintRunHandle, options: LintRunOptions): Promise<void> {
+  protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
     this.logger.info`Executing IcarusLinter.lint()`;
 
     const binPath: string = path.join(this.config.linterInstalledPath, 'iverilog');
     this.logger.info`iverilog binary path: ${binPath}`;
-    const decision = await this.getLintDecision(doc, options);
-    if (decision.kind === 'skip') {
-      this.replaceDiagnostics(doc, run, new Map<string, vscode.Diagnostic[]>());
-      return;
-    }
+
     const args = buildIcarusArgs({
       languageId: doc.languageId,
       standards: this.standards,
-      includePaths: this.getConfiguredIncludePaths(doc),
+      includePaths: this.resolveIncludePaths(this.config.includePath, doc),
       customArguments: this.config.arguments,
       documentPath: doc.uri.fsPath,
     });

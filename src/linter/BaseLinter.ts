@@ -5,7 +5,6 @@ import { getExtensionLogger } from '../logging';
 import { getWorkingDirectoryForDocument, resolvePathsForDocument } from '../utils/workspace';
 import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
-import type { LintRunOptions } from './LintMode';
 
 /** Common configuration interface for linters */
 export interface LinterConfig {
@@ -18,12 +17,6 @@ export interface LinterConfig {
   /** Whether to run the linter at the file location */
   runAtFileLocation: boolean;
 }
-
-export type LintDecision =
-  | { kind: 'file' }
-  | { kind: 'skip' };
-
-const DEFAULT_LINT_RUN_OPTIONS: LintRunOptions = { trigger: 'automatic' };
 
 /**
  * Abstract base class for all linters.
@@ -114,10 +107,6 @@ export default abstract class BaseLinter implements vscode.Disposable {
     return resolvePathsForDocument(paths, doc);
   }
 
-  protected getConfiguredIncludePaths(doc: vscode.TextDocument): string[] {
-    return this.resolveIncludePaths(this.config.includePath, doc);
-  }
-
   /**
    * Gets the working directory for the linter based on configuration.
    * @param doc - The document being linted
@@ -131,13 +120,10 @@ export default abstract class BaseLinter implements vscode.Disposable {
    * Starts the linting process for a document.
    * @param doc - The document to lint
    */
-  public async startLint(
-    doc: vscode.TextDocument,
-    options: LintRunOptions = DEFAULT_LINT_RUN_OPTIONS
-  ): Promise<void> {
+  public async startLint(doc: vscode.TextDocument): Promise<void> {
     const run = this.runManager.beginRun(this.name, doc.uri);
     try {
-      await this.lint(doc, run, options);
+      await this.lint(doc, run);
     } catch (err) {
       this.logger.error`Unexpected lint error: ${err}`;
     } finally {
@@ -183,10 +169,6 @@ export default abstract class BaseLinter implements vscode.Disposable {
     this.publishDiagnosticsIfCurrent(ownerDoc, run, diagnosticsByUri);
   }
 
-  protected getLintDecision(_doc: vscode.TextDocument, _options: LintRunOptions): LintDecision {
-    return { kind: 'file' };
-  }
-
   /**
    * Converts a severity string from the linter output to a VS Code DiagnosticSeverity.
    * Must be implemented by subclasses.
@@ -200,9 +182,5 @@ export default abstract class BaseLinter implements vscode.Disposable {
    * Must be implemented by subclasses.
    * @param doc - The document to lint
    */
-  protected abstract lint(
-    doc: vscode.TextDocument,
-    run: LintRunHandle,
-    options: LintRunOptions
-  ): Promise<void>;
+  protected abstract lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void>;
 }

@@ -10,7 +10,6 @@ import { getWorkspaceRootForDocument } from '../utils/workspace';
 import { splitCommandLineArgs } from '../utils/commandLine';
 import LinterDiagnosticManager from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
-import type { LintRunOptions } from './LintMode';
 
 const isWindows = process.platform === 'win32';
 
@@ -43,7 +42,6 @@ export interface SlangPaths {
 export interface BuildSlangArgsOptions {
   docFolder: string;
   includePaths: string[];
-  defineArgs?: string[];
   customArguments: string;
   documentPath: string;
 }
@@ -53,12 +51,11 @@ export interface ParseSlangDiagnosticsOptions {
   documentPath: string;
   isWindows: boolean;
   useWSL: boolean;
-  cwd?: string;
   convertToWslPath?: (inputPath: string) => string;
 }
 
 export function buildSlangCommand(options: SlangCommandOptions): SlangCommand {
-  const joinPath = options.isWindows ? path.win32.join : path.posix.join;
+  const joinPath = options.isWindows ? path.win32.join : path.join;
   if (options.isWindows && options.useWSL) {
     return {
       command: joinPath(options.linterInstalledPath, 'wsl'),
@@ -101,9 +98,6 @@ export function buildSlangArgs(options: BuildSlangArgsOptions): string[] {
   for (const includePath of options.includePaths) {
     args.push('-I', includePath);
   }
-  for (const defineArg of options.defineArgs ?? []) {
-    args.push('-D', defineArg);
-  }
   args.push(...splitCommandLineArgs(options.customArguments));
   args.push(options.documentPath);
   return args;
@@ -119,17 +113,9 @@ function convertSlangSeverity(severityString: string): vscode.DiagnosticSeverity
 }
 
 export function parseSlangDiagnostics(options: ParseSlangDiagnosticsOptions): vscode.Diagnostic[] {
-  return parseSlangDiagnosticsByFile(options).get(options.documentPath) ?? [];
-}
-
-export function parseSlangDiagnosticsByFile(
-  options: ParseSlangDiagnosticsOptions
-): Map<string, vscode.Diagnostic[]> {
   const diagnostics: vscode.Diagnostic[] = [];
-  const diagnosticsByFile = new Map<string, vscode.Diagnostic[]>();
   const re = /(.+?):(\d+):(\d+):\s(note|warning|error):\s(.*?)(\[-W(.*)\]|$)/;
   const convertToWslPath = options.convertToWslPath ?? ((inputPath: string) => inputPath);
-  const pathApi = options.isWindows && !options.useWSL ? path.win32 : path.posix;
 
   options.stderr.split(/\r?\n/g).forEach((line) => {
     const rex = line.match(re);
@@ -145,45 +131,31 @@ export function parseSlangDiagnosticsByFile(
         filePath = filePath.replace(/\\/g, '/');
       }
     }
-    if (options.cwd && !pathApi.isAbsolute(filePath)) {
-      filePath = pathApi.resolve(options.cwd, filePath);
-      if (options.isWindows && !options.useWSL) {
-        filePath = filePath.replace(/\\/g, '/');
-      }
+
+    if (!options.documentPath.endsWith(filePath)) {
+      return;
     }
 
     const lineNum = Number(rex[2]) - 1;
     const colNum = Number(rex[3]) - 1;
 
-    const diagnostic = {
+    diagnostics.push({
       severity: convertSlangSeverity(rex[4]),
       range: new vscode.Range(lineNum, colNum, lineNum, END_OF_LINE),
-      message: rex[5].trim(),
+      message: rex[5],
       code: rex[7] ? rex[7] : 'error',
       source: 'slang',
-    };
-    if (options.documentPath.endsWith(filePath)) {
-      diagnostics.push(diagnostic);
-    }
-    const fileDiagnostics = diagnosticsByFile.get(filePath) ?? [];
-    fileDiagnostics.push(diagnostic);
-    diagnosticsByFile.set(filePath, fileDiagnostics);
+    });
   });
 
-  if (diagnostics.length > 0 && !diagnosticsByFile.has(options.documentPath)) {
-    diagnosticsByFile.set(options.documentPath, diagnostics);
-  }
-  return diagnosticsByFile;
+  return diagnostics;
 }
 
 export default class SlangLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
   private useWSL!: boolean;
 
-  constructor(
-    diagnosticManager: LinterDiagnosticManager,
-    runManager: LintRunManager
-  ) {
+  constructor(diagnosticManager: LinterDiagnosticManager, runManager: LintRunManager) {
     super('slang', diagnosticManager, runManager);
     this.updateConfig();
   }
@@ -200,7 +172,7 @@ export default class SlangLinter extends BaseLinter {
     return convertSlangSeverity(severityString);
   }
 
-  protected async lint(doc: vscode.TextDocument, run: LintRunHandle, options: LintRunOptions): Promise<void> {
+  protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
     const commandInfo = buildSlangCommand({
       isWindows,
       useWSL: this.useWSL,
@@ -212,15 +184,10 @@ export default class SlangLinter extends BaseLinter {
       commandInfo.command,
       run
     );
-    const decision = await this.getLintDecision(doc, options);
-    if (decision.kind === 'skip') {
-      this.publishDocumentDiagnosticsIfCurrent(doc, run, []);
-      return;
-    }
     const args = commandInfo.leadingArgs.concat(
       buildSlangArgs({
         docFolder: paths.docFolder,
-        includePaths: this.getConfiguredIncludePaths(doc),
+        includePaths: this.resolveIncludePaths(this.config.includePath, doc),
         customArguments: this.config.arguments,
         documentPath: paths.docUri,
       })
@@ -290,7 +257,6 @@ export default class SlangLinter extends BaseLinter {
         documentPath,
         isWindows,
         useWSL: this.useWSL,
-        cwd,
       });
       this.logger.info`${diagnostics.length} errors/warnings returned`;
       this.publishDocumentDiagnosticsIfCurrent(doc, run, diagnostics);
@@ -306,5 +272,4 @@ export default class SlangLinter extends BaseLinter {
       this.publishDocumentDiagnosticsIfCurrent(doc, run, []);
     }
   }
-
 }

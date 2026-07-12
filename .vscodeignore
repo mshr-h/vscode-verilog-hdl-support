@@ -3,9 +3,10 @@
 .vscode-test/**
 .vscode-dev/**
 out/**
-node_modules/**
 .cache/**
+node_modules/**
 src/**
+test/**
 .gitignore
 .github/**
 .yarnrc
@@ -21,5 +22,6 @@ esbuild.js
 **/eslint.config.mjs
 **/.vscode-test.*
 .devcontainer/**
-examples/
-!resources/wasm/**
+examples/**
+build/**
+scripts/**

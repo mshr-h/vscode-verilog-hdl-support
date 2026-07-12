@@ -191,6 +191,34 @@ class LineBuffer {
   }
 }
 
+function terminateChildProcess(child: ChildProcessWithoutNullStreams): Promise<void> {
+  if (process.platform !== 'win32' || child.pid === undefined) {
+    child.kill();
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    const taskkill = spawn(
+      'taskkill.exe',
+      ['/pid', String(child.pid), '/T', '/F'],
+      { shell: false, stdio: 'ignore', windowsHide: true }
+    );
+    let finished = false;
+    const finish = (): void => {
+      if (finished) {
+        return;
+      }
+      finished = true;
+      resolve();
+    };
+    taskkill.once('error', () => {
+      child.kill();
+      finish();
+    });
+    taskkill.once('close', finish);
+  });
+}
+
 export function runTool(options: ToolRunOptions): Promise<ToolRunResult> {
   const {
     command,
@@ -244,9 +272,10 @@ export function runTool(options: ToolRunOptions): Promise<ToolRunResult> {
       }
       settled = true;
       cleanup();
-      child.kill();
       logger.warn`${message}: ${command}`;
-      reject(new ToolRunError(message, command, args, reason));
+      void terminateChildProcess(child).finally(() => {
+        reject(new ToolRunError(message, command, args, reason));
+      });
     };
 
     try {

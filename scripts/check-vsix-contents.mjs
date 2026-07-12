@@ -1,24 +1,40 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: MIT
 import { execFileSync } from 'node:child_process';
-import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const require = createRequire(import.meta.url);
-
 const requiredEntries = [
-  'resources/wasm/slang-server.wasm',
-  'resources/wasm/slang-server.meta.json',
-  'resources/wasm/licenses/slang-server.LICENSE',
-  'resources/wasm/licenses/slang.LICENSE',
-  'resources/wasm/licenses/THIRD_PARTY_NOTICES.md'
+  'package.json',
+  'dist/extension.js',
+  'configs/verilog.configuration.json',
+  'syntaxes/systemverilog.tmLanguage.json',
+  'snippets/verilog.json',
+  'media/fliplot/defaults.json',
+  'THIRD_PARTY_NOTICES.md',
+];
+
+const forbiddenPrefixes = [
+  'src/',
+  'test/',
+  'out/',
+  'examples/',
+  'resources/wasm/',
+  'build/',
+  '.cache/',
+];
+
+const forbiddenFragments = [
+  'slangServer',
+  'slang-server.wasm',
+  'hdl-projects',
+  'slang-wasm-indexing',
 ];
 
 function fail(message) {
   console.error(`error: ${message}`);
   process.exitCode = 1;
 }
-
 function normalizeEntry(line) {
   return line
     .replace(/\\/g, '/')
@@ -37,9 +53,7 @@ function readListing() {
     return execFileSync('unzip', ['-Z1', vsixPath], { encoding: 'utf8' });
   }
 
-  const vscePackagePath = require.resolve('@vscode/vsce/package.json');
-  const vsceCliPath = path.join(path.dirname(vscePackagePath), 'vsce');
-  return execFileSync(process.execPath, [vsceCliPath, 'ls'], { encoding: 'utf8' });
+  return execFileSync('npx', ['--yes', '@vscode/vsce', 'ls'], { encoding: 'utf8' });
 }
 
 let listing;
@@ -58,8 +72,19 @@ const entries = new Set(
 );
 
 for (const requiredEntry of requiredEntries) {
-  if (!entries.has(requiredEntry) && !entries.has(`extension/${requiredEntry}`)) {
+  if (!entries.has(requiredEntry)) {
     fail(`VSIX is missing ${requiredEntry}`);
+  }
+}
+
+for (const entry of entries) {
+  const forbiddenPrefix = forbiddenPrefixes.find((prefix) => entry.startsWith(prefix));
+  if (forbiddenPrefix) {
+    fail(`VSIX contains forbidden path ${entry}`);
+  }
+  const forbiddenFragment = forbiddenFragments.find((fragment) => entry.includes(fragment));
+  if (forbiddenFragment) {
+    fail(`VSIX contains forbidden artifact ${entry}`);
   }
 }
 

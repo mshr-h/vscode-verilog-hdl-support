@@ -2,9 +2,8 @@
   "name": "veriloghdl",
   "displayName": "Verilog-HDL/SystemVerilog",
   "description": "Verilog-HDL/SystemVerilog support for VS Code",
-  "version": "1.28.4",
+  "version": "1.29.0",
   "publisher": "mshr-h",
-  "license": "SEE LICENSE IN LICENSE",
   "homepage": "https://github.com/mshr-h/vscode-verilog-hdl-support",
   "repository": {
     "type": "git",
@@ -22,9 +21,6 @@
     "Linters",
     "Formatters",
     "Visualization"
-  ],
-  "extensionPack": [
-    "ms-vscode.wasm-wasi-core"
   ],
   "icon": "images/icon.png",
   "main": "./dist/extension.js",
@@ -284,6 +280,23 @@
     ],
     "configuration": [
       {
+        "title": "Verilog: Ctags",
+        "properties": {
+          "verilog.ctags.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Enable Ctags integration."
+          },
+          "verilog.ctags.path": {
+            "scope": "window",
+            "type": "string",
+            "default": "ctags",
+            "markdownDescription": "A path to the Ctags binary. Specify the binary name if it's in your `PATH`, or provide an absolute path to the executable."
+          }
+        }
+      },
+      {
         "title": "Verilog: Formatting",
         "properties": {
           "verilog.formatting.verilogHDL.formatter": {
@@ -379,18 +392,6 @@
             ],
             "default": "none",
             "markdownDescription": "Select the verilog linter."
-          },
-          "verilog.linting.runOnOpen": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Run the configured linter automatically when Verilog/SystemVerilog files are opened. Disable this to avoid linter side effects such as generated tool files on file open."
-          },
-          "verilog.linting.runOnSave": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Run the configured linter automatically when Verilog/SystemVerilog files are saved."
           },
           "verilog.linting.iverilog.arguments": {
             "scope": "window",
@@ -547,79 +548,88 @@
         }
       },
       {
-        "title": "Verilog: slang-server",
+        "title": "Verilog: Language Servers",
         "properties": {
-          "verilog.slangServer.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Enable slang-server as the Verilog/SystemVerilog language intelligence engine."
-          },
-          "verilog.slangServer.runtime": {
-            "scope": "window",
-            "type": "string",
-            "enum": [
-              "auto",
-              "native",
-              "bundled-wasm"
-            ],
-            "default": "auto",
-            "markdownDescription": "`auto` uses native slang-server when `verilog.slangServer.path` is set. Bundled WASM is planned for builds that include the WASM artifact."
-          },
-          "verilog.slangServer.path": {
-            "scope": "window",
-            "type": "string",
-            "default": "",
-            "markdownDescription": "Path to the native slang-server executable. Required when `verilog.slangServer.runtime` is `native`."
-          },
-          "verilog.slangServer.args": {
-            "scope": "window",
-            "type": "string",
-            "default": "",
-            "markdownDescription": "Additional arguments passed to slang-server."
-          },
-          "verilog.slangServer.trace.server": {
-            "scope": "window",
-            "type": "string",
-            "enum": [
-              "off",
-              "messages",
-              "verbose"
-            ],
-            "default": "off",
-            "markdownDescription": "Trace slang-server protocol messages."
-          },
-          "verilog.slangServer.wasm.allowUserConfig": {
+          "verilog.languageServer.svls.enabled": {
             "scope": "window",
             "type": "boolean",
             "default": false,
-            "markdownDescription": "Allow bundled WASM slang-server to read user-level ~/.slang/server.json by mounting the home directory read/write into WASI."
+            "markdownDescription": "Enable svls Language Server for SystemVerilog."
           },
-          "verilog.slangServer.wasm.logStderr": {
+          "verilog.languageServer.svls.path": {
+            "scope": "window",
+            "type": "string",
+            "default": "svls",
+            "markdownDescription": "A path to the Svls Language Server binary."
+          },
+          "verilog.languageServer.svls.svlintTomlPath": {
+            "scope": "window",
+            "type": "string",
+            "default": "",
+            "markdownDescription": "[Experimental] Override the .toml configuration file to be used by svlint. Sets the `SVLINT_CONFIG` environment variable. When not set svlint searches for `.svlint.toml` within the Workspace folder.",
+            "pattern": "^(?:(?:~?\\/|[a-zA-Z]:\\\\)?[\\/\\\\\\w\\._-]*\\.toml)$|^$",
+            "patternErrorMessage": "Must be a path to a .toml file"
+          },
+          "verilog.languageServer.svls.arguments": {
+            "scope": "window",
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Add custom arguments for the Svls Language Server."
+          },
+          "verilog.languageServer.veridian.enabled": {
             "scope": "window",
             "type": "boolean",
-            "default": true,
-            "markdownDescription": "Route bundled WASM slang-server stderr to the Verilog slang-server output channel."
+            "default": false,
+            "markdownDescription": "Enable veridian Language Server for SystemVerilog."
           },
-          "verilog.slangServer.wasm.maxAutoIndexedFiles": {
+          "verilog.languageServer.veridian.path": {
             "scope": "window",
-            "type": "number",
-            "default": 5000,
-            "minimum": 1,
-            "markdownDescription": "Maximum number of HDL files that bundled WASM slang-server will automatically index when `.slang/server.json` has no explicit `index`. Explicit index configuration is not limited."
+            "type": "string",
+            "default": "veridian",
+            "markdownDescription": "A path to the Veridian Language Server binary."
           },
-          "verilog.slangServer.wasm.memoryLimitMb": {
+          "verilog.languageServer.veridian.arguments": {
             "scope": "window",
-            "type": "number",
-            "default": 2048,
-            "minimum": 64,
-            "markdownDescription": "Maximum WebAssembly memory in MB for bundled WASM slang-server. Increase this for large projects or if the output shows bad_alloc."
-          }
-        }
-      },
-      {
-        "title": "Verilog: Language Servers",
-        "properties": {
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Add custom arguments for the HDL Checker Veridian Language Server."
+          },
+          "verilog.languageServer.hdlChecker.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "Enable HDL Checker Language Server for Verilog-HDL, SystemVerilog, and VHDL."
+          },
+          "verilog.languageServer.hdlChecker.path": {
+            "scope": "window",
+            "type": "string",
+            "default": "hdl_checker",
+            "markdownDescription": "A path to the HDL Checker Language Server binary."
+          },
+          "verilog.languageServer.hdlChecker.arguments": {
+            "scope": "window",
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Add custom arguments for the HDL Checker Language Server."
+          },
+          "verilog.languageServer.veribleVerilogLs.enabled": {
+            "scope": "window",
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "Enable verible-verilog-ls Language Server for SystemVerilog."
+          },
+          "verilog.languageServer.veribleVerilogLs.path": {
+            "scope": "window",
+            "type": "string",
+            "default": "verible-verilog-ls",
+            "markdownDescription": "A path to the verible-verilog-ls Language Server binary."
+          },
+          "verilog.languageServer.veribleVerilogLs.arguments": {
+            "scope": "window",
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Add custom arguments for the verible-verilog-ls Language Server."
+          },
           "verilog.languageServer.tclsp.enabled": {
             "scope": "window",
             "type": "boolean",
@@ -695,17 +705,6 @@
         }
       },
       {
-        "title": "Verilog: HDL Explorer",
-        "properties": {
-          "verilog.hdlExplorer.enabled": {
-            "scope": "window",
-            "type": "boolean",
-            "default": true,
-            "markdownDescription": "Enable the HDL Explorer tree view."
-          }
-        }
-      },
-      {
         "title": "Verilog: Preprocessor",
         "properties": {
           "verilog.preprocessor.defines": {
@@ -715,7 +714,7 @@
               "type": "string"
             },
             "default": [],
-            "markdownDescription": "Macro names to treat as predefined for fallback Verilog/SystemVerilog inactive-code highlighting when slang-server regions are unavailable."
+            "markdownDescription": "Macro names to treat as predefined for Verilog/SystemVerilog preprocessor inactive-code highlighting."
           },
           "verilog.preprocessor.inactiveCode.enabled": {
             "scope": "window",
@@ -748,81 +747,16 @@
     ],
     "commands": [
       {
+        "command": "verilog.instantiateModule",
+        "title": "Verilog: Instantiate Module"
+      },
+      {
         "command": "verilog.lint",
         "title": "Verilog: Rerun lint tool"
       },
       {
         "command": "verilog.doctor",
         "title": "Verilog: Doctor"
-      },
-      {
-        "command": "verilog.restartSlangServer",
-        "title": "Verilog: Restart slang-server"
-      },
-      {
-        "command": "verilog.showSlangServerOutput",
-        "title": "Verilog: Show slang-server Output"
-      },
-      {
-        "command": "verilog.showSlangServerStatus",
-        "title": "Verilog: Show slang-server Status"
-      },
-      {
-        "command": "verilog.selectSlangServerRuntime",
-        "title": "Verilog: Select slang-server Runtime"
-      },
-      {
-        "command": "verilog.showSlangServerQuickActions",
-        "title": "Verilog: Show slang-server Quick Actions"
-      },
-      {
-        "command": "verilog.configureSlangProject",
-        "title": "Verilog: Configure Slang Project"
-      },
-      {
-        "command": "verilog.openSlangProjectConfig",
-        "title": "Verilog: Open Slang Project Config"
-      },
-      {
-        "command": "verilog.validateSlangProjectConfig",
-        "title": "Verilog: Validate Slang Project Config"
-      },
-      {
-        "command": "verilog.instantiateModule",
-        "title": "Verilog: Instantiate Module"
-      },
-      {
-        "command": "verilog.refreshHdlExplorer",
-        "title": "Verilog: Refresh HDL Explorer",
-        "icon": "$(refresh)"
-      },
-      {
-        "command": "verilog.setSlangBuildFile",
-        "title": "Verilog: Set slang-server Build File"
-      },
-      {
-        "command": "verilog.setSlangTopLevel",
-        "title": "Verilog: Set slang-server Top Level"
-      },
-      {
-        "command": "verilog.openModuleFromExplorer",
-        "title": "Verilog: Open Module From Explorer"
-      },
-      {
-        "command": "verilog.instantiateModuleFromExplorer",
-        "title": "Verilog: Instantiate Module From Explorer"
-      },
-      {
-        "command": "verilog.showHierarchyFromModule",
-        "title": "Verilog: Show Hierarchy From This Module"
-      },
-      {
-        "command": "verilog.findModuleReferencesFromExplorer",
-        "title": "Verilog: Find Module References From Explorer"
-      },
-      {
-        "command": "verilog.openInstanceFromExplorer",
-        "title": "Verilog: Open Instance From Explorer"
       },
       {
         "command": "verilog.openFliplot",
@@ -833,65 +767,6 @@
         "title": "Verilog: Open Waveform"
       }
     ],
-    "views": {
-      "explorer": [
-        {
-          "id": "verilog.hdlExplorer",
-          "name": "HDL Explorer"
-        }
-      ]
-    },
-    "menus": {
-      "view/title": [
-        {
-          "command": "verilog.refreshHdlExplorer",
-          "when": "view == verilog.hdlExplorer",
-          "group": "navigation"
-        },
-        {
-          "command": "verilog.setSlangBuildFile",
-          "when": "view == verilog.hdlExplorer",
-          "group": "1_slang@1"
-        },
-        {
-          "command": "verilog.setSlangTopLevel",
-          "when": "view == verilog.hdlExplorer",
-          "group": "1_slang@2"
-        }
-      ],
-      "view/item/context": [
-        {
-          "command": "verilog.openModuleFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.module",
-          "group": "navigation@1"
-        },
-        {
-          "command": "verilog.setSlangTopLevel",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.module",
-          "group": "navigation@2"
-        },
-        {
-          "command": "verilog.instantiateModuleFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.module",
-          "group": "navigation@3"
-        },
-        {
-          "command": "verilog.showHierarchyFromModule",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.module",
-          "group": "navigation@4"
-        },
-        {
-          "command": "verilog.findModuleReferencesFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.module",
-          "group": "navigation@5"
-        },
-        {
-          "command": "verilog.openInstanceFromExplorer",
-          "when": "view == verilog.hdlExplorer && viewItem == hdlExplorer.instance",
-          "group": "navigation@1"
-        }
-      ]
-    },
     "customEditors": [
       {
         "viewType": "verilog.fliplotEditor",
@@ -907,61 +782,46 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run package:prepare",
-    "build:extension": "node esbuild.js",
-    "compile": "npm run check-types && npm run lint && npm run build:extension",
+    "compile": "npm run check-types && npm run lint && node esbuild.js",
     "watch": "npm-run-all -p watch:*",
     "watch:esbuild": "node esbuild.js --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
-    "package:prepare": "npm run check-types && npm run lint && npm run build:extension -- --production",
-    "package": "npm run verify:wasm-bundle && vsce package",
-    "build:slang-wasm": "bash scripts/build-slang-server-wasm.sh",
-    "verify:wasm-bundle": "node scripts/check-wasm-bundle.mjs",
+    "package:prepare": "npm run check-types && npm run lint && node esbuild.js --production",
+    "package": "npm run package:prepare && npx @vscode/vsce package",
     "verify:vsix": "node scripts/check-vsix-contents.mjs",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "check-types": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
-    "test:build": "npm run compile-tests && npm run build:extension",
-    "test:prepare": "npm run lint && npm run test:build",
-    "test": "npm run test:prepare && npm run test:core:run && npm run test:native:run",
-    "test:core": "npm run test:prepare && npm run test:core:run",
-    "test:core:run": "vscode-test --label core",
-    "test:native": "npm run test:prepare && npm run test:native:run",
-    "test:native:run": "vscode-test --label native-tools",
-    "test:minimum": "npm run test:prepare && npm run test:minimum:run",
-    "test:minimum:run": "vscode-test --label core --code-version 1.107.0",
-    "test:slang-wasm-indexing": "npm run test:prepare && npm run verify:wasm-bundle && npm run test:slang-wasm-indexing:run",
-    "test:slang-wasm-indexing:run": "vscode-test --config .vscode-test.slang-wasm-indexing.mjs",
-    "test:windows-wsl2": "npm run test:prepare && npm run test:windows-wsl2:run",
-    "test:windows-wsl2:run": "vscode-test --config .vscode-test.wsl2.mjs",
+    "test": "vscode-test",
+    "test:windows": "vscode-test --config .vscode-test.windows.mjs --fgrep \"[windows]\"",
+    "test:windows-wsl2": "vscode-test --config .vscode-test.windows.mjs --fgrep \"[windows-wsl2]\"",
     "syntax": "js-yaml ./syntaxes/systemverilog.tmLanguage.yaml >./syntaxes/systemverilog.tmLanguage.json"
   },
   "dependencies": {
     "@logtape/logtape": "^2.0.0",
-    "@vscode/wasm-wasi": "1.0.2",
-    "@vscode/wasm-wasi-lsp": "0.1.0-pre.8",
     "js-yaml": "^4.1.1",
     "semver": "^7.7.3",
-    "vscode-languageclient": "^10.0.0-next.12",
+    "vscode-languageclient": "^9.0.1",
     "which": "^7.0.0"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@types/mocha": "10.0.10",
-    "@types/node": "~25.9.0",
+    "@types/node": "~25.0.3",
     "@types/semver": "^7.7.1",
     "@types/vscode": "^1.107.0",
     "@types/which": "^3.0.4",
     "@typescript-eslint/eslint-plugin": "^8.56.0",
     "@typescript-eslint/parser": "^8.56.0",
     "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^3.0.0",
-    "@vscode/vsce": "3.9.2",
-    "esbuild": "^0.28.0",
+    "@vscode/test-electron": "^2.5.2",
+    "esbuild": "^0.27.2",
     "eslint": "10.4.0",
     "glob": "^13.0.0",
     "globals": "^17.0.0",
-    "npm-run-all2": "^9.0.0",
+    "npm-run-all2": "^8.0.4",
     "typescript": "6.0.3",
     "typescript-eslint": "^8.56.0"
   },

@@ -8,13 +8,13 @@ import { getExtensionLogger } from '../logging';
 import { runTool, ToolRunError, type ToolRunOptions, type ToolRunResult } from '../tools/ToolRunner';
 import { buildSlangCommand } from '../linter/SlangLinter';
 import { buildVerilatorCommand } from '../linter/VerilatorLinter';
-import { createLanguageServerDefinitions } from '../languageServer/definitions';
+import {
+  createLanguageServerDefinitions,
+  type LanguageServerDefinition,
+} from '../languageServer/definitions';
 import { splitCommandLineArgs } from '../utils/commandLine';
-import { resolveConfigPath } from '../utils/configPath';
+import { expandPathVariables, resolveConfigPath } from '../utils/configPath';
 import { getWorkspaceFolderForUri } from '../utils/workspace';
-import { readSlangServerConfig } from '../slangServer/SlangServerConfig';
-import type { SlangConfigService } from '../slangServer/SlangConfigService';
-import type { SlangServerManager } from '../slangServer/SlangServerManager';
 
 export { expandPathVariables, resolveConfigPath } from '../utils/configPath';
 
@@ -66,6 +66,21 @@ export interface LinterDoctorOptions {
   isWindows?: boolean;
 }
 
+export interface LanguageServerDoctorOptions {
+  name: string;
+  enabled: boolean;
+  path: string;
+  arguments?: string;
+  configFiles?: Array<{ label: string; path: string; resolvePerWorkspace?: boolean }>;
+  workspaceFolders?: string[];
+}
+
+export interface LanguageServerConflictInput {
+  name: string;
+  enabled: boolean;
+  languages: string[];
+}
+
 let doctorOutputChannel: vscode.OutputChannel | undefined;
 
 const logger = getExtensionLogger('Doctor');
@@ -86,21 +101,22 @@ const linterVersionArgs = new Map<string, string[]>([
   ['verible-verilog-lint', ['--version']],
 ]);
 
-export function registerDoctorCommand(
-  context: vscode.ExtensionContext,
-  slangServerManager?: SlangServerManager,
-  slangConfigService?: SlangConfigService
-): vscode.Disposable {
-  return vscode.commands.registerCommand('verilog.doctor', () =>
-    runDoctor(context, createDefaultDoctorDependencies(), slangServerManager, slangConfigService)
-  );
+const languageServerLabels: Record<string, string> = {
+  svls: 'svls',
+  veridian: 'veridian',
+  hdlChecker: 'hdlChecker',
+  veribleVerilogLs: 'verible-verilog-ls',
+  tclsp: 'tclsp',
+  rustHdl: 'vhdl_ls',
+};
+
+export function registerDoctorCommand(context: vscode.ExtensionContext): vscode.Disposable {
+  return vscode.commands.registerCommand('verilog.doctor', () => runDoctor(context));
 }
 
 export async function runDoctor(
   context: vscode.ExtensionContext,
-  deps: DoctorDependencies = createDefaultDoctorDependencies(),
-  slangServerManager?: SlangServerManager,
-  slangConfigService?: SlangConfigService
+  deps: DoctorDependencies = createDefaultDoctorDependencies()
 ): Promise<void> {
   let report: DoctorReport;
   try {
@@ -110,7 +126,7 @@ export async function runDoctor(
         title: 'Running Verilog Doctor',
         cancellable: true,
       },
-      async (_progress, token) => buildDoctorReport(context, deps, token, slangServerManager, slangConfigService)
+      async (_progress, token) => buildDoctorReport(context, deps, token)
     );
   } catch (err) {
     if (err instanceof ToolRunError && err.reason === 'cancelled') {
@@ -126,7 +142,10 @@ export async function runDoctor(
   outputChannel.append(rendered);
   outputChannel.show();
 
-  const selection = await vscode.window.showInformationMessage('Verilog Doctor completed', 'Copy Report');
+  const selection = await vscode.window.showInformationMessage(
+    'Verilog Doctor completed',
+    'Copy Report'
+  );
   if (selection === 'Copy Report') {
     await vscode.env.clipboard.writeText(rendered);
   }
@@ -135,25 +154,25 @@ export async function runDoctor(
 export async function buildDoctorReport(
   context: vscode.ExtensionContext,
   deps: DoctorDependencies,
-  token?: vscode.CancellationToken,
-  slangServerManager?: SlangServerManager,
-  slangConfigService?: SlangConfigService
+  token?: vscode.CancellationToken
 ): Promise<DoctorReport> {
   const activeDocument = vscode.window.activeTextEditor?.document;
-  const activeWorkspaceFolder = activeDocument ? getWorkspaceFolderForUri(activeDocument.uri) : undefined;
-  const fallbackWorkspaceFolder = activeWorkspaceFolder ?? (vscode.workspace.workspaceFolders ?? [])[0];
+  const activeWorkspaceFolder = activeDocument
+    ? getWorkspaceFolderForUri(activeDocument.uri)
+    : undefined;
+  const fallbackWorkspaceFolder = activeWorkspaceFolder ?? (vscode.workspace.workspaceFolders ?? []).at(0);
   const workspaceFolderPath = fallbackWorkspaceFolder?.uri.fsPath;
-  const workspaceFolderPaths = (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
+  const workspaceFolderPaths = (vscode.workspace.workspaceFolders ?? []).map(
+    (folder) => folder.uri.fsPath
+  );
 
   const sections: DoctorSection[] = [
     buildWorkspaceSection(activeDocument, activeWorkspaceFolder),
-    await buildSlangServerSection(deps, token, slangServerManager),
-    await buildSlangConfigSection(slangConfigService),
+    await buildCtagsSection(deps, token),
     await buildLintingSectionFromConfiguration(deps, workspaceFolderPath, token),
     await buildFormattingSection(deps, workspaceFolderPath, token),
     await buildLanguageServersSection(deps, workspaceFolderPaths, token),
   ];
-  sections.push(buildRecommendationsSection(sections, slangServerManager?.getStatus()));
   sections.push(buildSummarySection(sections));
 
   return {
@@ -180,144 +199,84 @@ export function renderDoctorReport(report: DoctorReport): string {
     '',
   ];
 
-  for (const section of report.sections) {
+  const sections = report.sections.some((section) => section.title === 'Summary')
+    ? report.sections
+    : report.sections.concat(buildSummarySection(report.sections));
+
+  for (const section of sections) {
     lines.push(`## ${section.title}`);
     for (const check of section.checks) {
       lines.push(`${statusLabels[check.status]} ${check.message}`);
       if (check.detail) {
-        lines.push(`  ${check.detail}`);
+        lines.push(`    ${check.detail}`);
       }
     }
     lines.push('');
   }
-  return `${lines.join('\n')}\n`;
-}
 
-function buildWorkspaceSection(
-  activeDocument: vscode.TextDocument | undefined,
-  activeWorkspaceFolder: vscode.WorkspaceFolder | undefined
-): DoctorSection {
-  const checks: DoctorCheck[] = [
-    {
-      status: vscode.workspace.workspaceFolders?.length ? 'ok' : 'warn',
-      message: `Workspace folders = ${vscode.workspace.workspaceFolders?.length ?? 0}`,
-    },
-  ];
-  if (activeDocument) {
-    checks.push({ status: 'info', message: `Active document = ${activeDocument.uri.fsPath}` });
-    checks.push({
-      status: activeWorkspaceFolder ? 'ok' : 'warn',
-      message: `Active workspace = ${activeWorkspaceFolder?.uri.fsPath ?? '(none)'}`,
-    });
-  }
-  return { title: 'Workspace', checks };
-}
-
-async function buildSlangServerSection(
-  deps: DoctorDependencies,
-  token?: vscode.CancellationToken,
-  manager?: SlangServerManager
-): Promise<DoctorSection> {
-  const config = readSlangServerConfig();
-  const status = manager?.getStatus();
-  const checks: DoctorCheck[] = [
-    { status: config.enabled ? 'ok' : 'warn', message: `enabled = ${String(config.enabled)}` },
-    { status: 'info', message: `runtime = ${config.runtime}` },
-    { status: 'info', message: `resolved runtime = ${config.resolvedRuntime}` },
-  ];
-  if (status) {
-    checks.push({ status: status.state === 'error' ? 'error' : 'info', message: `state = ${status.state}` });
-    if (status.runtimeProvider) {
-      checks.push({ status: 'info', message: `runtime provider = ${status.runtimeProvider}` });
-    }
-    checks.push({ status: 'info', message: `startup time = ${status.startupTimeMs !== undefined ? `${status.startupTimeMs} ms` : '(unknown)'}` });
-    if (status.error) {
-      checks.push({ status: 'error', message: status.error });
-    }
-    if (status.actionableError) {
-      checks.push({ status: 'info', message: `action = ${status.actionableError}` });
-    }
-    if (status.lastCrashReason) {
-      checks.push({ status: 'error', message: `last crash = ${status.lastCrashReason}`, detail: status.lastCrashAt });
-    }
-  }
-  if (config.resolvedRuntime === 'native') {
-    checks.push({ status: config.path ? 'ok' : 'error', message: `native path = ${config.path || '(missing)'}` });
-    if (config.path) {
-      const probe = await probeToolVersion(deps, config.path, [...config.args, '--version'], token);
-      checks.push(probe.ok
-        ? { status: 'ok', message: `version: ${probe.output ?? '(no output)'}` }
-        : { status: 'warn', message: `version probe failed: ${probe.reason ?? 'unknown error'}` });
-    }
+  const recommendations = buildRecommendations(report.sections);
+  lines.push('Recommended next steps:');
+  if (recommendations.length === 0) {
+    lines.push('- No immediate action needed.');
   } else {
-    checks.push({ status: status?.wasmPath ? 'info' : 'warn', message: `wasm artifact = ${status?.wasmPath ?? '(unknown)'}` });
-    checks.push({ status: 'info', message: `workspace mount = ${status?.workspaceMount ?? '/workspace'}` });
-    checks.push({ status: 'info', message: `tmp mount = ${status?.tmpMount ?? '/tmp'}` });
-    checks.push({ status: 'info', message: `home config enabled = ${String(status?.allowUserConfig ?? config.wasm.allowUserConfig)}` });
-    checks.push({ status: 'info', message: `memory limit = ${String(status?.memoryLimitMb ?? config.wasm.memoryLimitMb)} MB` });
-    const metadata = status?.wasmMetadata;
-    if (metadata) {
-      checks.push({ status: 'ok', message: `wasm metadata = ${formatWasmMetadata(metadata)}` });
-    } else {
-      checks.push({ status: 'warn', message: 'wasm metadata = (missing)' });
+    for (const recommendation of recommendations) {
+      lines.push(`- ${recommendation}`);
     }
   }
-  return { title: 'slang-server', checks };
+  lines.push('');
+
+  return lines.join('\n');
 }
 
-async function buildSlangConfigSection(service?: SlangConfigService): Promise<DoctorSection> {
-  if (!service) {
-    return { title: 'Slang Project Config', checks: [{ status: 'warn', message: 'SlangConfigService unavailable.' }] };
-  }
-  const status = await service.getStatus();
-  const checks: DoctorCheck[] = [
-    {
-      status: status.workspaceConfig ? 'ok' : 'warn',
-      message: `.slang/server.json = ${status.workspaceConfig?.fsPath ?? '(missing)'}`,
-    },
-    { status: 'info', message: `.slang/local/server.json = ${status.localConfig?.fsPath ?? '(missing)'}` },
-    { status: 'info', message: `~/.slang/server.json = ${status.userConfig?.fsPath ?? '(missing)'}` },
-  ];
-  if (!status.ok) {
-    checks.push({ status: 'error', message: status.error ?? 'Invalid JSON.' });
-  }
-  if (status.flags) {
-    checks.push({ status: 'info', message: `flags = ${String(status.flags)}` });
-  }
-  if (status.build) {
-    checks.push({ status: 'info', message: `build = ${String(status.build)}` });
-  }
-  if (status.buildPattern) {
-    checks.push({ status: 'info', message: `buildPattern = ${String(status.buildPattern)}` });
-  }
-  if (status.builds) {
-    checks.push({ status: 'info', message: `builds = ${Array.isArray(status.builds) ? status.builds.length : 'configured'}` });
-  }
-  return { title: 'Slang Project Config', checks };
+export function createDefaultDoctorDependencies(): DoctorDependencies {
+  return {
+    runTool,
+    resolveExecutable,
+    exists: (inputPath) => fs.existsSync(inputPath),
+  };
 }
 
-export async function buildLintingSectionFromConfiguration(
-  deps: DoctorDependencies,
-  workspaceFolder: string | undefined,
+export async function resolveExecutable(command: string): Promise<string | undefined> {
+  if (command.trim().length === 0) {
+    return undefined;
+  }
+  if (command.includes(path.sep) || (path.sep === '\\' && command.includes('/'))) {
+    return fs.existsSync(command) ? command : undefined;
+  }
+  try {
+    return await which(command);
+  } catch {
+    return undefined;
+  }
+}
+
+export async function probeToolVersion(
+  command: string,
+  args: string[],
+  deps: Pick<DoctorDependencies, 'runTool'>,
   token?: vscode.CancellationToken
-): Promise<DoctorSection> {
-  const lintConfig = vscode.workspace.getConfiguration('verilog.linting');
-  const linter = lintConfig.get<string>('linter', 'none');
-  const linterPath = lintConfig.get<string>('path', '');
-  const checks = await buildLinterChecks(
-    {
-      linter,
-      linterPath,
-      workspaceFolder,
-      arguments: vscode.workspace.getConfiguration(`verilog.linting.${linter}`).get<string>('arguments', ''),
-      runAtFileLocation: vscode.workspace.getConfiguration(`verilog.linting.${linter}`).get<boolean>('runAtFileLocation', false),
-      useWSL: vscode.workspace.getConfiguration(`verilog.linting.${linter}`).get<boolean>('useWSL', false),
-      isWindows: process.platform === 'win32',
-    },
-    deps,
-    token
-  );
-  return { title: 'Linting', checks };
+): Promise<ToolProbeResult> {
+  try {
+    const result = await deps.runTool({
+      command,
+      args,
+      timeoutMs: 3000,
+      collectStdout: true,
+      collectStderr: true,
+      cancellationToken: token,
+    });
+    if (result.exitCode === 0) {
+      const output = [result.stdout, result.stderr].filter((value) => value.length > 0).join('\n');
+      return { ok: true, output: firstNonEmptyLine(output) };
+    }
+    return { ok: false, reason: `exit code ${result.exitCode ?? 'unknown'}` };
+  } catch (err) {
+    if (err instanceof ToolRunError && err.reason === 'cancelled') {
+      throw err;
+    }
+    logger.warn`Version probe failed for ${command}: ${err}`;
+    return { ok: false, reason: 'probe failed' };
+  }
 }
 
 export async function buildLinterChecks(
@@ -326,65 +285,248 @@ export async function buildLinterChecks(
   token?: vscode.CancellationToken
 ): Promise<DoctorCheck[]> {
   const checks: DoctorCheck[] = [
-    { status: options.linter === 'none' ? 'warn' : 'info', message: `Selected linter = ${options.linter}` },
+    { status: 'info', message: `verilog.linting.linter = ${options.linter}` },
   ];
+
   if (options.linter === 'none') {
+    checks.push({ status: 'info', message: 'no linter selected' });
     return checks;
   }
 
-  const commandInfo = getLinterCommand(options);
-  const resolved = await appendBinaryChecks(checks, `${options.linter} binary`, commandInfo.command, deps, token);
-  if (resolved) {
-    const versionArgs = linterVersionArgs.get(options.linter) ?? ['--version'];
-    const probe = await probeToolVersion(deps, commandInfo.command, commandInfo.leadingArgs.concat(versionArgs), token);
-    checks.push(probe.ok
-      ? { status: 'ok', message: `${options.linter} version: ${probe.output ?? '(no output)'}` }
-      : { status: 'warn', message: `${options.linter} version probe failed: ${probe.reason ?? 'unknown error'}` });
+  const commandInfo = buildLinterCommand(options);
+  if (!commandInfo) {
+    checks.push({ status: 'warn', message: `unknown linter: ${options.linter}` });
+    return checks;
   }
+
+  checks.push({ status: 'info', message: `arguments = ${options.arguments ?? ''}` });
+  if (options.runAtFileLocation !== undefined) {
+    checks.push({
+      status: 'info',
+      message: `runAtFileLocation = ${String(options.runAtFileLocation)}`,
+    });
+  }
+  if (options.useWSL !== undefined) {
+    checks.push({ status: 'info', message: `useWSL = ${String(options.useWSL)}` });
+  }
+  if (options.modelsimWork !== undefined) {
+    checks.push({ status: 'info', message: `modelsim.work = ${options.modelsimWork}` });
+  }
+
+  await appendBinaryChecks(checks, `${options.linter} binary`, commandInfo.command, deps, token);
+  await appendVersionCheck(
+    checks,
+    'version',
+    commandInfo.command,
+    commandInfo.leadingArgs.concat(linterVersionArgs.get(options.linter) ?? ['--version']),
+    deps,
+    token
+  );
+
+  const includePaths = options.includePath ?? [];
+  for (const includePath of includePaths) {
+    const resolvedPath = resolveConfigPath(includePath, options.workspaceFolder);
+    if (deps.exists(resolvedPath)) {
+      checks.push({ status: 'ok', message: `include path: ${resolvedPath}` });
+    } else {
+      checks.push({ status: 'warn', message: `missing include path: ${resolvedPath}` });
+    }
+  }
+
+  if (options.isWindows === true && options.useWSL === true) {
+    await appendWslChecks(checks, deps, token);
+  }
+
   return checks;
 }
 
-function getLinterCommand(options: LinterDoctorOptions): { command: string; leadingArgs: string[] } {
-  const linterInstalledPath = options.linterPath || '';
-  switch (options.linter) {
-    case 'slang':
-      return buildSlangCommand({ isWindows: options.isWindows ?? process.platform === 'win32', useWSL: Boolean(options.useWSL), linterInstalledPath });
-    case 'verilator':
-      return buildVerilatorCommand({ isWindows: options.isWindows ?? process.platform === 'win32', useWSL: Boolean(options.useWSL), linterInstalledPath });
-    default:
-      return {
-        command: path.join(linterInstalledPath, options.linter),
-        leadingArgs: [],
-      };
+export async function buildLanguageServerChecks(
+  options: LanguageServerDoctorOptions,
+  deps: DoctorDependencies,
+  token?: vscode.CancellationToken
+): Promise<DoctorCheck[]> {
+  const checks: DoctorCheck[] = [
+    { status: 'info', message: `${options.name} enabled = ${String(options.enabled)}` },
+  ];
+  if (options.arguments !== undefined) {
+    checks.push({ status: 'info', message: `${options.name} arguments = ${options.arguments}` });
+    if (options.arguments.trim().length > 0) {
+      checks.push({
+        status: 'info',
+        message: `${options.name} parsed arguments = [${splitCommandLineArgs(options.arguments).join(', ')}]`,
+      });
+    }
   }
+
+  if (!options.enabled) {
+    checks.push({ status: 'info', message: `${options.name} disabled` });
+    return checks;
+  }
+
+  await appendBinaryChecks(checks, `${options.name} binary`, options.path, deps, token);
+  await appendVersionCheck(checks, 'version', options.path, ['--version'], deps, token);
+
+  for (const configFile of options.configFiles ?? []) {
+    const candidatePaths =
+      configFile.resolvePerWorkspace && (options.workspaceFolders?.length ?? 0) > 0
+        ? (options.workspaceFolders ?? []).map((folder) => resolveConfigPath(configFile.path, folder))
+        : [resolveConfigPath(configFile.path, options.workspaceFolders?.at(0))];
+    for (const candidatePath of candidatePaths) {
+      if (candidatePath.length === 0) {
+        continue;
+      }
+      if (deps.exists(candidatePath)) {
+        checks.push({ status: 'ok', message: `${configFile.label}: ${candidatePath}` });
+      } else {
+        checks.push({ status: 'warn', message: `missing ${configFile.label}: ${candidatePath}` });
+      }
+    }
+  }
+
+  return checks;
+}
+
+function getDoctorOutputChannel(): vscode.OutputChannel {
+  doctorOutputChannel ??= vscode.window.createOutputChannel('Verilog Doctor');
+  return doctorOutputChannel;
+}
+
+function buildWorkspaceSection(
+  activeDocument: vscode.TextDocument | undefined,
+  activeWorkspaceFolder: vscode.WorkspaceFolder | undefined
+): DoctorSection {
+  const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
+  const checks: DoctorCheck[] = [];
+  if (workspaceFolders.length === 0) {
+    checks.push({ status: 'warn', message: 'Workspace folder: none' });
+  } else {
+    for (const folder of workspaceFolders) {
+      checks.push({ status: 'ok', message: `Workspace folder: ${folder.uri.fsPath}` });
+    }
+  }
+  checks.push({
+    status: 'info',
+    message: `Multi-root workspace: ${workspaceFolders.length > 1 ? 'yes' : 'no'}`,
+  });
+  if (activeDocument) {
+    checks.push({
+      status: 'info',
+      message: `Active document: ${activeDocument.languageId} ${activeDocument.uri.fsPath}`,
+    });
+    checks.push({
+      status: 'info',
+      message: `Active document workspace: ${activeWorkspaceFolder?.uri.fsPath ?? 'none'}`,
+    });
+  } else {
+    checks.push({ status: 'info', message: 'Active document: none' });
+  }
+  return { title: 'Workspace', checks };
+}
+
+async function buildCtagsSection(
+  deps: DoctorDependencies,
+  token?: vscode.CancellationToken
+): Promise<DoctorSection> {
+  const config = vscode.workspace.getConfiguration('verilog.ctags');
+  const enabled = config.get<boolean>('enabled', true);
+  const ctagsPath = config.get<string>('path', 'ctags');
+  const checks: DoctorCheck[] = [
+    { status: 'info', message: `verilog.ctags.enabled = ${String(enabled)}` },
+  ];
+
+  if (!enabled) {
+    checks.push({ status: 'info', message: 'disabled' });
+    return { title: 'Ctags', checks };
+  }
+
+  const resolved = await appendBinaryChecks(checks, 'ctags binary', ctagsPath, deps, token);
+  if (resolved) {
+    const probe = await probeToolVersion(resolved, ['--version'], deps, token);
+    if (probe.ok && probe.output) {
+      checks.push({ status: 'ok', message: `ctags version: ${probe.output}` });
+      if (!probe.output.includes('Universal Ctags')) {
+        checks.push({
+          status: 'warn',
+          message: 'ctags is not Universal Ctags; SystemVerilog support may be limited.',
+        });
+      }
+    } else {
+      checks.push({ status: 'warn', message: 'version unknown; ctags --version failed.' });
+    }
+  }
+
+  return { title: 'Ctags', checks };
+}
+
+async function buildLintingSectionFromConfiguration(
+  deps: DoctorDependencies,
+  workspaceFolder?: string,
+  token?: vscode.CancellationToken
+): Promise<DoctorSection> {
+  const lintConfig = vscode.workspace.getConfiguration('verilog.linting');
+  const linter = lintConfig.get<string>('linter', 'none');
+  const linterPath = lintConfig.get<string>('path', '');
+  const specificConfig = linter === 'none' ? undefined : getLinterSpecificConfiguration(linter);
+
+  const checks = await buildLinterChecks(
+    {
+      linter,
+      linterPath,
+      workspaceFolder,
+      includePath: specificConfig?.get<string[]>('includePath', []),
+      arguments: specificConfig?.get<string>('arguments', ''),
+      runAtFileLocation: specificConfig?.get<boolean>('runAtFileLocation', false),
+      useWSL:
+        linter === 'verilator' || linter === 'slang'
+          ? specificConfig?.get<boolean>('useWSL', false)
+          : undefined,
+      modelsimWork: linter === 'modelsim' ? specificConfig?.get<string>('work', '') : undefined,
+      isWindows: process.platform === 'win32',
+    },
+    deps,
+    token
+  );
+
+  return { title: 'Linting', checks };
 }
 
 async function buildFormattingSection(
   deps: DoctorDependencies,
-  workspaceFolder: string | undefined,
+  workspaceFolder?: string,
   token?: vscode.CancellationToken
 ): Promise<DoctorSection> {
   const checks: DoctorCheck[] = [];
-  const config = vscode.workspace.getConfiguration('verilog.formatting');
-  const verilogFormatter = config.get<string>('verilogHDL.formatter', 'verilog-format');
-  const systemVerilogFormatter = config.get<string>('systemVerilog.formatter', 'verible-verilog-format');
-  checks.push({ status: 'info', message: `Verilog formatter = ${verilogFormatter}` });
-  checks.push({ status: 'info', message: `SystemVerilog formatter = ${systemVerilogFormatter}` });
-  await appendBinaryChecks(checks, 'Verilog formatter binary', getFormatterPath(verilogFormatter), deps, token, workspaceFolder);
-  await appendBinaryChecks(checks, 'SystemVerilog formatter binary', getFormatterPath(systemVerilogFormatter), deps, token, workspaceFolder);
-  return { title: 'Formatting', checks };
-}
+  const verilogFormatter = vscode
+    .workspace
+    .getConfiguration('verilog.formatting.verilogHDL')
+    .get<string>('formatter', 'verilog-format');
+  const systemVerilogFormatter = vscode
+    .workspace
+    .getConfiguration('verilog.formatting.systemVerilog')
+    .get<string>('formatter', 'verible-verilog-format');
 
-function getFormatterPath(formatter: string): string {
-  const config = vscode.workspace.getConfiguration('verilog.formatting');
-  switch (formatter) {
-    case 'iStyle':
-      return config.get<string>('iStyleVerilogFormatter.path', 'iStyle');
-    case 'verible-verilog-format':
-      return config.get<string>('veribleVerilogFormatter.path', 'verible-verilog-format');
-    default:
-      return config.get<string>('verilogFormat.path', 'verilog-format');
+  checks.push({ status: 'info', message: `Verilog formatter = ${verilogFormatter}` });
+  await appendFormatterChecks(checks, verilogFormatter, deps, token);
+  checks.push({ status: 'info', message: `SystemVerilog formatter = ${systemVerilogFormatter}` });
+  await appendFormatterChecks(checks, systemVerilogFormatter, deps, token);
+
+  const verilogFormatSettings = vscode
+    .workspace
+    .getConfiguration('verilog.formatting.verilogFormat')
+    .get<string>('settings', '');
+  const settingsPath = resolveConfigPath(verilogFormatSettings, workspaceFolder);
+  if (settingsPath.length > 0) {
+    if (deps.exists(settingsPath)) {
+      checks.push({ status: 'ok', message: `verilog-format settings file: ${settingsPath}` });
+    } else {
+      checks.push({
+        status: 'warn',
+        message: `verilog-format settings file not found: ${settingsPath}`,
+      });
+    }
   }
+
+  return { title: 'Formatting', checks };
 }
 
 async function buildLanguageServersSection(
@@ -393,77 +535,232 @@ async function buildLanguageServersSection(
   token?: vscode.CancellationToken
 ): Promise<DoctorSection> {
   const checks: DoctorCheck[] = [];
-  for (const definition of createLanguageServerDefinitions()) {
+  const definitions = createLanguageServerDefinitions();
+  const serverStates: LanguageServerConflictInput[] = definitions.map((definition) => {
     const config = vscode.workspace.getConfiguration(`verilog.languageServer.${definition.name}`);
-    const enabled = config.get<boolean>('enabled', false);
-    const serverPath = config.get<string>('path', definition.defaultPath);
-    checks.push({ status: enabled ? 'info' : 'info', message: `${definition.name} enabled = ${String(enabled)}` });
-    if (enabled) {
-      await appendBinaryChecks(checks, `${definition.name} binary`, serverPath, deps, token, workspaceFolders[0]);
+    return {
+      name: definition.name,
+      enabled: config.get<boolean>('enabled', false),
+      languages: getLanguageIdsForDefinition(definition),
+    };
+  });
+  checks.push(...buildLanguageServerConflictChecks(serverStates));
+
+  for (const definition of definitions) {
+    const name = definition.name;
+    const config = vscode.workspace.getConfiguration(`verilog.languageServer.${name}`);
+    const configFiles: LanguageServerDoctorOptions['configFiles'] = [];
+    if (name === 'svls') {
+      const svlintTomlPath = config.get<string>('svlintTomlPath', '').trim();
+      if (svlintTomlPath.length > 0) {
+        configFiles.push({ label: 'svls.svlintTomlPath', path: svlintTomlPath });
+      }
     }
+    if (name === 'tclsp') {
+      const configPath = config.get<string>('configPath', '').trim();
+      if (configPath.length > 0) {
+        configFiles.push({
+          label: 'tclsp.configPath',
+          path: configPath,
+          resolvePerWorkspace: !path.isAbsolute(expandPathVariables(configPath)),
+        });
+      }
+    }
+
+    checks.push(
+      ...(await buildLanguageServerChecks(
+        {
+          name: languageServerLabels[name] ?? name,
+          enabled: config.get<boolean>('enabled', false),
+          path: config.get<string>('path', languageServerLabels[name] ?? name),
+          arguments: config.get<string>('arguments', ''),
+          configFiles,
+          workspaceFolders,
+        },
+        deps,
+        token
+      ))
+    );
   }
+
   return { title: 'Language Servers', checks };
 }
 
+export function buildLanguageServerConflictChecks(
+  servers: LanguageServerConflictInput[]
+): DoctorCheck[] {
+  const serversByLanguage = new Map<string, string[]>();
+  for (const server of servers) {
+    if (!server.enabled) {
+      continue;
+    }
+    for (const language of server.languages) {
+      const serverNames = serversByLanguage.get(language) ?? [];
+      serverNames.push(server.name);
+      serversByLanguage.set(language, serverNames);
+    }
+  }
+
+  const checks: DoctorCheck[] = [];
+  for (const [language, serverNames] of serversByLanguage) {
+    if (serverNames.length > 1) {
+      checks.push({
+        status: 'warn',
+        message: `Multiple language servers are enabled for ${language}: ${serverNames.join(', ')}. This may cause duplicate diagnostics/completions; consider enabling only one.`,
+      });
+    }
+  }
+  return checks;
+}
+
+function getLanguageIdsForDefinition(definition: LanguageServerDefinition): string[] {
+  const documentSelector = definition.buildClientOptions().documentSelector ?? [];
+  return documentSelector.flatMap((selector) => {
+    if (typeof selector === 'string') {
+      return [selector];
+    }
+    return selector.language ? [selector.language] : [];
+  });
+}
+
 function buildSummarySection(sections: DoctorSection[]): DoctorSection {
-  const checks = sections.flatMap((section) => section.checks);
-  const errors = checks.filter((check) => check.status === 'error').length;
-  const warnings = checks.filter((check) => check.status === 'warn').length;
+  const counts = countStatuses(sections);
   return {
     title: 'Summary',
     checks: [
       {
-        status: errors > 0 ? 'error' : warnings > 0 ? 'warn' : 'ok',
-        message: `${errors} error(s), ${warnings} warning(s)`,
+        status: 'info',
+        message: `OK: ${counts.ok}, WARN: ${counts.warn}, ERROR: ${counts.error}, INFO: ${counts.info}`,
       },
     ],
   };
 }
 
-function buildRecommendationsSection(
-  sections: DoctorSection[],
-  status: ReturnType<SlangServerManager['getStatus']> | undefined
-): DoctorSection {
-  const recommendations = new Set<string>();
-  if (status?.state === 'error') {
-    recommendations.add('Run “Verilog: Show slang-server Output” for the detailed local log.');
-    recommendations.add('Run “Verilog: Restart slang-server” after fixing the reported runtime issue.');
-  }
-  if (status?.resolvedRuntime === 'native' && !status.path) {
-    recommendations.add('Set verilog.slangServer.path or run “Verilog: Select slang-server Runtime”.');
-  }
-  if (status?.resolvedRuntime === 'bundled-wasm' && status.error?.includes('not found')) {
-    recommendations.add('Install a VSIX that includes resources/wasm/slang-server.wasm or switch to native runtime.');
-  }
-  if (sections.some((section) =>
-    section.title === 'Slang Project Config'
-    && section.checks.some((check) => check.message.includes('.slang/server.json = (missing)'))
-  )) {
-    recommendations.add('Run “Verilog: Configure Slang Project” to create .slang/server.json.');
-  }
-  if (sections.some((section) => section.checks.some((check) => check.status === 'error'))) {
-    recommendations.add('Fix error checks above before relying on slang-server language features.');
-  }
-  if (recommendations.size === 0) {
-    recommendations.add('No immediate setup actions found.');
-  }
-  return {
-    title: 'Recommendations',
-    checks: [...recommendations].map((message) => ({ status: 'info', message })),
-  };
+function getLinterSpecificConfiguration(linter: string): vscode.WorkspaceConfiguration {
+  const namespace = linter === 'verible-verilog-lint' ? 'veribleVerilogLint' : linter;
+  return vscode.workspace.getConfiguration(`verilog.linting.${namespace}`);
 }
 
-function formatWasmMetadata(metadata: Record<string, unknown>): string {
-  const parts = [
-    ['slang-server', metadata.slangServerCommit],
-    ['slang', metadata.slangCommit],
-    ['wasi-sdk', metadata.wasiSdkVersion],
-    ['size', metadata.wasmSizeBytes],
-    ['sha256', metadata.wasmSha256],
-  ]
-    .filter(([, value]) => value !== undefined)
-    .map(([label, value]) => `${label}=${String(value)}`);
-  return parts.length > 0 ? parts.join(', ') : 'present';
+function buildLinterCommand(
+  options: LinterDoctorOptions
+): { command: string; leadingArgs: string[] } | undefined {
+  const isWindows = options.isWindows ?? process.platform === 'win32';
+  switch (options.linter) {
+    case 'iverilog':
+      return { command: path.join(options.linterPath, 'iverilog'), leadingArgs: [] };
+    case 'modelsim':
+      return { command: path.join(options.linterPath, 'vlog'), leadingArgs: [] };
+    case 'xvlog':
+      return { command: path.join(options.linterPath, 'xvlog'), leadingArgs: [] };
+    case 'verilator':
+      return buildVerilatorCommand({
+        isWindows,
+        useWSL: options.useWSL ?? false,
+        linterInstalledPath: options.linterPath,
+      });
+    case 'slang':
+      return buildSlangCommand({
+        isWindows,
+        useWSL: options.useWSL ?? false,
+        linterInstalledPath: options.linterPath,
+      });
+    case 'verible-verilog-lint':
+      return {
+        command: path.join(
+          options.linterPath,
+          isWindows ? 'verible-verilog-lint.exe' : 'verible-verilog-lint'
+        ),
+        leadingArgs: [],
+      };
+    default:
+      return undefined;
+  }
+}
+
+async function appendFormatterChecks(
+  checks: DoctorCheck[],
+  formatter: string,
+  deps: DoctorDependencies,
+  token?: vscode.CancellationToken
+): Promise<void> {
+  checks.push(...(await buildFormatterChecks(formatter, deps, token)));
+}
+
+export async function buildFormatterChecks(
+  formatter: string,
+  deps: DoctorDependencies,
+  token?: vscode.CancellationToken
+): Promise<DoctorCheck[]> {
+  const checks: DoctorCheck[] = [];
+  const formatterConfig = getFormatterConfiguration(formatter);
+  if (!formatterConfig) {
+    checks.push({ status: 'info', message: `${formatter} has no configured binary check` });
+    return checks;
+  }
+  checks.push(...formatterConfig.extraChecks);
+  if (formatterConfig.path.trim().length === 0) {
+    checks.push({
+      status: 'warn',
+      message: `${formatterConfig.binaryName} path is empty; set ${formatterConfig.pathSetting}.`,
+    });
+    return checks;
+  }
+  await appendBinaryChecks(
+    checks,
+    `${formatterConfig.binaryName} binary`,
+    formatterConfig.path,
+    deps,
+    token
+  );
+  await appendVersionCheck(checks, 'version', formatterConfig.path, ['--version'], deps, token);
+  return checks;
+}
+
+function getFormatterConfiguration(
+  formatter: string
+): { binaryName: string; path: string; pathSetting: string; extraChecks: DoctorCheck[] } | undefined {
+  switch (formatter) {
+    case 'verilog-format': {
+      const pathSetting = 'verilog.formatting.verilogFormat.path';
+      const config = vscode.workspace.getConfiguration('verilog.formatting.verilogFormat');
+      return {
+        binaryName: 'verilog-format',
+        path: config.get<string>('path', 'verilog-format'),
+        pathSetting,
+        extraChecks: [],
+      };
+    }
+    case 'iStyle': {
+      const pathSetting = 'verilog.formatting.iStyleVerilogFormatter.path';
+      const config = vscode.workspace.getConfiguration('verilog.formatting.iStyleVerilogFormatter');
+      return {
+        binaryName: 'iStyle',
+        path: config.get<string>('path', 'iStyle'),
+        pathSetting,
+        extraChecks: [
+          { status: 'info', message: `iStyle arguments = ${config.get<string>('arguments', '')}` },
+          { status: 'info', message: `iStyle style = ${config.get<string>('style', '')}` },
+        ],
+      };
+    }
+    case 'verible-verilog-format': {
+      const pathSetting = 'verilog.formatting.veribleVerilogFormatter.path';
+      const config = vscode.workspace.getConfiguration('verilog.formatting.veribleVerilogFormatter');
+      return {
+        binaryName: 'verible-verilog-format',
+        path: config.get<string>('path', 'verible-verilog-format'),
+        pathSetting,
+        extraChecks: [
+          {
+            status: 'info',
+            message: `verible-verilog-format arguments = ${config.get<string>('arguments', '')}`,
+          },
+        ],
+      };
+    }
+    default:
+      return undefined;
+  }
 }
 
 async function appendBinaryChecks(
@@ -471,69 +768,99 @@ async function appendBinaryChecks(
   label: string,
   command: string,
   deps: DoctorDependencies,
-  token?: vscode.CancellationToken,
-  workspaceFolder?: string
+  _token?: vscode.CancellationToken
 ): Promise<string | undefined> {
-  if (token?.isCancellationRequested) {
-    throw new ToolRunError('Doctor cancelled', 'verilog.doctor', [], 'cancelled');
-  }
-  const resolvedCommand = resolveConfigPath(command, workspaceFolder);
-  checks.push({ status: 'info', message: `${label} = ${resolvedCommand}` });
-
-  if (path.isAbsolute(resolvedCommand)) {
-    if (deps.exists(resolvedCommand)) {
-      checks.push({ status: 'ok', message: `${label} exists.` });
-      return resolvedCommand;
-    }
-    checks.push({ status: 'error', message: `${label} not found.`, detail: resolvedCommand });
+  const resolved = await deps.resolveExecutable(command);
+  if (!resolved) {
+    checks.push({ status: 'error', message: `${label}: ${command} not found` });
     return undefined;
   }
-
-  const resolved = await deps.resolveExecutable(resolvedCommand);
-  if (resolved) {
-    checks.push({ status: 'ok', message: `${label} resolved to ${resolved}` });
-    return resolved;
-  }
-  checks.push({ status: 'error', message: `${label} not found on PATH.`, detail: resolvedCommand });
-  return undefined;
+  checks.push({ status: 'ok', message: `${label}: ${command} -> ${resolved}` });
+  return resolved;
 }
 
-async function probeToolVersion(
-  deps: DoctorDependencies,
+async function appendVersionCheck(
+  checks: DoctorCheck[],
+  label: string,
   command: string,
   args: string[],
+  deps: DoctorDependencies,
   token?: vscode.CancellationToken
-): Promise<ToolProbeResult> {
-  try {
-    const result = await deps.runTool({
-      command,
-      args,
-      collectStdout: true,
-      collectStderr: true,
-      cancellationToken: token,
+): Promise<void> {
+  const resolved = await deps.resolveExecutable(command);
+  if (!resolved) {
+    return;
+  }
+  const probe = await probeToolVersion(resolved, args, deps, token);
+  if (probe.ok && probe.output) {
+    checks.push({ status: 'ok', message: `${label}: ${probe.output}` });
+  } else {
+    checks.push({
+      status: 'warn',
+      message: 'version unknown; binary was found but --version did not return a clean version.',
     });
-    return { ok: true, output: (result.stdout || result.stderr).trim() };
-  } catch (err) {
-    if (err instanceof ToolRunError && err.reason === 'cancelled') {
-      throw err;
-    }
-    return { ok: false, reason: err instanceof Error ? err.message : String(err) };
   }
 }
 
-function createDefaultDoctorDependencies(): DoctorDependencies {
-  return {
-    runTool,
-    resolveExecutable: async (command: string) => which(command, { nothrow: true }) as Promise<string | undefined>,
-    exists: (inputPath: string) => fs.existsSync(inputPath),
-  };
+async function appendWslChecks(
+  checks: DoctorCheck[],
+  deps: DoctorDependencies,
+  token?: vscode.CancellationToken
+): Promise<void> {
+  const resolved = await appendBinaryChecks(checks, 'wsl binary', 'wsl', deps, token);
+  if (!resolved) {
+    return;
+  }
+  const probe = await probeToolVersion(resolved, ['echo', 'ok'], deps, token);
+  if (probe.ok) {
+    checks.push({ status: 'ok', message: 'wsl probe: ok' });
+  } else {
+    checks.push({ status: 'error', message: 'wsl probe failed' });
+  }
 }
 
-function getDoctorOutputChannel(): vscode.OutputChannel {
-  doctorOutputChannel ??= vscode.window.createOutputChannel('Verilog Doctor');
-  return doctorOutputChannel;
+function countStatuses(sections: DoctorSection[]): Record<DoctorStatus, number> {
+  const counts: Record<DoctorStatus, number> = { ok: 0, warn: 0, error: 0, info: 0 };
+  for (const section of sections) {
+    for (const check of section.checks) {
+      counts[check.status]++;
+    }
+  }
+  return counts;
 }
 
-export function parseDoctorArgs(value: string | undefined): string[] {
-  return splitCommandLineArgs(value ?? '');
+function buildRecommendations(sections: DoctorSection[]): string[] {
+  const recommendations = new Set<string>();
+  for (const section of sections) {
+    for (const check of section.checks) {
+      if (check.status === 'error' && check.message.includes('linter binary')) {
+        recommendations.add('Install the selected linter or update `verilog.linting.path`.');
+      } else if (check.status === 'error' && check.message.includes('ctags binary')) {
+        recommendations.add('Install Universal Ctags or update `verilog.ctags.path`.');
+      } else if (
+        check.status === 'error' &&
+        (check.message.includes('language server') || section.title === 'Language Servers')
+      ) {
+        recommendations.add('Disable unused language servers or install the configured binary.');
+      } else if (check.status === 'error' && section.title === 'Formatting') {
+        recommendations.add('Install the selected formatter or update its path setting.');
+      } else if (check.status === 'warn' && check.message.includes('missing include path')) {
+        recommendations.add('Create the missing include directory or remove it from settings.');
+      } else if (check.status === 'warn' && check.message.includes('configPath')) {
+        recommendations.add('Create the missing language server config file or clear the setting.');
+      } else if (check.status === 'warn' && check.message.includes('settings file')) {
+        recommendations.add('Create the missing formatter settings file or clear the setting.');
+      } else if (check.status === 'warn' && check.message.includes('not Universal Ctags')) {
+        recommendations.add('Set `verilog.ctags.path` to the Universal Ctags executable.');
+      }
+    }
+  }
+  return Array.from(recommendations);
+}
+
+function firstNonEmptyLine(output: string): string | undefined {
+  return output
+    .split(/\r?\n/g)
+    .map((line) => line.trim())
+    .find((line) => line.length > 0);
 }

@@ -2,6 +2,12 @@
 import * as vscode from 'vscode';
 
 import LintManager from './linter/LintManager';
+import { CtagsManager } from './ctags';
+import * as DocumentSymbolProvider from './providers/DocumentSymbolProvider';
+import * as HoverProvider from './providers/HoverProvider';
+import * as DefinitionProvider from './providers/DefinitionProvider';
+import * as CompletionItemProvider from './providers/CompletionItemProvider';
+import * as ModuleInstantiation from './commands/ModuleInstantiation';
 import { registerDoctorCommand } from './commands/Doctor';
 import * as FormatProvider from './providers/FormatProvider';
 import { ExtensionManager } from './extensionManager';
@@ -11,16 +17,9 @@ import { FliplotPanel } from './fliplot/FliplotPanel';
 import { FliplotCustomEditor } from './fliplot/FliplotCustomEditor';
 import { openWaveform } from './waveform/OpenWaveform';
 import { InactivePreprocessorDecorationProvider } from './providers/InactivePreprocessorDecorationProvider';
-import { SlangConfigService } from './slangServer/SlangConfigService';
-import { SlangFirstRunHelper } from './slangServer/SlangFirstRunHelper';
-import { registerSlangModuleInstantiationCommands, SlangModuleInstantiationService } from './slangServer/SlangModuleInstantiationService';
-import { SlangServerApi } from './slangServer/SlangServerApi';
-import { registerSlangServerCommands } from './slangServer/SlangServerCommands';
-import { SlangServerManager } from './slangServer/SlangServerManager';
-import { registerSlangServerQuickActions, SlangServerStatusBar } from './slangServer/SlangServerStatusBar';
-import { HdlExplorerProvider, registerHdlExplorerCommands } from './views/HdlExplorerProvider';
 
-const extensionID = 'mshr-h.veriloghdl';
+let ctagsManager: CtagsManager | undefined;
+const extensionID: string = 'mshr-h.veriloghdl';
 
 let lintManager: LintManager;
 
@@ -35,28 +34,86 @@ export async function activate(context: vscode.ExtensionContext) {
     extMgr.showChangelogNotification();
   }
 
-  const slangServerManager = new SlangServerManager(context);
-  const slangConfigService = new SlangConfigService();
-  const slangServerApi = new SlangServerApi(slangServerManager);
-  const slangInstantiationService = new SlangModuleInstantiationService(slangServerApi, slangServerManager);
-  const hdlExplorerProvider = new HdlExplorerProvider(slangServerApi, slangServerManager, slangConfigService);
+  ctagsManager = new CtagsManager();
+  ctagsManager.configure();
+  context.subscriptions.push(ctagsManager);
 
-  context.subscriptions.push(
-    slangServerManager,
-    new SlangServerStatusBar(slangServerManager),
-    new SlangFirstRunHelper(context, slangConfigService),
-    hdlExplorerProvider,
-    ...registerSlangServerCommands(slangServerManager, slangConfigService),
-    ...registerSlangModuleInstantiationCommands(slangInstantiationService),
-    registerSlangServerQuickActions(slangServerManager),
-    ...registerHdlExplorerCommands(slangServerApi, slangConfigService, hdlExplorerProvider, slangInstantiationService),
-    vscode.window.createTreeView('verilog.hdlExplorer', {
-      treeDataProvider: hdlExplorerProvider,
-      showCollapseAll: true,
-    })
+  // Configure Document Symbol Provider
+  const verilogDocumentSymbolProvider = new DocumentSymbolProvider.VerilogDocumentSymbolProvider(
+    ctagsManager,
   );
-  void slangServerManager.start();
+  context.subscriptions.push(
+    vscode.languages.registerDocumentSymbolProvider(
+      { scheme: 'file', language: 'verilog' },
+      verilogDocumentSymbolProvider
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerDocumentSymbolProvider(
+      { scheme: 'file', language: 'systemverilog' },
+      verilogDocumentSymbolProvider
+    )
+  );
 
+  // Configure Completion Item Provider
+  // Trigger on ".", "(", "="
+  const verilogCompletionItemProvider = new CompletionItemProvider.VerilogCompletionItemProvider(
+    ctagsManager,
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCompletionItemProvider(
+      { scheme: 'file', language: 'verilog' },
+      verilogCompletionItemProvider,
+      '.',
+      '(',
+      '='
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCompletionItemProvider(
+      { scheme: 'file', language: 'systemverilog' },
+      verilogCompletionItemProvider,
+      '.',
+      '(',
+      '='
+    )
+  );
+
+  // Configure Hover Providers
+  const verilogHoverProvider = new HoverProvider.VerilogHoverProvider(
+    ctagsManager,
+  );
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider(
+      { scheme: 'file', language: 'verilog' },
+      verilogHoverProvider
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider(
+      { scheme: 'file', language: 'systemverilog' },
+      verilogHoverProvider
+    )
+  );
+
+  // Configure Definition Providers
+  const verilogDefinitionProvider = new DefinitionProvider.VerilogDefinitionProvider(
+    ctagsManager
+  );
+  context.subscriptions.push(
+    vscode.languages.registerDefinitionProvider(
+      { scheme: 'file', language: 'verilog' },
+      verilogDefinitionProvider
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerDefinitionProvider(
+      { scheme: 'file', language: 'systemverilog' },
+      verilogDefinitionProvider
+    )
+  );
+
+  // Configure Format Provider
   const verilogFormatProvider = new FormatProvider.VerilogFormatProvider();
   context.subscriptions.push(
     vscode.languages.registerDocumentFormattingEditProvider(
@@ -72,8 +129,17 @@ export async function activate(context: vscode.ExtensionContext) {
     )
   );
 
-  context.subscriptions.push(new InactivePreprocessorDecorationProvider(slangServerManager));
+  context.subscriptions.push(new InactivePreprocessorDecorationProvider());
 
+  // Configure command to instantiate a module
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'verilog.instantiateModule',
+      ModuleInstantiation.instantiateModuleInteract
+    )
+  );
+
+  // Register command for manual linting
   lintManager = new LintManager();
   context.subscriptions.push(lintManager);
   context.subscriptions.push(
@@ -90,7 +156,7 @@ export async function activate(context: vscode.ExtensionContext) {
       openWaveform(context, arg)
     )
   );
-  context.subscriptions.push(registerDoctorCommand(context, slangServerManager, slangConfigService));
+  context.subscriptions.push(registerDoctorCommand(context));
 
   context.subscriptions.push(
     vscode.window.registerCustomEditorProvider(
@@ -102,6 +168,7 @@ export async function activate(context: vscode.ExtensionContext) {
     )
   );
 
+  // Configure language server
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (!event.affectsConfiguration('verilog.languageServer')) {

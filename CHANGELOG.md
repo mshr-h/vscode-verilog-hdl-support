@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [1.29.0] - 2026-07-12
+
+### Changed
+
+- Restored the stable extension to the classic v1.25.0 architecture.
+- Restored Ctags-backed editing features and the v1.25.0 external language-server configuration surface.
+
+### Removed
+
+- Removed the extension-owned project model, semantic index, hierarchy, project diagnostics, compile-unit linting, and HDL Explorer added after v1.25.0.
+- Removed managed native and bundled-WASM slang-server integration from the stable extension.
+
+### Fixed
+
+- Isolated xvlog lint runs from the workspace so Vivado-generated files are not left in the project.
+- Preserved xvlog diagnostics while using the isolated working directory.
+
 ## [1.28.4] - 2026-07-11
 
 ### Changed

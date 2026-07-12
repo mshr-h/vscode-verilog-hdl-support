@@ -14,7 +14,6 @@ import { getWorkspaceRootForDocument } from '../utils/workspace';
 import { splitCommandLineArgs } from '../utils/commandLine';
 import LinterDiagnosticManager, { type DiagnosticMap } from './LinterDiagnosticManager';
 import LintRunManager, { type LintRunHandle } from './LintRunManager';
-import type { LintRunOptions } from './LintMode';
 
 const isWindows = process.platform === 'win32';
 
@@ -48,10 +47,8 @@ export interface BuildVerilatorArgsOptions {
   languageId: string;
   docFolder: string;
   includePaths: string[];
-  defineArgs?: string[];
   customArguments: string;
   documentPath: string;
-  sourcePaths?: string[];
 }
 
 export interface BuildVerilatorRunInputsOptions {
@@ -63,9 +60,7 @@ export interface BuildVerilatorRunInputsOptions {
   workspaceFolder?: string;
   linterInstalledPath: string;
   includePaths: string[];
-  defineArgs?: string[];
   customArguments: string;
-  sourcePaths?: string[];
   cancellationToken?: vscode.CancellationToken;
   convertToWslPathFn?: typeof convertToWslPath;
 }
@@ -90,7 +85,7 @@ export interface ConvertDiagnosticPathsFromWslOptions {
 }
 
 export function buildVerilatorCommand(options: VerilatorCommandOptions): VerilatorCommand {
-  const joinPath = options.isWindows ? path.win32.join : path.posix.join;
+  const joinPath = options.isWindows ? path.win32.join : path.join;
   if (options.isWindows && options.useWSL) {
     return {
       command: joinPath(options.linterInstalledPath, 'wsl'),
@@ -139,9 +134,8 @@ export function buildVerilatorArgs(options: BuildVerilatorArgsOptions): string[]
   args.push('--lint-only');
   args.push(`-I${options.docFolder}`);
   args.push(...options.includePaths.map((includePath) => `-I${includePath}`));
-  args.push(...(options.defineArgs ?? []).map((defineArg) => `-D${defineArg}`));
   args.push(...splitCommandLineArgs(options.customArguments));
-  args.push(...(options.sourcePaths ?? [options.documentPath]));
+  args.push(options.documentPath);
   return args;
 }
 
@@ -158,7 +152,6 @@ export async function buildVerilatorRunInputs(
   let docUri = options.documentPath;
   let docFolder = rawDocFolder;
   let includePaths = options.includePaths;
-  let sourcePaths = options.sourcePaths;
 
   if (options.isWindows) {
     if (options.useWSL) {
@@ -172,13 +165,9 @@ export async function buildVerilatorRunInputs(
       includePaths = await Promise.all(
         options.includePaths.map((includePath) => convert(includePath, conversionOptions))
       );
-      sourcePaths = options.sourcePaths
-        ? await Promise.all(options.sourcePaths.map((sourcePath) => convert(sourcePath, conversionOptions)))
-        : undefined;
     } else {
       docUri = options.documentPath.replace(/\\/g, '/');
       docFolder = rawDocFolder.replace(/\\/g, '/');
-      sourcePaths = options.sourcePaths?.map((sourcePath) => sourcePath.replace(/\\/g, '/'));
     }
   }
 
@@ -191,14 +180,12 @@ export async function buildVerilatorRunInputs(
     : options.workspaceFolder ?? docFolder;
 
   const args = commandInfo.leadingArgs.concat(
-      buildVerilatorArgs({
-        languageId: options.languageId,
-        docFolder,
-        includePaths,
-        defineArgs: options.defineArgs,
-        customArguments: options.customArguments,
-        documentPath: docUri,
-        sourcePaths,
+    buildVerilatorArgs({
+      languageId: options.languageId,
+      docFolder,
+      includePaths,
+      customArguments: options.customArguments,
+      documentPath: docUri,
     })
   );
 
@@ -344,10 +331,7 @@ export default class VerilatorLinter extends BaseLinter {
   private configuration!: vscode.WorkspaceConfiguration;
   private useWSL!: boolean;
 
-  constructor(
-    diagnosticManager: LinterDiagnosticManager,
-    runManager: LintRunManager
-  ) {
+  constructor(diagnosticManager: LinterDiagnosticManager, runManager: LintRunManager) {
     super('verilator', diagnosticManager, runManager);
     this.updateConfig();
   }
@@ -379,13 +363,8 @@ export default class VerilatorLinter extends BaseLinter {
     return convertVerilatorSeverity(severityString);
   }
 
-  protected async lint(doc: vscode.TextDocument, run: LintRunHandle, options: LintRunOptions): Promise<void> {
+  protected async lint(doc: vscode.TextDocument, run: LintRunHandle): Promise<void> {
     try {
-      const decision = await this.getLintDecision(doc, options);
-      if (decision.kind === 'skip') {
-        this.replaceDiagnostics(doc, run, new Map<string, vscode.Diagnostic[]>());
-        return;
-      }
       const inputs = await buildVerilatorRunInputs({
         documentPath: doc.uri.fsPath,
         languageId: doc.languageId,
@@ -394,7 +373,7 @@ export default class VerilatorLinter extends BaseLinter {
         runAtFileLocation: this.config.runAtFileLocation,
         workspaceFolder: getWorkspaceRootForDocument(doc),
         linterInstalledPath: this.config.linterInstalledPath,
-        includePaths: this.getConfiguredIncludePaths(doc),
+        includePaths: this.resolveIncludePaths(this.config.includePath, doc),
         customArguments: this.config.arguments,
         cancellationToken: run.cancellationToken,
       });

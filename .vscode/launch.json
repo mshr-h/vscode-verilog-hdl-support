@@ -7,6 +7,7 @@
 	"configurations": [
 		{
 			"args": [
+				"--disable-extensions",
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--user-data-dir=${workspaceFolder}/.vscode-dev/user-data",
 				"--extensions-dir=${workspaceFolder}/.vscode-dev/extensions",
@@ -16,67 +17,7 @@
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js"
 			],
-			"preLaunchTask": "debug: prepare",
-			"request": "launch",
-			"type": "extensionHost"
-		},
-		{
-			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--user-data-dir=${workspaceFolder}/.vscode-dev/user-data",
-				"--extensions-dir=${workspaceFolder}/.vscode-dev/extensions",
-				"${workspaceFolder}/examples/hdl-feature-showcase"
-			],
-			"name": "Launch Extension (HDL Feature Showcase)",
-			"outFiles": [
-				"${workspaceFolder}/out/**/*.js"
-			],
-			"preLaunchTask": "debug: prepare",
-			"request": "launch",
-			"type": "extensionHost"
-		},
-		{
-			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--user-data-dir=${workspaceFolder}/.vscode-dev/user-data",
-				"--extensions-dir=${workspaceFolder}/.vscode-dev/extensions",
-				"${workspaceFolder}/examples/issue-633-repro/01-failing-no-slang-config"
-			],
-			"name": "Launch Extension (Issue 633: No Slang Config)",
-			"outFiles": [
-				"${workspaceFolder}/out/**/*.js"
-			],
-			"preLaunchTask": "debug: prepare",
-			"request": "launch",
-			"type": "extensionHost"
-		},
-		{
-			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--user-data-dir=${workspaceFolder}/.vscode-dev/user-data",
-				"--extensions-dir=${workspaceFolder}/.vscode-dev/extensions",
-				"${workspaceFolder}/examples/issue-633-repro/02-failing-incomplete-slang-config"
-			],
-			"name": "Launch Extension (Issue 633: Incomplete Slang Config)",
-			"outFiles": [
-				"${workspaceFolder}/out/**/*.js"
-			],
-			"preLaunchTask": "debug: prepare",
-			"request": "launch",
-			"type": "extensionHost"
-		},
-		{
-			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--user-data-dir=${workspaceFolder}/.vscode-dev/user-data",
-				"--extensions-dir=${workspaceFolder}/.vscode-dev/extensions",
-				"${workspaceFolder}/examples/issue-633-repro/03-fixed-complete-slang-config"
-			],
-			"name": "Launch Extension (Issue 633: Complete Slang Config)",
-			"outFiles": [
-				"${workspaceFolder}/out/**/*.js"
-			],
-			"preLaunchTask": "debug: prepare",
+			"preLaunchTask": "${defaultBuildTask}",
 			"request": "launch",
 			"type": "extensionHost"
 		}

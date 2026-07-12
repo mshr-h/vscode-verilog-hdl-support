@@ -26,18 +26,16 @@ export default class LintManager {
     this.diagnosticCollection = vscode.languages.createDiagnosticCollection('verilog-lint');
     this.diagnosticManager = new LinterDiagnosticManager(this.diagnosticCollection);
     this.runManager = new LintRunManager();
-    vscode.workspace.onDidOpenTextDocument(this.lintOnOpen, this, this.subscriptions);
-    vscode.workspace.onDidSaveTextDocument(this.lintOnSave, this, this.subscriptions);
+    vscode.workspace.onDidOpenTextDocument(this.lint, this, this.subscriptions);
+    vscode.workspace.onDidSaveTextDocument(this.lint, this, this.subscriptions);
     vscode.workspace.onDidCloseTextDocument(this.removeFileDiagnostics, this, this.subscriptions);
     vscode.workspace.onDidChangeConfiguration(this.configLinter, this, this.subscriptions);
     this.configLinter();
 
     // Run linting for open documents on launch
-    if (this.shouldRunOnOpen()) {
-      vscode.window.visibleTextEditors.forEach((editor) => {
-        this.lint(editor.document);
-      });
-    }
+    vscode.window.visibleTextEditors.forEach((editor) => {
+      this.lint(editor.document);
+    });
   }
 
   getLinterFromString(name: string): BaseLinter | null {
@@ -115,28 +113,6 @@ export default class LintManager {
       default:
         break;
     }
-  }
-
-  private shouldRunOnOpen(): boolean {
-    return vscode.workspace.getConfiguration('verilog.linting').get<boolean>('runOnOpen', true);
-  }
-
-  private shouldRunOnSave(): boolean {
-    return vscode.workspace.getConfiguration('verilog.linting').get<boolean>('runOnSave', true);
-  }
-
-  private lintOnOpen(doc: vscode.TextDocument): void {
-    if (!this.shouldRunOnOpen()) {
-      return;
-    }
-    this.lint(doc);
-  }
-
-  private lintOnSave(doc: vscode.TextDocument): void {
-    if (!this.shouldRunOnSave()) {
-      return;
-    }
-    this.lint(doc);
   }
 
   removeFileDiagnostics(doc: vscode.TextDocument) {
@@ -222,7 +198,7 @@ export default class LintManager {
 
         try {
           linter.removeFileDiagnostics(editor.document);
-          await linter.startLint(editor.document, { trigger: 'manual' });
+          await linter.startLint(editor.document);
         } finally {
           linter.dispose();
         }
