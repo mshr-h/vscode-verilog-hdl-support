@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [Unreleased]
+
+### Fixed
+
+- Cancelled the workspace module-file search started by hover and go-to-definition when the request is cancelled, and stopped it at the first match. Previously every hover started a workspace-wide file search (a ripgrep process) that ran to completion, so searches piled up on large or network-mounted workspaces. [#652](https://github.com/mshr-h/vscode-verilog-hdl-support/issues/652)
+
 ## [1.29.0] - 2026-07-12
 
 ### Changed

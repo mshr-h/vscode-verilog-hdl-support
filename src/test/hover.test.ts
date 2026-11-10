@@ -41,4 +41,28 @@ suite('Hover Provider', () => {
     assert.ok(markdown, 'Expected MarkdownString hover content');
     assert.ok(markdown?.value.includes('module top'), 'Hover should include definition text');
   });
+
+  test('passes the request cancellation token to symbol lookup', async () => {
+    const document = await vscode.workspace.openTextDocument({
+      language: 'systemverilog',
+      content: ['module top;', 'endmodule'].join('\n'),
+    });
+    let receivedToken: vscode.CancellationToken | undefined;
+    const ctagsManager = {
+      findSymbol: async (
+        _document: vscode.TextDocument,
+        _position: vscode.Position,
+        token?: vscode.CancellationToken
+      ) => {
+        receivedToken = token;
+        return [];
+      },
+    } as unknown as CtagsManager;
+
+    const provider = new VerilogHoverProvider(ctagsManager);
+    const tokenSource = new vscode.CancellationTokenSource();
+    await provider.provideHover(document, new vscode.Position(0, 8), tokenSource.token);
+
+    assert.strictEqual(receivedToken, tokenSource.token);
+  });
 });
