@@ -472,4 +472,42 @@ suite('Ctags Module File Search', () => {
       'Only the current document should be indexed'
     );
   });
+
+  test('findSymbol does not index the module file when cancelled while opening it', async () => {
+    const document = await vscode.workspace.openTextDocument({
+      language: 'systemverilog',
+      content: 'module top; endmodule',
+    });
+    const moduleDocument = await vscode.workspace.openTextDocument({
+      language: 'systemverilog',
+      content: 'module top; endmodule',
+    });
+    const tokenSource = new vscode.CancellationTokenSource();
+    const manager = enabledManager();
+    const lookedUp: vscode.Uri[] = [];
+    manager.findDefinition = async (doc) => {
+      lookedUp.push(doc.uri);
+      return [];
+    };
+    manager.findModuleFile = async () => moduleDocument.uri;
+
+    const workspace = vscode.workspace as any;
+    const originalOpenTextDocument = workspace.openTextDocument;
+    workspace.openTextDocument = async () => {
+      tokenSource.cancel();
+      return moduleDocument;
+    };
+    try {
+      await manager.findSymbol(document, new vscode.Position(0, 8), tokenSource.token);
+    } finally {
+      workspace.openTextDocument = originalOpenTextDocument;
+      manager.dispose();
+    }
+
+    assert.deepStrictEqual(
+      lookedUp.map((uri) => uri.toString()),
+      [document.uri.toString()],
+      'Only the current document should be indexed'
+    );
+  });
 });

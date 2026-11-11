@@ -678,7 +678,10 @@ export class CtagsManager implements vscode.Disposable {
     const moduleFile = await this.findModuleFile(document, moduleToFind, token);
     if (moduleFile && !token?.isCancellationRequested) {
       const file = await vscode.workspace.openTextDocument(moduleFile);
-      tasks.push(this.findDefinition(file, targetText));
+      // Opening can be slow on network mounts; don't start ctags if cancelled meanwhile.
+      if (!token?.isCancellationRequested) {
+        tasks.push(this.findDefinition(file, targetText));
+      }
     }
 
     // TODO: use promise.race
