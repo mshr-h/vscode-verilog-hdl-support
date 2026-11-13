@@ -75,7 +75,7 @@ export function createLanguageServerDefinitions(): LanguageServerDefinition[] {
                 delete result['capabilities']['documentFormattingProvider'];
                 delete result['capabilities']['documentRangeFormattingProvider'];
               }
-              next(message);
+              return next(message);
             },
           },
         },

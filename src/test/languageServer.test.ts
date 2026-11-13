@@ -31,6 +31,27 @@ suite('Language Server smoke', () => {
     }
   });
 
+  test('propagates rejected Verible message handler promises', async () => {
+    const definition = createLanguageServerDefinitions().find(
+      (server) => server.name === 'veribleVerilogLs'
+    );
+    assert.ok(definition);
+    const strategy = definition.buildClientOptions().connectionOptions?.messageStrategy;
+    assert.ok(strategy);
+
+    const message = { jsonrpc: '2.0', id: 1, result: null };
+    const writeError = new Error('Response write failed');
+    await assert.rejects(
+      async () => {
+        await strategy.handleMessage(message, async (forwardedMessage) => {
+          assert.strictEqual(forwardedMessage, message);
+          throw writeError;
+        });
+      },
+      (error) => error === writeError
+    );
+  });
+
   test('initializes and stops without enabled servers', async () => {
     initAllLanguageClients();
     await stopAllLanguageClients();
