@@ -793,7 +793,7 @@
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "check-types": "tsc --noEmit",
-    "lint": "eslint src --ext .ts",
+    "lint": "biome lint src --diagnostic-level=warn",
     "test": "vscode-test",
     "test:windows": "vscode-test --config .vscode-test.windows.mjs --fgrep \"[windows]\"",
     "test:windows-wsl2": "vscode-test --config .vscode-test.windows.mjs --fgrep \"[windows-wsl2]\"",
@@ -807,23 +807,19 @@
     "which": "^7.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "10.0.1",
+    "@biomejs/biome": "2.6.7",
     "@types/mocha": "10.0.10",
     "@types/node": "~25.0.3",
     "@types/semver": "^7.7.1",
     "@types/vscode": "^1.107.0",
     "@types/which": "^3.0.4",
-    "@typescript-eslint/eslint-plugin": "^8.56.0",
-    "@typescript-eslint/parser": "^8.56.0",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^3.0.0",
     "esbuild": "^0.27.2",
-    "eslint": "10.4.0",
     "glob": "^13.0.0",
     "globals": "^17.0.0",
     "npm-run-all2": "^9.0.0",
-    "typescript": "6.0.3",
-    "typescript-eslint": "^8.56.0"
+    "typescript": "7.0.2"
   },
   "__metadata": {
     "id": "feb7e3b5-7d35-4f95-a3d2-61eeaa12efa5",

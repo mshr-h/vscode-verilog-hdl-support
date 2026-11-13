@@ -29,7 +29,7 @@ Any other contribution is also welcome! (fixing typo, refactoring, documentation
 
 ### VSCode formatting seetings
 
-For those of who using VSCode, install [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) and [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) and then put the below setting into VSCode settings.
+For those of who using VSCode, install [Biome](https://marketplace.visualstudio.com/items?itemName=biomejs.biome) and [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) and then put the below setting into VSCode settings.
 
 ```json
 {
@@ -38,7 +38,7 @@ For those of who using VSCode, install [ESLint](https://marketplace.visualstudio
     },
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": true
+        "source.fixAll.biome": "explicit"
     }
 }
 ```
