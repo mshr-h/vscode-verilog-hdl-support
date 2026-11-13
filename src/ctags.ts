@@ -641,10 +641,15 @@ export class CtagsManager implements vscode.Disposable {
    * and related files (e.g., module.sv for module definitions).
    * @param document - The document containing the position
    * @param position - The position to look up
+   * @param token - Cancellation token from the hover/definition request
    * @returns An array of DefinitionLink objects from all searched documents
    */
-  async findSymbol(document: vscode.TextDocument, position: vscode.Position): Promise<vscode.DefinitionLink[]> {
-    if (this.disposed || !this.enabled) {
+  async findSymbol(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    token?: vscode.CancellationToken
+  ): Promise<vscode.DefinitionLink[]> {
+    if (this.disposed || !this.enabled || token?.isCancellationRequested) {
       return [];
     }
 
@@ -670,12 +675,11 @@ export class CtagsManager implements vscode.Disposable {
     }
 
     // kick off async job for indexing for module.sv
-    const workspaceFolder = getWorkspaceFolderForUri(document.uri);
-    if (workspaceFolder) {
-      const searchPattern = new vscode.RelativePattern(workspaceFolder, `**/${moduleToFind}.sv`);
-      const files = await vscode.workspace.findFiles(searchPattern);
-      if (files.length !== 0) {
-        const file = await vscode.workspace.openTextDocument(files[0]);
+    const moduleFile = await this.findModuleFile(document, moduleToFind, token);
+    if (moduleFile && !token?.isCancellationRequested) {
+      const file = await vscode.workspace.openTextDocument(moduleFile);
+      // Opening can be slow on network mounts; don't start ctags if cancelled meanwhile.
+      if (!token?.isCancellationRequested) {
         tasks.push(this.findDefinition(file, targetText));
       }
     }
@@ -683,6 +687,33 @@ export class CtagsManager implements vscode.Disposable {
     // TODO: use promise.race
     const results: vscode.DefinitionLink[][] = await Promise.all(tasks);
     return results.reduce((acc, val) => acc.concat(val), []);
+  }
+
+  /**
+   * Looks up `<moduleName>.sv` in the document's workspace folder.
+   *
+   * `findFiles` runs a workspace-wide file search (a ripgrep process) that
+   * keeps running until it finishes unless it is cancelled. Hover requests fire
+   * for every word the mouse rests on, so the search stops at the first match
+   * and is cancelled with the originating request. Otherwise searches pile up
+   * on large or network-mounted workspaces.
+   * @param document - The document whose workspace folder is searched
+   * @param moduleName - The module name to look for
+   * @param token - Cancellation token from the hover/definition request
+   * @returns The first matching file, or undefined if none was found
+   */
+  async findModuleFile(
+    document: vscode.TextDocument,
+    moduleName: string,
+    token?: vscode.CancellationToken
+  ): Promise<vscode.Uri | undefined> {
+    const workspaceFolder = getWorkspaceFolderForUri(document.uri);
+    if (!workspaceFolder || token?.isCancellationRequested) {
+      return undefined;
+    }
+    const searchPattern = new vscode.RelativePattern(workspaceFolder, `**/${moduleName}.sv`);
+    const files = await vscode.workspace.findFiles(searchPattern, undefined, 1, token);
+    return files[0];
   }
 
   dispose(): void {

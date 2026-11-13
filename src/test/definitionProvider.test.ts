@@ -104,4 +104,28 @@ suite('DefinitionProvider', () => {
     assert.ok(result, 'Expected definition result');
     assert.strictEqual(result?.length, 2, 'Expected two definitions');
   });
+
+  test('passes the request cancellation token to symbol lookup', async () => {
+    const document = await vscode.workspace.openTextDocument({
+      language: 'systemverilog',
+      content: ['module top;', 'endmodule'].join('\n'),
+    });
+    let receivedToken: vscode.CancellationToken | undefined;
+    const ctagsManager = {
+      findSymbol: async (
+        _document: vscode.TextDocument,
+        _position: vscode.Position,
+        token?: vscode.CancellationToken
+      ) => {
+        receivedToken = token;
+        return [];
+      },
+    } as unknown as CtagsManager;
+
+    const provider = new VerilogDefinitionProvider(ctagsManager);
+    const tokenSource = new vscode.CancellationTokenSource();
+    await provider.provideDefinition(document, new vscode.Position(0, 8), tokenSource.token);
+
+    assert.strictEqual(receivedToken, tokenSource.token);
+  });
 });
