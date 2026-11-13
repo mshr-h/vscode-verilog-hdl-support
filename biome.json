@@ -1,0 +1,48 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.6.7/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"files": {
+		"includes": [
+			"src/**/*.ts",
+			"!src/BsvProvider.ts",
+			"!src/bsvjs/syntaxes/**",
+			"!src/**/*.d.ts"
+		],
+		"ignoreUnknown": false
+	},
+	"formatter": {
+		"enabled": false
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"preset": "recommended",
+			"suspicious": {
+				"noShadowRestrictedNames": "off",
+				"noAssignInExpressions": "off",
+				"noImplicitAnyLet": "off"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"includes": [
+				"src/test/**/*.ts"
+			],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noConsole": "off"
+					}
+				}
+			}
+		}
+	],
+	"assist": {
+		"enabled": false
+	}
+}
