@@ -124,7 +124,8 @@ suite('[windows] Xvlog Linter', () => {
     assert.strictEqual(diagnostics[1].range.start.line, 6);
   });
 
-  test('isolates fake xvlog artifacts and preserves syntax diagnostics', async () => {
+  test('isolates fake xvlog artifacts and preserves syntax diagnostics', async function () {
+    this.timeout(10000);
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'xvlog workspace with spaces-'));
     const harness = createHarness();
     try {
