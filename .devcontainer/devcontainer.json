@@ -16,7 +16,7 @@
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode" :{
-			"extensions": ["dbaeumer.vscode-eslint", "ms-vscode.extension-test-runner"]
+			"extensions": ["biomejs.biome", "ms-vscode.extension-test-runner"]
 		}
 	}
 
